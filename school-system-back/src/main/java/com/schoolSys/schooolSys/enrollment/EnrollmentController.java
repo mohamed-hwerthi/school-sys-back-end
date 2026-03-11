@@ -1,0 +1,58 @@
+package com.schoolSys.schooolSys.enrollment;
+
+import com.schoolSys.schooolSys.common.dto.ApiResponse;
+import com.schoolSys.schooolSys.enrollment.dto.EnrollmentRequestDTO;
+import com.schoolSys.schooolSys.enrollment.dto.EnrollmentResponseDTO;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * REST controller for enrollment CRUD operations.
+ * <p>
+ * Requires the {@code X-Tenant-ID} header to identify the school schema.
+ * </p>
+ */
+@RestController
+@RequestMapping("/api/enrollments")
+@RequiredArgsConstructor
+public class EnrollmentController {
+
+    private final EnrollmentService enrollmentService;
+
+    /** Lists all enrollments in the current school. */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<EnrollmentResponseDTO>>> getAll() {
+        return ResponseEntity.ok(ApiResponse.ok(enrollmentService.findAll()));
+    }
+
+    /** Gets an enrollment by ID. */
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<EnrollmentResponseDTO>> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok(enrollmentService.findById(id)));
+    }
+
+    /** Creates a new enrollment. */
+    @PostMapping
+    public ResponseEntity<ApiResponse<EnrollmentResponseDTO>> create(@RequestBody EnrollmentRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(enrollmentService.create(dto)));
+    }
+
+    /** Updates an existing enrollment. */
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<EnrollmentResponseDTO>> update(@PathVariable Long id,
+                                                                      @RequestBody EnrollmentRequestDTO dto) {
+        return ResponseEntity.ok(ApiResponse.ok(enrollmentService.update(id, dto)));
+    }
+
+    /** Deletes an enrollment. */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        enrollmentService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}

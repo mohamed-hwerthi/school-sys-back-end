@@ -1,0 +1,70 @@
+package com.schoolSys.schooolSys.depense;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "depenses")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Depense {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categorie_id", nullable = false)
+    private CategorieDepense categorie;
+
+    @Column(nullable = false)
+    private String libelle;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal montant;
+
+    @Column(name = "date_depense", nullable = false)
+    private LocalDate dateDepense;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "mode_paiement", length = 20)
+    private ModePaiement modePaiement;
+
+    private String fournisseur;
+
+    @Column(unique = true)
+    private String reference;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean recurrente = false;
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
+    @Column(name = "annee_scolaire", nullable = false, length = 9)
+    private String anneeScolaire;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at", nullable = false)
+    @Builder.Default
+    private LocalDateTime updatedAt = LocalDateTime.now();
+
+    public enum ModePaiement {
+        ESPECES, VIREMENT, CHEQUE, CARTE_BANCAIRE, PRELEVEMENT
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+}

@@ -1,0 +1,59 @@
+# ═══════════════════════════════════════
+# Root .gitignore — School Management System
+# ═══════════════════════════════════════
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+.factorypath
+.springBeans
+.sts4-cache
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# Logs
+*.log
+logs/
+
+# ─── Backend (Java / Spring Boot) ───
+school-system-back/target/
+school-system-back/.mvn/wrapper/maven-wrapper.jar
+school-system-back/build/
+
+# ─── Frontend (React / Vite) ───
+school-system-front/node_modules/
+school-system-front/dist/
+school-system-front/dist-ssr/
+school-system-front/*.local
+
+# ─── Docker ───
+docker-data/
+postgres-data/
+
+# ─── Misc ───
+*.bak
+*.tmp
+*.temp
