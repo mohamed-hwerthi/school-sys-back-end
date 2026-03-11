@@ -1,0 +1,22 @@
+package com.schoolSys.schooolSys.tenant.dto;
+
+import lombok.Data;
+
+/**
+ * DTO for creating or updating a school tenant.
+ */
+@Data
+public class TenantRequestDTO {
+
+    /** Display name of the school. */
+    private String name;
+
+    /**
+     * PostgreSQL schema name (lowercase, alphanumeric + underscores, 3-63 chars).
+     * Only used during creation — updates ignore this field.
+     */
+    private String schemaName;
+
+    /** Contact email for the school administrator. */
+    private String contactEmail;
+}

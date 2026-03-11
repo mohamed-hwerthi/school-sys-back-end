@@ -1,0 +1,78 @@
+package com.schoolSys.schooolSys.student;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDate;
+
+@Entity
+@Table(name = "students")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Student {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
+
+    @Column(name = "first_name_ar")
+    private String firstNameAr;
+
+    @Column(name = "last_name_ar")
+    private String lastNameAr;
+
+    @Column(nullable = false, length = 1)
+    private String sex;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "birth_place")
+    private String birthPlace;
+
+    private String address;
+
+    @Column(name = "registration_number", unique = true)
+    private String registrationNumber;
+
+    @Column(unique = true)
+    private String email;
+
+    private String classe;
+
+    private String niveau;
+
+    @Column(name = "enrollment_date")
+    private LocalDate enrollmentDate;
+
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private String status = "Actif";
+
+    @Column(name = "is_blocked", nullable = false)
+    @Builder.Default
+    private Boolean isBlocked = false;
+
+    @Column(name = "parent_last_name")
+    private String parentLastName;
+
+    @Column(name = "parent_first_name")
+    private String parentFirstName;
+
+    @Column(name = "parent_phone", length = 20)
+    private String parentPhone;
+
+    @Column(name = "parent_email")
+    private String parentEmail;
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+}

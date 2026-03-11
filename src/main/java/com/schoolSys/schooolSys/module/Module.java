@@ -1,0 +1,74 @@
+package com.schoolSys.schooolSys.module;
+
+import com.schoolSys.schooolSys.domaine.Domaine;
+import com.schoolSys.schooolSys.domaine.SousDomaine;
+import com.schoolSys.schooolSys.niveau.Niveau;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "modules")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Module {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(name = "name_vp")
+    private String nameVp;
+
+    @Column(name = "coeff_etatique", nullable = false)
+    @Builder.Default
+    private Double coeffEtatique = 1.0;
+
+    @Column(name = "coeff_prive", nullable = false)
+    @Builder.Default
+    private Double coeffPrive = 1.0;
+
+    @Column(name = "ordre_etatique", nullable = false)
+    @Builder.Default
+    private Integer ordreEtatique = 1;
+
+    @Column(name = "ordre_prive", nullable = false)
+    @Builder.Default
+    private Integer ordrePrive = 1;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "niveau_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Niveau niveau;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "domaine_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Domaine domaine;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sous_domaine_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private SousDomaine sousDomaine;
+
+    @Column(name = "version_etatique", nullable = false)
+    @Builder.Default
+    private Boolean versionEtatique = true;
+
+    @Column(name = "version_privee", nullable = false)
+    @Builder.Default
+    private Boolean versionPrivee = true;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+}
