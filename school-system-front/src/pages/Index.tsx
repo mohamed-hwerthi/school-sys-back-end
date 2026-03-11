@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, Lock, GraduationCap, ArrowRight, Sparkles, Loader2 } from "lucide-react";
+import { Mail, Lock, GraduationCap, ArrowRight, Sparkles, Loader2, AlertCircle } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import schoolHero from "@/assets/school-hero.png";
 
 const container = {
@@ -15,17 +16,31 @@ const item = {
 
 const Index = () => {
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [focused, setFocused] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await login({ email, password });
       navigate("/dashboard");
-    }, 1500);
+    } catch (err: any) {
+      setError(err.message || "Identifiants incorrects");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -144,6 +159,17 @@ const Index = () => {
               Connectez-vous à votre espace
             </p>
           </motion.div>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 flex w-full max-w-[280px] items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+            >
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {error}
+            </motion.div>
+          )}
 
           <form onSubmit={handleSubmit} className="w-full max-w-[280px] space-y-4">
             {/* Email */}

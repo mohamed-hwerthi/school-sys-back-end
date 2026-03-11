@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useCallback } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 const ROUTE_NAMES: Record<string, string> = {
   dashboard: "Tableau de bord",
@@ -75,7 +76,19 @@ function Breadcrumb() {
 
 export function Navbar() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const handleLogout = useCallback(async () => {
+    await logout();
+    navigate("/", { replace: true });
+  }, [logout, navigate]);
+
+  const initials = user
+    ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+    : "??";
+  const displayName = user ? `${user.firstName} ${user.lastName}` : "Utilisateur";
+  const displayRole = user?.role?.replace("_", " ") ?? "";
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -165,15 +178,15 @@ export function Navbar() {
               <div className="relative">
                 <Avatar className="h-7 w-7">
                   <AvatarFallback className="bg-gradient-to-br from-violet-500 to-purple-600 text-white text-xs font-semibold">
-                    AD
+                    {initials}
                   </AvatarFallback>
                 </Avatar>
                 <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background" />
               </div>
               <div className="hidden sm:flex flex-col items-start">
-                <span className="text-xs font-medium leading-none">Administrateur</span>
+                <span className="text-xs font-medium leading-none">{displayName}</span>
                 <span className="text-[10px] text-muted-foreground leading-none mt-0.5">
-                  Admin
+                  {displayRole}
                 </span>
               </div>
             </Button>
@@ -181,8 +194,8 @@ export function Navbar() {
           <DropdownMenuContent align="end" className="w-52">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium">Administrateur</p>
-                <p className="text-xs text-muted-foreground">admin@ecole.ma</p>
+                <p className="text-sm font-medium">{displayName}</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -197,7 +210,7 @@ export function Navbar() {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
-              onClick={() => navigate("/")}
+              onClick={handleLogout}
             >
               <LogOut className="mr-2 h-4 w-4" />
               Déconnexion

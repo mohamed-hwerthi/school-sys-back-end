@@ -4,8 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/config/queryClient";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./hooks/useAuth";
+import PrivateRoute from "./components/PrivateRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Forbidden from "./pages/Forbidden";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Students from "./pages/Students";
@@ -46,55 +49,60 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route
-            path="/dashboard"
-            element={
-              <SchoolProvider>
-                <MessagesProvider>
-                  <TeachersProvider>
-                    <RoomsProvider>
-                      <DashboardLayout />
-                    </RoomsProvider>
-                  </TeachersProvider>
-                </MessagesProvider>
-              </SchoolProvider>
-            }
-          >
-            <Route index element={<Dashboard />} />
-            <Route path="eleves" element={<Students />} />
-            <Route path="eleves/ajouter" element={<AddStudent />} />
-            <Route path="eleves/modifier/:id" element={<EditStudent />} />
-            <Route path="eleves/:id" element={<StudentProfile />} />
-            <Route path="eleves/:id/messages" element={<StudentMessages />} />
-            <Route path="enseignants" element={<Teachers />} />
-            <Route path="enseignants/ajouter" element={<AddTeacher />} />
-            <Route path="enseignants/modifier/:id" element={<EditTeacher />} />
-            <Route path="emploi-salles" element={<EmploiSalles />} />
-            <Route path="emploi-salles/ajouter" element={<AddRoom />} />
-            <Route path="emploi-salles/modifier/:id" element={<EditRoom />} />
-            <Route path="config/niveaux" element={<Niveaux />} />
-            <Route path="ecole" element={<SchoolInfo />} />
-            <Route path="finance" element={<FinancePaiement />} />
-            <Route path="finance/paiement" element={<FinancePaiement />} />
-            <Route path="finance/depenses" element={<Depenses />} />
-            <Route path="finance/tresorerie" element={<Tresorerie />} />
-            <Route path="finance/remises-penalites" element={<RemisesPenalites />} />
-            <Route path="finance/relances" element={<Relances />} />
-            <Route path="finance/rapports" element={<RapportsFinanciers />} />
-            <Route path="finance/caisse" element={<GestionCaisse />} />
-            <Route path="evaluations" element={<Evaluations />} />
-            <Route path="carnets" element={<CarnetNotes />} />
-            <Route path="rapports" element={<Rapports />} />
-            <Route path="circulaires" element={<Circulaires />} />
-            <Route path="configuration" element={<Configuration />} />
-            <Route path="tracabilite" element={<Tracabilite />} />
-            <Route path="statistique" element={<Statistiques />} />
-            <Route path="*" element={<Dashboard />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/forbidden" element={<Forbidden />} />
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <SchoolProvider>
+                    <MessagesProvider>
+                      <TeachersProvider>
+                        <RoomsProvider>
+                          <DashboardLayout />
+                        </RoomsProvider>
+                      </TeachersProvider>
+                    </MessagesProvider>
+                  </SchoolProvider>
+                </PrivateRoute>
+              }
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="eleves" element={<Students />} />
+              <Route path="eleves/ajouter" element={<AddStudent />} />
+              <Route path="eleves/modifier/:id" element={<EditStudent />} />
+              <Route path="eleves/:id" element={<StudentProfile />} />
+              <Route path="eleves/:id/messages" element={<StudentMessages />} />
+              <Route path="enseignants" element={<Teachers />} />
+              <Route path="enseignants/ajouter" element={<AddTeacher />} />
+              <Route path="enseignants/modifier/:id" element={<EditTeacher />} />
+              <Route path="emploi-salles" element={<EmploiSalles />} />
+              <Route path="emploi-salles/ajouter" element={<AddRoom />} />
+              <Route path="emploi-salles/modifier/:id" element={<EditRoom />} />
+              <Route path="config/niveaux" element={<Niveaux />} />
+              <Route path="ecole" element={<SchoolInfo />} />
+              <Route path="finance" element={<FinancePaiement />} />
+              <Route path="finance/paiement" element={<FinancePaiement />} />
+              <Route path="finance/depenses" element={<Depenses />} />
+              <Route path="finance/tresorerie" element={<Tresorerie />} />
+              <Route path="finance/remises-penalites" element={<RemisesPenalites />} />
+              <Route path="finance/relances" element={<Relances />} />
+              <Route path="finance/rapports" element={<RapportsFinanciers />} />
+              <Route path="finance/caisse" element={<GestionCaisse />} />
+              <Route path="evaluations" element={<Evaluations />} />
+              <Route path="carnets" element={<CarnetNotes />} />
+              <Route path="rapports" element={<Rapports />} />
+              <Route path="circulaires" element={<Circulaires />} />
+              <Route path="configuration" element={<Configuration />} />
+              <Route path="tracabilite" element={<Tracabilite />} />
+              <Route path="statistique" element={<Statistiques />} />
+              <Route path="*" element={<Dashboard />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
