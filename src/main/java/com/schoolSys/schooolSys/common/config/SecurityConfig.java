@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.common.config;
 
+import com.schoolSys.schooolSys.auth.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,39 +11,23 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-/**
- * Spring Security configuration.
- * <p>
- * Configures:
- * <ul>
- *     <li>CORS — allowed origins come from {@code app.cors.allowed-origins}</li>
- *     <li>CSRF — disabled (stateless REST API)</li>
- *     <li>Session — stateless (no HTTP session)</li>
- *     <li>Authorization — all endpoints are permitted for now;
- *         tighten with {@code .authenticated()} once JWT/OAuth is added</li>
- *     <li>Password encoder — BCrypt, ready for user authentication</li>
- * </ul>
- * </p>
- */
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Value("${app.cors.allowed-origins:*}")
     private String allowedOrigins;
 
-    /**
-     * Defines the HTTP security filter chain.
-     *
-     * @param http the HttpSecurity builder
-     * @return the configured filter chain
-     */
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -51,26 +37,19 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/tenants/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
-                        // TODO: change to .authenticated() when JWT/OAuth is implemented
-                        .anyRequest().permitAll()
-                );
+                        // All other endpoints require authentication
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    /**
-     * CORS configuration source.
-     * <p>
-     * In dev, {@code app.cors.allowed-origins} is set to {@code *}.
-     * In prod, restrict to your actual frontend domain.
-     * </p>
-     *
-     * @return the CORS configuration source
-     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -86,11 +65,6 @@ public class SecurityConfig {
         return source;
     }
 
-    /**
-     * BCrypt password encoder, ready for user authentication.
-     *
-     * @return the password encoder
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
