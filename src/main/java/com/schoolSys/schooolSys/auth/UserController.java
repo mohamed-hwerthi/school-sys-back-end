@@ -1,0 +1,50 @@
+package com.schoolSys.schooolSys.auth;
+
+import com.schoolSys.schooolSys.auth.dto.*;
+import com.schoolSys.schooolSys.common.dto.ApiResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/users")
+@RequiredArgsConstructor
+public class UserController {
+    private final UserService userService;
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<Page<UserResponseDTO>>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(ApiResponse.ok(userService.getAllUsers(pageable)));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok(userService.getUserById(id)));
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<UserResponseDTO>> create(@Valid @RequestBody CreateUserRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(userService.createUser(request)));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> update(@PathVariable Long id, @Valid @RequestBody CreateUserRequestDTO request) {
+        return ResponseEntity.ok(ApiResponse.ok(userService.updateUser(id, request)));
+    }
+
+    @PatchMapping("/{id}/toggle-active")
+    public ResponseEntity<ApiResponse<Void>> toggleActive(@PathVariable Long id) {
+        userService.toggleActive(id);
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+}

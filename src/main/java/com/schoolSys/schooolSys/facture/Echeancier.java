@@ -1,0 +1,60 @@
+package com.schoolSys.schooolSys.facture;
+
+import com.schoolSys.schooolSys.student.Student;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "echeanciers")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Echeancier {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", nullable = false)
+    private Student student;
+
+    @Column(name = "annee_scolaire", nullable = false, length = 9)
+    private String anneeScolaire;
+
+    @Column(name = "montant_total", nullable = false, precision = 10, scale = 2)
+    private BigDecimal montantTotal;
+
+    @Column(name = "nombre_echeances", nullable = false)
+    private Integer nombreEcheances;
+
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private String statut = "ACTIF";
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
+    @OneToMany(mappedBy = "echeancier", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Echeance> echeances = new ArrayList<>();
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at", nullable = false)
+    @Builder.Default
+    private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+}

@@ -1,0 +1,135 @@
+package com.schoolSys.schooolSys.emploidutemps;
+
+import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.emploidutemps.dto.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class EmploiDuTempsService {
+
+    private final EmploiDuTempsRepository emploiDuTempsRepository;
+    private final CreneauRepository creneauRepository;
+
+    public List<EmploiDuTempsResponseDTO> getByClasse(Long classeId) {
+        return emploiDuTempsRepository.findByClasseId(classeId).stream()
+            .map(this::toDto)
+            .collect(Collectors.toList());
+    }
+
+    public List<EmploiDuTempsResponseDTO> getByEnseignant(Long enseignantId) {
+        return emploiDuTempsRepository.findByEnseignantId(enseignantId).stream()
+            .map(this::toDto)
+            .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<EmploiDuTempsResponseDTO> saveAll(Long classeId, List<EmploiDuTempsRequestDTO> requests) {
+        emploiDuTempsRepository.deleteByClasseId(classeId);
+        List<EmploiDuTemps> entries = requests.stream()
+            .map(req -> EmploiDuTemps.builder()
+                .classeId(classeId)
+                .creneauId(req.getCreneauId())
+                .jourSemaine(req.getJourSemaine())
+                .moduleId(req.getModuleId())
+                .enseignantId(req.getEnseignantId())
+                .salle(req.getSalle())
+                .build())
+            .collect(Collectors.toList());
+        return emploiDuTempsRepository.saveAll(entries).stream()
+            .map(this::toDto)
+            .collect(Collectors.toList());
+    }
+
+    public List<ConflitDTO> detectConflits(List<EmploiDuTempsRequestDTO> requests) {
+        List<ConflitDTO> conflits = new ArrayList<>();
+        for (EmploiDuTempsRequestDTO req : requests) {
+            // Check teacher conflicts
+            if (req.getEnseignantId() != null) {
+                List<EmploiDuTemps> teacherConflicts = emploiDuTempsRepository
+                    .findByEnseignantIdAndJourSemaineAndCreneauId(
+                        req.getEnseignantId(), req.getJourSemaine(), req.getCreneauId());
+                if (!teacherConflicts.isEmpty()) {
+                    conflits.add(ConflitDTO.builder()
+                        .typeConflit("ENSEIGNANT")
+                        .jourSemaine(req.getJourSemaine())
+                        .creneauId(req.getCreneauId())
+                        .enseignantId(req.getEnseignantId())
+                        .message("Enseignant déjà affecté sur ce créneau")
+                        .build());
+                }
+            }
+            // Check room conflicts
+            if (req.getSalle() != null && !req.getSalle().isBlank()) {
+                List<EmploiDuTemps> roomConflicts = emploiDuTempsRepository
+                    .findBySalleAndJourSemaineAndCreneauId(
+                        req.getSalle(), req.getJourSemaine(), req.getCreneauId());
+                if (!roomConflicts.isEmpty()) {
+                    conflits.add(ConflitDTO.builder()
+                        .typeConflit("SALLE")
+                        .jourSemaine(req.getJourSemaine())
+                        .creneauId(req.getCreneauId())
+                        .salle(req.getSalle())
+                        .message("Salle déjà occupée sur ce créneau")
+                        .build());
+                }
+            }
+        }
+        return conflits;
+    }
+
+    // --- Creneau CRUD ---
+
+    public List<CreneauDTO> getAllCreneaux() {
+        return creneauRepository.findAll().stream()
+            .map(this::toCreneauDto)
+            .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public CreneauDTO createCreneau(CreneauDTO dto) {
+        Creneau creneau = Creneau.builder()
+            .label(dto.getLabel())
+            .heureDebut(dto.getHeureDebut())
+            .heureFin(dto.getHeureFin())
+            .type(dto.getType())
+            .build();
+        return toCreneauDto(creneauRepository.save(creneau));
+    }
+
+    @Transactional
+    public void deleteCreneau(Long id) {
+        if (!creneauRepository.existsById(id)) throw new ResourceNotFoundException("Creneau", id);
+        creneauRepository.deleteById(id);
+    }
+
+    private EmploiDuTempsResponseDTO toDto(EmploiDuTemps e) {
+        return EmploiDuTempsResponseDTO.builder()
+            .id(e.getId())
+            .classeId(e.getClasseId())
+            .creneauId(e.getCreneauId())
+            .jourSemaine(e.getJourSemaine())
+            .moduleId(e.getModuleId())
+            .enseignantId(e.getEnseignantId())
+            .salle(e.getSalle())
+            .createdAt(e.getCreatedAt())
+            .updatedAt(e.getUpdatedAt())
+            .build();
+    }
+
+    private CreneauDTO toCreneauDto(Creneau c) {
+        return CreneauDTO.builder()
+            .id(c.getId())
+            .label(c.getLabel())
+            .heureDebut(c.getHeureDebut())
+            .heureFin(c.getHeureFin())
+            .type(c.getType())
+            .build();
+    }
+}
