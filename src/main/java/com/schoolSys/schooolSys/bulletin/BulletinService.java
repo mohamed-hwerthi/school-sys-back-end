@@ -12,13 +12,18 @@ import com.schoolSys.schooolSys.examen.Examen;
 import com.schoolSys.schooolSys.module.Module;
 import com.schoolSys.schooolSys.niveau.Classe;
 import com.schoolSys.schooolSys.niveau.ClasseRepository;
+import com.schoolSys.schooolSys.niveau.NiveauRepository;
 import com.schoolSys.schooolSys.note.Note;
 import com.schoolSys.schooolSys.note.NoteRepository;
+import com.schoolSys.schooolSys.settings.SchoolSettings;
+import com.schoolSys.schooolSys.settings.SchoolSettingsRepository;
 import com.schoolSys.schooolSys.student.Student;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,6 +37,9 @@ public class BulletinService {
     private final DomaineRepository domaineRepository;
     private final RecommandationRepository recommandationRepository;
     private final ObservationRepository observationRepository;
+    private final BulletinTemplateRepository bulletinTemplateRepository;
+    private final SchoolSettingsRepository schoolSettingsRepository;
+    private final NiveauRepository niveauRepository;
 
     private static final String VERSION_PRIVE = "prive";
 
@@ -313,6 +321,343 @@ public class BulletinService {
                 .filter(b -> b.getStudentId().equals(studentId))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Bulletin for student", studentId));
+    }
+
+    // ── BUL-003: Template CRUD ─────────────────────────────
+
+    public List<BulletinTemplateDTO> getAllTemplates() {
+        return bulletinTemplateRepository.findAll().stream()
+                .map(this::toTemplateDTO)
+                .toList();
+    }
+
+    public BulletinTemplateDTO getTemplate(Long id) {
+        BulletinTemplate template = bulletinTemplateRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("BulletinTemplate", id));
+        return toTemplateDTO(template);
+    }
+
+    public BulletinTemplateDTO getActiveTemplate() {
+        return bulletinTemplateRepository.findByActifTrue()
+                .map(this::toTemplateDTO)
+                .orElse(null);
+    }
+
+    @Transactional
+    public BulletinTemplateDTO createTemplate(BulletinTemplateDTO dto) {
+        BulletinTemplate template = BulletinTemplate.builder()
+                .nom(dto.getNom())
+                .logoUrl(dto.getLogoUrl())
+                .nomEcoleFr(dto.getNomEcoleFr())
+                .nomEcoleAr(dto.getNomEcoleAr())
+                .adresse(dto.getAdresse())
+                .telephone(dto.getTelephone())
+                .email(dto.getEmail())
+                .headerColor(dto.getHeaderColor() != null ? dto.getHeaderColor() : "#1e3a5f")
+                .showLogo(dto.getShowLogo() != null ? dto.getShowLogo() : true)
+                .showPhotoEleve(dto.getShowPhotoEleve() != null ? dto.getShowPhotoEleve() : false)
+                .showAppreciation(dto.getShowAppreciation() != null ? dto.getShowAppreciation() : true)
+                .showRang(dto.getShowRang() != null ? dto.getShowRang() : true)
+                .footerText(dto.getFooterText())
+                .actif(false)
+                .build();
+        return toTemplateDTO(bulletinTemplateRepository.save(template));
+    }
+
+    @Transactional
+    public BulletinTemplateDTO updateTemplate(Long id, BulletinTemplateDTO dto) {
+        BulletinTemplate template = bulletinTemplateRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("BulletinTemplate", id));
+        template.setNom(dto.getNom());
+        template.setLogoUrl(dto.getLogoUrl());
+        template.setNomEcoleFr(dto.getNomEcoleFr());
+        template.setNomEcoleAr(dto.getNomEcoleAr());
+        template.setAdresse(dto.getAdresse());
+        template.setTelephone(dto.getTelephone());
+        template.setEmail(dto.getEmail());
+        if (dto.getHeaderColor() != null) template.setHeaderColor(dto.getHeaderColor());
+        if (dto.getShowLogo() != null) template.setShowLogo(dto.getShowLogo());
+        if (dto.getShowPhotoEleve() != null) template.setShowPhotoEleve(dto.getShowPhotoEleve());
+        if (dto.getShowAppreciation() != null) template.setShowAppreciation(dto.getShowAppreciation());
+        if (dto.getShowRang() != null) template.setShowRang(dto.getShowRang());
+        template.setFooterText(dto.getFooterText());
+        template.setUpdatedAt(java.time.LocalDateTime.now());
+        return toTemplateDTO(bulletinTemplateRepository.save(template));
+    }
+
+    @Transactional
+    public BulletinTemplateDTO activateTemplate(Long id) {
+        bulletinTemplateRepository.deactivateAll();
+        BulletinTemplate template = bulletinTemplateRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("BulletinTemplate", id));
+        template.setActif(true);
+        template.setUpdatedAt(java.time.LocalDateTime.now());
+        return toTemplateDTO(bulletinTemplateRepository.save(template));
+    }
+
+    @Transactional
+    public void deleteTemplate(Long id) {
+        BulletinTemplate template = bulletinTemplateRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("BulletinTemplate", id));
+        if (Boolean.TRUE.equals(template.getActif())) {
+            throw new IllegalStateException("Cannot delete the active template");
+        }
+        bulletinTemplateRepository.delete(template);
+    }
+
+    private BulletinTemplateDTO toTemplateDTO(BulletinTemplate t) {
+        return BulletinTemplateDTO.builder()
+                .id(t.getId())
+                .nom(t.getNom())
+                .logoUrl(t.getLogoUrl())
+                .nomEcoleFr(t.getNomEcoleFr())
+                .nomEcoleAr(t.getNomEcoleAr())
+                .adresse(t.getAdresse())
+                .telephone(t.getTelephone())
+                .email(t.getEmail())
+                .headerColor(t.getHeaderColor())
+                .showLogo(t.getShowLogo())
+                .showPhotoEleve(t.getShowPhotoEleve())
+                .showAppreciation(t.getShowAppreciation())
+                .showRang(t.getShowRang())
+                .footerText(t.getFooterText())
+                .actif(t.getActif())
+                .build();
+    }
+
+    // ── BUL-004: Mass generate bulletins ─────────────────
+
+    public List<BulletinDTO> generateBulletinsForClasse(Long classeId, Integer trimestre) {
+        return getBulletins(classeId, trimestre, "etatique");
+    }
+
+    // ── BUL-005: Stats reussite ──────────────────────────
+
+    public StatsReussiteDTO getStatsReussite(Long classeId, Integer trimestre) {
+        List<BulletinDTO> bulletins = getBulletins(classeId, trimestre, "etatique");
+        if (bulletins.isEmpty()) {
+            Classe classe = classeRepository.findById(classeId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Classe", classeId));
+            return StatsReussiteDTO.builder()
+                    .classe(buildFullName(classe))
+                    .trimestre(trimestre)
+                    .totalEleves(0)
+                    .reussis(0)
+                    .echoues(0)
+                    .tauxReussite(0.0)
+                    .moyenneClasse(0.0)
+                    .moyenneMin(0.0)
+                    .moyenneMax(0.0)
+                    .modulesStats(Collections.emptyList())
+                    .distribution(Collections.emptyList())
+                    .build();
+        }
+
+        int total = bulletins.size();
+        int reussis = (int) bulletins.stream().filter(b -> b.getMoyenneGenerale() >= 10).count();
+
+        // Module stats
+        Map<Long, List<Double>> moduleAvgs = new LinkedHashMap<>();
+        Map<Long, String> moduleNames = new LinkedHashMap<>();
+        for (BulletinDTO b : bulletins) {
+            List<BulletinModuleDTO> allModules = new ArrayList<>();
+            if (b.getDomaines() != null) {
+                for (BulletinDomaineDTO d : b.getDomaines()) {
+                    allModules.addAll(d.getModules());
+                }
+            }
+            if (b.getModulesHorsDomaine() != null) {
+                allModules.addAll(b.getModulesHorsDomaine());
+            }
+            for (BulletinModuleDTO m : allModules) {
+                moduleAvgs.computeIfAbsent(m.getModuleId(), k -> new ArrayList<>()).add(m.getMoyenneModule());
+                moduleNames.putIfAbsent(m.getModuleId(), m.getModuleName());
+            }
+        }
+
+        List<StatsReussiteDTO.ModuleStatsDTO> modulesStats = new ArrayList<>();
+        for (Map.Entry<Long, List<Double>> entry : moduleAvgs.entrySet()) {
+            List<Double> avgs = entry.getValue();
+            double avg = round2(avgs.stream().mapToDouble(Double::doubleValue).average().orElse(0));
+            double min = avgs.stream().mapToDouble(Double::doubleValue).min().orElse(0);
+            double max = avgs.stream().mapToDouble(Double::doubleValue).max().orElse(0);
+            int modReussis = (int) avgs.stream().filter(v -> v >= 10).count();
+            modulesStats.add(StatsReussiteDTO.ModuleStatsDTO.builder()
+                    .moduleId(entry.getKey())
+                    .moduleName(moduleNames.get(entry.getKey()))
+                    .moyenne(avg)
+                    .min(round2(min))
+                    .max(round2(max))
+                    .reussis(modReussis)
+                    .echoues(avgs.size() - modReussis)
+                    .build());
+        }
+
+        // Distribution
+        int[] buckets = new int[4]; // 0-5, 5-10, 10-15, 15-20
+        for (BulletinDTO b : bulletins) {
+            double m = b.getMoyenneGenerale();
+            if (m < 5) buckets[0]++;
+            else if (m < 10) buckets[1]++;
+            else if (m < 15) buckets[2]++;
+            else buckets[3]++;
+        }
+        List<StatsReussiteDTO.DistributionDTO> distribution = List.of(
+                StatsReussiteDTO.DistributionDTO.builder().range("0-5").count(buckets[0]).build(),
+                StatsReussiteDTO.DistributionDTO.builder().range("5-10").count(buckets[1]).build(),
+                StatsReussiteDTO.DistributionDTO.builder().range("10-15").count(buckets[2]).build(),
+                StatsReussiteDTO.DistributionDTO.builder().range("15-20").count(buckets[3]).build()
+        );
+
+        return StatsReussiteDTO.builder()
+                .classe(bulletins.get(0).getClasse())
+                .trimestre(trimestre)
+                .totalEleves(total)
+                .reussis(reussis)
+                .echoues(total - reussis)
+                .tauxReussite(round2((double) reussis / total * 100))
+                .moyenneClasse(bulletins.get(0).getMoyenneClasse())
+                .moyenneMin(bulletins.get(0).getMoyenneMin())
+                .moyenneMax(bulletins.get(0).getMoyenneMax())
+                .modulesStats(modulesStats)
+                .distribution(distribution)
+                .build();
+    }
+
+    // ── BUL-006: Attestation de scolarite ────────────────
+
+    public AttestationDTO getAttestation(Long eleveId) {
+        List<Note> notes = noteRepository.findByStudentIdAndTrimestre(eleveId, 1);
+        if (notes.isEmpty()) {
+            notes = noteRepository.findByStudentIdAndTrimestre(eleveId, 2);
+        }
+        if (notes.isEmpty()) {
+            notes = noteRepository.findByStudentIdAndTrimestre(eleveId, 3);
+        }
+
+        Student student;
+        String classeName = "";
+        String niveauName = "";
+
+        if (!notes.isEmpty()) {
+            student = notes.get(0).getStudent();
+            Examen examen = notes.get(0).getExamen();
+            Classe classe = examen.getClasse();
+            classeName = buildFullName(classe);
+            niveauName = classe.getNiveau().getName();
+        } else {
+            throw new ResourceNotFoundException("Student notes not found for attestation", eleveId);
+        }
+
+        SchoolSettings settings = schoolSettingsRepository.findAll().stream()
+                .findFirst().orElse(SchoolSettings.builder().build());
+
+        String nameAr = null;
+        if (student.getFirstNameAr() != null && student.getLastNameAr() != null) {
+            nameAr = student.getFirstNameAr() + " " + student.getLastNameAr();
+        }
+
+        return AttestationDTO.builder()
+                .studentId(student.getId())
+                .studentName(student.getFirstName() + " " + student.getLastName())
+                .studentNameAr(nameAr)
+                .dateOfBirth(student.getDateOfBirth() != null
+                        ? student.getDateOfBirth().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : null)
+                .birthPlace(student.getBirthPlace())
+                .registrationNumber(student.getRegistrationNumber())
+                .classe(classeName)
+                .niveau(niveauName)
+                .anneeScolaire(settings.getAnneeScolaire())
+                .schoolName(settings.getSchoolName())
+                .schoolNameAr(settings.getSchoolNameAr())
+                .adresse(settings.getAdresse())
+                .telephone(settings.getTelephone())
+                .directeurName(settings.getDirecteurName())
+                .directeurNameAr(settings.getDirecteurNameAr())
+                .dateGeneration(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .build();
+    }
+
+    // ── BUL-007: Comparatif performances ─────────────────
+
+    public ComparatifDTO getComparatifByNiveau(Long niveauId) {
+        niveauRepository.findById(niveauId)
+                .orElseThrow(() -> new ResourceNotFoundException("Niveau", niveauId));
+
+        List<Classe> classes = classeRepository.findByNiveauId(niveauId);
+        List<ComparatifDTO.ClassePerformanceDTO> classesPerf = new ArrayList<>();
+
+        for (Classe classe : classes) {
+            List<BulletinDTO> bulletins = getBulletins(classe.getId(), 1, "etatique");
+            if (bulletins.isEmpty()) continue;
+
+            int total = bulletins.size();
+            int classReussis = (int) bulletins.stream().filter(b -> b.getMoyenneGenerale() >= 10).count();
+
+            Map<Long, List<Double>> modAvgsMap = new LinkedHashMap<>();
+            Map<Long, String> modNamesMap = new LinkedHashMap<>();
+            for (BulletinDTO b : bulletins) {
+                List<BulletinModuleDTO> allModules = new ArrayList<>();
+                if (b.getDomaines() != null) {
+                    for (BulletinDomaineDTO d : b.getDomaines()) {
+                        allModules.addAll(d.getModules());
+                    }
+                }
+                if (b.getModulesHorsDomaine() != null) {
+                    allModules.addAll(b.getModulesHorsDomaine());
+                }
+                for (BulletinModuleDTO m : allModules) {
+                    modAvgsMap.computeIfAbsent(m.getModuleId(), k -> new ArrayList<>()).add(m.getMoyenneModule());
+                    modNamesMap.putIfAbsent(m.getModuleId(), m.getModuleName());
+                }
+            }
+
+            List<ComparatifDTO.ModuleAvgDTO> modAvgs = modAvgsMap.entrySet().stream()
+                    .map(e -> ComparatifDTO.ModuleAvgDTO.builder()
+                            .moduleId(e.getKey())
+                            .moduleName(modNamesMap.get(e.getKey()))
+                            .moyenne(round2(e.getValue().stream().mapToDouble(Double::doubleValue).average().orElse(0)))
+                            .build())
+                    .toList();
+
+            classesPerf.add(ComparatifDTO.ClassePerformanceDTO.builder()
+                    .classeId(classe.getId())
+                    .classeName(buildFullName(classe))
+                    .moyenneGenerale(bulletins.get(0).getMoyenneClasse())
+                    .tauxReussite(round2((double) classReussis / total * 100))
+                    .totalEleves(total)
+                    .reussis(classReussis)
+                    .modulesAvg(modAvgs)
+                    .build());
+        }
+
+        return ComparatifDTO.builder()
+                .classesPerformance(classesPerf)
+                .build();
+    }
+
+    public ComparatifDTO getComparatifEvolution(Long classeId) {
+        List<ComparatifDTO.EvolutionTrimestreDTO> evolution = new ArrayList<>();
+
+        for (int trimestre = 1; trimestre <= 3; trimestre++) {
+            List<BulletinDTO> bulletins = getBulletins(classeId, trimestre, "etatique");
+            if (bulletins.isEmpty()) continue;
+
+            int total = bulletins.size();
+            int evoReussis = (int) bulletins.stream().filter(b -> b.getMoyenneGenerale() >= 10).count();
+
+            evolution.add(ComparatifDTO.EvolutionTrimestreDTO.builder()
+                    .trimestre(trimestre)
+                    .moyenneGenerale(bulletins.get(0).getMoyenneClasse())
+                    .tauxReussite(round2((double) evoReussis / total * 100))
+                    .totalEleves(total)
+                    .reussis(evoReussis)
+                    .build());
+        }
+
+        return ComparatifDTO.builder()
+                .evolution(evolution)
+                .build();
     }
 
     // ── Helpers ────────────────────────────────────────────

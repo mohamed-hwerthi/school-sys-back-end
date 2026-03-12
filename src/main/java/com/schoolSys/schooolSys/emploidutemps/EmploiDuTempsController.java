@@ -67,4 +67,27 @@ public class EmploiDuTempsController {
         emploiDuTempsService.deleteCreneau(id);
         return ResponseEntity.noContent().build();
     }
+
+    // --- Remplacements ---
+
+    @PostMapping("/api/emploi-du-temps/remplacements")
+    @PreAuthorize("hasAuthority('WRITE_EMPLOI_DU_TEMPS')")
+    public ResponseEntity<ApiResponse<RemplacementResponseDTO>> createRemplacement(
+            @Valid @RequestBody RemplacementRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.ok(emploiDuTempsService.createRemplacement(dto)));
+    }
+
+    @GetMapping("/api/emploi-du-temps/remplacements")
+    @PreAuthorize("hasAuthority('READ_EMPLOI_DU_TEMPS')")
+    public ResponseEntity<ApiResponse<List<RemplacementResponseDTO>>> getRemplacements() {
+        return ResponseEntity.ok(ApiResponse.ok(emploiDuTempsService.getAllRemplacements()));
+    }
+
+    @DeleteMapping("/api/emploi-du-temps/remplacements/{id}")
+    @PreAuthorize("hasAuthority('WRITE_EMPLOI_DU_TEMPS')")
+    public ResponseEntity<Void> deleteRemplacement(@PathVariable Long id) {
+        emploiDuTempsService.deleteRemplacement(id);
+        return ResponseEntity.noContent().build();
+    }
 }

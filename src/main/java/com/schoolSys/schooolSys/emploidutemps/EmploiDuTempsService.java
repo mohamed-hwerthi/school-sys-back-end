@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ public class EmploiDuTempsService {
 
     private final EmploiDuTempsRepository emploiDuTempsRepository;
     private final CreneauRepository creneauRepository;
+    private final RemplacementRepository remplacementRepository;
 
     public List<EmploiDuTempsResponseDTO> getByClasse(Long classeId) {
         return emploiDuTempsRepository.findByClasseId(classeId).stream()
@@ -50,7 +52,6 @@ public class EmploiDuTempsService {
     public List<ConflitDTO> detectConflits(List<EmploiDuTempsRequestDTO> requests) {
         List<ConflitDTO> conflits = new ArrayList<>();
         for (EmploiDuTempsRequestDTO req : requests) {
-            // Check teacher conflicts
             if (req.getEnseignantId() != null) {
                 List<EmploiDuTemps> teacherConflicts = emploiDuTempsRepository
                     .findByEnseignantIdAndJourSemaineAndCreneauId(
@@ -65,7 +66,6 @@ public class EmploiDuTempsService {
                         .build());
                 }
             }
-            // Check room conflicts
             if (req.getSalle() != null && !req.getSalle().isBlank()) {
                 List<EmploiDuTemps> roomConflicts = emploiDuTempsRepository
                     .findBySalleAndJourSemaineAndCreneauId(
@@ -109,6 +109,39 @@ public class EmploiDuTempsService {
         creneauRepository.deleteById(id);
     }
 
+    // --- Remplacements ---
+
+    @Transactional
+    public RemplacementResponseDTO createRemplacement(RemplacementRequestDTO dto) {
+        Remplacement r = Remplacement.builder()
+            .emploiDuTempsId(dto.getEmploiDuTempsId())
+            .enseignantRemplacantId(dto.getEnseignantRemplacantId())
+            .dateDebut(dto.getDateDebut())
+            .dateFin(dto.getDateFin())
+            .motif(dto.getMotif())
+            .build();
+        return toRemplacementDto(remplacementRepository.save(r));
+    }
+
+    public List<RemplacementResponseDTO> getRemplacements(Long enseignantId, LocalDate from, LocalDate to) {
+        return remplacementRepository
+            .findByEnseignantRemplacantIdAndDateDebutLessThanEqualAndDateFinGreaterThanEqual(enseignantId, to, from)
+            .stream().map(this::toRemplacementDto).collect(Collectors.toList());
+    }
+
+    public List<RemplacementResponseDTO> getAllRemplacements() {
+        return remplacementRepository.findAll().stream()
+            .map(this::toRemplacementDto).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteRemplacement(Long id) {
+        if (!remplacementRepository.existsById(id)) throw new ResourceNotFoundException("Remplacement", id);
+        remplacementRepository.deleteById(id);
+    }
+
+    // --- Mappers ---
+
     private EmploiDuTempsResponseDTO toDto(EmploiDuTemps e) {
         return EmploiDuTempsResponseDTO.builder()
             .id(e.getId())
@@ -130,6 +163,18 @@ public class EmploiDuTempsService {
             .heureDebut(c.getHeureDebut())
             .heureFin(c.getHeureFin())
             .type(c.getType())
+            .build();
+    }
+
+    private RemplacementResponseDTO toRemplacementDto(Remplacement r) {
+        return RemplacementResponseDTO.builder()
+            .id(r.getId())
+            .emploiDuTempsId(r.getEmploiDuTempsId())
+            .enseignantRemplacantId(r.getEnseignantRemplacantId())
+            .dateDebut(r.getDateDebut())
+            .dateFin(r.getDateFin())
+            .motif(r.getMotif())
+            .createdAt(r.getCreatedAt())
             .build();
     }
 }

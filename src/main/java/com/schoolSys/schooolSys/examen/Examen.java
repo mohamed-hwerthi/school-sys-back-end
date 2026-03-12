@@ -6,6 +6,7 @@ import com.schoolSys.schooolSys.teacher.Teacher;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -59,6 +60,9 @@ public class Examen {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Module module;
+
+    @Column(name = "date_limite_saisie")
+    private LocalDate dateLimiteSaisie;
 
     @Column(name = "version_etatique", nullable = false)
     @Builder.Default
