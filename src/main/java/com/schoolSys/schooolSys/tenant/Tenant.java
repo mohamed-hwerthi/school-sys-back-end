@@ -3,6 +3,8 @@ package com.schoolSys.schooolSys.tenant;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -52,4 +54,43 @@ public class Tenant {
     @Builder.Default
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    // ── SaaS / Billing fields ──
+
+    @Builder.Default
+    @Column(length = 20)
+    private String plan = "FREE";
+
+    @Builder.Default
+    @Column(name = "max_students")
+    private Integer maxStudents = 50;
+
+    @Builder.Default
+    @Column(name = "max_teachers")
+    private Integer maxTeachers = 10;
+
+    @Builder.Default
+    @Column(name = "max_storage_mb")
+    private Integer maxStorageMb = 500;
+
+    @Column(name = "billing_email", length = 200)
+    private String billingEmail;
+
+    @Builder.Default
+    @Column(name = "billing_cycle", length = 20)
+    private String billingCycle = "MONTHLY";
+
+    @Column(name = "next_billing_date")
+    private LocalDate nextBillingDate;
+
+    @Builder.Default
+    @Column(name = "monthly_rate", precision = 10, scale = 2)
+    private BigDecimal monthlyRate = BigDecimal.ZERO;
+
+    @Column(name = "trial_ends_at")
+    private LocalDate trialEndsAt;
+
+    @Builder.Default
+    @Column(name = "onboarding_completed")
+    private Boolean onboardingCompleted = false;
 }

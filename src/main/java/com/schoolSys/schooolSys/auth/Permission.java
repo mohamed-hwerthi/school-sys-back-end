@@ -83,5 +83,23 @@ public enum Permission {
     MANAGE_COMMUNICATION,
 
     // ── Parent portal ───────────────────────────────────────
-    PARENT_ACCESS
+    PARENT_ACCESS,
+
+    // ── Inscriptions ──────────────────────────────────────
+    MANAGE_INSCRIPTIONS,
+
+    // ── Bibliothèque ──────────────────────────────────────
+    MANAGE_BIBLIOTHEQUE,
+
+    // ── Transport scolaire ────────────────────────────────
+    MANAGE_TRANSPORT,
+
+    // ── Cantine scolaire ──────────────────────────────────
+    MANAGE_CANTINE,
+
+    // ── Devoirs & Ressources ──────────────────────────────
+    MANAGE_DEVOIRS,
+
+    // ── Examens en ligne ──────────────────────────────────
+    MANAGE_QUIZ
 }

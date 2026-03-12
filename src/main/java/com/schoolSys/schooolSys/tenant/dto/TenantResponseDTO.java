@@ -3,6 +3,8 @@ package com.schoolSys.schooolSys.tenant.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -19,4 +21,16 @@ public class TenantResponseDTO {
     private String contactEmail;
     private boolean active;
     private LocalDateTime createdAt;
+
+    // SaaS fields
+    private String plan;
+    private Integer maxStudents;
+    private Integer maxTeachers;
+    private Integer maxStorageMb;
+    private String billingEmail;
+    private String billingCycle;
+    private LocalDate nextBillingDate;
+    private BigDecimal monthlyRate;
+    private LocalDate trialEndsAt;
+    private Boolean onboardingCompleted;
 }

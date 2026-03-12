@@ -1,0 +1,52 @@
+package com.schoolSys.schooolSys.rh;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
+@Entity
+@Table(name = "pointage_personnel")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class PointagePersonnel {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "employe_id", nullable = false)
+    private Long employeId;
+
+    @Column(name = "employe_type", nullable = false, length = 20)
+    private String employeType;
+
+    @Column(name = "date_pointage", nullable = false)
+    @Builder.Default
+    private LocalDate datePointage = LocalDate.now();
+
+    @Column(name = "heure_arrivee")
+    private LocalTime heureArrivee;
+
+    @Column(name = "heure_depart")
+    private LocalTime heureDepart;
+
+    @Column(name = "heures_travaillees", precision = 4, scale = 2)
+    private BigDecimal heuresTravaillees;
+
+    @Column(length = 20)
+    @Builder.Default
+    private String statut = "PRESENT";
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+}

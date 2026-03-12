@@ -42,7 +42,14 @@ public final class RolePermissions {
                 READ_RAPPORTS,
                 VIEW_REPORTS,
                 MANAGE_SETTINGS,
-                MANAGE_COMMUNICATION
+                MANAGE_COMMUNICATION,
+                MANAGE_INSCRIPTIONS,
+                MANAGE_BIBLIOTHEQUE,
+                MANAGE_TRANSPORT,
+                MANAGE_CANTINE,
+                MANAGE_DEVOIRS,
+                MANAGE_QUIZ,
+                MANAGE_RH
         ));
 
         // ── ENSEIGNANT ─────────────────────────────────────────
@@ -52,7 +59,9 @@ public final class RolePermissions {
                 READ_ABSENCES, WRITE_ABSENCES,
                 READ_EMPLOI_DU_TEMPS,
                 READ_MESSAGES, WRITE_MESSAGES,
-                READ_BULLETINS
+                READ_BULLETINS,
+                MANAGE_DEVOIRS,
+                MANAGE_QUIZ
         ));
 
         // ── COMPTABLE ──────────────────────────────────────────
