@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Normalizer;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -89,7 +90,41 @@ public class TenantService {
 
         Tenant tenant = tenantMapper.toEntity(dto);
         tenant.setSchemaName(schemaName);
+
+        // Generate slug from name if not provided
+        String slug = (dto.getSlug() != null && !dto.getSlug().isBlank())
+                ? slugify(dto.getSlug())
+                : slugify(dto.getName());
+        tenant.setSlug(slug);
+
         return tenantMapper.toResponseDTO(tenantRepository.save(tenant));
+    }
+
+    /**
+     * Finds an active tenant by its public slug.
+     *
+     * @param slug the URL-friendly slug
+     * @return the tenant
+     * @throws ResourceNotFoundException if no active tenant matches
+     */
+    public Tenant findBySlug(String slug) {
+        return tenantRepository.findBySlugAndActiveTrue(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Tenant with slug: " + slug));
+    }
+
+    /**
+     * Converts a string into a URL-friendly slug.
+     */
+    private String slugify(String input) {
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        String slug = normalized
+                .replaceAll("[\\p{InCombiningDiacriticalMarks}]", "")
+                .toLowerCase()
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .replaceAll("[\\s]+", "-")
+                .replaceAll("-+", "-")
+                .replaceAll("^-|-$", "");
+        return slug;
     }
 
     /**

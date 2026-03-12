@@ -40,6 +40,10 @@ public class Tenant {
     @Column(unique = true, nullable = false)
     private String contactEmail;
 
+    /** URL-friendly slug for the public vitrine (e.g. "ecole-einstein"). */
+    @Column(unique = true, nullable = false)
+    private String slug;
+
     /** Whether the tenant is currently active. */
     @Builder.Default
     @Column(nullable = false)

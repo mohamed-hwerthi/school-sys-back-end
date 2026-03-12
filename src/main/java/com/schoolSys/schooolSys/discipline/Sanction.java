@@ -46,6 +46,20 @@ public class Sanction {
     @Builder.Default
     private Boolean notifieParents = false;
 
+    @Column(name = "niveau")
+    @Builder.Default
+    private Integer niveau = 1; // 1=AVERTISSEMENT, 2=BLAME, 3=EXCLUSION_TEMPORAIRE, 4=EXCLUSION_DEFINITIVE
+
+    @Column(name = "statut", length = 30)
+    @Builder.Default
+    private String statut = "ACTIVE"; // ACTIVE, LEVEE, EXPIREE
+
+    @Column(name = "approuve_par")
+    private Long approuvePar;
+
+    @Column(name = "commentaire_approbation", columnDefinition = "TEXT")
+    private String commentaireApprobation;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

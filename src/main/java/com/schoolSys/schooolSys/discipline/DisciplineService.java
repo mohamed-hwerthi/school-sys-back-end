@@ -7,7 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -16,6 +17,7 @@ public class DisciplineService {
 
     private final IncidentRepository incidentRepository;
     private final SanctionRepository sanctionRepository;
+    private final DisciplineNotificationService notificationService;
 
     // --- Incident CRUD ---
 
@@ -72,7 +74,16 @@ public class DisciplineService {
             incident.getElevesImpliques().addAll(eleves);
         }
 
-        return toIncidentDto(incidentRepository.save(incident));
+        Incident saved = incidentRepository.save(incident);
+
+        // DISC-006: Notify parents for each student involved
+        if (request.getElevesImpliques() != null) {
+            for (IncidentRequestDTO.IncidentEleveDTO eleveDto : request.getElevesImpliques()) {
+                notificationService.notifyParentIncident(saved, eleveDto.getEleveId());
+            }
+        }
+
+        return toIncidentDto(saved);
     }
 
     @Transactional
@@ -143,6 +154,9 @@ public class DisciplineService {
                 .orElseThrow(() -> new ResourceNotFoundException("Incident", request.getIncidentId()));
         }
 
+        // Determine niveau from type if not explicitly provided
+        int niveau = request.getNiveau() != null ? request.getNiveau() : typeToNiveau(request.getType());
+
         Sanction sanction = Sanction.builder()
             .eleveId(request.getEleveId())
             .incident(incident)
@@ -152,9 +166,16 @@ public class DisciplineService {
             .dateFin(request.getDateFin())
             .decideParId(request.getDecideParId())
             .notifieParents(request.getNotifieParents() != null ? request.getNotifieParents() : false)
+            .niveau(niveau)
+            .statut(request.getStatut() != null ? request.getStatut() : "ACTIVE")
             .build();
 
-        return toSanctionDto(sanctionRepository.save(sanction));
+        Sanction saved = sanctionRepository.save(sanction);
+
+        // DISC-006: Notify parent about new sanction
+        notificationService.notifyParentSanction(saved);
+
+        return toSanctionDto(saved);
     }
 
     @Transactional
@@ -185,6 +206,140 @@ public class DisciplineService {
     public void deleteSanction(Long id) {
         if (!sanctionRepository.existsById(id)) throw new ResourceNotFoundException("Sanction", id);
         sanctionRepository.deleteById(id);
+    }
+
+    // --- DISC-004: Workflow sanction ---
+
+    /**
+     * Suggests the next sanction level for a student based on existing active sanctions.
+     * 0 sanctions -> AVERTISSEMENT (1), has AVERTISSEMENT -> BLAME (2),
+     * has BLAME -> EXCLUSION_TEMPORAIRE (3), has EXCLUSION_TEMPORAIRE -> EXCLUSION_DEFINITIVE (4)
+     */
+    public Map<String, Object> escalateSanction(Long eleveId) {
+        List<Sanction> activeSanctions = sanctionRepository.findByEleveIdAndStatut(eleveId, "ACTIVE");
+
+        int maxNiveau = activeSanctions.stream()
+            .mapToInt(s -> s.getNiveau() != null ? s.getNiveau() : 1)
+            .max()
+            .orElse(0);
+
+        int suggestedNiveau = Math.min(maxNiveau + 1, 4);
+        String suggestedType = niveauToType(suggestedNiveau);
+        boolean requiresApproval = suggestedNiveau >= 3; // exclusions need director approval
+
+        Map<String, Object> suggestion = new LinkedHashMap<>();
+        suggestion.put("eleveId", eleveId);
+        suggestion.put("currentMaxNiveau", maxNiveau);
+        suggestion.put("suggestedNiveau", suggestedNiveau);
+        suggestion.put("suggestedType", suggestedType);
+        suggestion.put("requiresApproval", requiresApproval);
+        suggestion.put("activeSanctionsCount", activeSanctions.size());
+        return suggestion;
+    }
+
+    /**
+     * Approve an exclusion sanction (requires director/admin approval).
+     */
+    @Transactional
+    public SanctionResponseDTO approveSanction(Long sanctionId, Long approvedByUserId, String comment) {
+        Sanction sanction = sanctionRepository.findById(sanctionId)
+            .orElseThrow(() -> new ResourceNotFoundException("Sanction", sanctionId));
+
+        sanction.setApprouvePar(approvedByUserId);
+        sanction.setCommentaireApprobation(comment);
+        sanction.setStatut("ACTIVE");
+
+        return toSanctionDto(sanctionRepository.save(sanction));
+    }
+
+    /**
+     * Lift (lever) an active sanction.
+     */
+    @Transactional
+    public SanctionResponseDTO leverSanction(Long sanctionId) {
+        Sanction sanction = sanctionRepository.findById(sanctionId)
+            .orElseThrow(() -> new ResourceNotFoundException("Sanction", sanctionId));
+
+        sanction.setStatut("LEVEE");
+
+        return toSanctionDto(sanctionRepository.save(sanction));
+    }
+
+    /**
+     * DISC-005: Get full discipline record for a student (incidents + sanctions chronologically).
+     */
+    public DossierDisciplinaireDTO getDossierDisciplinaire(Long eleveId) {
+        List<Incident> incidents = incidentRepository.findByEleveId(eleveId);
+        List<Sanction> sanctions = sanctionRepository.findByEleveIdOrderByCreatedAtDesc(eleveId);
+
+        // Build timeline events
+        List<DossierDisciplinaireDTO.EvenementDisciplinaireDTO> timeline = new ArrayList<>();
+
+        for (Incident incident : incidents) {
+            timeline.add(DossierDisciplinaireDTO.EvenementDisciplinaireDTO.builder()
+                .date(incident.getCreatedAt())
+                .type("INCIDENT")
+                .description(incident.getTitre() + (incident.getDescription() != null ? " - " + incident.getDescription() : ""))
+                .gravite(incident.getGravite())
+                .niveau(null)
+                .statut(null)
+                .id(incident.getId())
+                .build());
+        }
+
+        for (Sanction sanction : sanctions) {
+            timeline.add(DossierDisciplinaireDTO.EvenementDisciplinaireDTO.builder()
+                .date(sanction.getCreatedAt())
+                .type("SANCTION")
+                .description(sanction.getType() + (sanction.getDescription() != null ? " - " + sanction.getDescription() : ""))
+                .gravite(null)
+                .niveau(sanction.getNiveau())
+                .statut(sanction.getStatut())
+                .id(sanction.getId())
+                .build());
+        }
+
+        // Sort timeline by date descending
+        timeline.sort(Comparator.comparing(DossierDisciplinaireDTO.EvenementDisciplinaireDTO::getDate).reversed());
+
+        // Calculate current highest active sanction level
+        int niveauActuel = sanctions.stream()
+            .filter(s -> "ACTIVE".equals(s.getStatut()))
+            .mapToInt(s -> s.getNiveau() != null ? s.getNiveau() : 1)
+            .max()
+            .orElse(0);
+
+        return DossierDisciplinaireDTO.builder()
+            .eleveId(eleveId)
+            .eleveNom(null) // Would need student service to resolve name
+            .totalIncidents(incidents.size())
+            .totalSanctions(sanctions.size())
+            .niveauActuel(niveauActuel)
+            .timeline(timeline)
+            .build();
+    }
+
+    // --- Helper methods ---
+
+    private int typeToNiveau(String type) {
+        if (type == null) return 1;
+        switch (type) {
+            case "AVERTISSEMENT": return 1;
+            case "BLAME": return 2;
+            case "EXCLUSION_TEMPORAIRE": return 3;
+            case "EXCLUSION_DEFINITIVE": return 4;
+            default: return 1;
+        }
+    }
+
+    private String niveauToType(int niveau) {
+        switch (niveau) {
+            case 1: return "AVERTISSEMENT";
+            case 2: return "BLAME";
+            case 3: return "EXCLUSION_TEMPORAIRE";
+            case 4: return "EXCLUSION_DEFINITIVE";
+            default: return "AVERTISSEMENT";
+        }
     }
 
     // --- Mappers ---
@@ -224,6 +379,10 @@ public class DisciplineService {
             .dateFin(s.getDateFin())
             .decideParId(s.getDecideParId())
             .notifieParents(s.getNotifieParents())
+            .niveau(s.getNiveau())
+            .statut(s.getStatut())
+            .approuvePar(s.getApprouvePar())
+            .commentaireApprobation(s.getCommentaireApprobation())
             .createdAt(s.getCreatedAt())
             .updatedAt(s.getUpdatedAt())
             .build();

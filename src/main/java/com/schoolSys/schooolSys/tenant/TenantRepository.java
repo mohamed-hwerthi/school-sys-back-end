@@ -24,4 +24,12 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
      * @return {@code true} if it exists
      */
     boolean existsBySchemaName(String schemaName);
+
+    /**
+     * Finds an active tenant by its public slug.
+     *
+     * @param slug the URL-friendly slug
+     * @return the tenant if found
+     */
+    Optional<Tenant> findBySlugAndActiveTrue(String slug);
 }

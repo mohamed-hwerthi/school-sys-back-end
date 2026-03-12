@@ -22,6 +22,10 @@ public class SanctionResponseDTO {
     private LocalDate dateFin;
     private Long decideParId;
     private Boolean notifieParents;
+    private Integer niveau;
+    private String statut;
+    private Long approuvePar;
+    private String commentaireApprobation;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

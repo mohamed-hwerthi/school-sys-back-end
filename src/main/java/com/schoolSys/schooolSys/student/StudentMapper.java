@@ -12,9 +12,11 @@ public interface StudentMapper extends GenericMapper<Student, StudentRequestDTO,
 
     @Override
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "matricule", ignore = true)
     Student toEntity(StudentRequestDTO dto);
 
     @Override
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "matricule", ignore = true)
     void updateEntity(StudentRequestDTO dto, @MappingTarget Student student);
 }

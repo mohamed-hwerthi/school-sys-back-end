@@ -15,12 +15,14 @@ public interface TenantMapper extends GenericMapper<Tenant, TenantRequestDTO, Te
 
     @Override
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "slug", ignore = true)
     @Mapping(target = "active", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     Tenant toEntity(TenantRequestDTO dto);
 
     @Override
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "slug", ignore = true)
     @Mapping(target = "active", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     void updateEntity(TenantRequestDTO dto, @MappingTarget Tenant entity);

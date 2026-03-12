@@ -19,4 +19,7 @@ public class TenantRequestDTO {
 
     /** Contact email for the school administrator. */
     private String contactEmail;
+
+    /** URL-friendly slug for the public vitrine (optional — auto-generated from name if blank). */
+    private String slug;
 }

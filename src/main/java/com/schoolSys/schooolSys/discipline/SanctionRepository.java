@@ -11,4 +11,8 @@ public interface SanctionRepository extends JpaRepository<Sanction, Long> {
     List<Sanction> findByEleveId(Long eleveId);
 
     List<Sanction> findByIncidentId(Long incidentId);
+
+    List<Sanction> findByEleveIdAndStatut(Long eleveId, String statut);
+
+    List<Sanction> findByEleveIdOrderByCreatedAtDesc(Long eleveId);
 }

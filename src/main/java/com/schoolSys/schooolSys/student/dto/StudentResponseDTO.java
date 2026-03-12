@@ -30,4 +30,5 @@ public class StudentResponseDTO {
     private String parentPhone;
     private String parentEmail;
     private String notes;
+    private String matricule;
 }
