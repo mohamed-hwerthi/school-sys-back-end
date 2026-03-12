@@ -1,0 +1,37 @@
+package com.schoolSys.schooolSys.parent;
+
+import com.schoolSys.schooolSys.student.Student;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "parent_students", uniqueConstraints = @UniqueConstraint(columnNames = {"parent_user_id", "student_id"}))
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class ParentStudent {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "parent_user_id", nullable = false)
+    private Long parentUserId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Student student;
+
+    @Column(length = 30)
+    @Builder.Default
+    private String relation = "PARENT";
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+}

@@ -1,0 +1,44 @@
+package com.schoolSys.schooolSys.finance;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "audit_financier")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class AuditFinancier {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "entity_type", nullable = false)
+    private String entityType;
+
+    @Column(name = "entity_id", nullable = false)
+    private Long entityId;
+
+    @Column(nullable = false, length = 20)
+    private String action; // CREATE, UPDATE, DELETE
+
+    @Column(name = "user_id")
+    private Long userId;
+
+    @Column(name = "user_name")
+    private String userName;
+
+    @Column(name = "old_values", columnDefinition = "TEXT")
+    private String oldValues;
+
+    @Column(name = "new_values", columnDefinition = "TEXT")
+    private String newValues;
+
+    @Column(name = "created_at", updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+}

@@ -1,29 +1,20 @@
 package com.schoolSys.schooolSys.common.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * OpenAPI / Swagger UI configuration.
- * <p>
- * Swagger UI is available at: <a href="http://localhost:8080/swagger-ui.html">/swagger-ui.html</a><br>
- * API docs JSON at: <a href="http://localhost:8080/v3/api-docs">/v3/api-docs</a>
- * </p>
- */
 @Configuration
 public class OpenApiConfig {
 
-    /**
-     * Configures the OpenAPI metadata displayed in Swagger UI.
-     *
-     * @return the OpenAPI definition
-     */
     @Bean
     public OpenAPI schoolSystemOpenAPI() {
         return new OpenAPI()
@@ -35,23 +26,25 @@ public class OpenApiConfig {
 
                                 **Usage:** Include the `X-Tenant-ID` header with the school's schema name
                                 on all endpoints except `/api/tenants`.
+
+                                **Authentication:** Use Bearer token (JWT) obtained from `/api/auth/login`.
                                 """)
                         .version("1.0.0")
                         .contact(new Contact()
-                                .name("School System Team")));
+                                .name("School System Team")))
+                .components(new Components()
+                        .addSecuritySchemes("bearer-jwt", new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                                .description("JWT access token")))
+                .addSecurityItem(new SecurityRequirement().addList("bearer-jwt"));
     }
 
-    /**
-     * Adds the {@code X-Tenant-ID} header parameter to every operation
-     * so it appears in Swagger UI for easy testing.
-     *
-     * @return the operation customizer
-     */
     @Bean
     public OperationCustomizer tenantHeaderCustomizer() {
         return (operation, handlerMethod) -> {
             String path = handlerMethod.getMethod().getDeclaringClass().getPackageName();
-            // Skip tenant header for tenant management endpoints
             if (!path.contains(".tenant")) {
                 operation.addParametersItem(
                         new Parameter()

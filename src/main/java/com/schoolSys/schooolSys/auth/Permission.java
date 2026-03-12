@@ -68,5 +68,20 @@ public enum Permission {
     MANAGE_FACTURES,
 
     // ── Multi-tenancy ─────────────────────────────────────────
-    MANAGE_TENANTS
+    MANAGE_TENANTS,
+
+    // ── Teacher management ──────────────────────────────────
+    MANAGE_TEACHERS,
+
+    // ── System administration ───────────────────────────────
+    MANAGE_SYSTEM,
+
+    // ── Reporting / Analytics ───────────────────────────────
+    VIEW_REPORTS,
+
+    // ── Communication ───────────────────────────────────────
+    MANAGE_COMMUNICATION,
+
+    // ── Parent portal ───────────────────────────────────────
+    PARENT_ACCESS
 }

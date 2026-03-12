@@ -29,6 +29,7 @@ public final class RolePermissions {
         m.put(UserRole.DIRECTEUR, EnumSet.of(
                 READ_STUDENTS, WRITE_STUDENTS,
                 READ_TEACHERS, WRITE_TEACHERS,
+                MANAGE_TEACHERS,
                 READ_NOTES, WRITE_NOTES,
                 READ_ABSENCES,
                 READ_FINANCE,
@@ -39,7 +40,9 @@ public final class RolePermissions {
                 MANAGE_ANNEE_SCOLAIRE,
                 READ_AUDIT,
                 READ_RAPPORTS,
-                MANAGE_SETTINGS
+                VIEW_REPORTS,
+                MANAGE_SETTINGS,
+                MANAGE_COMMUNICATION
         ));
 
         // ── ENSEIGNANT ─────────────────────────────────────────
@@ -67,7 +70,8 @@ public final class RolePermissions {
                 READ_ABSENCES,
                 READ_EMPLOI_DU_TEMPS,
                 READ_MESSAGES, WRITE_MESSAGES,
-                READ_BULLETINS
+                READ_BULLETINS,
+                PARENT_ACCESS
         ));
 
         MATRIX = Collections.unmodifiableMap(m);
