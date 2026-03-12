@@ -6,6 +6,7 @@ import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,6 +38,7 @@ public class ClassroomController {
 
     /** Creates a new classroom. */
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<ApiResponse<ClassroomResponseDTO>> create(@RequestBody ClassroomRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(classroomService.create(dto)));
@@ -44,6 +46,7 @@ public class ClassroomController {
 
     /** Updates an existing classroom. */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<ApiResponse<ClassroomResponseDTO>> update(@PathVariable Long id,
                                                                      @RequestBody ClassroomRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(classroomService.update(id, dto)));
@@ -51,6 +54,7 @@ public class ClassroomController {
 
     /** Deletes a classroom. */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         classroomService.delete(id);
         return ResponseEntity.noContent().build();

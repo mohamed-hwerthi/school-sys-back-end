@@ -4,6 +4,7 @@ import com.schoolSys.schooolSys.bulletin.dto.BulletinDTO;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +17,7 @@ public class BulletinController {
     private final BulletinService bulletinService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('GENERATE_BULLETINS')")
     public ResponseEntity<ApiResponse<List<BulletinDTO>>> getBulletins(
             @RequestParam Long classeId,
             @RequestParam Integer trimestre,
@@ -25,6 +27,7 @@ public class BulletinController {
     }
 
     @GetMapping("/student/{studentId}")
+    @PreAuthorize("hasAuthority('READ_BULLETINS')")
     public ResponseEntity<ApiResponse<BulletinDTO>> getBulletin(
             @RequestParam Long classeId,
             @PathVariable Long studentId,

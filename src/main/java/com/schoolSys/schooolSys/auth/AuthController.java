@@ -2,11 +2,14 @@ package com.schoolSys.schooolSys.auth;
 
 import com.schoolSys.schooolSys.auth.dto.*;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -14,16 +17,27 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
+
+    // ─── Login / Token ──────────────────────────────────────────
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponseDTO>> login(@Valid @RequestBody LoginRequestDTO request) {
-        LoginResponseDTO response = authService.login(request);
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> login(
+            @Valid @RequestBody LoginRequestDTO request,
+            HttpServletRequest httpRequest) {
+        String deviceName = extractDeviceName(httpRequest);
+        String ipAddress = extractIpAddress(httpRequest);
+        LoginResponseDTO response = authService.login(request, deviceName, ipAddress);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<ApiResponse<LoginResponseDTO>> refreshToken(@Valid @RequestBody RefreshTokenRequestDTO request) {
-        LoginResponseDTO response = authService.refreshToken(request);
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> refreshToken(
+            @Valid @RequestBody RefreshTokenRequestDTO request,
+            HttpServletRequest httpRequest) {
+        String deviceName = extractDeviceName(httpRequest);
+        String ipAddress = extractIpAddress(httpRequest);
+        LoginResponseDTO response = authService.refreshToken(request, deviceName, ipAddress);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
@@ -38,5 +52,110 @@ public class AuthController {
         Long userId = (Long) authentication.getPrincipal();
         UserResponseDTO user = authService.getCurrentUser(userId);
         return ResponseEntity.ok(ApiResponse.ok(user));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request) {
+        String message = passwordResetService.requestPasswordReset(request.getEmail());
+        return ResponseEntity.ok(ApiResponse.ok(message));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<String>> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO request) {
+        String message = passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok(ApiResponse.ok(message));
+    }
+
+    // ─── 2FA ────────────────────────────────────────────────────
+
+    @PostMapping("/2fa/enable")
+    public ResponseEntity<ApiResponse<Enable2FAResponseDTO>> enable2FA(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        Enable2FAResponseDTO response = authService.enable2FA(userId);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @PostMapping("/2fa/confirm")
+    public ResponseEntity<ApiResponse<Void>> confirm2FA(
+            Authentication authentication,
+            @Valid @RequestBody Verify2FADTO request) {
+        Long userId = (Long) authentication.getPrincipal();
+        authService.confirm2FA(userId, request.getCode());
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
+
+    @PostMapping("/2fa/verify")
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> verify2FA(
+            @Valid @RequestBody Verify2FALoginDTO request,
+            HttpServletRequest httpRequest) {
+        String deviceName = extractDeviceName(httpRequest);
+        String ipAddress = extractIpAddress(httpRequest);
+        LoginResponseDTO response = authService.verifyTwoFactor(
+                request.getUserId(), request.getCode(), deviceName, ipAddress);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @PostMapping("/2fa/disable")
+    public ResponseEntity<ApiResponse<Void>> disable2FA(
+            Authentication authentication,
+            @Valid @RequestBody Verify2FADTO request) {
+        Long userId = (Long) authentication.getPrincipal();
+        authService.disable2FA(userId, request.getCode());
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
+
+    // ─── Session management ─────────────────────────────────────
+
+    @GetMapping("/sessions")
+    public ResponseEntity<ApiResponse<List<SessionDTO>>> getActiveSessions(
+            Authentication authentication,
+            @RequestHeader(value = "X-Current-Refresh-Token", required = false) String currentToken) {
+        Long userId = (Long) authentication.getPrincipal();
+        List<SessionDTO> sessions = authService.getActiveSessions(userId, currentToken);
+        return ResponseEntity.ok(ApiResponse.ok(sessions));
+    }
+
+    @DeleteMapping("/sessions/{sessionId}")
+    public ResponseEntity<ApiResponse<Void>> revokeSession(
+            Authentication authentication,
+            @PathVariable Long sessionId) {
+        Long userId = (Long) authentication.getPrincipal();
+        authService.revokeSession(userId, sessionId);
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
+
+    @DeleteMapping("/sessions")
+    public ResponseEntity<ApiResponse<Void>> revokeAllOtherSessions(
+            Authentication authentication,
+            @RequestHeader(value = "X-Current-Refresh-Token", required = false) String currentToken) {
+        Long userId = (Long) authentication.getPrincipal();
+        String token = currentToken != null ? currentToken : "";
+        authService.revokeAllOtherSessions(userId, token);
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
+
+    // ─── Helpers ────────────────────────────────────────────────
+
+    private String extractDeviceName(HttpServletRequest request) {
+        String userAgent = request.getHeader("User-Agent");
+        if (userAgent == null || userAgent.isBlank()) {
+            return "Unknown";
+        }
+        if (userAgent.length() > 200) {
+            return userAgent.substring(0, 200);
+        }
+        return userAgent;
+    }
+
+    private String extractIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isBlank()) {
+            return xRealIp;
+        }
+        return request.getRemoteAddr();
     }
 }

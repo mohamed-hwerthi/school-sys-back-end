@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,12 +20,14 @@ public class PenaliteController {
     private final PenaliteService penaliteService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<PenaliteResponseDTO>>> getAll(
             @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(penaliteService.findByAnneeScolaire(anneeScolaire)));
     }
 
     @GetMapping("/eleve/{studentId}")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<PenaliteResponseDTO>>> getByStudent(
             @PathVariable Long studentId,
             @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
@@ -32,11 +35,13 @@ public class PenaliteController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<PenaliteResponseDTO>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(penaliteService.findById(id)));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<PenaliteResponseDTO>> create(
             @Valid @RequestBody PenaliteRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -44,17 +49,20 @@ public class PenaliteController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<PenaliteResponseDTO>> update(
             @PathVariable Long id, @Valid @RequestBody PenaliteRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(penaliteService.update(id, dto)));
     }
 
     @PatchMapping("/{id}/toggle-payee")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<PenaliteResponseDTO>> togglePayee(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(penaliteService.togglePayee(id)));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         penaliteService.delete(id);
         return ResponseEntity.noContent().build();

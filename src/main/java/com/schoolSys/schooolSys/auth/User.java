@@ -41,6 +41,20 @@ public class User {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Column(name = "failed_login_attempts", nullable = false)
+    @Builder.Default
+    private Integer failedLoginAttempts = 0;
+
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil;
+
+    @Column(name = "totp_secret")
+    private String totpSecret;
+
+    @Column(name = "two_factor_enabled", nullable = false)
+    @Builder.Default
+    private Boolean twoFactorEnabled = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

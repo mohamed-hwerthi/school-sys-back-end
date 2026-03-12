@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class ExamenController {
     private final ExamenService examenService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<ExamenResponseDTO>>> getAll(
             @RequestParam(required = false) Long moduleId,
             @RequestParam(required = false) Long classeId) {
@@ -26,11 +28,13 @@ public class ExamenController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<ExamenResponseDTO>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(examenService.findById(id)));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<ApiResponse<ExamenResponseDTO>> create(
             @Valid @RequestBody ExamenRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -38,6 +42,7 @@ public class ExamenController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<ApiResponse<ExamenResponseDTO>> update(
             @PathVariable Long id,
             @Valid @RequestBody ExamenRequestDTO dto) {
@@ -45,12 +50,14 @@ public class ExamenController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         examenService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/bulk")
+    @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<Void> deleteBulk(@RequestBody List<Long> ids) {
         examenService.deleteBulk(ids);
         return ResponseEntity.noContent().build();

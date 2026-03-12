@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,6 +23,7 @@ public class DepenseController {
     private final DepenseService depenseService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<PagedResponse<DepenseResponseDTO>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -44,11 +46,13 @@ public class DepenseController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<DepenseResponseDTO>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(depenseService.findById(id)));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<DepenseResponseDTO>> create(
             @Valid @RequestBody DepenseRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -56,18 +60,21 @@ public class DepenseController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<DepenseResponseDTO>> update(
             @PathVariable Long id, @Valid @RequestBody DepenseRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(depenseService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         depenseService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/stats")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<DepenseStatsDTO>> getStats(
             @RequestParam String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(depenseService.getStats(anneeScolaire)));

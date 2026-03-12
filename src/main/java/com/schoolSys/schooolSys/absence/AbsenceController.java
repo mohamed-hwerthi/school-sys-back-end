@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -19,6 +20,7 @@ public class AbsenceController {
     private final AbsenceService absenceService;
 
     @PostMapping("/batch")
+    @PreAuthorize("hasAuthority('WRITE_ABSENCES')")
     public ResponseEntity<ApiResponse<List<AbsenceResponseDTO>>> batchCreate(
             @Valid @RequestBody AbsenceBatchRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -26,6 +28,7 @@ public class AbsenceController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('READ_ABSENCES')")
     public ResponseEntity<ApiResponse<List<AbsenceResponseDTO>>> getByClasseAndDate(
             @RequestParam Long classeId,
             @RequestParam LocalDate date,
@@ -34,11 +37,13 @@ public class AbsenceController {
     }
 
     @GetMapping("/eleve/{eleveId}")
+    @PreAuthorize("hasAuthority('READ_ABSENCES')")
     public ResponseEntity<ApiResponse<List<AbsenceResponseDTO>>> getByEleve(@PathVariable Long eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(absenceService.getByEleve(eleveId)));
     }
 
     @GetMapping("/stats")
+    @PreAuthorize("hasAuthority('READ_ABSENCES')")
     public ResponseEntity<ApiResponse<AbsenceStatsDTO>> getStats(
             @RequestParam Long classeId,
             @RequestParam int mois,
@@ -47,11 +52,13 @@ public class AbsenceController {
     }
 
     @PutMapping("/{id}/justifier")
+    @PreAuthorize("hasAuthority('WRITE_ABSENCES')")
     public ResponseEntity<ApiResponse<AbsenceResponseDTO>> justifier(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(absenceService.justifier(id)));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_ABSENCES')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         absenceService.delete(id);
         return ResponseEntity.noContent().build();

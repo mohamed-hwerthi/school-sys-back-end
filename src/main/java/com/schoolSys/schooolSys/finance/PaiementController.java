@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class PaiementController {
     private final PaiementService paiementService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<PagedResponse<PaiementResponseDTO>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -48,11 +50,13 @@ public class PaiementController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<PaiementResponseDTO>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(paiementService.findById(id)));
     }
 
     @GetMapping("/eleve/{studentId}")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<PaiementResponseDTO>>> getByStudentId(
             @PathVariable Long studentId,
             @RequestParam(required = false) String anneeScolaire) {
@@ -63,6 +67,7 @@ public class PaiementController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<PaiementResponseDTO>> create(
             @Valid @RequestBody PaiementRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -70,18 +75,21 @@ public class PaiementController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<PaiementResponseDTO>> update(
             @PathVariable Long id, @Valid @RequestBody PaiementRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(paiementService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         paiementService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/dashboard")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<FinanceDashboardDTO>> getDashboard(
             @RequestParam String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(paiementService.getDashboard(anneeScolaire)));

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -22,16 +23,19 @@ public class DisciplineController {
     // --- Incident endpoints ---
 
     @GetMapping("/incidents")
+    @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
     public ResponseEntity<ApiResponse<List<IncidentResponseDTO>>> getAllIncidents() {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.getAllIncidents()));
     }
 
     @GetMapping("/incidents/{id}")
+    @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
     public ResponseEntity<ApiResponse<IncidentResponseDTO>> getIncidentById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.getIncidentById(id)));
     }
 
     @GetMapping("/incidents/date-range")
+    @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
     public ResponseEntity<ApiResponse<List<IncidentResponseDTO>>> getIncidentsByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
@@ -39,16 +43,19 @@ public class DisciplineController {
     }
 
     @GetMapping("/incidents/type/{type}")
+    @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
     public ResponseEntity<ApiResponse<List<IncidentResponseDTO>>> getIncidentsByType(@PathVariable String type) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.getIncidentsByType(type)));
     }
 
     @GetMapping("/incidents/gravite/{gravite}")
+    @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
     public ResponseEntity<ApiResponse<List<IncidentResponseDTO>>> getIncidentsByGravite(@PathVariable String gravite) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.getIncidentsByGravite(gravite)));
     }
 
     @PostMapping("/incidents")
+    @PreAuthorize("hasAuthority('WRITE_DISCIPLINE')")
     public ResponseEntity<ApiResponse<IncidentResponseDTO>> createIncident(
             @Valid @RequestBody IncidentRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -56,6 +63,7 @@ public class DisciplineController {
     }
 
     @PutMapping("/incidents/{id}")
+    @PreAuthorize("hasAuthority('WRITE_DISCIPLINE')")
     public ResponseEntity<ApiResponse<IncidentResponseDTO>> updateIncident(
             @PathVariable Long id,
             @Valid @RequestBody IncidentRequestDTO request) {
@@ -63,6 +71,7 @@ public class DisciplineController {
     }
 
     @DeleteMapping("/incidents/{id}")
+    @PreAuthorize("hasAuthority('WRITE_DISCIPLINE')")
     public ResponseEntity<Void> deleteIncident(@PathVariable Long id) {
         disciplineService.deleteIncident(id);
         return ResponseEntity.noContent().build();
@@ -71,26 +80,31 @@ public class DisciplineController {
     // --- Sanction endpoints ---
 
     @GetMapping("/sanctions")
+    @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
     public ResponseEntity<ApiResponse<List<SanctionResponseDTO>>> getAllSanctions() {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.getAllSanctions()));
     }
 
     @GetMapping("/sanctions/{id}")
+    @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
     public ResponseEntity<ApiResponse<SanctionResponseDTO>> getSanctionById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.getSanctionById(id)));
     }
 
     @GetMapping("/sanctions/eleve/{eleveId}")
+    @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
     public ResponseEntity<ApiResponse<List<SanctionResponseDTO>>> getSanctionsByEleve(@PathVariable Long eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.getSanctionsByEleve(eleveId)));
     }
 
     @GetMapping("/sanctions/incident/{incidentId}")
+    @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
     public ResponseEntity<ApiResponse<List<SanctionResponseDTO>>> getSanctionsByIncident(@PathVariable Long incidentId) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.getSanctionsByIncident(incidentId)));
     }
 
     @PostMapping("/sanctions")
+    @PreAuthorize("hasAuthority('WRITE_DISCIPLINE')")
     public ResponseEntity<ApiResponse<SanctionResponseDTO>> createSanction(
             @Valid @RequestBody SanctionRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -98,6 +112,7 @@ public class DisciplineController {
     }
 
     @PutMapping("/sanctions/{id}")
+    @PreAuthorize("hasAuthority('WRITE_DISCIPLINE')")
     public ResponseEntity<ApiResponse<SanctionResponseDTO>> updateSanction(
             @PathVariable Long id,
             @Valid @RequestBody SanctionRequestDTO request) {
@@ -105,6 +120,7 @@ public class DisciplineController {
     }
 
     @DeleteMapping("/sanctions/{id}")
+    @PreAuthorize("hasAuthority('WRITE_DISCIPLINE')")
     public ResponseEntity<Void> deleteSanction(@PathVariable Long id) {
         disciplineService.deleteSanction(id);
         return ResponseEntity.noContent().build();

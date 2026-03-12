@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,12 +20,14 @@ public class RelanceController {
     private final RelanceService relanceService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<RelanceResponseDTO>>> getAll(
             @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(relanceService.findByAnneeScolaire(anneeScolaire)));
     }
 
     @GetMapping("/eleve/{studentId}")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<RelanceResponseDTO>>> getByStudent(
             @PathVariable Long studentId,
             @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
@@ -32,23 +35,27 @@ public class RelanceController {
     }
 
     @GetMapping("/en-attente")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<RelanceResponseDTO>>> getPending(
             @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(relanceService.findPending(anneeScolaire)));
     }
 
     @GetMapping("/stats")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<RelanceService.RelanceStatsDTO>> getStats(
             @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(relanceService.getStats(anneeScolaire)));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<RelanceResponseDTO>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(relanceService.findById(id)));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<RelanceResponseDTO>> create(
             @Valid @RequestBody RelanceRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -56,6 +63,7 @@ public class RelanceController {
     }
 
     @PostMapping("/generer")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<List<RelanceResponseDTO>>> generate(
             @RequestParam(defaultValue = "2025-2026") String anneeScolaire,
             @RequestParam(defaultValue = "EMAIL") Relance.TypeRelance type) {
@@ -64,16 +72,19 @@ public class RelanceController {
     }
 
     @PatchMapping("/{id}/envoyee")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<RelanceResponseDTO>> markEnvoyee(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(relanceService.markAsEnvoyee(id)));
     }
 
     @PatchMapping("/{id}/echouee")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<RelanceResponseDTO>> markEchouee(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(relanceService.markAsEchouee(id)));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         relanceService.delete(id);

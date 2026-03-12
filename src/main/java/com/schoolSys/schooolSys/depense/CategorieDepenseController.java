@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,16 +20,19 @@ public class CategorieDepenseController {
     private final CategorieDepenseService categorieService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<CategorieDepenseResponseDTO>>> getAll() {
         return ResponseEntity.ok(ApiResponse.ok(categorieService.findAll()));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<CategorieDepenseResponseDTO>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(categorieService.findById(id)));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<CategorieDepenseResponseDTO>> create(
             @Valid @RequestBody CategorieDepenseRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -36,12 +40,14 @@ public class CategorieDepenseController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<CategorieDepenseResponseDTO>> update(
             @PathVariable Long id, @Valid @RequestBody CategorieDepenseRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(categorieService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         categorieService.delete(id);
         return ResponseEntity.noContent().build();

@@ -6,6 +6,7 @@ import com.schoolSys.schooolSys.enrollment.dto.EnrollmentResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,18 +26,21 @@ public class EnrollmentController {
 
     /** Lists all enrollments in the current school. */
     @GetMapping
+    @PreAuthorize("hasAuthority('READ_STUDENTS')")
     public ResponseEntity<ApiResponse<List<EnrollmentResponseDTO>>> getAll() {
         return ResponseEntity.ok(ApiResponse.ok(enrollmentService.findAll()));
     }
 
     /** Gets an enrollment by ID. */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('READ_STUDENTS')")
     public ResponseEntity<ApiResponse<EnrollmentResponseDTO>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(enrollmentService.findById(id)));
     }
 
     /** Creates a new enrollment. */
     @PostMapping
+    @PreAuthorize("hasAuthority('WRITE_STUDENTS')")
     public ResponseEntity<ApiResponse<EnrollmentResponseDTO>> create(@RequestBody EnrollmentRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(enrollmentService.create(dto)));
@@ -44,6 +48,7 @@ public class EnrollmentController {
 
     /** Updates an existing enrollment. */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_STUDENTS')")
     public ResponseEntity<ApiResponse<EnrollmentResponseDTO>> update(@PathVariable Long id,
                                                                       @RequestBody EnrollmentRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(enrollmentService.update(id, dto)));
@@ -51,6 +56,7 @@ public class EnrollmentController {
 
     /** Deletes an enrollment. */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('DELETE_STUDENTS')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         enrollmentService.delete(id);
         return ResponseEntity.noContent().build();

@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class StudentController {
      * GET /api/students?page=0&size=20&search=ben&niveau=3ème année&classe=3A&status=Actif&sex=M&blocked=false&sort=lastName,asc
      */
     @GetMapping
+    @PreAuthorize("hasAuthority('READ_STUDENTS')")
     public ResponseEntity<ApiResponse<PagedResponse<StudentResponseDTO>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -51,29 +53,34 @@ public class StudentController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('READ_STUDENTS')")
     public ResponseEntity<ApiResponse<StudentResponseDTO>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(studentService.findById(id)));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('WRITE_STUDENTS')")
     public ResponseEntity<ApiResponse<StudentResponseDTO>> create(@Valid @RequestBody StudentRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(studentService.create(dto)));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_STUDENTS')")
     public ResponseEntity<ApiResponse<StudentResponseDTO>> update(@PathVariable Long id,
                                                                    @Valid @RequestBody StudentRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(studentService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('DELETE_STUDENTS')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         studentService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/import")
+    @PreAuthorize("hasAuthority('WRITE_STUDENTS')")
     public ResponseEntity<ApiResponse<List<StudentResponseDTO>>> importBulk(
             @Valid @RequestBody List<StudentRequestDTO> dtos) {
         return ResponseEntity.status(HttpStatus.CREATED)

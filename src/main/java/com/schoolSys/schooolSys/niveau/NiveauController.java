@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class NiveauController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<ApiResponse<NiveauResponseDTO>> create(
             @Valid @RequestBody NiveauRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -37,12 +39,14 @@ public class NiveauController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         niveauService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/classes")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<ApiResponse<NiveauResponseDTO>> addClasse(
             @PathVariable Long id,
             @Valid @RequestBody ClasseRequestDTO dto) {
@@ -51,6 +55,7 @@ public class NiveauController {
     }
 
     @DeleteMapping("/{id}/classes/{letter}")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<Void> removeClasse(
             @PathVariable Long id,
             @PathVariable String letter) {

@@ -6,12 +6,12 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "refresh_tokens", schema = "public")
+@Table(name = "password_reset_tokens", schema = "public")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RefreshToken {
+public class PasswordResetToken {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,17 +29,7 @@ public class RefreshToken {
 
     @Column(nullable = false)
     @Builder.Default
-    private Boolean revoked = false;
-
-    @Column(name = "device_name")
-    private String deviceName;
-
-    @Column(name = "ip_address")
-    private String ipAddress;
-
-    @Column(name = "last_used_at")
-    @Builder.Default
-    private LocalDateTime lastUsedAt = LocalDateTime.now();
+    private Boolean used = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
@@ -50,6 +40,6 @@ public class RefreshToken {
     }
 
     public boolean isUsable() {
-        return !this.revoked && !isExpired();
+        return !this.used && !isExpired();
     }
 }

@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,16 +20,34 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final TwoFactorService twoFactorService;
 
     @Value("${app.jwt.refresh-expiration-ms:604800000}")
     private long refreshTokenExpirationMs;
 
+    private static final int MAX_FAILED_ATTEMPTS = 5;
+    private static final int LOCKOUT_DURATION_MINUTES = 30;
+
     @Transactional
-    public LoginResponseDTO login(LoginRequestDTO request) {
+    public LoginResponseDTO login(LoginRequestDTO request, String deviceName, String ipAddress) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
 
+        // Check if account is locked
+        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
+            long minutesRemaining = java.time.Duration.between(LocalDateTime.now(), user.getLockedUntil()).toMinutes() + 1;
+            throw new IllegalArgumentException(
+                    "Compte verrouillé. Réessayez après " + minutesRemaining + " minutes.");
+        }
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            // Increment failed attempts
+            int attempts = user.getFailedLoginAttempts() + 1;
+            user.setFailedLoginAttempts(attempts);
+            if (attempts >= MAX_FAILED_ATTEMPTS) {
+                user.setLockedUntil(LocalDateTime.now().plusMinutes(LOCKOUT_DURATION_MINUTES));
+            }
+            userRepository.save(user);
             throw new IllegalArgumentException("Invalid email or password");
         }
 
@@ -35,31 +55,99 @@ public class AuthService {
             throw new IllegalArgumentException("Account is disabled. Contact your administrator.");
         }
 
-        // Revoke old refresh tokens
-        refreshTokenRepository.revokeAllByUserId(user.getId());
+        // Reset failed attempts on successful login
+        if (user.getFailedLoginAttempts() > 0 || user.getLockedUntil() != null) {
+            user.setFailedLoginAttempts(0);
+            user.setLockedUntil(null);
+            userRepository.save(user);
+        }
 
-        // Generate tokens
-        String accessToken = jwtTokenProvider.generateAccessToken(user);
-        String refreshTokenStr = UUID.randomUUID().toString();
+        // If 2FA is enabled, don't return tokens yet
+        if (Boolean.TRUE.equals(user.getTwoFactorEnabled())) {
+            return LoginResponseDTO.builder()
+                    .twoFactorRequired(true)
+                    .twoFactorUserId(user.getId())
+                    .build();
+        }
 
-        RefreshToken refreshToken = RefreshToken.builder()
-                .user(user)
-                .token(refreshTokenStr)
-                .expiresAt(LocalDateTime.now().plusSeconds(refreshTokenExpirationMs / 1000))
-                .build();
-        refreshTokenRepository.save(refreshToken);
+        // No 2FA — issue tokens directly
+        return issueTokens(user, deviceName, ipAddress);
+    }
 
-        return LoginResponseDTO.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshTokenStr)
-                .tokenType("Bearer")
-                .expiresIn(jwtTokenProvider.getAccessTokenExpirationMs() / 1000)
-                .user(toUserResponse(user))
+    @Transactional
+    public LoginResponseDTO verifyTwoFactor(Long userId, String code, String deviceName, String ipAddress) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (!Boolean.TRUE.equals(user.getTwoFactorEnabled()) || user.getTotpSecret() == null) {
+            throw new IllegalArgumentException("2FA is not enabled for this user");
+        }
+
+        if (!twoFactorService.verifyCode(user.getTotpSecret(), code)) {
+            throw new IllegalArgumentException("Invalid 2FA code");
+        }
+
+        return issueTokens(user, deviceName, ipAddress);
+    }
+
+    @Transactional
+    public Enable2FAResponseDTO enable2FA(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (Boolean.TRUE.equals(user.getTwoFactorEnabled())) {
+            throw new IllegalArgumentException("2FA is already enabled");
+        }
+
+        String secret = twoFactorService.generateSecret();
+        user.setTotpSecret(secret);
+        userRepository.save(user);
+
+        String qrCodeUri = twoFactorService.generateQrCodeUri(secret, user.getEmail());
+
+        return Enable2FAResponseDTO.builder()
+                .secret(secret)
+                .qrCodeUri(qrCodeUri)
                 .build();
     }
 
     @Transactional
-    public LoginResponseDTO refreshToken(RefreshTokenRequestDTO request) {
+    public void confirm2FA(Long userId, String code) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (user.getTotpSecret() == null) {
+            throw new IllegalArgumentException("2FA setup has not been initiated. Call enable first.");
+        }
+
+        if (!twoFactorService.verifyCode(user.getTotpSecret(), code)) {
+            throw new IllegalArgumentException("Invalid 2FA code. Please try again.");
+        }
+
+        user.setTwoFactorEnabled(true);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void disable2FA(Long userId, String code) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (!Boolean.TRUE.equals(user.getTwoFactorEnabled())) {
+            throw new IllegalArgumentException("2FA is not enabled");
+        }
+
+        if (!twoFactorService.verifyCode(user.getTotpSecret(), code)) {
+            throw new IllegalArgumentException("Invalid 2FA code");
+        }
+
+        user.setTotpSecret(null);
+        user.setTwoFactorEnabled(false);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public LoginResponseDTO refreshToken(RefreshTokenRequestDTO request, String deviceName, String ipAddress) {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(request.getRefreshToken())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
 
@@ -84,6 +172,8 @@ public class AuthService {
                 .user(user)
                 .token(newRefreshTokenStr)
                 .expiresAt(LocalDateTime.now().plusSeconds(refreshTokenExpirationMs / 1000))
+                .deviceName(deviceName)
+                .ipAddress(ipAddress)
                 .build();
         refreshTokenRepository.save(newRefreshToken);
 
@@ -109,6 +199,64 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         return toUserResponse(user);
+    }
+
+    // ─── Session management ─────────────────────────────────────
+
+    public List<SessionDTO> getActiveSessions(Long userId, String currentToken) {
+        List<RefreshToken> tokens = refreshTokenRepository.findActiveByUserId(userId);
+        return tokens.stream()
+                .map(rt -> SessionDTO.builder()
+                        .id(rt.getId())
+                        .deviceName(rt.getDeviceName())
+                        .ipAddress(rt.getIpAddress())
+                        .lastUsedAt(rt.getLastUsedAt())
+                        .createdAt(rt.getCreatedAt())
+                        .current(rt.getToken().equals(currentToken))
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void revokeSession(Long userId, Long sessionId) {
+        RefreshToken token = refreshTokenRepository.findById(sessionId)
+                .orElseThrow(() -> new IllegalArgumentException("Session not found"));
+
+        if (!token.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("Session does not belong to the current user");
+        }
+
+        token.setRevoked(true);
+        refreshTokenRepository.save(token);
+    }
+
+    @Transactional
+    public void revokeAllOtherSessions(Long userId, String currentToken) {
+        refreshTokenRepository.revokeAllOthersByUserId(userId, currentToken);
+    }
+
+    // ─── Private helpers ────────────────────────────────────────
+
+    private LoginResponseDTO issueTokens(User user, String deviceName, String ipAddress) {
+        String accessToken = jwtTokenProvider.generateAccessToken(user);
+        String refreshTokenStr = UUID.randomUUID().toString();
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .user(user)
+                .token(refreshTokenStr)
+                .expiresAt(LocalDateTime.now().plusSeconds(refreshTokenExpirationMs / 1000))
+                .deviceName(deviceName)
+                .ipAddress(ipAddress)
+                .build();
+        refreshTokenRepository.save(refreshToken);
+
+        return LoginResponseDTO.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshTokenStr)
+                .tokenType("Bearer")
+                .expiresIn(jwtTokenProvider.getAccessTokenExpirationMs() / 1000)
+                .user(toUserResponse(user))
+                .build();
     }
 
     private UserResponseDTO toUserResponse(User user) {

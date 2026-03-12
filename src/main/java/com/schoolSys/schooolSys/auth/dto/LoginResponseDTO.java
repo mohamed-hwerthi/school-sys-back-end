@@ -1,6 +1,5 @@
 package com.schoolSys.schooolSys.auth.dto;
 
-import com.schoolSys.schooolSys.auth.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,4 +16,9 @@ public class LoginResponseDTO {
     private String tokenType;
     private Long expiresIn;
     private UserResponseDTO user;
+
+    // 2FA fields
+    @Builder.Default
+    private boolean twoFactorRequired = false;
+    private Long twoFactorUserId;
 }

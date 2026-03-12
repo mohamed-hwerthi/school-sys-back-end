@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/echeanciers")
 @RequiredArgsConstructor
+@PreAuthorize("hasAuthority('MANAGE_FACTURES')")
 public class EcheancierController {
 
     private final FactureService factureService;

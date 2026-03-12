@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class DomaineController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<ApiResponse<DomaineResponseDTO>> create(
             @Valid @RequestBody DomaineRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -38,6 +40,7 @@ public class DomaineController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<ApiResponse<DomaineResponseDTO>> update(
             @PathVariable Long id,
             @Valid @RequestBody DomaineRequestDTO dto) {
@@ -45,6 +48,7 @@ public class DomaineController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         domaineService.delete(id);
         return ResponseEntity.noContent().build();
@@ -59,6 +63,7 @@ public class DomaineController {
     }
 
     @PostMapping("/sous-domaines")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<ApiResponse<SousDomaineDTO>> createSousDomaine(
             @Valid @RequestBody SousDomaineRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -66,6 +71,7 @@ public class DomaineController {
     }
 
     @PutMapping("/sous-domaines/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<ApiResponse<SousDomaineDTO>> updateSousDomaine(
             @PathVariable Long id,
             @Valid @RequestBody SousDomaineRequestDTO dto) {
@@ -73,6 +79,7 @@ public class DomaineController {
     }
 
     @DeleteMapping("/sous-domaines/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<Void> deleteSousDomaine(@PathVariable Long id) {
         domaineService.deleteSousDomaine(id);
         return ResponseEntity.noContent().build();

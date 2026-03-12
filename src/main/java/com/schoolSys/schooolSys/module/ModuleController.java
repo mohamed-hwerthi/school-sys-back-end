@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class ModuleController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<ApiResponse<ModuleResponseDTO>> create(
             @Valid @RequestBody ModuleRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -37,6 +39,7 @@ public class ModuleController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<ApiResponse<ModuleResponseDTO>> update(
             @PathVariable Long id,
             @Valid @RequestBody ModuleRequestDTO dto) {
@@ -44,6 +47,7 @@ public class ModuleController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         moduleService.delete(id);
         return ResponseEntity.noContent().build();

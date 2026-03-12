@@ -6,6 +6,7 @@ import com.schoolSys.schooolSys.tenant.dto.TenantResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,8 +14,8 @@ import java.util.List;
 /**
  * REST controller for managing school tenants.
  * <p>
- * These endpoints operate on the {@code public} schema and do NOT
- * require the {@code X-Tenant-ID} header.
+ * GET endpoints are publicly accessible (permitAll in SecurityConfig).
+ * Write operations require the MANAGE_TENANTS permission.
  * </p>
  */
 @RestController
@@ -52,6 +53,7 @@ public class TenantController {
      * @return the created tenant
      */
     @PostMapping
+    @PreAuthorize("hasAuthority('MANAGE_TENANTS')")
     public ResponseEntity<ApiResponse<TenantResponseDTO>> create(@RequestBody TenantRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(tenantService.create(dto)));
@@ -65,17 +67,19 @@ public class TenantController {
      * @return the updated tenant
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('MANAGE_TENANTS')")
     public ResponseEntity<ApiResponse<TenantResponseDTO>> update(@PathVariable Long id,
                                                                   @RequestBody TenantRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(tenantService.update(id, dto)));
     }
 
     /**
-     * Deactivates a school (soft delete — the schema is preserved).
+     * Deactivates a school (soft delete -- the schema is preserved).
      *
      * @param id the tenant ID
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('MANAGE_TENANTS')")
     public ResponseEntity<Void> deactivate(@PathVariable Long id) {
         tenantService.deactivate(id);
         return ResponseEntity.noContent().build();

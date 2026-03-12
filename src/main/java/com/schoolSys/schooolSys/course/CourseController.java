@@ -6,6 +6,7 @@ import com.schoolSys.schooolSys.course.dto.CourseResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,18 +26,21 @@ public class CourseController {
 
     /** Lists all courses in the current school. */
     @GetMapping
+    @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<CourseResponseDTO>>> getAll() {
         return ResponseEntity.ok(ApiResponse.ok(courseService.findAll()));
     }
 
     /** Gets a course by ID. */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<CourseResponseDTO>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(courseService.findById(id)));
     }
 
     /** Creates a new course. */
     @PostMapping
+    @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<ApiResponse<CourseResponseDTO>> create(@RequestBody CourseRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(courseService.create(dto)));
@@ -44,6 +48,7 @@ public class CourseController {
 
     /** Updates an existing course. */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<ApiResponse<CourseResponseDTO>> update(@PathVariable Long id,
                                                                   @RequestBody CourseRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(courseService.update(id, dto)));
@@ -51,6 +56,7 @@ public class CourseController {
 
     /** Deletes a course. */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         courseService.delete(id);
         return ResponseEntity.noContent().build();

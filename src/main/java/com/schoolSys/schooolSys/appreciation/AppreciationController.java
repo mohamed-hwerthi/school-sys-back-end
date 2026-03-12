@@ -5,6 +5,7 @@ import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class AppreciationController {
     // ── Recommandations ─────────────────────────────────────
 
     @GetMapping("/recommandations")
+    @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<RecommandationDTO>>> getRecommandations(
             @RequestParam List<Long> studentIds,
             @RequestParam Integer trimestre) {
@@ -27,6 +29,7 @@ public class AppreciationController {
     }
 
     @PostMapping("/recommandations/bulk")
+    @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<ApiResponse<List<RecommandationDTO>>> upsertRecommandations(
             @Valid @RequestBody BulkRecommandationRequestDTO body) {
         return ResponseEntity.ok(ApiResponse.ok(
@@ -36,6 +39,7 @@ public class AppreciationController {
     // ── Observations ────────────────────────────────────────
 
     @GetMapping("/observations")
+    @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<ObservationDTO>>> getObservations(
             @RequestParam List<Long> studentIds,
             @RequestParam Integer trimestre) {
@@ -44,6 +48,7 @@ public class AppreciationController {
     }
 
     @PostMapping("/observations/bulk")
+    @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<ApiResponse<List<ObservationDTO>>> upsertObservations(
             @Valid @RequestBody BulkObservationRequestDTO body) {
         return ResponseEntity.ok(ApiResponse.ok(

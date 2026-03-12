@@ -13,7 +13,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -39,7 +41,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 TenantContext.setCurrentTenant(tenantId);
             }
 
-            var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+            // Build authorities: ROLE_xxx + individual permissions from the matrix
+            List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+
+            try {
+                UserRole userRole = UserRole.valueOf(role);
+                Set<Permission> permissions = RolePermissions.getPermissions(userRole);
+                for (Permission p : permissions) {
+                    authorities.add(new SimpleGrantedAuthority(p.name()));
+                }
+            } catch (IllegalArgumentException ignored) {
+                // unknown role – keep only the ROLE_ authority
+            }
+
             var authentication = new UsernamePasswordAuthenticationToken(userId, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
@@ -50,8 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.startsWith("/api/auth/")
-                || path.startsWith("/swagger-ui")
+        return path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs")
                 || path.startsWith("/actuator");
     }
