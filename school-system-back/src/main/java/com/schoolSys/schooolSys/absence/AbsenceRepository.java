@@ -23,4 +23,9 @@ public interface AbsenceRepository extends JpaRepository<Absence, Long> {
     List<Absence> findByEleveIdInAndMonthAndYear(@Param("eleveIds") List<Long> eleveIds,
                                                   @Param("mois") int mois,
                                                   @Param("annee") int annee);
+
+    List<Absence> findByEleveIdOrderByDateDesc(Long eleveId);
+
+    @Query("SELECT COUNT(a) FROM Absence a WHERE a.eleveId = :eleveId AND a.type = 'ABSENCE'")
+    long countAbsencesByEleveId(@Param("eleveId") Long eleveId);
 }

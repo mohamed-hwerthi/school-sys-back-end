@@ -57,6 +57,8 @@ const ContratsPage = lazy(() => import("./pages/Contrats"));
 const FacturesPage = lazy(() => import("./pages/Factures"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const VitrineSite = lazy(() => import("./pages/VitrineSite"));
+const VitrineAdminPage = lazy(() => import("./pages/VitrineAdmin"));
 
 const PageLoader = () => (
   <div className="flex h-[50vh] items-center justify-center">
@@ -76,6 +78,9 @@ const App = () => (
             <Route path="/forgot-password" element={<Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense>} />
             <Route path="/reset-password" element={<Suspense fallback={<PageLoader />}><ResetPassword /></Suspense>} />
             <Route path="/forbidden" element={<Forbidden />} />
+            {/* Public vitrine website */}
+            <Route path="/vitrine/:slug" element={<Suspense fallback={<PageLoader />}><VitrineSite /></Suspense>} />
+            <Route path="/vitrine/:slug/:pageSlug" element={<Suspense fallback={<PageLoader />}><VitrineSite /></Suspense>} />
             <Route
               path="/dashboard"
               element={
@@ -143,6 +148,9 @@ const App = () => (
                 {/* Documents */}
                 <Route path="rapports" element={<Rapports />} />
                 <Route path="circulaires" element={<Circulaires />} />
+
+                {/* Vitrine */}
+                <Route path="vitrine" element={<VitrineAdminPage />} />
 
                 {/* Administration */}
                 <Route path="utilisateurs" element={<UsersPage />} />

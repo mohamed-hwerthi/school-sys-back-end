@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { disciplineApi } from "@/api/discipline.api";
-import type { Incident, Sanction } from "@/types/discipline";
+import type { Incident, Sanction, DossierDisciplinaire, SanctionSuggestion } from "@/types/discipline";
 
 const INCIDENTS_KEY = "incidents";
 const SANCTIONS_KEY = "sanctions";
+const DOSSIER_KEY = "dossier-disciplinaire";
 
 /**
  * All incidents.
@@ -138,5 +139,58 @@ export function useDisciplineByEleve(eleveId: number) {
     queryKey: ["discipline", "eleve", eleveId],
     queryFn: () => disciplineApi.getByEleve(eleveId),
     enabled: eleveId > 0,
+  });
+}
+
+// --- DISC-004: Workflow hooks ---
+
+/**
+ * Get sanction suggestion for escalation.
+ */
+export function useSanctionSuggestion(eleveId: number, enabled = false) {
+  return useQuery<SanctionSuggestion>({
+    queryKey: [SANCTIONS_KEY, "suggestion", eleveId],
+    queryFn: () => disciplineApi.getSanctionSuggestion(eleveId),
+    enabled: enabled && eleveId > 0,
+  });
+}
+
+/**
+ * Approve sanction mutation.
+ */
+export function useApproveSanction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, approuveParId, commentaire }: { id: number; approuveParId: number; commentaire?: string }) =>
+      disciplineApi.approveSanction(id, approuveParId, commentaire),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [SANCTIONS_KEY] });
+    },
+  });
+}
+
+/**
+ * Lift (lever) sanction mutation.
+ */
+export function useLeverSanction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => disciplineApi.leverSanction(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [SANCTIONS_KEY] });
+    },
+  });
+}
+
+// --- DISC-005: Dossier disciplinaire ---
+
+/**
+ * Get full discipline record for a student.
+ */
+export function useDossierDisciplinaire(eleveId: number, enabled = true) {
+  return useQuery<DossierDisciplinaire>({
+    queryKey: [DOSSIER_KEY, eleveId],
+    queryFn: () => disciplineApi.getDossierDisciplinaire(eleveId),
+    enabled: enabled && eleveId > 0,
   });
 }

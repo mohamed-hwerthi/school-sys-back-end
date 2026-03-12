@@ -57,10 +57,55 @@ public class AbsenceController {
         return ResponseEntity.ok(ApiResponse.ok(absenceService.justifier(id)));
     }
 
+    /**
+     * ABS-008: Submit justification with motif and optional file upload.
+     */
+    @PostMapping("/{id}/justifier")
+    @PreAuthorize("hasAuthority('READ_ABSENCES')")
+    public ResponseEntity<ApiResponse<AbsenceResponseDTO>> submitJustification(
+            @PathVariable Long id,
+            @RequestBody JustificationRequestDTO request) {
+        return ResponseEntity.ok(ApiResponse.ok(absenceService.submitJustification(id, request)));
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_ABSENCES')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         absenceService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ---- ABS-006: Settings ----
+
+    @GetMapping("/settings")
+    @PreAuthorize("hasAuthority('READ_ABSENCES')")
+    public ResponseEntity<ApiResponse<AbsenceSettingsDTO>> getSettings() {
+        return ResponseEntity.ok(ApiResponse.ok(absenceService.getAbsenceSettings()));
+    }
+
+    @PutMapping("/settings")
+    @PreAuthorize("hasAuthority('WRITE_ABSENCES')")
+    public ResponseEntity<ApiResponse<AbsenceSettingsDTO>> updateSettings(
+            @RequestBody AbsenceSettingsDTO dto) {
+        return ResponseEntity.ok(ApiResponse.ok(absenceService.updateAbsenceSettings(dto)));
+    }
+
+    // ---- ABS-007: Rapport mensuel ----
+
+    @GetMapping("/rapport")
+    @PreAuthorize("hasAuthority('READ_ABSENCES')")
+    public ResponseEntity<ApiResponse<RapportPresenceDTO>> getRapport(
+            @RequestParam Long classeId,
+            @RequestParam int mois,
+            @RequestParam int annee) {
+        return ResponseEntity.ok(ApiResponse.ok(absenceService.getRapportMensuel(classeId, mois, annee)));
+    }
+
+    // ---- ABS-009: Historique presence par eleve ----
+
+    @GetMapping("/historique/{eleveId}")
+    @PreAuthorize("hasAuthority('READ_ABSENCES')")
+    public ResponseEntity<ApiResponse<HistoriquePresenceDTO>> getHistorique(@PathVariable Long eleveId) {
+        return ResponseEntity.ok(ApiResponse.ok(absenceService.getHistorique(eleveId)));
     }
 }

@@ -75,4 +75,7 @@ public class Student {
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+
+    @Column(unique = true, length = 20)
+    private String matricule;
 }

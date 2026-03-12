@@ -17,6 +17,9 @@ spring:
 
   flyway:
     enabled: true
+    url: jdbc:postgresql://localhost:5432/school_dev_db
+    user: ${DB_USERNAME:med}
+    password: ${DB_PASSWORD:med}
     locations: classpath:db/migration
     schemas: public
     baseline-on-migrate: true

@@ -15,6 +15,7 @@ public class TenantResponseDTO {
     private Long id;
     private String name;
     private String schemaName;
+    private String slug;
     private String contactEmail;
     private boolean active;
     private LocalDateTime createdAt;

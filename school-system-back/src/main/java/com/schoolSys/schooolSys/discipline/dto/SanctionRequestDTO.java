@@ -19,4 +19,6 @@ public class SanctionRequestDTO {
     private LocalDate dateFin;
     private Long decideParId;
     private Boolean notifieParents;
+    private Integer niveau;
+    private String statut;
 }

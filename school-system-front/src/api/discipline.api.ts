@@ -1,5 +1,5 @@
 import api from "./axios";
-import type { Incident, Sanction } from "@/types/discipline";
+import type { Incident, Sanction, DossierDisciplinaire, SanctionSuggestion } from "@/types/discipline";
 
 const BASE = "/discipline";
 
@@ -59,6 +59,31 @@ export const disciplineApi = {
     const res = await api.get<{ incidents: Incident[]; sanctions: Sanction[] }>(
       `${BASE}/eleve/${eleveId}`
     );
+    return res.data;
+  },
+
+  // --- DISC-004: Workflow ---
+  getSanctionSuggestion: async (eleveId: number): Promise<SanctionSuggestion> => {
+    const res = await api.get<SanctionSuggestion>(`${BASE}/sanctions/suggestion/${eleveId}`);
+    return res.data;
+  },
+
+  approveSanction: async (id: number, approuveParId: number, commentaire?: string): Promise<Sanction> => {
+    const res = await api.post<Sanction>(`${BASE}/sanctions/${id}/approuver`, {
+      approuveParId,
+      commentaire,
+    });
+    return res.data;
+  },
+
+  leverSanction: async (id: number): Promise<Sanction> => {
+    const res = await api.post<Sanction>(`${BASE}/sanctions/${id}/lever`);
+    return res.data;
+  },
+
+  // --- DISC-005: Dossier disciplinaire ---
+  getDossierDisciplinaire: async (eleveId: number): Promise<DossierDisciplinaire> => {
+    const res = await api.get<DossierDisciplinaire>(`${BASE}/dossier/${eleveId}`);
     return res.data;
   },
 };

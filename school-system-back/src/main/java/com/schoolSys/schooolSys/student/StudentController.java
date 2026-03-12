@@ -2,18 +2,28 @@ package com.schoolSys.schooolSys.student;
 
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.common.dto.PagedResponse;
+import com.schoolSys.schooolSys.student.dto.ReinscriptionRequestDTO;
 import com.schoolSys.schooolSys.student.dto.StudentRequestDTO;
 import com.schoolSys.schooolSys.student.dto.StudentResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -22,10 +32,11 @@ import java.util.List;
 public class StudentController {
 
     private final StudentService studentService;
+    private final DocumentService documentService;
 
     /**
      * Paginated + filtered list.
-     * GET /api/students?page=0&size=20&search=ben&niveau=3ème année&classe=3A&status=Actif&sex=M&blocked=false&sort=lastName,asc
+     * GET /api/students?page=0&size=20&search=ben&niveau=3eme&classe=3A&status=Actif&sex=M&blocked=false&sort=lastName,asc
      */
     @GetMapping
     @PreAuthorize("hasAuthority('READ_STUDENTS')")
@@ -85,5 +96,81 @@ public class StudentController {
             @Valid @RequestBody List<StudentRequestDTO> dtos) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(studentService.importBulk(dtos)));
+    }
+
+    // ===================== ELV-007: Document upload endpoints =====================
+
+    @PostMapping("/{id}/documents")
+    @PreAuthorize("hasAuthority('WRITE_STUDENTS')")
+    public ResponseEntity<ApiResponse<DocumentEleve>> uploadDocument(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "type", defaultValue = "AUTRE") DocumentEleve.DocumentType type) {
+        DocumentEleve doc = documentService.upload(id, file, type);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(doc));
+    }
+
+    @GetMapping("/{id}/documents")
+    @PreAuthorize("hasAuthority('READ_STUDENTS')")
+    public ResponseEntity<ApiResponse<List<DocumentEleve>>> listDocuments(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok(documentService.listByStudent(id)));
+    }
+
+    @GetMapping("/documents/{docId}/download")
+    @PreAuthorize("hasAuthority('READ_STUDENTS')")
+    public ResponseEntity<Resource> downloadDocument(@PathVariable Long docId) throws IOException {
+        DocumentEleve doc = documentService.findById(docId);
+        Path path = Paths.get(doc.getFilePath());
+        Resource resource = new UrlResource(path.toUri());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(
+                        doc.getContentType() != null ? doc.getContentType() : "application/octet-stream"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + doc.getFileName() + "\"")
+                .body(resource);
+    }
+
+    @DeleteMapping("/documents/{docId}")
+    @PreAuthorize("hasAuthority('DELETE_STUDENTS')")
+    public ResponseEntity<Void> deleteDocument(@PathVariable Long docId) {
+        documentService.delete(docId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ===================== ELV-009: Reinscription en masse =====================
+
+    @PostMapping("/reinscription-masse")
+    @PreAuthorize("hasAuthority('WRITE_STUDENTS')")
+    public ResponseEntity<ApiResponse<List<StudentResponseDTO>>> reinscriptionMasse(
+            @RequestBody ReinscriptionRequestDTO dto) {
+        return ResponseEntity.ok(ApiResponse.ok(studentService.reinscriptionMasse(dto)));
+    }
+
+    // ===================== ELV-010: Excel import template =====================
+
+    @GetMapping("/import/template")
+    @PreAuthorize("hasAuthority('READ_STUDENTS')")
+    public ResponseEntity<Resource> downloadImportTemplate() {
+        byte[] templateBytes = studentService.generateImportTemplate();
+        ByteArrayResource resource = new ByteArrayResource(templateBytes);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"template_import_eleves.xlsx\"")
+                .body(resource);
+    }
+
+    // ===================== ELV-012: Fiche eleve PDF =====================
+
+    @GetMapping("/{id}/fiche-pdf")
+    @PreAuthorize("hasAuthority('READ_STUDENTS')")
+    public ResponseEntity<String> fichePdf(@PathVariable Long id) {
+        String html = studentService.generateFicheHtml(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(html);
     }
 }

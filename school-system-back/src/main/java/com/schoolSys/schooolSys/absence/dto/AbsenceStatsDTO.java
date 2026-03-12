@@ -18,4 +18,19 @@ public class AbsenceStatsDTO {
     private long totalJustifiees;
     private long totalNonJustifiees;
     private double tauxAbsenteisme;
+    private String alertLevel; // NORMAL, JAUNE, ROUGE
+
+    private java.util.List<EleveAlertDTO> elevesEnAlerte;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class EleveAlertDTO {
+        private Long eleveId;
+        private String nom;
+        private String prenom;
+        private long absences;
+        private String alertLevel;
+    }
 }
