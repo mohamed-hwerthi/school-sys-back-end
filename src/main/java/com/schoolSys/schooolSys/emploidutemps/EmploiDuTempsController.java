@@ -2,6 +2,7 @@ package com.schoolSys.schooolSys.emploidutemps;
 
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.emploidutemps.dto.*;
+import com.schoolSys.schooolSys.emploidutemps.solver.TimetableSolverService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import java.util.List;
 public class EmploiDuTempsController {
 
     private final EmploiDuTempsService emploiDuTempsService;
+    private final TimetableSolverService timetableSolverService;
 
     // --- Emploi du temps endpoints ---
 
@@ -44,6 +46,15 @@ public class EmploiDuTempsController {
     public ResponseEntity<ApiResponse<List<ConflitDTO>>> checkConflits(
             @Valid @RequestBody List<EmploiDuTempsRequestDTO> requests) {
         return ResponseEntity.ok(ApiResponse.ok(emploiDuTempsService.detectConflits(requests)));
+    }
+
+    // --- Generation automatique ---
+
+    @PostMapping("/api/emploi-du-temps/generate")
+    @PreAuthorize("hasAuthority('WRITE_EMPLOI_DU_TEMPS')")
+    public ResponseEntity<ApiResponse<TimetableGenerationResponseDTO>> generate(
+            @Valid @RequestBody TimetableGenerationRequestDTO request) {
+        return ResponseEntity.ok(ApiResponse.ok(timetableSolverService.generate(request)));
     }
 
     // --- Creneau endpoints ---

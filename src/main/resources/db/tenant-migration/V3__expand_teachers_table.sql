@@ -8,5 +8,5 @@ ALTER TABLE teachers ADD COLUMN IF NOT EXISTS statut          VARCHAR(20) NOT NU
 
 -- email was required + unique; frontend treats it as optional
 ALTER TABLE teachers ALTER COLUMN email DROP NOT NULL;
-DROP INDEX IF EXISTS teachers_email_key;
 ALTER TABLE teachers DROP CONSTRAINT IF EXISTS teachers_email_key;
+DROP INDEX IF EXISTS teachers_email_key;

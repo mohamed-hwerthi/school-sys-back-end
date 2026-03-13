@@ -11,7 +11,7 @@ import java.util.Map;
  * Currently stubbed with logging. When JavaMailSender is configured,
  * actual sending can be enabled.
  */
-@Service
+@Service("integrationEmailService")
 @Slf4j
 public class EmailService {
 

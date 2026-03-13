@@ -1,6 +1,9 @@
 package com.schoolSys.schooolSys.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.schoolSys.schooolSys.auth.JwtAuthenticationFilter;
+import com.schoolSys.schooolSys.auth.JwtTokenProvider;
 import com.schoolSys.schooolSys.auth.dto.LoginRequestDTO;
 import com.schoolSys.schooolSys.auth.dto.LoginResponseDTO;
 import com.schoolSys.schooolSys.auth.dto.RefreshTokenRequestDTO;
@@ -10,30 +13,28 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class)
+@WithMockUser
 @DisplayName("AuthController Integration Tests")
 class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @MockitoBean
     private AuthService authService;
@@ -47,26 +48,14 @@ class AuthControllerTest {
     @MockitoBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @TestConfiguration
-    static class TestSecurityConfig {
-        @Bean
-        public SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
-            http
-                    .csrf(csrf -> csrf.disable())
-                    .authorizeHttpRequests(auth -> auth
-                            .requestMatchers("/api/auth/login", "/api/auth/refresh-token", "/api/auth/logout")
-                            .permitAll()
-                            .anyRequest().authenticated()
-                    );
-            return http.build();
-        }
-    }
-
     private UserResponseDTO userResponse;
     private LoginResponseDTO loginResponse;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
+        doAnswer(inv -> { inv.<jakarta.servlet.FilterChain>getArgument(2).doFilter(inv.getArgument(0), inv.getArgument(1)); return null; })
+                .when(jwtAuthenticationFilter).doFilter(any(), any(), any());
+
         userResponse = UserResponseDTO.builder()
                 .id(1L)
                 .email("admin@school.com")

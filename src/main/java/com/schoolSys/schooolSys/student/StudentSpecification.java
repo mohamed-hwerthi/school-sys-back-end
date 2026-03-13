@@ -6,8 +6,10 @@ public final class StudentSpecification {
 
     private StudentSpecification() {}
 
+    private static final Specification<Student> NO_OP = (root, query, cb) -> cb.conjunction();
+
     public static Specification<Student> search(String query) {
-        if (query == null || query.isBlank()) return null;
+        if (query == null || query.isBlank()) return NO_OP;
         String like = "%" + query.toLowerCase() + "%";
         return (root, cq, cb) -> cb.or(
                 cb.like(cb.lower(root.get("firstName")), like),
@@ -20,27 +22,27 @@ public final class StudentSpecification {
     }
 
     public static Specification<Student> hasNiveau(String niveau) {
-        if (niveau == null || niveau.isBlank()) return null;
+        if (niveau == null || niveau.isBlank()) return NO_OP;
         return (root, cq, cb) -> cb.equal(root.get("niveau"), niveau);
     }
 
     public static Specification<Student> hasClasse(String classe) {
-        if (classe == null || classe.isBlank()) return null;
+        if (classe == null || classe.isBlank()) return NO_OP;
         return (root, cq, cb) -> cb.equal(root.get("classe"), classe);
     }
 
     public static Specification<Student> hasStatus(String status) {
-        if (status == null || status.isBlank()) return null;
+        if (status == null || status.isBlank()) return NO_OP;
         return (root, cq, cb) -> cb.equal(root.get("status"), status);
     }
 
     public static Specification<Student> hasSex(String sex) {
-        if (sex == null || sex.isBlank()) return null;
+        if (sex == null || sex.isBlank()) return NO_OP;
         return (root, cq, cb) -> cb.equal(root.get("sex"), sex);
     }
 
     public static Specification<Student> isBlocked(Boolean blocked) {
-        if (blocked == null) return null;
+        if (blocked == null) return NO_OP;
         return (root, cq, cb) -> cb.equal(root.get("isBlocked"), blocked);
     }
 }
