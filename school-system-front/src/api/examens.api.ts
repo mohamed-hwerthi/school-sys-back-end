@@ -1,4 +1,5 @@
 import api from "./axios";
+import type { Evaluation } from "@/types/evaluation";
 
 export interface ExamenDTO {
   id: number;
@@ -32,6 +33,27 @@ export interface ExamenRequest {
   versionPrivee: boolean;
 }
 
+/** Map an ExamenResponseDTO to the frontend Evaluation type. */
+export function mapExamenToEvaluation(dto: ExamenDTO): Evaluation {
+  return {
+    id: dto.id,
+    titre: dto.name,
+    type: "Contrôle continu",
+    matiere: dto.moduleName ?? "",
+    niveau: "",
+    classe: dto.classeName ?? "",
+    date: "",
+    heureDebut: "",
+    heureFin: "",
+    coefficient: dto.coeffEtatique,
+    bareme: 20,
+    statut: "Planifiée",
+    enseignant: dto.teacherName ?? "",
+    salle: "",
+    notes: "",
+  };
+}
+
 const BASE = "/examens";
 
 export const examensApi = {
@@ -41,6 +63,11 @@ export const examensApi = {
     if (classeId) params.set("classeId", String(classeId));
     const qs = params.toString();
     const res = await api.get<ExamenDTO[]>(`${BASE}${qs ? `?${qs}` : ""}`);
+    return res.data;
+  },
+
+  getById: async (id: number): Promise<ExamenDTO> => {
+    const res = await api.get<ExamenDTO>(`${BASE}/${id}`);
     return res.data;
   },
 

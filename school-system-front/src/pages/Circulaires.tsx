@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useCirculaires, useDeleteCirculaire, usePublishCirculaire, useArchiveCirculaire } from "@/hooks/useCirculaires";
 import { motion } from "framer-motion";
 import {
   Newspaper,
@@ -40,9 +41,7 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
-import { MOCK_CIRCULAIRES } from "@/data/circulaires";
 import type { Circulaire } from "@/types/circulaire";
 import { TYPES_CIRCULAIRE, STATUTS_CIRCULAIRE, CIBLES_CIRCULAIRE } from "@/types/circulaire";
 
@@ -72,8 +71,10 @@ const typeConfig: Record<string, { bg: string; text: string; icon: React.Element
 };
 
 export default function Circulaires() {
-  const loading = useSimulatedLoading(800);
-  const [circulaires, setCirculaires] = useState(MOCK_CIRCULAIRES);
+  const { data: circulaires = [], isLoading: loading } = useCirculaires();
+  const deleteMutation = useDeleteCirculaire();
+  const publishMutation = usePublishCirculaire();
+  const archiveMutation = useArchiveCirculaire();
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterStatut, setFilterStatut] = useState("all");
@@ -114,23 +115,16 @@ export default function Circulaires() {
 
   const handleDelete = () => {
     if (!deleteTarget) return;
-    setCirculaires((prev) => prev.filter((c) => c.id !== deleteTarget.id));
-    notify.success("Circulaire supprimée");
+    deleteMutation.mutate(deleteTarget.id);
     setDeleteTarget(null);
   };
 
   const handlePublish = (id: number) => {
-    setCirculaires((prev) =>
-      prev.map((c) => c.id === id ? { ...c, statut: "Publiée" as const, datePublication: new Date().toISOString().split("T")[0] } : c)
-    );
-    notify.success("Circulaire publiée");
+    publishMutation.mutate(id);
   };
 
   const handleArchive = (id: number) => {
-    setCirculaires((prev) =>
-      prev.map((c) => c.id === id ? { ...c, statut: "Archivée" as const } : c)
-    );
-    notify.success("Circulaire archivée");
+    archiveMutation.mutate(id);
   };
 
   if (loading) return <DashboardSkeleton />;

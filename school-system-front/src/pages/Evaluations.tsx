@@ -53,10 +53,9 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
-import { MOCK_EVALUATIONS, MOCK_RESULTATS } from "@/data/evaluations";
-import type { Evaluation } from "@/types/evaluation";
+import { useExamens, useDeleteExamen } from "@/hooks/useExamens";
+import type { Evaluation, ResultatEvaluation } from "@/types/evaluation";
 import { TYPES_EVALUATION, STATUTS_EVALUATION, MATIERES } from "@/types/evaluation";
 
 const ITEMS_PER_PAGE = 8;
@@ -82,9 +81,9 @@ const PIE_COLORS = ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#ef4444"];
 type TabKey = "overview" | "liste" | "resultats";
 
 export default function Evaluations() {
-  const loading = useSimulatedLoading(800);
-  const [evaluations, setEvaluations] = useState(MOCK_EVALUATIONS);
-  const [resultats] = useState(MOCK_RESULTATS);
+  const { data: evaluations = [], isLoading: loading } = useExamens();
+  const deleteExamen = useDeleteExamen();
+  const resultats: ResultatEvaluation[] = [];
 
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [search, setSearch] = useState("");
@@ -175,9 +174,16 @@ export default function Evaluations() {
 
   const handleDelete = () => {
     if (!deleteTarget) return;
-    setEvaluations((prev) => prev.filter((e) => e.id !== deleteTarget.id));
-    notify.success("Évaluation supprimée");
-    setDeleteTarget(null);
+    deleteExamen.mutate(deleteTarget.id, {
+      onSuccess: () => {
+        notify.success("Évaluation supprimée");
+        setDeleteTarget(null);
+      },
+      onError: () => {
+        notify.error("Erreur lors de la suppression");
+        setDeleteTarget(null);
+      },
+    });
   };
 
   const tabs: { key: TabKey; label: string; icon: React.ElementType }[] = [

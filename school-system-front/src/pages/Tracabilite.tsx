@@ -41,9 +41,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
+import { useAuditLogs } from "@/hooks/useAuditLogs";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
-import { MOCK_ACTIONS } from "@/data/tracabilite";
 import type { ActionLog } from "@/types/tracabilite";
 import { TYPES_ACTION, MODULES_ACTION } from "@/types/tracabilite";
 
@@ -93,7 +92,8 @@ const moduleColors: Record<string, string> = {
 };
 
 export default function Tracabilite() {
-  const loading = useSimulatedLoading(800);
+  const { data, isLoading: loading } = useAuditLogs();
+  const actions = data?.content ?? [];
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterModule, setFilterModule] = useState("all");
@@ -104,27 +104,27 @@ export default function Tracabilite() {
   // Stats
   const stats = useMemo(() => {
     const today = "2026-02-23";
-    const todayActions = MOCK_ACTIONS.filter((a) => a.date === today).length;
-    const connexions = MOCK_ACTIONS.filter((a) => a.type === "Connexion").length;
-    const modifications = MOCK_ACTIONS.filter((a) => a.type === "Modification" || a.type === "Création" || a.type === "Suppression").length;
-    const uniqueUsers = new Set(MOCK_ACTIONS.map((a) => a.utilisateur)).size;
+    const todayActions = actions.filter((a) => a.date === today).length;
+    const connexions = actions.filter((a) => a.type === "Connexion").length;
+    const modifications = actions.filter((a) => a.type === "Modification" || a.type === "Création" || a.type === "Suppression").length;
+    const uniqueUsers = new Set(actions.map((a) => a.utilisateur)).size;
     return [
       { label: "Actions aujourd'hui", value: todayActions, icon: Activity, bgLight: "bg-violet-50", textColor: "text-violet-700" },
       { label: "Connexions", value: connexions, icon: LogIn, bgLight: "bg-purple-50", textColor: "text-purple-700" },
       { label: "Modifications", value: modifications, icon: Edit, bgLight: "bg-blue-50", textColor: "text-blue-700" },
       { label: "Utilisateurs actifs", value: uniqueUsers, icon: User, bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
     ];
-  }, []);
+  }, [actions]);
 
   const filtered = useMemo(() => {
-    return MOCK_ACTIONS.filter((a) => {
+    return actions.filter((a) => {
       const matchSearch = search === "" || a.description.toLowerCase().includes(search.toLowerCase()) || a.utilisateur.toLowerCase().includes(search.toLowerCase()) || a.details.toLowerCase().includes(search.toLowerCase());
       const matchType = filterType === "all" || a.type === filterType;
       const matchModule = filterModule === "all" || a.module === filterModule;
       const matchDate = filterDate === "" || a.date === filterDate;
       return matchSearch && matchType && matchModule && matchDate;
     });
-  }, [search, filterType, filterModule, filterDate]);
+  }, [actions, search, filterType, filterModule, filterDate]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);

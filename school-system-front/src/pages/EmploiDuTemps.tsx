@@ -44,7 +44,7 @@ import { useClasses } from "@/hooks/useClasses";
 import { useTeachers } from "@/hooks/useTeachers";
 import { useModules } from "@/hooks/useModules";
 import type { EmploiDuTempsEntry, Creneau, Conflit, TeachingAssignment, TimetableGenerateResponse } from "@/types/emploi-du-temps";
-import { MOCK_ROOMS } from "@/data/rooms";
+import { useRooms } from "@/hooks/useRooms";
 
 const JOURS = [
   { value: 1, label: "Lundi" },
@@ -107,6 +107,7 @@ export default function EmploiDuTempsPage() {
   const { data: classes = [] } = useClasses();
   const { teachers } = useTeachers();
   const { data: modules = [] } = useModules();
+  const { rooms = [] } = useRooms();
   const { data: creneaux = [], isLoading: creneauxLoading } = useCreneaux();
   const { data: serverEntries = [], isLoading: entriesLoading } =
     useEmploiByClasse(selectedClasseId);
@@ -261,7 +262,7 @@ export default function EmploiDuTempsPage() {
     setGenerateResult(null);
   };
 
-  const availableRooms = MOCK_ROOMS.filter((r) => r.statut !== "En maintenance");
+  const availableRooms = rooms.filter((r) => r.statut !== "En maintenance");
 
   const isLoading = creneauxLoading || (entriesLoading && selectedClasseId > 0);
 

@@ -39,9 +39,8 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
+import { useRapports, useDeleteRapport } from "@/hooks/useRapports";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
-import { MOCK_RAPPORTS } from "@/data/rapports";
 import type { Rapport } from "@/types/rapport";
 import { TYPES_RAPPORT, STATUTS_RAPPORT } from "@/types/rapport";
 
@@ -73,8 +72,8 @@ const typeColors: Record<string, string> = {
 };
 
 export default function Rapports() {
-  const loading = useSimulatedLoading(800);
-  const [rapports, setRapports] = useState(MOCK_RAPPORTS);
+  const { data: rapports = [], isLoading: loading } = useRapports();
+  const deleteRapport = useDeleteRapport();
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterStatut, setFilterStatut] = useState("all");
@@ -118,8 +117,7 @@ export default function Rapports() {
 
   const handleDelete = () => {
     if (!deleteTarget) return;
-    setRapports((prev) => prev.filter((r) => r.id !== deleteTarget.id));
-    notify.success("Rapport supprimé");
+    deleteRapport.mutate(deleteTarget.id);
     setDeleteTarget(null);
   };
 
