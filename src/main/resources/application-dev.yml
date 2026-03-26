@@ -24,6 +24,17 @@ spring:
     schemas: public
     baseline-on-migrate: true
 
+  mail:
+    enabled: false
+    host: localhost
+    port: 1025
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
 logging:
   level:
     root: INFO
@@ -38,8 +49,10 @@ server:
   error:
     include-stacktrace: always
 
-# CORS — wide open for local development
+# JWT — dev-only default secret (DO NOT use in production)
 app:
+  jwt:
+    secret: ${JWT_SECRET:aVeryLongSecretKeyThatIsAtLeast256BitsForHS256Algorithm2026!}
   cors:
     allowed-origins: "*"
 

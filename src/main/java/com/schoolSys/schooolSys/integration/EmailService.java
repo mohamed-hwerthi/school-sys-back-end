@@ -1,30 +1,58 @@
 package com.schoolSys.schooolSys.integration;
 
 import com.schoolSys.schooolSys.integration.dto.EmailRequest;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
 /**
- * Email sending service.
- * Currently stubbed with logging. When JavaMailSender is configured,
- * actual sending can be enabled.
+ * General-purpose email sending service for integration layer.
+ * Uses JavaMailSender when SMTP is configured, otherwise falls back to logging.
  */
 @Service("integrationEmailService")
 @Slf4j
 public class EmailService {
 
+    @Value("${spring.mail.enabled:false}")
+    private boolean mailEnabled;
+
+    @Value("${spring.mail.from:noreply@ecolenet.dev}")
+    private String fromAddress;
+
+    @Autowired(required = false)
+    private JavaMailSender mailSender;
+
     public boolean send(EmailRequest request) {
-        log.info("Envoi email a: {}, sujet: {}, corps: {} caracteres",
-                request.getTo(), request.getSubject(),
-                request.getBody() != null ? request.getBody().length() : 0);
+        if (!mailEnabled || mailSender == null) {
+            log.info("=== EMAIL (mode log - SMTP non configure) ===");
+            log.info("To: {}, Subject: {}, Body: {} caracteres",
+                    request.getTo(), request.getSubject(),
+                    request.getBody() != null ? request.getBody().length() : 0);
+            log.info("==============================================");
+            return true;
+        }
 
-        // Stubbed: in production, use JavaMailSender
-        // mailSender.send(message);
-
-        log.info("Email envoye avec succes (stub) a: {}", request.getTo());
-        return true;
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromAddress);
+            helper.setTo(request.getTo());
+            helper.setSubject(request.getSubject());
+            helper.setText(request.getBody(), true);
+            mailSender.send(message);
+            log.info("Email envoye avec succes a: {} (sujet: {})", request.getTo(), request.getSubject());
+            return true;
+        } catch (MessagingException e) {
+            log.error("Erreur lors de l'envoi de l'email a {}: {}", request.getTo(), e.getMessage(), e);
+            return false;
+        }
     }
 
     public boolean sendTemplate(String templateType, Map<String, String> params) {
