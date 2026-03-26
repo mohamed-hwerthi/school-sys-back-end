@@ -18,11 +18,15 @@ export default function MoreTab() {
     { icon: "👤", label: "Mon profil", onPress: () => {} },
     { icon: "🔔", label: "Notifications", onPress: () => navigation.navigate("Notifications") },
     { icon: "💳", label: "Paiements", onPress: () => navigation.navigate("PaymentHistory") },
+    { icon: "📋", label: "Absences", onPress: () => navigation.navigate("Absences") },
+    { icon: "⚠️", label: "Discipline", onPress: () => navigation.navigate("Discipline") },
+    { icon: "📚", label: "Devoirs", onPress: () => navigation.navigate("Homework") },
+    { icon: "📖", label: "Ressources", onPress: () => navigation.navigate("Resources") },
     { icon: "🔒", label: "Securite & 2FA", onPress: () => {} },
     { icon: "🌙", label: "Theme sombre", onPress: () => {} },
     { icon: "🌐", label: "Langue", onPress: () => {} },
     { icon: "❓", label: "Aide & Support", onPress: () => {} },
-    { icon: "📋", label: "Conditions d'utilisation", onPress: () => {} },
+    { icon: "📝", label: "Conditions d'utilisation", onPress: () => {} },
   ];
 
   return (

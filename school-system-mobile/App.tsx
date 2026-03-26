@@ -17,6 +17,11 @@ import MoreTab from "@/screens/tabs/MoreTab";
 import NotificationsTab from "@/screens/tabs/NotificationsTab";
 import PaymentHistoryScreen from "@/screens/PaymentHistoryScreen";
 import AnnouncementDetailScreen from "@/screens/AnnouncementDetailScreen";
+import AbsencesScreen from "@/screens/AbsencesScreen";
+import DisciplineScreen from "@/screens/DisciplineScreen";
+import HomeworkScreen from "@/screens/HomeworkScreen";
+import HomeworkDetailScreen from "@/screens/HomeworkDetailScreen";
+import ResourcesScreen from "@/screens/ResourcesScreen";
 import { colors } from "@/constants/theme";
 
 const queryClient = new QueryClient({
@@ -88,6 +93,31 @@ function MainStack() {
         name="AnnouncementDetail"
         component={AnnouncementDetailScreen}
         options={{ animation: "slide_from_bottom" }}
+      />
+      <Stack.Screen
+        name="Absences"
+        component={AbsencesScreen}
+        options={{ animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="Discipline"
+        component={DisciplineScreen}
+        options={{ animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="Homework"
+        component={HomeworkScreen}
+        options={{ animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="HomeworkDetail"
+        component={HomeworkDetailScreen}
+        options={{ animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="Resources"
+        component={ResourcesScreen}
+        options={{ animation: "slide_from_right" }}
       />
     </Stack.Navigator>
   );

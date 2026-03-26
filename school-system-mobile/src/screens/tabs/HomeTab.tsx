@@ -67,6 +67,8 @@ export default function HomeTab() {
     { icon: "🗓️", label: "Emploi du temps", onPress: () => navigation.navigate("Tabs", { screen: "EDT" }) },
     { icon: "💳", label: "Paiements", onPress: () => navigation.navigate("PaymentHistory") },
     { icon: "🔔", label: "Notifications", onPress: () => navigation.navigate("Notifications") },
+    { icon: "📋", label: "Absences", onPress: () => navigation.navigate("Absences") },
+    { icon: "📚", label: "Devoirs", onPress: () => navigation.navigate("Homework") },
   ];
 
   return (
