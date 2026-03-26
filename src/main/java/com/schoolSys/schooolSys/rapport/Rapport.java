@@ -1,0 +1,56 @@
+package com.schoolSys.schooolSys.rapport;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "rapports")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Rapport {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 255)
+    private String titre;
+
+    @Column(nullable = false, length = 100)
+    private String type;
+
+    @Column(length = 100)
+    private String periode;
+
+    @Column(name = "date_generation", nullable = false)
+    @Builder.Default
+    private LocalDateTime dateGeneration = LocalDateTime.now();
+
+    @Column(nullable = false, length = 30)
+    @Builder.Default
+    private String statut = "Brouillon";
+
+    @Column(nullable = false, length = 255)
+    private String auteur;
+
+    @Column(length = 255)
+    private String destinataire;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(length = 500)
+    private String fichier;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at", nullable = false)
+    @Builder.Default
+    private LocalDateTime updatedAt = LocalDateTime.now();
+}

@@ -1,0 +1,57 @@
+package com.schoolSys.schooolSys.rapport;
+
+import com.schoolSys.schooolSys.common.dto.ApiResponse;
+import com.schoolSys.schooolSys.rapport.dto.RapportRequestDTO;
+import com.schoolSys.schooolSys.rapport.dto.RapportResponseDTO;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/rapports")
+@RequiredArgsConstructor
+public class RapportController {
+
+    private final RapportService rapportService;
+
+    @GetMapping
+    @PreAuthorize("hasAuthority('READ_RAPPORTS')")
+    public ResponseEntity<ApiResponse<List<RapportResponseDTO>>> getAll(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String statut) {
+        return ResponseEntity.ok(ApiResponse.ok(rapportService.findAll(type, statut)));
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('READ_RAPPORTS')")
+    public ResponseEntity<ApiResponse<RapportResponseDTO>> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok(rapportService.findById(id)));
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAuthority('VIEW_REPORTS')")
+    public ResponseEntity<ApiResponse<RapportResponseDTO>> create(
+            @Valid @RequestBody RapportRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(rapportService.create(dto)));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('VIEW_REPORTS')")
+    public ResponseEntity<ApiResponse<RapportResponseDTO>> update(
+            @PathVariable Long id, @Valid @RequestBody RapportRequestDTO dto) {
+        return ResponseEntity.ok(ApiResponse.ok(rapportService.update(id, dto)));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('VIEW_REPORTS')")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        rapportService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}
