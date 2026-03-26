@@ -2,6 +2,8 @@ import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { RoleGuard } from "@/components/RoleGuard";
+import type { UserRole } from "@/types/auth";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/config/queryClient";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -123,6 +125,16 @@ const S = ({ children }: { children: React.ReactNode }) => (
   </ErrorBoundary>
 );
 
+const ADMIN_ROLES: UserRole[] = ["SUPER_ADMIN", "ADMIN"];
+const MANAGEMENT_ROLES: UserRole[] = ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"];
+const STAFF_ROLES: UserRole[] = ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT"];
+const FINANCE_ROLES: UserRole[] = ["SUPER_ADMIN", "ADMIN", "COMPTABLE"];
+
+/** Route with role guard */
+const G = ({ roles, children }: { roles: UserRole[]; children: React.ReactNode }) => (
+  <RoleGuard roles={roles}><S>{children}</S></RoleGuard>
+);
+
 const App = () => (
   <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
@@ -160,101 +172,101 @@ const App = () => (
             >
               <Route index element={<S><Dashboard /></S>} />
 
-              {/* Élèves */}
-              <Route path="eleves" element={<S><Students /></S>} />
-              <Route path="eleves/ajouter" element={<S><AddStudent /></S>} />
-              <Route path="eleves/modifier/:id" element={<S><EditStudent /></S>} />
-              <Route path="eleves/:id" element={<S><StudentProfile /></S>} />
+              {/* Élèves — all staff + comptable can view */}
+              <Route path="eleves" element={<G roles={[...STAFF_ROLES, "COMPTABLE"]}><Students /></G>} />
+              <Route path="eleves/ajouter" element={<G roles={MANAGEMENT_ROLES}><AddStudent /></G>} />
+              <Route path="eleves/modifier/:id" element={<G roles={MANAGEMENT_ROLES}><EditStudent /></G>} />
+              <Route path="eleves/:id" element={<G roles={[...STAFF_ROLES, "COMPTABLE"]}><StudentProfile /></G>} />
               <Route path="eleves/:id/messages" element={<S><StudentMessages /></S>} />
 
               {/* Enseignants */}
-              <Route path="enseignants" element={<S><Teachers /></S>} />
-              <Route path="enseignants/ajouter" element={<S><AddTeacher /></S>} />
-              <Route path="enseignants/modifier/:id" element={<S><EditTeacher /></S>} />
+              <Route path="enseignants" element={<G roles={MANAGEMENT_ROLES}><Teachers /></G>} />
+              <Route path="enseignants/ajouter" element={<G roles={MANAGEMENT_ROLES}><AddTeacher /></G>} />
+              <Route path="enseignants/modifier/:id" element={<G roles={MANAGEMENT_ROLES}><EditTeacher /></G>} />
 
               {/* Absences */}
-              <Route path="absences" element={<S><AbsencesPage /></S>} />
+              <Route path="absences" element={<G roles={STAFF_ROLES}><AbsencesPage /></G>} />
 
-              {/* Inscriptions (Board 13) */}
-              <Route path="inscriptions" element={<S><InscriptionsPage /></S>} />
+              {/* Inscriptions */}
+              <Route path="inscriptions" element={<G roles={MANAGEMENT_ROLES}><InscriptionsPage /></G>} />
 
-              {/* Emploi du temps */}
+              {/* Emploi du temps — all authenticated can view */}
               <Route path="emploi-du-temps" element={<S><EmploiDuTempsPage /></S>} />
-              <Route path="emploi-salles" element={<S><EmploiSalles /></S>} />
-              <Route path="emploi-salles/ajouter" element={<S><AddRoom /></S>} />
-              <Route path="emploi-salles/modifier/:id" element={<S><EditRoom /></S>} />
+              <Route path="emploi-salles" element={<G roles={MANAGEMENT_ROLES}><EmploiSalles /></G>} />
+              <Route path="emploi-salles/ajouter" element={<G roles={MANAGEMENT_ROLES}><AddRoom /></G>} />
+              <Route path="emploi-salles/modifier/:id" element={<G roles={MANAGEMENT_ROLES}><EditRoom /></G>} />
 
               {/* Configuration */}
-              <Route path="config/niveaux" element={<S><Niveaux /></S>} />
-              <Route path="ecole" element={<S><SchoolInfo /></S>} />
+              <Route path="config/niveaux" element={<G roles={MANAGEMENT_ROLES}><Niveaux /></G>} />
+              <Route path="ecole" element={<G roles={MANAGEMENT_ROLES}><SchoolInfo /></G>} />
 
               {/* Finance */}
-              <Route path="finance" element={<S><FinancePaiement /></S>} />
-              <Route path="finance/paiement" element={<S><FinancePaiement /></S>} />
-              <Route path="finance/depenses" element={<S><Depenses /></S>} />
-              <Route path="finance/tresorerie" element={<S><Tresorerie /></S>} />
-              <Route path="finance/remises-penalites" element={<S><RemisesPenalites /></S>} />
-              <Route path="finance/relances" element={<S><Relances /></S>} />
-              <Route path="finance/rapports" element={<S><RapportsFinanciers /></S>} />
-              <Route path="finance/caisse" element={<S><GestionCaisse /></S>} />
-              <Route path="factures" element={<S><FacturesPage /></S>} />
+              <Route path="finance" element={<G roles={[...FINANCE_ROLES, "DIRECTEUR"]}><FinancePaiement /></G>} />
+              <Route path="finance/paiement" element={<G roles={FINANCE_ROLES}><FinancePaiement /></G>} />
+              <Route path="finance/depenses" element={<G roles={FINANCE_ROLES}><Depenses /></G>} />
+              <Route path="finance/tresorerie" element={<G roles={FINANCE_ROLES}><Tresorerie /></G>} />
+              <Route path="finance/remises-penalites" element={<G roles={FINANCE_ROLES}><RemisesPenalites /></G>} />
+              <Route path="finance/relances" element={<G roles={FINANCE_ROLES}><Relances /></G>} />
+              <Route path="finance/rapports" element={<G roles={[...FINANCE_ROLES, "DIRECTEUR"]}><RapportsFinanciers /></G>} />
+              <Route path="finance/caisse" element={<G roles={FINANCE_ROLES}><GestionCaisse /></G>} />
+              <Route path="factures" element={<G roles={FINANCE_ROLES}><FacturesPage /></G>} />
 
               {/* Pédagogie */}
-              <Route path="evaluations" element={<S><Evaluations /></S>} />
-              <Route path="carnets" element={<S><CarnetNotes /></S>} />
-              <Route path="annee-scolaire" element={<S><AnneeScolairePage /></S>} />
-              <Route path="devoirs" element={<S><DevoirsPage /></S>} />
-              <Route path="quiz" element={<S><QuizManagementPage /></S>} />
+              <Route path="evaluations" element={<G roles={STAFF_ROLES}><Evaluations /></G>} />
+              <Route path="carnets" element={<G roles={[...STAFF_ROLES, "PARENT"]}><CarnetNotes /></G>} />
+              <Route path="annee-scolaire" element={<G roles={MANAGEMENT_ROLES}><AnneeScolairePage /></G>} />
+              <Route path="devoirs" element={<G roles={STAFF_ROLES}><DevoirsPage /></G>} />
+              <Route path="quiz" element={<G roles={STAFF_ROLES}><QuizManagementPage /></G>} />
 
               {/* Bulletins */}
-              <Route path="bulletin-templates" element={<S><BulletinTemplatesPage /></S>} />
-              <Route path="bulletins-masse" element={<S><BulletinsMassePage /></S>} />
-              <Route path="stats-reussite" element={<S><StatsReussitePage /></S>} />
-              <Route path="comparatif" element={<S><ComparatifPerformancesPage /></S>} />
+              <Route path="bulletin-templates" element={<G roles={MANAGEMENT_ROLES}><BulletinTemplatesPage /></G>} />
+              <Route path="bulletins-masse" element={<G roles={MANAGEMENT_ROLES}><BulletinsMassePage /></G>} />
+              <Route path="stats-reussite" element={<G roles={MANAGEMENT_ROLES}><StatsReussitePage /></G>} />
+              <Route path="comparatif" element={<G roles={MANAGEMENT_ROLES}><ComparatifPerformancesPage /></G>} />
 
               {/* Vie scolaire */}
-              <Route path="discipline" element={<S><DisciplinePage /></S>} />
-              <Route path="bibliotheque" element={<S><BibliothequePage /></S>} />
-              <Route path="transport" element={<S><TransportPage /></S>} />
-              <Route path="cantine" element={<S><CantinePage /></S>} />
+              <Route path="discipline" element={<G roles={STAFF_ROLES}><DisciplinePage /></G>} />
+              <Route path="bibliotheque" element={<G roles={MANAGEMENT_ROLES}><BibliothequePage /></G>} />
+              <Route path="transport" element={<G roles={MANAGEMENT_ROLES}><TransportPage /></G>} />
+              <Route path="cantine" element={<G roles={MANAGEMENT_ROLES}><CantinePage /></G>} />
 
               {/* Documents */}
-              <Route path="rapports" element={<S><Rapports /></S>} />
-              <Route path="circulaires" element={<S><Circulaires /></S>} />
-              <Route path="documents" element={<S><GenerationDocumentsPage /></S>} />
+              <Route path="rapports" element={<G roles={MANAGEMENT_ROLES}><Rapports /></G>} />
+              <Route path="circulaires" element={<G roles={MANAGEMENT_ROLES}><Circulaires /></G>} />
+              <Route path="documents" element={<G roles={MANAGEMENT_ROLES}><GenerationDocumentsPage /></G>} />
 
               {/* Communication */}
-              <Route path="notifications" element={<S><NotificationsPage /></S>} />
-              <Route path="annonces" element={<S><AnnoncesPage /></S>} />
+              <Route path="notifications" element={<G roles={STAFF_ROLES}><NotificationsPage /></G>} />
+              <Route path="annonces" element={<G roles={STAFF_ROLES}><AnnoncesPage /></G>} />
 
               {/* Portail Parent */}
-              <Route path="portail-parent" element={<S><ParentPortalPage /></S>} />
+              <Route path="portail-parent" element={<G roles={["PARENT"]}><ParentPortalPage /></G>} />
 
-              {/* RH & Personnel (Board 19) */}
-              <Route path="contrats" element={<S><ContratsPage /></S>} />
-              <Route path="rh/pointage" element={<S><PointagePage /></S>} />
-              <Route path="rh/paie" element={<S><PaiePage /></S>} />
-              <Route path="rh/formations" element={<S><FormationsPage /></S>} />
-              <Route path="teacher-evaluations" element={<S><TeacherEvaluationsPage /></S>} />
+              {/* RH & Personnel */}
+              <Route path="contrats" element={<G roles={MANAGEMENT_ROLES}><ContratsPage /></G>} />
+              <Route path="rh/pointage" element={<G roles={MANAGEMENT_ROLES}><PointagePage /></G>} />
+              <Route path="rh/paie" element={<G roles={MANAGEMENT_ROLES}><PaiePage /></G>} />
+              <Route path="rh/formations" element={<G roles={MANAGEMENT_ROLES}><FormationsPage /></G>} />
+              <Route path="teacher-evaluations" element={<G roles={MANAGEMENT_ROLES}><TeacherEvaluationsPage /></G>} />
 
-              {/* Analytics (Board 22) */}
-              <Route path="analytics" element={<S><AnalyticsDashboardPage /></S>} />
-              <Route path="suivi-eleve" element={<S><SuiviElevePage /></S>} />
+              {/* Analytics */}
+              <Route path="analytics" element={<G roles={MANAGEMENT_ROLES}><AnalyticsDashboardPage /></G>} />
+              <Route path="suivi-eleve" element={<G roles={STAFF_ROLES}><SuiviElevePage /></G>} />
 
-              {/* Intégrations (Board 21) */}
-              <Route path="integrations" element={<S><IntegrationsPage /></S>} />
+              {/* Intégrations */}
+              <Route path="integrations" element={<G roles={ADMIN_ROLES}><IntegrationsPage /></G>} />
 
-              {/* SaaS Admin (Board 24) */}
-              <Route path="super-admin" element={<S><SuperAdminDashboardPage /></S>} />
+              {/* SaaS Admin */}
+              <Route path="super-admin" element={<G roles={["SUPER_ADMIN"]}><SuperAdminDashboardPage /></G>} />
 
               {/* Vitrine */}
-              <Route path="vitrine" element={<S><VitrineAdminPage /></S>} />
+              <Route path="vitrine" element={<G roles={MANAGEMENT_ROLES}><VitrineAdminPage /></G>} />
 
               {/* Administration */}
-              <Route path="utilisateurs" element={<S><UsersPage /></S>} />
-              <Route path="configuration" element={<S><Configuration /></S>} />
-              <Route path="tracabilite" element={<S><Tracabilite /></S>} />
-              <Route path="statistique" element={<S><Statistiques /></S>} />
+              <Route path="utilisateurs" element={<G roles={ADMIN_ROLES}><UsersPage /></G>} />
+              <Route path="configuration" element={<G roles={ADMIN_ROLES}><Configuration /></G>} />
+              <Route path="tracabilite" element={<G roles={ADMIN_ROLES}><Tracabilite /></G>} />
+              <Route path="statistique" element={<G roles={MANAGEMENT_ROLES}><Statistiques /></G>} />
 
               <Route path="*" element={<S><Dashboard /></S>} />
             </Route>

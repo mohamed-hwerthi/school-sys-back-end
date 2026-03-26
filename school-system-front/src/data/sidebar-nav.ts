@@ -90,7 +90,7 @@ export const sidebarSections: NavSection[] = [
     icon: BookOpen,
     color: "text-purple-500",
     items: [
-      { title: "Emploi du temps", icon: Clock, url: "/dashboard/emploi-du-temps" },
+      { title: "Emploi du temps", icon: Clock, url: "/dashboard/emploi-du-temps", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT", "PARENT"] },
       { title: "Salles", icon: Calendar, url: "/dashboard/emploi-salles", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Évaluations", icon: ClipboardCheck, url: "/dashboard/evaluations", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT"] },
       { title: "Devoirs", icon: PenTool, url: "/dashboard/devoirs", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT"] },
@@ -135,17 +135,18 @@ export const sidebarSections: NavSection[] = [
       { title: "Factures", icon: Receipt, url: "/dashboard/factures", roles: ["SUPER_ADMIN", "ADMIN", "COMPTABLE"] },
       { title: "Remises", icon: BadgePercent, url: "/dashboard/finance/remises-penalites", roles: ["SUPER_ADMIN", "ADMIN", "COMPTABLE"] },
       { title: "Relances", icon: Bell, url: "/dashboard/finance/relances", roles: ["SUPER_ADMIN", "ADMIN", "COMPTABLE"] },
-      { title: "Rapports", icon: BarChart3, url: "/dashboard/finance/rapports" },
+      { title: "Rapports", icon: BarChart3, url: "/dashboard/finance/rapports", roles: ["SUPER_ADMIN", "ADMIN", "COMPTABLE", "DIRECTEUR"] },
     ],
   },
   {
     label: "Communication",
     icon: Megaphone,
     color: "text-rose-500",
+    roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT"],
     items: [
       { title: "Annonces", icon: Megaphone, url: "/dashboard/annonces" },
       { title: "Notifications", icon: BellRing, url: "/dashboard/notifications" },
-      { title: "Circulaires", icon: Newspaper, url: "/dashboard/circulaires" },
+      { title: "Circulaires", icon: Newspaper, url: "/dashboard/circulaires", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
     ],
   },
   {
