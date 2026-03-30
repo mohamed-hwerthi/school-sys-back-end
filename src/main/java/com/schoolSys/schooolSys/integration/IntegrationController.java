@@ -56,6 +56,13 @@ public class IntegrationController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @PostMapping("/sms/bulk")
+    @PreAuthorize("hasAuthority('MANAGE_SYSTEM')")
+    public ResponseEntity<ApiResponse<java.util.List<String>>> sendBulkSms(@RequestBody BulkSmsRequest request) {
+        java.util.List<String> successfulNumbers = smsService.sendBulk(request);
+        return ResponseEntity.ok(ApiResponse.ok(successfulNumbers));
+    }
+
     @GetMapping("/webhooks")
     @PreAuthorize("hasAuthority('MANAGE_SYSTEM')")
     public ResponseEntity<ApiResponse<List<WebhookConfig>>> getWebhooks() {

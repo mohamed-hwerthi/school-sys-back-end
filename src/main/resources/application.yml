@@ -59,6 +59,12 @@ app:
       - mp4
       - mp3
 
+# Twilio SMS
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID:}
+  auth-token: ${TWILIO_AUTH_TOKEN:}
+  from-number: ${TWILIO_FROM_NUMBER:}
+
 # Springdoc / Swagger
 springdoc:
   api-docs:
