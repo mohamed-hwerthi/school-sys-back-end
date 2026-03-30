@@ -69,6 +69,8 @@ import {
   useCreateRessource,
   useDeleteRessource,
 } from "@/hooks/useDevoirs";
+import { FileUpload } from "@/components/FileUpload";
+import type { FileInfo } from "@/api/storage.api";
 import type {
   Devoir,
   CreateDevoirRequest,
@@ -374,6 +376,7 @@ export default function DevoirsPage() {
                     <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Date limite</th>
                     <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Points</th>
                     <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Fichier</th>
                     <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Soumissions</th>
                     <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
                   </tr>
@@ -381,7 +384,7 @@ export default function DevoirsPage() {
                 <tbody>
                   {paginatedDevoirs.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-16 text-center text-muted-foreground">
+                      <td colSpan={8} className="py-16 text-center text-muted-foreground">
                         <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-30" />
                         <p className="font-medium">Aucun devoir trouve</p>
                       </td>
@@ -401,6 +404,21 @@ export default function DevoirsPage() {
                           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUT_COLORS[devoir.statut]}`}>
                             {STATUT_LABELS[devoir.statut]}
                           </span>
+                        </td>
+                        <td className="py-3 px-4 hidden lg:table-cell">
+                          {devoir.fichierUrl ? (
+                            <a
+                              href={devoir.fichierUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-primary hover:underline text-xs"
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                              Fichier
+                            </a>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">-</span>
+                          )}
                         </td>
                         <td className="py-3 px-4 hidden lg:table-cell text-muted-foreground">{devoir.totalSoumissions}</td>
                         <td className="py-3 px-4 text-right">
@@ -477,6 +495,7 @@ export default function DevoirsPage() {
                       <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Date</th>
                       <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Corrige</th>
                       <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Note</th>
+                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Fichier</th>
                       <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">En retard</th>
                       <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
                     </tr>
@@ -484,7 +503,7 @@ export default function DevoirsPage() {
                   <tbody>
                     {paginatedSoumissions.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="py-16 text-center text-muted-foreground">
+                        <td colSpan={8} className="py-16 text-center text-muted-foreground">
                           <FileText className="h-10 w-10 mx-auto mb-3 opacity-30" />
                           <p className="font-medium">{selectedDevoirId ? "Aucune soumission pour ce devoir" : "Selectionnez un devoir"}</p>
                         </td>
@@ -504,6 +523,21 @@ export default function DevoirsPage() {
                           </td>
                           <td className="py-3 px-4 hidden md:table-cell text-muted-foreground">
                             {soumission.note != null ? soumission.note : "-"}
+                          </td>
+                          <td className="py-3 px-4 hidden md:table-cell">
+                            {soumission.fichierUrl ? (
+                              <a
+                                href={soumission.fichierUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-primary hover:underline text-xs"
+                              >
+                                <Download className="h-3.5 w-3.5" />
+                                Fichier
+                              </a>
+                            ) : (
+                              <span className="text-muted-foreground text-xs">-</span>
+                            )}
                           </td>
                           <td className="py-3 px-4 hidden md:table-cell">
                             {soumission.enRetard ? (
@@ -685,8 +719,35 @@ export default function DevoirsPage() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="fichierUrl">URL du fichier</Label>
-              <Input id="fichierUrl" value={devoirForm.fichierUrl ?? ""} onChange={(e) => setDevoirForm({ ...devoirForm, fichierUrl: e.target.value || undefined })} placeholder="https://..." />
+              <Label>Fichier joint</Label>
+              {devoirForm.fichierUrl ? (
+                <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+                  <File className="h-4 w-4 text-muted-foreground" />
+                  <a
+                    href={devoirForm.fichierUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline flex-1 truncate"
+                  >
+                    {devoirForm.fichierUrl.split("/").pop() || "Fichier"}
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setDevoirForm({ ...devoirForm, fichierUrl: undefined })}
+                    className="text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <FileUpload
+                  folder="devoirs"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.zip"
+                  onUpload={(info: FileInfo) =>
+                    setDevoirForm({ ...devoirForm, fichierUrl: info.fileUrl })
+                  }
+                />
+              )}
             </div>
           </div>
           <DialogFooter>
@@ -752,8 +813,35 @@ export default function DevoirsPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="resFichier">URL du fichier</Label>
-              <Input id="resFichier" value={ressourceForm.fichierUrl ?? ""} onChange={(e) => setRessourceForm({ ...ressourceForm, fichierUrl: e.target.value || undefined })} placeholder="https://..." />
+              <Label>Fichier joint</Label>
+              {ressourceForm.fichierUrl ? (
+                <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+                  <File className="h-4 w-4 text-muted-foreground" />
+                  <a
+                    href={ressourceForm.fichierUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline flex-1 truncate"
+                  >
+                    {ressourceForm.fichierUrl.split("/").pop() || "Fichier"}
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setRessourceForm({ ...ressourceForm, fichierUrl: undefined })}
+                    className="text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <FileUpload
+                  folder="ressources"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4,.mp3,.zip"
+                  onUpload={(info: FileInfo) =>
+                    setRessourceForm({ ...ressourceForm, fichierUrl: info.fileUrl })
+                  }
+                />
+              )}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="resLien">Lien externe</Label>
