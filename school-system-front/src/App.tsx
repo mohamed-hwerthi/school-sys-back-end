@@ -112,6 +112,9 @@ const ReunionsPage = lazy(() => import("./pages/Reunions"));
 const AnalyticsDashboardPage = lazy(() => import("./pages/AnalyticsDashboard"));
 const SuiviElevePage = lazy(() => import("./pages/SuiviEleve"));
 
+// Calendar
+const CalendrierPage = lazy(() => import("./pages/Calendrier"));
+
 // Board 24: SaaS
 const OnboardingPage = lazy(() => import("./pages/Onboarding"));
 const SuperAdminDashboardPage = lazy(() => import("./pages/SuperAdminDashboard"));
@@ -220,6 +223,7 @@ const App = () => (
               <Route path="annee-scolaire" element={<G roles={MANAGEMENT_ROLES}><AnneeScolairePage /></G>} />
               <Route path="devoirs" element={<G roles={STAFF_ROLES}><DevoirsPage /></G>} />
               <Route path="quiz" element={<G roles={STAFF_ROLES}><QuizManagementPage /></G>} />
+              <Route path="calendrier" element={<S><CalendrierPage /></S>} />
 
               {/* Bulletins */}
               <Route path="bulletin-templates" element={<G roles={MANAGEMENT_ROLES}><BulletinTemplatesPage /></G>} />

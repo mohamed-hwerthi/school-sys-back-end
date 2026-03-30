@@ -9,7 +9,6 @@ import {
   Edit,
   Trash2,
   Eye,
-  Download,
   Upload,
   ChevronLeft,
   ChevronRight,
@@ -51,6 +50,7 @@ import { TeachersListSkeleton } from "@/components/skeletons/TeachersListSkeleto
 import { ExcelImportDialog } from "@/components/teachers/ExcelImportDialog";
 import { SPECIALITES, STATUTS_ENSEIGNANT } from "@/types/teacher";
 import type { Teacher } from "@/types/teacher";
+import ExportButton from "@/components/ExportButton";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -166,10 +166,7 @@ export default function Teachers() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <Download className="h-4 w-4" />
-            Exporter
-          </Button>
+          <ExportButton type="teachers" label="Exporter" />
           <Button
             variant="outline"
             size="sm"

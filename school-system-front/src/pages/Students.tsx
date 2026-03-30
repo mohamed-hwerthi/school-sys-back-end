@@ -9,7 +9,6 @@ import {
   Edit,
   Trash2,
   Eye,
-  Download,
   Upload,
   ChevronLeft,
   ChevronRight,
@@ -54,6 +53,7 @@ import { ExcelImportDialog } from "@/components/students/ExcelImportDialog";
 import { STATUTS } from "@/types/student";
 import type { Student } from "@/types/student";
 import { useNiveaux } from "@/hooks/useNiveaux";
+import ExportButton from "@/components/ExportButton";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -183,10 +183,7 @@ export default function Students() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <Download className="h-4 w-4" />
-            Exporter
-          </Button>
+          <ExportButton type="students" label="Exporter" />
           <Button
             variant="outline"
             size="sm"

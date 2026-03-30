@@ -18,6 +18,7 @@ import { useModules } from "@/hooks/useModules";
 import { useExamens } from "@/hooks/useExamens";
 import { useNotesByExamen, useUpsertNotes } from "@/hooks/useNotes";
 import { studentsApi } from "@/api/students.api";
+import ExportButton from "@/components/ExportButton";
 import type { NoteRequest } from "@/api/notes.api";
 
 interface LocalNote {
@@ -287,6 +288,13 @@ export default function NotesTab() {
                 <Users className="h-3.5 w-3.5" />
                 {filledCount}/{localNotes.length} notes saisies
               </div>
+              {classeId > 0 && trimestre > 0 && (
+                <ExportButton
+                  type="notes"
+                  label="Exporter"
+                  filters={{ classeId, trimestre }}
+                />
+              )}
               <Button
                 size="sm"
                 className="gap-1.5"

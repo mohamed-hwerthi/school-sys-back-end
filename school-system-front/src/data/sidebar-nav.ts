@@ -83,6 +83,7 @@ export const sidebarSections: NavSection[] = [
       { title: "Inscriptions", icon: ClipboardList, url: "/dashboard/inscriptions", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Absences", icon: UserCheck, url: "/dashboard/absences", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT"] },
       { title: "Discipline", icon: AlertTriangle, url: "/dashboard/discipline", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT"] },
+      { title: "Calendrier", icon: CalendarClock, url: "/dashboard/calendrier" },
       { title: "Niveaux & Classes", icon: GraduationCap, url: "/dashboard/config/niveaux", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
     ],
   },

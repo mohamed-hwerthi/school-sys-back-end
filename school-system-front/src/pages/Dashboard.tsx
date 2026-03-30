@@ -2,8 +2,6 @@ import { motion } from "framer-motion";
 import {
   Users,
   UserCog,
-  GraduationCap,
-  BookOpen,
   TrendingUp,
   Calendar,
   Clock,
@@ -35,13 +33,11 @@ import {
 } from "recharts";
 import { CURRENCY } from "@/config/currency";
 
-/* ── Data ────────────────────────────────────────────── */
+/* ── Fallback / static data ──────────────────────────── */
 
-const stats = [
+const STAT_META = [
   {
     label: "Total Élèves",
-    value: "1,247",
-    change: "+12%",
     icon: Users,
     gradient: "from-violet-500 to-purple-600",
     bg: "bg-violet-50",
@@ -49,8 +45,6 @@ const stats = [
   },
   {
     label: "Enseignants",
-    value: "96",
-    change: "+3%",
     icon: UserCog,
     gradient: "from-sky-500 to-blue-600",
     bg: "bg-sky-50",
@@ -58,8 +52,6 @@ const stats = [
   },
   {
     label: "Taux de présence",
-    value: "94.2%",
-    change: "+1.8%",
     icon: UserCheck,
     gradient: "from-emerald-500 to-green-600",
     bg: "bg-emerald-50",
@@ -67,8 +59,6 @@ const stats = [
   },
   {
     label: "Revenus",
-    value: `248K ${CURRENCY}`,
-    change: "+8%",
     icon: CircleDollarSign,
     gradient: "from-amber-500 to-orange-600",
     bg: "bg-amber-50",
@@ -76,7 +66,7 @@ const stats = [
   },
 ];
 
-const attendanceData = [
+const FALLBACK_ATTENDANCE = [
   { jour: "Lun", présents: 1180, absents: 67 },
   { jour: "Mar", présents: 1195, absents: 52 },
   { jour: "Mer", présents: 1140, absents: 107 },
@@ -84,16 +74,7 @@ const attendanceData = [
   { jour: "Ven", présents: 1170, absents: 77 },
 ];
 
-const performanceData = [
-  { mois: "Sep", moyenne: 12.5, max: 16.2, min: 8.1 },
-  { mois: "Oct", moyenne: 13.1, max: 17.0, min: 8.5 },
-  { mois: "Nov", moyenne: 12.8, max: 16.8, min: 7.9 },
-  { mois: "Déc", moyenne: 13.4, max: 17.5, min: 9.0 },
-  { mois: "Jan", moyenne: 14.0, max: 18.0, min: 9.2 },
-  { mois: "Fév", moyenne: 13.7, max: 17.3, min: 8.8 },
-];
-
-const levelDistribution = [
+const FALLBACK_LEVEL_DISTRIBUTION = [
   { name: "1ère année", value: 210, color: "#8b5cf6" },
   { name: "2ème année", value: 195, color: "#3b82f6" },
   { name: "3ème année", value: 220, color: "#06b6d4" },
@@ -102,9 +83,7 @@ const levelDistribution = [
   { name: "6ème année", value: 219, color: "#ef4444" },
 ];
 
-const attendanceRadial = [
-  { name: "Présents", value: 94.2, fill: "#10b981" },
-];
+const NIVEAU_COLORS = ["#8b5cf6", "#3b82f6", "#06b6d4", "#10b981", "#f59e0b", "#ef4444", "#ec4899", "#6366f1"];
 
 const recentStudents = [
   { nom: "Amira Benali", classe: "3A", date: "18/02/2026", statut: "Inscrit", avatar: "AB" },
@@ -122,7 +101,7 @@ const upcomingEvents = [
   { titre: "Journée portes ouvertes", date: "05 Mar", heure: "09:00", color: "bg-emerald-500" },
 ];
 
-const quickStats = [
+const FALLBACK_QUICK_STATS = [
   { label: "Absences aujourd'hui", value: "32", icon: AlertCircle, color: "text-red-500" },
   { label: "Nouveaux inscrits", value: "8", icon: UserCheck, color: "text-emerald-500" },
   { label: "Événements ce mois", value: "4", icon: Calendar, color: "text-blue-500" },
@@ -161,42 +140,52 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 
 export default function Dashboard() {
   const loading = useSimulatedLoading(800);
-  const { data: dashboardStats } = useDashboardStats("2025-2026");
+  const { data: dashboardStats, isLoading: statsLoading } = useDashboardStats("2025-2026");
   const { data: monthlyTrends } = useMonthlyTrends("2025-2026");
 
-  // Override static stats with real data when available
+  // Build stat cards from real data or fallback
   const dynamicStats = dashboardStats
     ? [
-        {
-          ...stats[0],
-          value: dashboardStats.totalStudents.toLocaleString(),
-        },
-        {
-          ...stats[1],
-          value: String(dashboardStats.totalTeachers),
-        },
-        {
-          ...stats[2],
-          value: `${(100 - dashboardStats.tauxAbsence).toFixed(1)}%`,
-        },
-        {
-          ...stats[3],
-          value: `${Math.round(dashboardStats.totalRevenue / 1000)}K ${CURRENCY}`,
-        },
+        { ...STAT_META[0], value: dashboardStats.totalStudents.toLocaleString(), change: `${dashboardStats.totalClasses} classes` },
+        { ...STAT_META[1], value: String(dashboardStats.totalTeachers), change: "" },
+        { ...STAT_META[2], value: `${(100 - dashboardStats.tauxAbsence).toFixed(1)}%`, change: "" },
+        { ...STAT_META[3], value: `${Math.round(dashboardStats.totalRevenue / 1000)}K ${CURRENCY}`, change: `${dashboardStats.tauxRecouvrement?.toFixed(0) ?? "?"}% recouvrement` },
       ]
-    : stats;
+    : [
+        { ...STAT_META[0], value: "...", change: "" },
+        { ...STAT_META[1], value: "...", change: "" },
+        { ...STAT_META[2], value: "...", change: "" },
+        { ...STAT_META[3], value: "...", change: "" },
+      ];
 
   const dynamicQuickStats = dashboardStats
     ? [
-        { ...quickStats[0], value: String(Math.round(dashboardStats.tauxAbsence)) },
-        { ...quickStats[1], value: String(dashboardStats.totalStudents > 0 ? dashboardStats.totalStudents : 0) },
-        { ...quickStats[2] },
+        { ...FALLBACK_QUICK_STATS[0], value: String(Math.round(dashboardStats.tauxAbsence)) },
+        { ...FALLBACK_QUICK_STATS[1], value: String(dashboardStats.totalStudents) },
+        { ...FALLBACK_QUICK_STATS[2] },
       ]
-    : quickStats;
+    : FALLBACK_QUICK_STATS;
 
   const dynamicAttendanceRadial = dashboardStats
     ? [{ name: "Presents", value: Math.round((100 - dashboardStats.tauxAbsence) * 10) / 10, fill: "#10b981" }]
-    : attendanceRadial;
+    : [{ name: "Presents", value: 94.2, fill: "#10b981" }];
+
+  // Build level distribution from real studentsByNiveau or fallback
+  const levelDistribution = dashboardStats?.studentsByNiveau
+    ? Object.entries(dashboardStats.studentsByNiveau).map(([name, value], i) => ({
+        name,
+        value,
+        color: NIVEAU_COLORS[i % NIVEAU_COLORS.length],
+      }))
+    : FALLBACK_LEVEL_DISTRIBUTION;
+
+  const totalStudentsForPie = levelDistribution.reduce((s, l) => s + l.value, 0);
+
+  // Monthly trends available?
+  const hasTrends = monthlyTrends && monthlyTrends.length > 0;
+
+  // Moyenne generale from API
+  const moyenneGenerale = dashboardStats?.moyenneGenerale ?? 0;
 
   if (loading) return <DashboardSkeleton />;
 
@@ -255,10 +244,12 @@ export default function Dashboard() {
                 <div className={`flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${stat.gradient} text-white shadow-sm ring-4 ${stat.ring}`}>
                   <stat.icon className="h-5 w-5" />
                 </div>
-                <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-600">
-                  <TrendingUp className="h-3 w-3" />
-                  {stat.change}
-                </span>
+                {stat.change && (
+                  <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-600">
+                    <TrendingUp className="h-3 w-3" />
+                    {stat.change}
+                  </span>
+                )}
               </div>
               <p className="font-heading text-2xl font-bold text-foreground tracking-tight">{stat.value}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
@@ -287,7 +278,7 @@ export default function Dashboard() {
             </div>
           </div>
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={attendanceData} barGap={8} barSize={32}>
+            <BarChart data={FALLBACK_ATTENDANCE} barGap={8} barSize={32}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 15% 93%)" vertical={false} />
               <XAxis dataKey="jour" tick={{ fontSize: 12, fill: "hsl(220 10% 55%)" }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: "hsl(220 10% 55%)" }} axisLine={false} tickLine={false} />
@@ -311,7 +302,7 @@ export default function Dashboard() {
         {/* Donut + Radial gauge */}
         <motion.div variants={fadeUp} className="lg:col-span-2 rounded-2xl border border-border/40 bg-card p-5 shadow-sm flex flex-col">
           <h3 className="font-heading text-sm font-semibold text-foreground">Répartition par niveau</h3>
-          <p className="text-xs text-muted-foreground mt-0.5 mb-3">1,247 élèves au total</p>
+          <p className="text-xs text-muted-foreground mt-0.5 mb-3">{totalStudentsForPie.toLocaleString()} élèves au total</p>
           <div className="flex-1 flex items-center justify-center">
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
@@ -354,38 +345,51 @@ export default function Dashboard() {
         initial="hidden"
         animate="visible"
       >
-        {/* Performance Area */}
+        {/* Trends Area — inscriptions + absences from real API */}
         <motion.div variants={fadeUp} className="lg:col-span-3 rounded-2xl border border-border/40 bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="font-heading text-sm font-semibold text-foreground flex items-center gap-2">
                 <Activity className="h-4 w-4 text-primary" />
-                Moyenne générale
+                {hasTrends ? "Tendances mensuelles" : "Moyenne générale"}
               </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Évolution sur le semestre</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {hasTrends ? "Inscriptions & absences par mois" : "Évolution sur le semestre"}
+              </p>
             </div>
-            <div className="rounded-lg bg-primary/10 px-3 py-1.5">
-              <span className="font-heading text-lg font-bold text-primary">13.7</span>
-              <span className="text-xs text-primary/70 ml-1">/20</span>
-            </div>
+            {moyenneGenerale > 0 && (
+              <div className="rounded-lg bg-primary/10 px-3 py-1.5">
+                <span className="font-heading text-lg font-bold text-primary">{moyenneGenerale.toFixed(1)}</span>
+                <span className="text-xs text-primary/70 ml-1">/20</span>
+              </div>
+            )}
           </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={performanceData}>
-              <defs>
-                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(230 75% 57%)" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="hsl(230 75% 57%)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 15% 93%)" vertical={false} />
-              <XAxis dataKey="mois" tick={{ fontSize: 12, fill: "hsl(220 10% 55%)" }} axisLine={false} tickLine={false} />
-              <YAxis domain={[6, 20]} tick={{ fontSize: 11, fill: "hsl(220 10% 55%)" }} axisLine={false} tickLine={false} />
-              <RechartsTooltip content={<ChartTooltip />} />
-              <Area type="monotone" dataKey="max" stroke="hsl(160 70% 50%)" strokeWidth={1.5} fill="none" strokeDasharray="4 4" />
-              <Area type="monotone" dataKey="moyenne" stroke="hsl(230 75% 57%)" strokeWidth={2.5} fill="url(#areaGrad)" dot={{ r: 4, fill: "hsl(230 75% 57%)", strokeWidth: 2, stroke: "#fff" }} />
-              <Area type="monotone" dataKey="min" stroke="hsl(0 70% 60%)" strokeWidth={1.5} fill="none" strokeDasharray="4 4" />
-            </AreaChart>
-          </ResponsiveContainer>
+          {hasTrends ? (
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={monthlyTrends!.map((t) => ({ mois: t.month, inscriptions: t.inscriptions, absences: t.absences, paiements: Number(t.paiements) / 1000 }))}>
+                <defs>
+                  <linearGradient id="inscGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.25} />
+                    <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="absGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ef4444" stopOpacity={0.2} />
+                    <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 15% 93%)" vertical={false} />
+                <XAxis dataKey="mois" tick={{ fontSize: 12, fill: "hsl(220 10% 55%)" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "hsl(220 10% 55%)" }} axisLine={false} tickLine={false} />
+                <RechartsTooltip content={<ChartTooltip />} />
+                <Area type="monotone" dataKey="inscriptions" stroke="#8b5cf6" strokeWidth={2.5} fill="url(#inscGrad)" dot={{ r: 4, fill: "#8b5cf6", strokeWidth: 2, stroke: "#fff" }} />
+                <Area type="monotone" dataKey="absences" stroke="#ef4444" strokeWidth={2} fill="url(#absGrad)" dot={{ r: 3, fill: "#ef4444", strokeWidth: 2, stroke: "#fff" }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[260px] text-sm text-muted-foreground">
+              {statsLoading ? "Chargement des tendances..." : "Aucune donnée de tendance disponible"}
+            </div>
+          )}
         </motion.div>
 
         {/* Events */}

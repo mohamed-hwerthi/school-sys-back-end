@@ -53,6 +53,7 @@ import {
   useDeleteAbsence,
 } from "@/hooks/useAbsences";
 import { useClasses } from "@/hooks/useClasses";
+import ExportButton from "@/components/ExportButton";
 import type { Absence } from "@/types/absence";
 
 const fadeUp = {
@@ -198,6 +199,11 @@ export default function AbsencesPage() {
             Consultez et gerez les absences et retards des eleves
           </p>
         </div>
+        <ExportButton
+          type="absences"
+          label="Exporter"
+          filters={{ from: selectedDate, to: selectedDate }}
+        />
       </motion.div>
 
       {/* Stats */}
