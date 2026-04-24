@@ -5,8 +5,10 @@ import { useCreateStudent } from "@/hooks/useStudents";
 import { StudentForm } from "@/components/students/StudentForm";
 import type { StudentFormValues } from "@/lib/student-schema";
 import { notify } from "@/lib/toast";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function AddStudent() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const createStudent = useCreateStudent();
 
@@ -27,9 +29,9 @@ export default function AddStudent() {
         notes: data.notes ?? "",
       },
       notify.mutation({
-        success: "Eleve inscrit avec succes",
-        successDescription: `${data.prenom} ${data.nom} a ete ajoute`,
-        error: "Erreur lors de l'inscription",
+        success: t("students.studentAdded"),
+        successDescription: `${data.prenom} ${data.nom} ${t("students.hasBeenAdded")}`,
+        error: t("students.addError"),
         onSuccess: () => navigate("/dashboard/eleves"),
       })
     );
@@ -43,17 +45,17 @@ export default function AddStudent() {
           onClick={() => navigate("/dashboard")}
           className="hover:text-foreground transition-colors"
         >
-          Tableau de bord
+          {t("nav.dashboard")}
         </button>
         <ChevronRight className="h-3.5 w-3.5" />
         <button
           onClick={() => navigate("/dashboard/eleves")}
           className="hover:text-foreground transition-colors"
         >
-          Élèves
+          {t("nav.students")}
         </button>
         <ChevronRight className="h-3.5 w-3.5" />
-        <span className="text-foreground font-medium">Ajouter</span>
+        <span className="text-foreground font-medium">{t("common.add")}</span>
       </nav>
 
       {/* Header */}
@@ -68,10 +70,10 @@ export default function AddStudent() {
           </div>
           <div>
             <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-              Nouvel Élève
+              {t("students.newStudent")}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Remplissez les informations pour inscrire un nouvel élève
+              {t("students.fillInfo")}
             </p>
           </div>
         </div>
@@ -86,7 +88,7 @@ export default function AddStudent() {
         <StudentForm
           onSubmit={handleSubmit}
           onCancel={() => navigate("/dashboard/eleves")}
-          submitLabel={createStudent.isPending ? "Inscription..." : "Inscrire l'élève"}
+          submitLabel={createStudent.isPending ? t("students.enrolling") : t("students.enroll")}
         />
       </motion.div>
     </div>

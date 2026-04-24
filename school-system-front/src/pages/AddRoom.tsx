@@ -1,31 +1,39 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight, Plus } from "lucide-react";
-import { useRooms } from "@/hooks/useRooms";
+import { useCreateRoom } from "@/hooks/useRooms";
 import { RoomForm } from "@/components/rooms/RoomForm";
-import { StudentFormSkeleton } from "@/components/skeletons/StudentFormSkeleton";
-import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
+import { toast } from "sonner";
 import type { RoomFormValues } from "@/lib/room-schema";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function AddRoom() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
-  const { addRoom } = useRooms();
-  const loading = useSimulatedLoading(800);
-
-  if (loading) return <StudentFormSkeleton />;
+  const createRoom = useCreateRoom();
 
   const handleSubmit = (data: RoomFormValues) => {
-    addRoom({
-      nom: data.nom,
-      type: data.type,
-      capacite: data.capacite,
-      etage: data.etage,
-      equipements: data.equipements
-        ? data.equipements.split(",").map((e) => e.trim()).filter(Boolean)
-        : [],
-      statut: data.statut,
-    });
-    navigate("/dashboard/emploi-salles");
+    createRoom.mutate(
+      {
+        nom: data.nom,
+        type: data.type,
+        capacite: data.capacite,
+        etage: data.etage,
+        equipements: data.equipements
+          ? data.equipements.split(",").map((e) => e.trim()).filter(Boolean)
+          : [],
+        statut: data.statut,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Salle ajoutée avec succès");
+          navigate("/dashboard/emploi-salles");
+        },
+        onError: (err) => {
+          toast.error(err.message || "Erreur lors de l'ajout de la salle");
+        },
+      }
+    );
   };
 
   return (
@@ -36,17 +44,17 @@ export default function AddRoom() {
           onClick={() => navigate("/dashboard")}
           className="hover:text-foreground transition-colors"
         >
-          Tableau de bord
+          {t("nav.dashboard")}
         </button>
         <ChevronRight className="h-3.5 w-3.5" />
         <button
           onClick={() => navigate("/dashboard/emploi-salles")}
           className="hover:text-foreground transition-colors"
         >
-          Emploi - Salles
+          {t("rooms.title")}
         </button>
         <ChevronRight className="h-3.5 w-3.5" />
-        <span className="text-foreground font-medium">Ajouter</span>
+        <span className="text-foreground font-medium">{t("common.add")}</span>
       </nav>
 
       {/* Header */}
@@ -61,10 +69,10 @@ export default function AddRoom() {
           </div>
           <div>
             <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-              Nouvelle Salle
+              {t("rooms.newRoom")}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Remplissez les informations pour ajouter une nouvelle salle
+              {t("rooms.fillInfo")}
             </p>
           </div>
         </div>
@@ -79,7 +87,8 @@ export default function AddRoom() {
         <RoomForm
           onSubmit={handleSubmit}
           onCancel={() => navigate("/dashboard/emploi-salles")}
-          submitLabel="Ajouter la salle"
+          submitLabel={t("rooms.addRoomBtn")}
+          isSubmitting={createRoom.isPending}
         />
       </motion.div>
     </div>

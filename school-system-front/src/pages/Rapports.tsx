@@ -43,6 +43,7 @@ import { useRapports, useDeleteRapport } from "@/hooks/useRapports";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import type { Rapport } from "@/types/rapport";
 import { TYPES_RAPPORT, STATUTS_RAPPORT } from "@/types/rapport";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -72,6 +73,7 @@ const typeColors: Record<string, string> = {
 };
 
 export default function Rapports() {
+  const { t } = useLanguage();
   const { data: rapports = [], isLoading: loading } = useRapports();
   const deleteRapport = useDeleteRapport();
   const [search, setSearch] = useState("");
@@ -83,7 +85,7 @@ export default function Rapports() {
 
   // Stats
   const stats = [
-    { label: "Total rapports", value: rapports.length, icon: FileText, bgLight: "bg-indigo-50", textColor: "text-indigo-700" },
+    { label: t("reports.totalReports"), value: rapports.length, icon: FileText, bgLight: "bg-indigo-50", textColor: "text-indigo-700" },
     { label: "Brouillons", value: rapports.filter((r) => r.statut === "Brouillon").length, icon: File, bgLight: "bg-gray-50", textColor: "text-gray-700" },
     { label: "Validés", value: rapports.filter((r) => r.statut === "Validé").length, icon: CheckCircle2, bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
     { label: "Envoyés", value: rapports.filter((r) => r.statut === "Envoyé").length, icon: Send, bgLight: "bg-purple-50", textColor: "text-purple-700" },
@@ -133,7 +135,7 @@ export default function Rapports() {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
-          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">Rapports</h1>
+          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">{t("reports.title")}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Bulletins, rapports et procès-verbaux</p>
         </div>
         <div className="flex items-center gap-2">

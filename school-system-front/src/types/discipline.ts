@@ -19,15 +19,24 @@ export type TypeSanction =
 
 export type StatutSanction = 'ACTIVE' | 'LEVEE' | 'EXPIREE';
 
+export interface IncidentEleve {
+  id?: number;
+  eleveId: number;
+  roleEleve?: string;
+}
+
 export interface Incident {
   id: number;
-  dateIncident: string;
-  typeIncident: TypeIncident;
+  titre: string;
   description?: string;
+  date: string;
+  type: TypeIncident;
   gravite: GraviteType;
-  enseignantId?: number;
-  elevesIds: number[];
+  lieu?: string;
+  signaleParId?: number;
+  elevesImpliques: IncidentEleve[];
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Sanction {

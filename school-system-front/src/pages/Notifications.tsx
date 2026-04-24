@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import {
   Bell,
   BellOff,
@@ -53,17 +54,7 @@ const TYPE_COLORS: Record<NotificationType, string> = {
   DISCIPLINE: "bg-yellow-100 text-yellow-700",
 };
 
-const TYPE_LABELS: Record<NotificationType, string> = {
-  INFO: "Information",
-  WARNING: "Avertissement",
-  ALERT: "Alerte",
-  FINANCE: "Finance",
-  ABSENCE: "Absence",
-  NOTE: "Note",
-  DISCIPLINE: "Discipline",
-};
-
-function groupByDate(notifications: Notification[]): Record<string, Notification[]> {
+function groupByDate(notifications: Notification[], t: (key: string) => string): Record<string, Notification[]> {
   const groups: Record<string, Notification[]> = {};
   const today = new Date().toDateString();
   const yesterday = new Date(Date.now() - 86400000).toDateString();
@@ -72,9 +63,9 @@ function groupByDate(notifications: Notification[]): Record<string, Notification
     const dateStr = new Date(n.createdAt).toDateString();
     let label: string;
     if (dateStr === today) {
-      label = "Aujourd'hui";
+      label = t("common.today");
     } else if (dateStr === yesterday) {
-      label = "Hier";
+      label = t("common.yesterday");
     } else {
       label = new Date(n.createdAt).toLocaleDateString("fr-FR", {
         weekday: "long",
@@ -90,6 +81,17 @@ function groupByDate(notifications: Notification[]): Record<string, Notification
 }
 
 export default function NotificationsPage() {
+  const { t } = useLanguage();
+
+  const TYPE_LABELS: Record<NotificationType, string> = useMemo(() => ({
+    INFO: t("notifications.types.grade"),
+    WARNING: t("notifications.severities.warning"),
+    ALERT: t("notifications.severities.alert"),
+    FINANCE: t("notifications.types.finance"),
+    ABSENCE: t("notifications.types.absence"),
+    NOTE: t("notifications.types.grade"),
+    DISCIPLINE: t("notifications.types.discipline"),
+  }), [t]);
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const { data: notifications = [], isLoading } = useNotifications();
   const { data: unreadCount = 0 } = useUnreadCount();
@@ -102,25 +104,25 @@ export default function NotificationsPage() {
     return notifications.filter((n) => n.type === typeFilter);
   }, [notifications, typeFilter]);
 
-  const grouped = useMemo(() => groupByDate(filtered), [filtered]);
+  const grouped = useMemo(() => groupByDate(filtered, t), [filtered, t]);
 
   const handleMarkAsRead = (id: number) => {
     markAsRead.mutate(id, {
-      onError: () => notify.error("Erreur lors du marquage"),
+      onError: () => notify.error(t("notifications.markError")),
     });
   };
 
   const handleMarkAllAsRead = () => {
     markAllAsRead.mutate(undefined, {
-      onSuccess: () => notify.success("Toutes les notifications sont lues"),
-      onError: () => notify.error("Erreur"),
+      onSuccess: () => notify.success(t("notifications.allRead")),
+      onError: () => notify.error(t("common.error")),
     });
   };
 
   const handleDelete = (id: number) => {
     deleteNotification.mutate(id, {
-      onSuccess: () => notify.success("Notification supprimee"),
-      onError: () => notify.error("Erreur lors de la suppression"),
+      onSuccess: () => notify.success(t("notifications.deleted")),
+      onError: () => notify.error(t("notifications.deleteError")),
     });
   };
 
@@ -137,11 +139,11 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("notifications.title")}</h1>
           <p className="text-muted-foreground">
             {unreadCount > 0
-              ? `${unreadCount} notification${unreadCount > 1 ? "s" : ""} non lue${unreadCount > 1 ? "s" : ""}`
-              : "Aucune notification non lue"}
+              ? `${unreadCount} ${t("notifications.title").toLowerCase()}`
+              : t("notifications.noUnread")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -149,10 +151,10 @@ export default function NotificationsPage() {
             <Filter className="h-4 w-4 text-muted-foreground" />
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filtrer par type" />
+                <SelectValue placeholder={t("notifications.filterByType")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">Tous les types</SelectItem>
+                <SelectItem value="ALL">{t("common.allTypes")}</SelectItem>
                 {(Object.keys(TYPE_LABELS) as NotificationType[]).map((type) => (
                   <SelectItem key={type} value={type}>
                     {TYPE_LABELS[type]}
@@ -164,7 +166,7 @@ export default function NotificationsPage() {
           {unreadCount > 0 && (
             <Button variant="outline" size="sm" onClick={handleMarkAllAsRead}>
               <CheckCheck className="mr-2 h-4 w-4" />
-              Tout marquer lu
+              {t("notifications.markAllRead")}
             </Button>
           )}
         </div>
@@ -174,8 +176,8 @@ export default function NotificationsPage() {
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
           <BellOff className="mb-4 h-12 w-12" />
-          <p className="text-lg font-medium">Aucune notification</p>
-          <p className="text-sm">Vous n'avez aucune notification pour le moment.</p>
+          <p className="text-lg font-medium">{t("notifications.noNotifications")}</p>
+          <p className="text-sm">{t("notifications.noNotificationsDesc")}</p>
         </div>
       ) : (
         <div className="space-y-6">

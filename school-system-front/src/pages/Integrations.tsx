@@ -39,6 +39,7 @@ import {
 } from "@/hooks/useIntegrations";
 import type { WebhookConfig, IntegrationConfig } from "@/types/integration";
 import { WEBHOOK_EVENTS } from "@/types/integration";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -50,6 +51,7 @@ const fadeUp = {
 };
 
 export default function Integrations() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("email");
 
   // Email config form
@@ -179,10 +181,10 @@ export default function Integrations() {
         transition={{ duration: 0.35 }}
       >
         <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-          Integrations & Notifications
+          {t("integrations.title")}
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Configurez les canaux d'envoi d'emails, SMS et webhooks
+          {t("integrations.subtitle")}
         </p>
       </motion.div>
 
@@ -213,12 +215,12 @@ export default function Integrations() {
           >
             <div className="flex items-center gap-2 mb-4">
               <Settings className="h-5 w-5 text-muted-foreground" />
-              <h3 className="font-semibold text-foreground">Configuration SMTP</h3>
+              <h3 className="font-semibold text-foreground">{t("integrations.smtpConfig")}</h3>
             </div>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="smtpHost">Serveur SMTP</Label>
+                  <Label htmlFor="smtpHost">{t("integrations.smtpServer")}</Label>
                   <Input
                     id="smtpHost"
                     value={smtpHost}
@@ -227,7 +229,7 @@ export default function Integrations() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="smtpPort">Port</Label>
+                  <Label htmlFor="smtpPort">{t("integrations.port")}</Label>
                   <Input
                     id="smtpPort"
                     type="number"
@@ -238,7 +240,7 @@ export default function Integrations() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="smtpUser">Nom d'utilisateur</Label>
+                <Label htmlFor="smtpUser">{t("integrations.username")}</Label>
                 <Input
                   id="smtpUser"
                   value={smtpUsername}
@@ -247,13 +249,13 @@ export default function Integrations() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="smtpPass">Mot de passe</Label>
+                <Label htmlFor="smtpPass">{t("common.password")}</Label>
                 <Input
                   id="smtpPass"
                   type="password"
                   value={smtpPassword}
                   onChange={(e) => setSmtpPassword(e.target.value)}
-                  placeholder="Laisser vide pour garder l'existant"
+                  placeholder={t("integrations.keepEmpty")}
                 />
               </div>
               <Button
@@ -263,10 +265,10 @@ export default function Integrations() {
                 {updateConfigMutation.isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                    Enregistrement...
+                    {t("common.saving")}
                   </>
                 ) : (
-                  "Enregistrer"
+                  t("common.save")
                 )}
               </Button>
             </div>
@@ -285,12 +287,12 @@ export default function Integrations() {
             <div className="flex items-center gap-2 mb-4">
               <Settings className="h-5 w-5 text-muted-foreground" />
               <h3 className="font-semibold text-foreground">
-                Configuration SMS
+                {t("integrations.smsProvider")}
               </h3>
             </div>
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="smsProvider">Fournisseur SMS</Label>
+                <Label htmlFor="smsProvider">{t("integrations.smsProvider")}</Label>
                 <Input
                   id="smsProvider"
                   value={smsProvider}
@@ -299,13 +301,13 @@ export default function Integrations() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="smsApiKey">Cle API</Label>
+                <Label htmlFor="smsApiKey">{t("integrations.apiKey")}</Label>
                 <Input
                   id="smsApiKey"
                   type="password"
                   value={smsApiKey}
                   onChange={(e) => setSmsApiKey(e.target.value)}
-                  placeholder="Votre cle API"
+                  placeholder={t("integrations.apiKeyPlaceholder")}
                 />
               </div>
               <Button
@@ -315,10 +317,10 @@ export default function Integrations() {
                 {updateConfigMutation.isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                    Enregistrement...
+                    {t("common.saving")}
                   </>
                 ) : (
-                  "Enregistrer"
+                  t("common.save")
                 )}
               </Button>
             </div>
@@ -335,7 +337,7 @@ export default function Integrations() {
             className="flex justify-end"
           >
             <Button onClick={() => setShowAddWebhook(true)} className="gap-1.5">
-              <Plus className="h-4 w-4" /> Ajouter un webhook
+              <Plus className="h-4 w-4" /> {t("integrations.addWebhook")}
             </Button>
           </motion.div>
 
@@ -377,7 +379,7 @@ export default function Integrations() {
                           className="py-16 text-center text-muted-foreground"
                         >
                           <Link2 className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                          <p className="font-medium">Aucun webhook configure</p>
+                          <p className="font-medium">{t("integrations.noWebhook")}</p>
                           <p className="text-xs mt-1">
                             Ajoutez des webhooks pour recevoir des notifications
                           </p>
@@ -415,7 +417,7 @@ export default function Integrations() {
                               variant={wh.active ? "default" : "secondary"}
                               className="text-xs"
                             >
-                              {wh.active ? "Actif" : "Inactif"}
+                              {wh.active ? t("common.active") : t("common.inactive")}
                             </Badge>
                           </td>
                           <td className="py-3 px-4 text-right">
@@ -452,12 +454,12 @@ export default function Integrations() {
               <div className="flex items-center gap-2 mb-4">
                 <Mail className="h-5 w-5 text-blue-600" />
                 <h3 className="font-semibold text-foreground">
-                  Tester l'envoi d'email
+                  {t("integrations.testEmail")}
                 </h3>
               </div>
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="testTo">Destinataire</Label>
+                  <Label htmlFor="testTo">{t("common.recipient")}</Label>
                   <Input
                     id="testTo"
                     type="email"
@@ -467,7 +469,7 @@ export default function Integrations() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="testSubject">Sujet</Label>
+                  <Label htmlFor="testSubject">{t("integrations.emailSubject")}</Label>
                   <Input
                     id="testSubject"
                     value={testEmailSubject}
@@ -476,7 +478,7 @@ export default function Integrations() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="testBody">Corps du message</Label>
+                  <Label htmlFor="testBody">{t("integrations.emailBody")}</Label>
                   <Textarea
                     id="testBody"
                     value={testEmailBody}
@@ -492,15 +494,15 @@ export default function Integrations() {
                 >
                   {testEmailMutation.isPending ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> Envoi...
+                      <Loader2 className="h-4 w-4 animate-spin" /> {t("common.sending")}
                     </>
                   ) : testEmailMutation.isSuccess ? (
                     <>
-                      <Check className="h-4 w-4" /> Envoye
+                      <Check className="h-4 w-4" /> {t("common.success")}
                     </>
                   ) : (
                     <>
-                      <Send className="h-4 w-4" /> Envoyer le test
+                      <Send className="h-4 w-4" /> {t("common.send")}
                     </>
                   )}
                 </Button>
@@ -518,12 +520,12 @@ export default function Integrations() {
               <div className="flex items-center gap-2 mb-4">
                 <MessageSquare className="h-5 w-5 text-emerald-600" />
                 <h3 className="font-semibold text-foreground">
-                  Tester l'envoi de SMS
+                  {t("integrations.testSms")}
                 </h3>
               </div>
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="testPhone">Numero de telephone</Label>
+                  <Label htmlFor="testPhone">{t("integrations.phoneNumber")}</Label>
                   <Input
                     id="testPhone"
                     type="tel"
@@ -533,7 +535,7 @@ export default function Integrations() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="testSmsMsg">Message</Label>
+                  <Label htmlFor="testSmsMsg">{t("common.message")}</Label>
                   <Textarea
                     id="testSmsMsg"
                     value={testSmsMessage}
@@ -549,15 +551,15 @@ export default function Integrations() {
                 >
                   {testSmsMutation.isPending ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> Envoi...
+                      <Loader2 className="h-4 w-4 animate-spin" /> {t("common.sending")}
                     </>
                   ) : testSmsMutation.isSuccess ? (
                     <>
-                      <Check className="h-4 w-4" /> Envoye
+                      <Check className="h-4 w-4" /> {t("common.success")}
                     </>
                   ) : (
                     <>
-                      <Send className="h-4 w-4" /> Envoyer le test
+                      <Send className="h-4 w-4" /> {t("common.send")}
                     </>
                   )}
                 </Button>
@@ -571,9 +573,9 @@ export default function Integrations() {
       <Dialog open={showAddWebhook} onOpenChange={setShowAddWebhook}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Ajouter un webhook</DialogTitle>
+            <DialogTitle>{t("integrations.addWebhook")}</DialogTitle>
             <DialogDescription>
-              Configurez un endpoint qui recevra les evenements du systeme
+              {t("integrations.addWebhook")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
@@ -587,16 +589,16 @@ export default function Integrations() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="whSecret">Secret (optionnel)</Label>
+              <Label htmlFor="whSecret">{t("integrations.secret")}</Label>
               <Input
                 id="whSecret"
                 value={webhookSecret}
                 onChange={(e) => setWebhookSecret(e.target.value)}
-                placeholder="Secret pour verifier la signature"
+                placeholder={t("integrations.secretDesc")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Evenements</Label>
+              <Label>{t("integrations.events")}</Label>
               <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto border rounded-lg p-3">
                 {WEBHOOK_EVENTS.map((event) => (
                   <div key={event} className="flex items-center gap-2">
@@ -609,7 +611,7 @@ export default function Integrations() {
                       htmlFor={`event-${event}`}
                       className="text-xs cursor-pointer"
                     >
-                      {event === "*" ? "Tous les evenements" : event}
+                      {event === "*" ? t("integrations.allEvents") : event}
                     </label>
                   </div>
                 ))}
@@ -618,7 +620,7 @@ export default function Integrations() {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button
               onClick={handleAddWebhook}
@@ -630,7 +632,7 @@ export default function Integrations() {
                   Ajout...
                 </>
               ) : (
-                "Ajouter"
+                t("common.add")
               )}
             </Button>
           </DialogFooter>
@@ -644,7 +646,7 @@ export default function Integrations() {
       >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Supprimer le webhook</DialogTitle>
+            <DialogTitle>{t("integrations.deleteWebhook")}</DialogTitle>
             <DialogDescription>
               Etes-vous sur de vouloir supprimer le webhook vers{" "}
               <span className="font-semibold text-foreground">
@@ -655,7 +657,7 @@ export default function Integrations() {
           </DialogHeader>
           <DialogFooter className="mt-2">
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button
               variant="destructive"
@@ -663,8 +665,8 @@ export default function Integrations() {
               disabled={deleteWebhookMutation.isPending}
             >
               {deleteWebhookMutation.isPending
-                ? "Suppression..."
-                : "Supprimer"}
+                ? t("common.deleting")
+                : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

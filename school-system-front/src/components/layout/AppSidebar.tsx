@@ -11,12 +11,14 @@ import {
 } from "@/components/ui/sidebar";
 import { sidebarSections } from "@/data/sidebar-nav";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toggleSidebar } = useSidebar();
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
 
   // Find which section contains the active route
@@ -41,22 +43,23 @@ export function AppSidebar() {
     return location.pathname.startsWith(url);
   };
 
-  // Filter sections and items by role + search
+  // TODO: re-enable role-based filtering once roles are finalized.
+  // For now, show all sidebar items; only apply the search filter.
   const filteredSections = useMemo(() => {
-    const role = user?.role ?? "";
     const q = search.toLowerCase().trim();
     return sidebarSections
-      .filter((s) => !s.roles || s.roles.includes(role))
       .map((section) => ({
         ...section,
         items: section.items.filter(
           (item) =>
-            (!item.roles || item.roles.includes(role)) &&
-            (!q || item.title.toLowerCase().includes(q) || section.label.toLowerCase().includes(q))
+            !q ||
+            t(item.titleKey).toLowerCase().includes(q) ||
+            t(section.labelKey).toLowerCase().includes(q) ||
+            item.title.toLowerCase().includes(q)
         ),
       }))
       .filter((s) => s.items.length > 0);
-  }, [user?.role, search]);
+  }, [search, t]);
 
   // Auto-open sections when searching
   useMemo(() => {
@@ -88,7 +91,7 @@ export function AppSidebar() {
                 EcoleNet
               </span>
               <span className="block text-[10px] font-medium text-muted-foreground -mt-0.5">
-                Gestion Scolaire
+                {t("app.subtitle")}
               </span>
             </div>
           </Link>
@@ -108,7 +111,7 @@ export function AppSidebar() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher..."
+              placeholder={t("common.searchPlaceholder")}
               className="w-full rounded-xl border-0 bg-muted/50 py-2 pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground/40 focus:bg-muted/80 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
             />
           </div>
@@ -144,7 +147,7 @@ export function AppSidebar() {
                   <span className={`flex-1 text-[13px] font-semibold group-data-[collapsible=icon]:hidden ${
                     hasActiveItem ? "text-foreground" : ""
                   }`}>
-                    {section.label}
+                    {t(section.labelKey)}
                   </span>
                   {section.items.length > 1 && (
                     <ChevronDown
@@ -180,7 +183,7 @@ export function AppSidebar() {
                             active ? "bg-primary scale-100" : "bg-border/60 scale-75"
                           }`} />
                           <ItemIcon className={`h-4 w-4 shrink-0 ${active ? "text-primary" : ""}`} />
-                          <span className={`text-[13px] truncate ${active ? "" : "font-medium"}`}>{item.title}</span>
+                          <span className={`text-[13px] truncate ${active ? "" : "font-medium"}`}>{t(item.titleKey)}</span>
                         </Link>
                       );
                     })}
@@ -213,7 +216,7 @@ export function AppSidebar() {
             <button
               onClick={handleLogout}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-red-500/10 hover:text-red-500 transition-all group-data-[collapsible=icon]:hidden"
-              title="Déconnexion"
+              title={t("common.logout")}
             >
               <LogOut className="h-4 w-4" />
             </button>

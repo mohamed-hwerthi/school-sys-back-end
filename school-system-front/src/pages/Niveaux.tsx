@@ -1,13 +1,25 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { GraduationCap, Plus, X, Users } from "lucide-react";
+import { GraduationCap, Plus, X, Users, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useNiveaux, useCreateNiveau, useAddClasse, useRemoveClasse } from "@/hooks/useNiveaux";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useNiveaux, useCreateNiveau, useDeleteNiveau, useAddClasse, useRemoveClasse } from "@/hooks/useNiveaux";
 import { useAllStudents } from "@/hooks/useStudents";
 import { NiveauxSkeleton } from "@/components/skeletons/NiveauxSkeleton";
 import { notify } from "@/lib/toast";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -28,6 +40,7 @@ function NiveauCard({ niveauId, nom, sections, studentCount, index }: {
   const [newSection, setNewSection] = useState("");
   const addClasse = useAddClasse();
   const removeClasse = useRemoveClasse();
+  const deleteNiveau = useDeleteNiveau();
   const prefix = nom.match(/^(\d+)/)?.[1] || "";
 
   const handleAdd = () => {
@@ -78,10 +91,52 @@ function NiveauCard({ niveauId, nom, sections, studentCount, index }: {
           </div>
           <h3 className="font-semibold text-sm">{nom}</h3>
         </div>
-        <Badge variant="secondary" className="gap-1 text-xs">
-          <Users className="h-3 w-3" />
-          {studentCount}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="gap-1 text-xs">
+            <Users className="h-3 w-3" />
+            {studentCount}
+          </Badge>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                onClick={(e) => {
+                  if (studentCount > 0) {
+                    e.preventDefault();
+                    notify.error("Impossible de supprimer un niveau qui contient des élèves");
+                  }
+                }}
+                className="p-1 rounded hover:bg-destructive/10 hover:text-destructive transition-colors text-muted-foreground"
+                title="Supprimer ce niveau"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </AlertDialogTrigger>
+            {studentCount === 0 && (
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Supprimer le niveau</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Êtes-vous sûr de vouloir supprimer le niveau « {nom} » et toutes ses sections ? Cette action est irréversible.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => {
+                      deleteNiveau.mutate(niveauId, {
+                        onSuccess: () => notify.success(`Niveau "${nom}" supprimé`),
+                        onError: (err) => notify.error(err.message),
+                      });
+                    }}
+                  >
+                    Supprimer
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            )}
+          </AlertDialog>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 min-h-[32px]">
@@ -123,10 +178,12 @@ function NiveauCard({ niveauId, nom, sections, studentCount, index }: {
 }
 
 export default function Niveaux() {
+  const { t } = useLanguage();
   const { niveaux, isLoading } = useNiveaux();
   const createNiveau = useCreateNiveau();
   const { data: students = [] } = useAllStudents();
   const [newNiveauNom, setNewNiveauNom] = useState("");
+  const [niveauError, setNiveauError] = useState<string | null>(null);
 
   if (isLoading) return <NiveauxSkeleton />;
 
@@ -135,17 +192,23 @@ export default function Niveaux() {
 
   const handleAddNiveau = () => {
     const nom = newNiveauNom.trim();
-    if (!nom) return;
-    if (niveaux.some((n) => n.nom === nom)) {
-      notify.error(`Le niveau "${nom}" existe déjà`);
+    if (nom.length < 2) {
+      setNiveauError("Le nom doit contenir au moins 2 caractères");
       return;
     }
+    if (niveaux.some((n) => n.nom === nom)) {
+      setNiveauError(`Le niveau "${nom}" existe déjà`);
+      return;
+    }
+    setNiveauError(null);
     createNiveau.mutate(nom, {
       onSuccess: () => {
         setNewNiveauNom("");
         notify.success(`Niveau "${nom}" ajouté`);
       },
-      onError: (err) => notify.error(err.message),
+      onError: (err: Error & { response?: { data?: { message?: string } } }) => {
+        setNiveauError(err.response?.data?.message ?? err.message);
+      },
     });
   };
 
@@ -162,23 +225,27 @@ export default function Niveaux() {
       </div>
 
       {/* Add niveau */}
-      <div className="flex gap-2 max-w-md">
-        <Input
-          placeholder="Nom du nouveau niveau (ex: 7ème année)"
-          value={newNiveauNom}
-          onChange={(e) => setNewNiveauNom(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleAddNiveau()}
-          className="h-9 text-sm"
-        />
-        <Button
-          size="sm"
-          className="h-9 gap-1.5 bg-gradient-primary shadow-btn"
-          onClick={handleAddNiveau}
-          disabled={createNiveau.isPending}
-        >
-          <Plus className="h-4 w-4" />
-          Ajouter
-        </Button>
+      <div className="max-w-md">
+        <div className="flex gap-2">
+          <Input
+            placeholder="Nom du nouveau niveau (ex: 7ème année)"
+            value={newNiveauNom}
+            onChange={(e) => { setNewNiveauNom(e.target.value); if (niveauError) setNiveauError(null); }}
+            onKeyDown={(e) => e.key === "Enter" && handleAddNiveau()}
+            className={`h-9 text-sm ${niveauError ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+            aria-invalid={!!niveauError}
+          />
+          <Button
+            size="sm"
+            className="h-9 gap-1.5 bg-gradient-primary shadow-btn"
+            onClick={handleAddNiveau}
+            disabled={createNiveau.isPending}
+          >
+            <Plus className="h-4 w-4" />
+            Ajouter
+          </Button>
+        </div>
+        {niveauError && <p className="text-xs text-red-600 mt-1.5">{niveauError}</p>}
       </div>
 
       {/* Grid */}

@@ -1,5 +1,8 @@
 import { useState, useMemo } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
+import { validate, type FormErrors } from "@/lib/validate";
+import { factureSchema, echeancierSchema } from "@/lib/finance-schemas";
 import {
   Receipt,
   Search,
@@ -64,13 +67,6 @@ import {
 } from "@/hooks/useFactures";
 import type { Facture, Echeancier } from "@/types/facture";
 
-const STATUT_LABELS: Record<Facture["statut"], string> = {
-  NON_PAYEE: "Non payee",
-  PARTIELLEMENT_PAYEE: "Partiellement payee",
-  PAYEE: "Payee",
-  ANNULEE: "Annulee",
-};
-
 const STATUT_COLORS: Record<Facture["statut"], string> = {
   NON_PAYEE: "bg-red-100 text-red-700",
   PARTIELLEMENT_PAYEE: "bg-amber-100 text-amber-700",
@@ -90,6 +86,14 @@ const fadeUp = {
 };
 
 export default function FacturesPage() {
+  const { t } = useLanguage();
+
+  const STATUT_LABELS: Record<Facture["statut"], string> = useMemo(() => ({
+    NON_PAYEE: t("invoices.statuses.unpaid"),
+    PARTIELLEMENT_PAYEE: t("invoices.statuses.partial"),
+    PAYEE: t("invoices.statuses.paid"),
+    ANNULEE: t("invoices.statuses.cancelled"),
+  }), [t]);
   const [activeTab, setActiveTab] = useState("factures");
   const [search, setSearch] = useState("");
   const [filterStatut, setFilterStatut] = useState("all");
@@ -109,6 +113,8 @@ export default function FacturesPage() {
     montantRemise: 0,
     montantNet: 0,
   });
+  const [createErrors, setCreateErrors] = useState<FormErrors>({});
+  const [echeancierErrors, setEcheancierErrors] = useState<FormErrors>({});
 
   // Detail view
   const [detailTarget, setDetailTarget] = useState<Facture | null>(null);
@@ -154,10 +160,10 @@ export default function FacturesPage() {
   const montantRestant = nonPayees.reduce((s, f) => s + f.montantNet, 0);
 
   const stats = [
-    { label: "Total Factures", value: allFactures.length, icon: Receipt, color: "bg-blue-50", textColor: "text-blue-700" },
-    { label: "Montant total", value: `${totalMontant.toLocaleString()} MAD`, icon: DollarSign, color: "bg-purple-50", textColor: "text-purple-700" },
-    { label: "Montant paye", value: `${montantPaye.toLocaleString()} MAD`, icon: CheckCircle, color: "bg-emerald-50", textColor: "text-emerald-700" },
-    { label: "Montant restant", value: `${montantRestant.toLocaleString()} MAD`, icon: Clock, color: "bg-red-50", textColor: "text-red-700" },
+    { label: t("invoices.totalInvoices"), value: allFactures.length, icon: Receipt, color: "bg-blue-50", textColor: "text-blue-700" },
+    { label: t("invoices.totalAmount"), value: `${totalMontant.toLocaleString()} MAD`, icon: DollarSign, color: "bg-purple-50", textColor: "text-purple-700" },
+    { label: t("invoices.paidAmount"), value: `${montantPaye.toLocaleString()} MAD`, icon: CheckCircle, color: "bg-emerald-50", textColor: "text-emerald-700" },
+    { label: t("invoices.remainingAmount"), value: `${montantRestant.toLocaleString()} MAD`, icon: Clock, color: "bg-red-50", textColor: "text-red-700" },
   ];
 
   const hasFilters = search || filterStatut !== "all";
@@ -168,8 +174,14 @@ export default function FacturesPage() {
   };
 
   const handleCreateFacture = () => {
+    const result = validate(factureSchema, createForm);
+    if (!result.ok) { setCreateErrors(result.errors); return; }
+    setCreateErrors({});
     createFactureMutation.mutate(createForm, {
       onSuccess: () => setCreateOpen(false),
+      onError: (err: Error & { response?: { data?: { message?: string } } }) => {
+        setCreateErrors({ _root: err.response?.data?.message ?? "Erreur lors de la création" });
+      },
     });
   };
 
@@ -191,8 +203,14 @@ export default function FacturesPage() {
   };
 
   const handleCreateEcheancier = () => {
+    const result = validate(echeancierSchema, { ...echeancierForm, nombreEcheances: echeancierForm.nbMensualites });
+    if (!result.ok) { setEcheancierErrors(result.errors); return; }
+    setEcheancierErrors({});
     createEcheancierMutation.mutate(echeancierForm, {
       onSuccess: () => setEcheancierFormOpen(false),
+      onError: (err: Error & { response?: { data?: { message?: string } } }) => {
+        setEcheancierErrors({ _root: err.response?.data?.message ?? "Erreur lors de la création" });
+      },
     });
   };
 
@@ -216,27 +234,27 @@ export default function FacturesPage() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">Facturation</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Gerez les factures et les echeanciers de paiement</p>
+          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">{t("invoices.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{t("invoices.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setGenerateEleveId(""); setGenerateOpen(true); }}>
             <FileText className="h-4 w-4" />
-            Generer facture
+            {t("invoices.generateInvoice")}
           </Button>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
             setEcheancierForm({ eleveId: 0, typeFraisId: undefined, montantTotal: 0, nbMensualites: 3, dateDebut: "" });
             setEcheancierFormOpen(true);
           }}>
             <CreditCard className="h-4 w-4" />
-            Echeancier
+            {t("invoices.schedules")}
           </Button>
           <Button size="sm" className="gap-1.5 bg-gradient-primary shadow-btn" onClick={() => {
             setCreateForm({ eleveId: 0, dateEmission: new Date().toISOString().split("T")[0], dateEcheance: "", montantTotal: 0, montantRemise: 0, montantNet: 0 });
             setCreateOpen(true);
           }}>
             <Plus className="h-4 w-4" />
-            Nouvelle facture
+            {t("invoices.newInvoice")}
           </Button>
         </div>
       </motion.div>
@@ -259,14 +277,14 @@ export default function FacturesPage() {
         {/* Filters */}
         <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible" className="rounded-xl border border-border/50 bg-card p-4 shadow-sm space-y-3">
           <TabsList>
-            <TabsTrigger value="factures">Factures</TabsTrigger>
-            <TabsTrigger value="echeanciers">Echeanciers</TabsTrigger>
+            <TabsTrigger value="factures">{t("invoices.invoices")}</TabsTrigger>
+            <TabsTrigger value="echeanciers">{t("invoices.schedules")}</TabsTrigger>
           </TabsList>
           {activeTab === "factures" && (
             <div className="flex flex-col lg:flex-row lg:items-center gap-3">
               <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher par numero, eleve..." className="pl-9" />
+                <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder={t("invoices.searchPlaceholder")} className="pl-9" />
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Select value={filterStatut} onValueChange={(v) => { setFilterStatut(v); setCurrentPage(0); }}>
@@ -275,7 +293,7 @@ export default function FacturesPage() {
                     <SelectValue placeholder="Statut" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les statuts</SelectItem>
+                    <SelectItem value="all">{t("common.allStatuses")}</SelectItem>
                     {(Object.keys(STATUT_LABELS) as Facture["statut"][]).map((s) => (
                       <SelectItem key={s} value={s}>{STATUT_LABELS[s]}</SelectItem>
                     ))}
@@ -283,7 +301,7 @@ export default function FacturesPage() {
                 </Select>
                 {hasFilters && (
                   <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1 text-muted-foreground hover:text-foreground">
-                    <X className="h-3.5 w-3.5" /> Reinitialiser
+                    <X className="h-3.5 w-3.5" /> {t("common.reset")}
                   </Button>
                 )}
               </div>
@@ -291,7 +309,7 @@ export default function FacturesPage() {
           )}
           {activeTab === "factures" && (
             <div className="text-xs text-muted-foreground flex items-center gap-2">
-              {totalElements} facture{totalElements !== 1 ? "s" : ""} trouvee{totalElements !== 1 ? "s" : ""}
+              {totalElements} {t("invoices.invoices").toLowerCase()} {t("common.found")}
               {isFetching && <Loader2 className="h-3 w-3 animate-spin" />}
             </div>
           )}
@@ -304,14 +322,14 @@ export default function FacturesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Numero</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Eleve</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Date emission</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">Montant</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">Remise</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Net</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("invoices.number")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.student")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("invoices.issueDate")}</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("common.amount")}</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("invoices.discountAmount")}</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("invoices.net")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.status")}</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -319,8 +337,8 @@ export default function FacturesPage() {
                     <tr>
                       <td colSpan={8} className="py-16 text-center text-muted-foreground">
                         <Receipt className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                        <p className="font-medium">Aucune facture trouvee</p>
-                        <p className="text-xs mt-1">Essayez de modifier vos filtres</p>
+                        <p className="font-medium">{t("invoices.noInvoice")}</p>
+                        <p className="text-xs mt-1">{t("common.tryModifyFilters")}</p>
                       </td>
                     </tr>
                   ) : (
@@ -359,15 +377,15 @@ export default function FacturesPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => setDetailTarget(facture)}>
-                                <Eye className="h-4 w-4 mr-2" /> Details
+                                <Eye className="h-4 w-4 mr-2" /> {t("common.details")}
                               </DropdownMenuItem>
                               {facture.statut !== "ANNULEE" && facture.statut !== "PAYEE" && (
                                 <DropdownMenuItem onClick={() => cancelMutation.mutate(facture.id)}>
-                                  <Ban className="h-4 w-4 mr-2" /> Annuler
+                                  <Ban className="h-4 w-4 mr-2" /> {t("common.cancel")}
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem onClick={() => setDeleteTarget(facture)} className="text-red-600">
-                                <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                                <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -381,7 +399,7 @@ export default function FacturesPage() {
 
             {totalPages > 1 && (
               <div className="flex items-center justify-between border-t border-border px-4 py-3">
-                <p className="text-xs text-muted-foreground">Page {currentPage + 1} sur {totalPages}</p>
+                <p className="text-xs text-muted-foreground">{t("common.page")} {currentPage + 1} {t("common.of")} {totalPages}</p>
                 <div className="flex items-center gap-1">
                   <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage === 0} onClick={() => setCurrentPage((p) => p - 1)}>
                     <ChevronLeft className="h-4 w-4" />
@@ -415,12 +433,12 @@ export default function FacturesPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
                     <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">ID</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Eleve</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Montant total</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Mensualites</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Date debut</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Echeances</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.student")}</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("invoices.totalAmount")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("invoices.installments")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("common.startDate")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">{t("invoices.schedules")}</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -428,7 +446,7 @@ export default function FacturesPage() {
                     <tr>
                       <td colSpan={7} className="py-16 text-center text-muted-foreground">
                         <CreditCard className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                        <p className="font-medium">Aucun echeancier trouve</p>
+                        <p className="font-medium">{t("invoices.noSchedule")}</p>
                       </td>
                     </tr>
                   ) : (
@@ -468,19 +486,19 @@ export default function FacturesPage() {
       <Dialog open={generateOpen} onOpenChange={setGenerateOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Generer une facture</DialogTitle>
-            <DialogDescription>Generez automatiquement une facture pour un eleve.</DialogDescription>
+            <DialogTitle>{t("invoices.generateInvoice")}</DialogTitle>
+            <DialogDescription>{t("invoices.generateInvoice")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="genEleveId">ID Eleve</Label>
-              <Input id="genEleveId" type="number" value={generateEleveId} onChange={(e) => setGenerateEleveId(e.target.value)} placeholder="Saisissez l'ID de l'eleve" />
+              <Label htmlFor="genEleveId">{t("common.student")} ID</Label>
+              <Input id="genEleveId" type="number" value={generateEleveId} onChange={(e) => setGenerateEleveId(e.target.value)} placeholder={t("invoices.enterStudentId")} />
             </div>
           </div>
           <DialogFooter>
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
             <Button onClick={handleGenerate} disabled={generateMutation.isPending || !generateEleveId}>
-              {generateMutation.isPending ? "Generation..." : "Generer"}
+              {generateMutation.isPending ? t("common.generating") : t("common.generate")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -490,52 +508,56 @@ export default function FacturesPage() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Nouvelle facture</DialogTitle>
-            <DialogDescription>Creez une facture manuellement.</DialogDescription>
+            <DialogTitle>{t("invoices.newInvoice")}</DialogTitle>
+            <DialogDescription>{t("invoices.createInvoice")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {createErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{createErrors._root}</div>
+            )}
             <div className="space-y-1.5">
-              <Label htmlFor="factEleveId">ID Eleve</Label>
+              <Label htmlFor="factEleveId">{t("common.student")} ID *</Label>
               <Input id="factEleveId" type="number" value={createForm.eleveId || ""} onChange={(e) => {
                 const v = Number(e.target.value);
                 setCreateForm({ ...createForm, eleveId: v });
-              }} placeholder="ID de l'eleve" />
+              }} placeholder={t("invoices.enterStudentId")} aria-invalid={!!createErrors.eleveId} className={createErrors.eleveId ? "border-red-500" : ""} />
+              {createErrors.eleveId && <p className="text-xs text-red-600">{createErrors.eleveId}</p>}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="factDateEmission">Date emission</Label>
+                <Label htmlFor="factDateEmission">{t("invoices.issueDate")}</Label>
                 <Input id="factDateEmission" type="date" value={createForm.dateEmission} onChange={(e) => setCreateForm({ ...createForm, dateEmission: e.target.value })} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="factDateEcheance">Date echeance</Label>
+                <Label htmlFor="factDateEcheance">{t("invoices.dueDate")}</Label>
                 <Input id="factDateEcheance" type="date" value={createForm.dateEcheance} onChange={(e) => setCreateForm({ ...createForm, dateEcheance: e.target.value })} />
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="factMontant">Montant</Label>
+                <Label htmlFor="factMontant">{t("common.amount")}</Label>
                 <Input id="factMontant" type="number" value={createForm.montantTotal || ""} onChange={(e) => {
                   const total = Number(e.target.value);
                   setCreateForm({ ...createForm, montantTotal: total, montantNet: total - createForm.montantRemise });
                 }} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="factRemise">Remise</Label>
+                <Label htmlFor="factRemise">{t("invoices.discountAmount")}</Label>
                 <Input id="factRemise" type="number" value={createForm.montantRemise || ""} onChange={(e) => {
                   const remise = Number(e.target.value);
                   setCreateForm({ ...createForm, montantRemise: remise, montantNet: createForm.montantTotal - remise });
                 }} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="factNet">Net</Label>
+                <Label htmlFor="factNet">{t("invoices.net")}</Label>
                 <Input id="factNet" type="number" value={createForm.montantNet || ""} readOnly className="bg-muted/30" />
               </div>
             </div>
           </div>
           <DialogFooter>
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
-            <Button onClick={handleCreateFacture} disabled={createFactureMutation.isPending || !createForm.eleveId}>
-              {createFactureMutation.isPending ? "Creation..." : "Creer"}
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
+            <Button onClick={handleCreateFacture} disabled={createFactureMutation.isPending}>
+              {createFactureMutation.isPending ? t("common.creating") : t("common.create")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -545,41 +567,41 @@ export default function FacturesPage() {
       <Dialog open={!!detailTarget} onOpenChange={(open) => !open && setDetailTarget(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Details de la facture</DialogTitle>
+            <DialogTitle>{t("invoices.invoiceDetails")}</DialogTitle>
           </DialogHeader>
           {detailTarget && (
             <div className="space-y-3 py-2">
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Numero</p>
+                  <p className="text-muted-foreground">{t("invoices.number")}</p>
                   <p className="font-mono font-medium">{detailTarget.numero}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Eleve</p>
+                  <p className="text-muted-foreground">{t("common.student")}</p>
                   <p className="font-medium">{detailTarget.eleveNom ?? `#${detailTarget.eleveId}`}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Date emission</p>
+                  <p className="text-muted-foreground">{t("invoices.issueDate")}</p>
                   <p>{new Date(detailTarget.dateEmission).toLocaleDateString("fr-FR")}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Date echeance</p>
+                  <p className="text-muted-foreground">{t("invoices.dueDate")}</p>
                   <p>{detailTarget.dateEcheance ? new Date(detailTarget.dateEcheance).toLocaleDateString("fr-FR") : "-"}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Montant total</p>
+                  <p className="text-muted-foreground">{t("invoices.totalAmount")}</p>
                   <p className="font-medium">{detailTarget.montantTotal.toLocaleString()} MAD</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Remise</p>
+                  <p className="text-muted-foreground">{t("invoices.discountAmount")}</p>
                   <p>{detailTarget.montantRemise > 0 ? `${detailTarget.montantRemise.toLocaleString()} MAD` : "-"}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Montant net</p>
+                  <p className="text-muted-foreground">{t("invoices.netAmount")}</p>
                   <p className="font-heading text-lg font-bold">{detailTarget.montantNet.toLocaleString()} MAD</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Statut</p>
+                  <p className="text-muted-foreground">{t("common.status")}</p>
                   <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUT_COLORS[detailTarget.statut]}`}>
                     {STATUT_LABELS[detailTarget.statut]}
                   </span>
@@ -589,7 +611,7 @@ export default function FacturesPage() {
           )}
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Fermer</Button>
+              <Button variant="outline">{t("common.close")}</Button>
             </DialogClose>
           </DialogFooter>
         </DialogContent>
@@ -599,33 +621,33 @@ export default function FacturesPage() {
       <Dialog open={echeancierFormOpen} onOpenChange={setEcheancierFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Nouvel echeancier</DialogTitle>
-            <DialogDescription>Creez un echeancier de paiement pour un eleve.</DialogDescription>
+            <DialogTitle>{t("invoices.newSchedule")}</DialogTitle>
+            <DialogDescription>{t("invoices.createSchedule")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="echEleveId">ID Eleve</Label>
-              <Input id="echEleveId" type="number" value={echeancierForm.eleveId || ""} onChange={(e) => setEcheancierForm({ ...echeancierForm, eleveId: Number(e.target.value) })} placeholder="ID de l'eleve" />
+              <Label htmlFor="echEleveId">{t("common.student")} ID</Label>
+              <Input id="echEleveId" type="number" value={echeancierForm.eleveId || ""} onChange={(e) => setEcheancierForm({ ...echeancierForm, eleveId: Number(e.target.value) })} placeholder={t("invoices.enterStudentId")} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="echMontant">Montant total</Label>
+                <Label htmlFor="echMontant">{t("invoices.totalAmount")}</Label>
                 <Input id="echMontant" type="number" value={echeancierForm.montantTotal || ""} onChange={(e) => setEcheancierForm({ ...echeancierForm, montantTotal: Number(e.target.value) })} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="echMensualites">Nombre de mensualites</Label>
+                <Label htmlFor="echMensualites">{t("invoices.nbInstallments")}</Label>
                 <Input id="echMensualites" type="number" min={1} value={echeancierForm.nbMensualites} onChange={(e) => setEcheancierForm({ ...echeancierForm, nbMensualites: Number(e.target.value) })} />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="echDateDebut">Date debut</Label>
+              <Label htmlFor="echDateDebut">{t("common.startDate")}</Label>
               <Input id="echDateDebut" type="date" value={echeancierForm.dateDebut} onChange={(e) => setEcheancierForm({ ...echeancierForm, dateDebut: e.target.value })} />
             </div>
           </div>
           <DialogFooter>
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
-            <Button onClick={handleCreateEcheancier} disabled={createEcheancierMutation.isPending || !echeancierForm.eleveId || !echeancierForm.montantTotal}>
-              {createEcheancierMutation.isPending ? "Creation..." : "Creer"}
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
+            <Button onClick={handleCreateEcheancier} disabled={createEcheancierMutation.isPending}>
+              {createEcheancierMutation.isPending ? t("common.creating") : t("common.create")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -635,17 +657,17 @@ export default function FacturesPage() {
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Supprimer la facture</DialogTitle>
+            <DialogTitle>{t("invoices.deleteInvoice")}</DialogTitle>
             <DialogDescription>
-              Etes-vous sur de vouloir supprimer la facture{" "}
+              {t("common.deleteConfirmMsg")}{" "}
               <span className="font-semibold text-foreground">{deleteTarget?.numero}</span> ?
-              Cette action est irreversible.
+              {t("common.irreversible")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
             <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? "Suppression..." : "Supprimer"}
+              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -655,13 +677,13 @@ export default function FacturesPage() {
       <Dialog open={!!deleteEcheancierTarget} onOpenChange={(open) => !open && setDeleteEcheancierTarget(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Supprimer l'echeancier</DialogTitle>
-            <DialogDescription>Etes-vous sur de vouloir supprimer cet echeancier ? Cette action est irreversible.</DialogDescription>
+            <DialogTitle>{t("invoices.deleteSchedule")}</DialogTitle>
+            <DialogDescription>{t("common.deleteConfirmMsg")} ? {t("common.irreversible")}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
             <Button variant="destructive" onClick={handleDeleteEcheancier} disabled={deleteEcheancierMutation.isPending}>
-              {deleteEcheancierMutation.isPending ? "Suppression..." : "Supprimer"}
+              {deleteEcheancierMutation.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

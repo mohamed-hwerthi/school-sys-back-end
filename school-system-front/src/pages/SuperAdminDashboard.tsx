@@ -39,6 +39,7 @@ import {
   useChangePlan,
 } from "@/hooks/useSaas";
 import type { TenantResponse } from "@/types/saas";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -57,6 +58,7 @@ const planColors: Record<string, string> = {
 };
 
 export default function SuperAdminDashboard() {
+  const { t } = useLanguage();
   const loading = useSimulatedLoading(600);
   const { data: dashboard } = useSuperAdminDashboard();
   const { data: tenants } = useSuperAdminTenants();
@@ -96,28 +98,28 @@ export default function SuperAdminDashboard() {
 
   const stats = [
     {
-      label: "Total Ecoles",
+      label: t("superAdmin.totalSchools"),
       value: dashboard?.totalTenants ?? 0,
       icon: Building2,
       bg: "bg-violet-50",
       text: "text-violet-600",
     },
     {
-      label: "Ecoles Actives",
+      label: t("superAdmin.activeSchools"),
       value: dashboard?.activeTenants ?? 0,
       icon: Activity,
       bg: "bg-emerald-50",
       text: "text-emerald-600",
     },
     {
-      label: "Eleves Total",
+      label: t("superAdmin.totalStudents"),
       value: dashboard?.totalStudentsAllTenants ?? 0,
       icon: Users,
       bg: "bg-blue-50",
       text: "text-blue-600",
     },
     {
-      label: "Revenu Mensuel",
+      label: t("superAdmin.monthlyRevenue"),
       value: `${(dashboard?.revenueMonthly ?? 0).toFixed(2)} DH`,
       icon: DollarSign,
       bg: "bg-amber-50",
@@ -135,10 +137,10 @@ export default function SuperAdminDashboard() {
       >
         <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground flex items-center gap-2">
           <Building2 className="h-6 w-6 text-primary" />
-          Super Admin
+          {t("superAdmin.title")}
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Gestion multi-tenant et facturation SaaS
+          {t("superAdmin.title")}
         </p>
       </motion.div>
 
@@ -167,7 +169,7 @@ export default function SuperAdminDashboard() {
         <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible"
           className="rounded-xl border border-border/50 bg-card p-5 shadow-sm"
         >
-          <h3 className="font-heading text-sm font-semibold mb-3">Repartition par forfait</h3>
+          <h3 className="font-heading text-sm font-semibold mb-3">{t("superAdmin.planDistribution")}</h3>
           <div className="flex flex-wrap gap-3">
             {Object.entries(dashboard.tenantsByPlan).map(([plan, count]) => (
               <div key={plan} className="flex items-center gap-2 rounded-lg bg-muted/50 px-4 py-2">
@@ -184,7 +186,7 @@ export default function SuperAdminDashboard() {
         className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden"
       >
         <div className="p-5 pb-0">
-          <h3 className="font-heading text-sm font-semibold">Toutes les ecoles</h3>
+          <h3 className="font-heading text-sm font-semibold">{t("superAdmin.allSchools")}</h3>
           <p className="text-xs text-muted-foreground mt-0.5">
             {tenants?.length ?? 0} ecole(s) enregistree(s)
           </p>
@@ -222,7 +224,7 @@ export default function SuperAdminDashboard() {
                         : "bg-red-50 text-red-700 ring-1 ring-red-200"
                     }`}>
                       <span className={`h-1.5 w-1.5 rounded-full ${tenant.active ? "bg-emerald-500" : "bg-red-500"}`} />
-                      {tenant.active ? "Actif" : "Inactif"}
+                      {tenant.active ? t("common.active") : t("common.inactive")}
                     </span>
                   </td>
                   <td className="py-3 px-3 font-medium">
@@ -280,29 +282,29 @@ export default function SuperAdminDashboard() {
       <Dialog open={!!planDialog} onOpenChange={(open) => !open && setPlanDialog(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Changer le forfait</DialogTitle>
+            <DialogTitle>{t("superAdmin.changePlan")}</DialogTitle>
             <DialogDescription>
               {planDialog?.name}
             </DialogDescription>
           </DialogHeader>
           <div className="mt-2">
-            <label className="text-sm font-medium">Nouveau forfait</label>
+            <label className="text-sm font-medium">{t("superAdmin.newPlan")}</label>
             <Select value={selectedPlan} onValueChange={setSelectedPlan}>
               <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="FREE">Gratuit</SelectItem>
-                <SelectItem value="STANDARD">Standard</SelectItem>
-                <SelectItem value="PREMIUM">Premium</SelectItem>
-                <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
+                <SelectItem value="FREE">{t("superAdmin.plans.free")}</SelectItem>
+                <SelectItem value="STANDARD">{t("superAdmin.plans.standard")}</SelectItem>
+                <SelectItem value="PREMIUM">{t("superAdmin.plans.premium")}</SelectItem>
+                <SelectItem value="ENTERPRISE">{t("superAdmin.plans.enterprise")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <DialogFooter className="mt-4">
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button onClick={handleChangePlan} disabled={changePlan.isPending}>
-              {changePlan.isPending ? "Mise a jour..." : "Confirmer"}
+              {changePlan.isPending ? t("common.updating") : t("common.confirm")}
             </Button>
           </DialogFooter>
         </DialogContent>

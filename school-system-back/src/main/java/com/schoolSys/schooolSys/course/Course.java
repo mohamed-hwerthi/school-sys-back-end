@@ -3,6 +3,9 @@ package com.schoolSys.schooolSys.course;
 import com.schoolSys.schooolSys.teacher.Teacher;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import java.time.LocalDateTime;
 
 /**
  * JPA entity representing a course offered by a school.
@@ -10,6 +13,8 @@ import lombok.*;
  */
 @Entity
 @Table(name = "courses")
+@SQLDelete(sql = "UPDATE courses SET deleted = true, deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted = false")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,4 +36,11 @@ public class Course {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

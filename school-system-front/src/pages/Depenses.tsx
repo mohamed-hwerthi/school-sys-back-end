@@ -62,6 +62,8 @@ import {
   useDeleteDepense,
 } from "@/hooks/useDepenses";
 import type { DepenseDTO, DepenseRequest } from "@/api/depenses.api";
+import { validate, type FormErrors } from "@/lib/validate";
+import { depenseSchema } from "@/lib/finance-schemas";
 import { CURRENCY } from "@/config/currency";
 
 const ITEMS_PER_PAGE = 10;
@@ -136,6 +138,7 @@ export default function Depenses() {
     anneeScolaire: ANNEE,
   };
   const [form, setForm] = useState<DepenseRequest>(emptyForm);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   const chartData = useMemo(() => {
     if (!statsData?.parCategorie) return [];
@@ -173,10 +176,9 @@ export default function Depenses() {
   };
 
   const handleCreate = () => {
-    if (!form.categorieId || !form.libelle || !form.montant) {
-      notify.error("Veuillez remplir les champs obligatoires");
-      return;
-    }
+    const result = validate(depenseSchema, form);
+    if (!result.ok) { setFormErrors(result.errors); return; }
+    setFormErrors({});
     createDepense.mutate(form, {
       onSuccess: () => {
         notify.success("Depense ajoutee");
@@ -227,32 +229,39 @@ export default function Depenses() {
 
   const formFields = (
     <div className="space-y-4">
+      {formErrors._root && (
+        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErrors._root}</div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <Label>Categorie *</Label>
+          <Label>Catégorie *</Label>
           <Select
             value={form.categorieId ? String(form.categorieId) : ""}
             onValueChange={(v) => setForm({ ...form, categorieId: Number(v) })}
           >
-            <SelectTrigger><SelectValue placeholder="Choisir" /></SelectTrigger>
+            <SelectTrigger className={formErrors.categorieId ? "border-red-500" : ""}><SelectValue placeholder="Choisir" /></SelectTrigger>
             <SelectContent>
               {categories.map((c) => (
                 <SelectItem key={c.id} value={String(c.id)}>{c.nom}</SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {formErrors.categorieId && <p className="text-xs text-red-600">{formErrors.categorieId}</p>}
         </div>
         <div className="space-y-1.5">
-          <Label>Libelle *</Label>
-          <Input value={form.libelle} onChange={(e) => setForm({ ...form, libelle: e.target.value })} />
+          <Label>Libellé *</Label>
+          <Input value={form.libelle} onChange={(e) => setForm({ ...form, libelle: e.target.value })} aria-invalid={!!formErrors.libelle} className={formErrors.libelle ? "border-red-500" : ""} />
+          {formErrors.libelle && <p className="text-xs text-red-600">{formErrors.libelle}</p>}
         </div>
         <div className="space-y-1.5">
           <Label>Montant ({CURRENCY}) *</Label>
-          <Input type="number" value={form.montant || ""} onChange={(e) => setForm({ ...form, montant: Number(e.target.value) })} />
+          <Input type="number" value={form.montant || ""} onChange={(e) => setForm({ ...form, montant: Number(e.target.value) })} aria-invalid={!!formErrors.montant} className={formErrors.montant ? "border-red-500" : ""} />
+          {formErrors.montant && <p className="text-xs text-red-600">{formErrors.montant}</p>}
         </div>
         <div className="space-y-1.5">
           <Label>Date *</Label>
-          <Input type="date" value={form.dateDepense} onChange={(e) => setForm({ ...form, dateDepense: e.target.value })} />
+          <Input type="date" value={form.dateDepense} onChange={(e) => setForm({ ...form, dateDepense: e.target.value })} aria-invalid={!!formErrors.dateDepense} className={formErrors.dateDepense ? "border-red-500" : ""} />
+          {formErrors.dateDepense && <p className="text-xs text-red-600">{formErrors.dateDepense}</p>}
         </div>
         <div className="space-y-1.5">
           <Label>Mode de paiement</Label>

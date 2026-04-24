@@ -9,6 +9,7 @@ import {
   BarChart3,
   ClipboardList,
 } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -62,13 +63,7 @@ const fadeUp = {
   }),
 };
 
-const CRITERIA = [
-  { key: "ponctualite", label: "Ponctualite" },
-  { key: "pedagogie", label: "Pedagogie" },
-  { key: "discipline", label: "Discipline" },
-  { key: "communication", label: "Communication" },
-  { key: "implication", label: "Implication" },
-] as const;
+// CRITERIA is defined inside the component to access t()
 
 function StarRating({
   value,
@@ -105,6 +100,16 @@ function StarRating({
 }
 
 export default function TeacherEvaluationsPage() {
+  const { t } = useLanguage();
+
+  const CRITERIA = [
+    { key: "ponctualite" as const, label: t("teacherEval.punctuality") },
+    { key: "pedagogie" as const, label: t("teacherEval.pedagogy") },
+    { key: "discipline" as const, label: t("teacherEval.disciplineScore") },
+    { key: "communication" as const, label: t("teacherEval.communication") },
+    { key: "implication" as const, label: t("teacherEval.involvement") },
+  ];
+
   const [selectedTeacherId, setSelectedTeacherId] = useState(0);
   const [anneeScolaire, setAnneeScolaire] = useState("2025-2026");
   const [activeTab, setActiveTab] = useState("evaluations");
@@ -201,10 +206,10 @@ export default function TeacherEvaluationsPage() {
       >
         <div>
           <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-            Evaluations des enseignants
+            {t("teacherEval.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Evaluez et suivez les performances des enseignants
+            {t("teacherEval.title")}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -222,7 +227,7 @@ export default function TeacherEvaluationsPage() {
               onClick={openCreateForm}
             >
               <Plus className="h-4 w-4" />
-              Evaluer
+              {t("teacherEval.evaluate")}
             </Button>
           )}
         </div>
@@ -237,14 +242,14 @@ export default function TeacherEvaluationsPage() {
         className="rounded-xl border border-border/50 bg-card p-4 shadow-sm"
       >
         <Label className="text-sm font-medium mb-2 block">
-          Selectionner un enseignant
+          {t("teacherEval.chooseTeacher")}
         </Label>
         <Select
           value={selectedTeacherId > 0 ? String(selectedTeacherId) : ""}
           onValueChange={(v) => setSelectedTeacherId(Number(v))}
         >
           <SelectTrigger className="w-full max-w-md">
-            <SelectValue placeholder="Choisir un enseignant..." />
+            <SelectValue placeholder={t("teacherEval.chooseTeacher")} />
           </SelectTrigger>
           <SelectContent>
             {teachers.map((t) => (
@@ -284,11 +289,11 @@ export default function TeacherEvaluationsPage() {
               <TabsList>
                 <TabsTrigger value="evaluations" className="gap-1.5">
                   <ClipboardList className="h-3.5 w-3.5" />
-                  Evaluations
+                  {t("nav.evaluations")}
                 </TabsTrigger>
                 <TabsTrigger value="performance" className="gap-1.5">
                   <BarChart3 className="h-3.5 w-3.5" />
-                  Performance
+                  {t("teacherEval.performance")}
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -302,9 +307,9 @@ export default function TeacherEvaluationsPage() {
               ) : evaluations.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">
                   <ClipboardList className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">Aucune evaluation pour cet enseignant</p>
+                  <p className="text-sm">{t("teacherEval.noEvaluation")}</p>
                   <p className="text-xs mt-1">
-                    Cliquez sur "Evaluer" pour ajouter une evaluation
+                    {t("teacherEval.evaluate")}
                   </p>
                 </div>
               ) : (
@@ -318,7 +323,7 @@ export default function TeacherEvaluationsPage() {
                         <div>
                           <div className="flex items-center gap-2">
                             <Badge variant="outline">
-                              Trimestre {ev.trimestre}
+                              {t("common.trimester")} {ev.trimestre}
                             </Badge>
                             <Badge className="bg-primary/10 text-primary">
                               {ev.noteGlobale}/5
@@ -327,7 +332,7 @@ export default function TeacherEvaluationsPage() {
                           {ev.evaluatorName && (
                             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                               <User className="h-3 w-3" />
-                              Evaluateur: {ev.evaluatorName}
+                              {t("teacherEval.evaluator")}: {ev.evaluatorName}
                             </p>
                           )}
                         </div>
@@ -381,7 +386,7 @@ export default function TeacherEvaluationsPage() {
                         {stats.avgGlobale}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Note globale moyenne /5
+                        {t("teacherEval.performance")} /5
                       </p>
                     </div>
                     <div className="rounded-lg border border-border/50 bg-muted/10 p-4 text-center">
@@ -389,7 +394,7 @@ export default function TeacherEvaluationsPage() {
                         {stats.totalEvaluations}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Evaluations totales
+                        {t("nav.evaluations")}
                       </p>
                     </div>
                     <div className="rounded-lg border border-border/50 bg-muted/10 p-4 text-center col-span-2 md:col-span-1">
@@ -397,14 +402,14 @@ export default function TeacherEvaluationsPage() {
                         {stats.avgPedagogie}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Pedagogie moyenne /5
+                        {t("teacherEval.pedagogy")} /5
                       </p>
                     </div>
                   </div>
 
                   <div className="rounded-lg border border-border/50 bg-muted/10 p-4">
                     <h3 className="font-heading text-sm font-semibold text-foreground mb-4">
-                      Radar de performance
+                      {t("teacherEval.performance")}
                     </h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <RadarChart data={radarData}>
@@ -461,10 +466,10 @@ export default function TeacherEvaluationsPage() {
                 <div className="py-8 text-center text-muted-foreground">
                   <BarChart3 className="h-8 w-8 mx-auto mb-2 opacity-30" />
                   <p className="text-sm">
-                    Pas encore de donnees de performance
+                    {t("common.noData")}
                   </p>
                   <p className="text-xs mt-1">
-                    Ajoutez des evaluations pour voir les statistiques
+                    {t("teacherEval.evaluate")}
                   </p>
                 </div>
               )}
@@ -477,15 +482,15 @@ export default function TeacherEvaluationsPage() {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Nouvelle evaluation</DialogTitle>
+            <DialogTitle>{t("teacherEval.newEvaluation")}</DialogTitle>
             <DialogDescription>
-              Evaluez les performances de l'enseignant sur chaque critere (1 a 5 etoiles).
+              {t("teacherEval.title")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Trimestre</Label>
+                <Label>{t("common.trimester")}</Label>
                 <Select
                   value={String(formData.trimestre)}
                   onValueChange={(v) =>
@@ -496,20 +501,20 @@ export default function TeacherEvaluationsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">Trimestre 1</SelectItem>
-                    <SelectItem value="2">Trimestre 2</SelectItem>
-                    <SelectItem value="3">Trimestre 3</SelectItem>
+                    <SelectItem value="1">{t("common.trimester1")}</SelectItem>
+                    <SelectItem value="2">{t("common.trimester2")}</SelectItem>
+                    <SelectItem value="3">{t("common.trimester3")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Evaluateur</Label>
+                <Label>{t("teacherEval.evaluator")}</Label>
                 <Input
                   value={formData.evaluatorName}
                   onChange={(e) =>
                     setFormData({ ...formData, evaluatorName: e.target.value })
                   }
-                  placeholder="Nom de l'evaluateur"
+                  placeholder={t("teacherEval.evaluatorName")}
                 />
               </div>
             </div>

@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useOnboard } from "@/hooks/useSaas";
 import type { TenantOnboardingRequest } from "@/types/saas";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const STEPS = [
   { label: "Ecole", icon: School },
@@ -53,6 +54,7 @@ const PLANS = [
 ];
 
 export default function Onboarding() {
+  const { t } = useLanguage();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<TenantOnboardingRequest>({
     schoolName: "",
@@ -114,7 +116,7 @@ export default function Onboarding() {
             </div>
             <span className="font-heading text-xl font-bold">EcoleNet</span>
           </div>
-          <p className="text-sm text-muted-foreground">Creez votre espace scolaire en quelques etapes</p>
+          <p className="text-sm text-muted-foreground">{t("onboarding.subtitle")}</p>
         </div>
 
         {/* Progress Steps */}
@@ -145,8 +147,8 @@ export default function Onboarding() {
             {step === 0 && (
               <motion.div key="step0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                 <div>
-                  <h2 className="font-heading text-lg font-bold">Informations de l'ecole</h2>
-                  <p className="text-sm text-muted-foreground mt-1">Commencez par le nom de votre etablissement</p>
+                  <h2 className="font-heading text-lg font-bold">{t("onboarding.schoolInfo")}</h2>
+                  <p className="text-sm text-muted-foreground mt-1">{t("onboarding.startWithName")}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium">Nom de l'ecole *</label>
@@ -171,8 +173,8 @@ export default function Onboarding() {
             {step === 1 && (
               <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                 <div>
-                  <h2 className="font-heading text-lg font-bold">Compte administrateur</h2>
-                  <p className="text-sm text-muted-foreground mt-1">Le premier compte admin de votre ecole</p>
+                  <h2 className="font-heading text-lg font-bold">{t("onboarding.adminAccount")}</h2>
+                  <p className="text-sm text-muted-foreground mt-1">{t("onboarding.adminAccountDesc")}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -211,8 +213,8 @@ export default function Onboarding() {
             {step === 2 && (
               <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                 <div>
-                  <h2 className="font-heading text-lg font-bold">Choisissez votre forfait</h2>
-                  <p className="text-sm text-muted-foreground mt-1">Vous pouvez changer a tout moment</p>
+                  <h2 className="font-heading text-lg font-bold">{t("onboarding.choosePlan")}</h2>
+                  <p className="text-sm text-muted-foreground mt-1">{t("onboarding.canChangeLater")}</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {PLANS.map((plan) => (
@@ -295,7 +297,7 @@ export default function Onboarding() {
                   disabled={!canNext()}
                   className="gap-1.5"
                 >
-                  Suivant
+                  {t("common.next")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               ) : (
@@ -304,7 +306,7 @@ export default function Onboarding() {
                   disabled={!canNext() || onboard.isPending}
                   className="gap-1.5 bg-gradient-to-r from-violet-500 to-purple-600"
                 >
-                  {onboard.isPending ? "Creation..." : "Creer mon ecole"}
+                  {onboard.isPending ? t("common.creating") : t("onboarding.createMySchool")}
                   <CheckCircle2 className="h-4 w-4" />
                 </Button>
               )}

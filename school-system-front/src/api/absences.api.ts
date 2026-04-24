@@ -1,18 +1,33 @@
 import api from "./axios";
-import type { Absence, AbsenceBatchRequest, AbsenceStats } from "@/types/absence";
+import type { Absence, AbsenceBatchRequest, AbsenceStats, FeuilleJour } from "@/types/absence";
 
 const BASE = "/absences";
 
 export const absencesApi = {
   batchCreate: async (data: AbsenceBatchRequest): Promise<Absence[]> => {
-    const res = await api.post<Absence[]>(`${BASE}/batch`, data);
+    const payload = {
+      absences: data.absences.map((a) => ({
+        eleveId: a.eleveId,
+        date: data.date,
+        type: a.type,
+        seance: a.seance,
+        heureArrivee: a.heureArrivee,
+        enseignantId: data.enseignantId,
+      })),
+    };
+    const res = await api.post<Absence[]>(`${BASE}/batch`, payload);
     return res.data;
   },
 
   getByClasseDate: async (classeId: number, date: string): Promise<Absence[]> => {
-    const res = await api.get<Absence[]>(`${BASE}`, {
-      params: { classeId, date },
-    });
+    const params: Record<string, string | number> = { date };
+    if (classeId > 0) params.classeId = classeId;
+    const res = await api.get<Absence[]>(`${BASE}`, { params });
+    return res.data;
+  },
+
+  getFeuillesByDate: async (date: string): Promise<FeuilleJour[]> => {
+    const res = await api.get<FeuilleJour[]>(`${BASE}/feuilles`, { params: { date } });
     return res.data;
   },
 

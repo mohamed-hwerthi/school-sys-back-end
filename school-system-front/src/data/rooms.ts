@@ -1,19 +1,4 @@
-import type { Room, TimeSlot } from "@/types/room";
-
-export const MOCK_ROOMS: Room[] = [
-  { id: 1, nom: "Salle A1", type: "Salle de classe", capacite: 30, etage: 0, equipements: ["Tableau blanc", "Projecteur"], statut: "Disponible" },
-  { id: 2, nom: "Salle A2", type: "Salle de classe", capacite: 28, etage: 0, equipements: ["Tableau blanc", "Écran TV"], statut: "Occupée" },
-  { id: 3, nom: "Salle B1", type: "Salle de classe", capacite: 32, etage: 1, equipements: ["Tableau blanc", "Projecteur", "Climatisation"], statut: "Disponible" },
-  { id: 4, nom: "Salle B2", type: "Salle de classe", capacite: 25, etage: 1, equipements: ["Tableau blanc"], statut: "Disponible" },
-  { id: 5, nom: "Labo Sciences", type: "Laboratoire", capacite: 20, etage: 1, equipements: ["Paillasses", "Microscopes", "Évier", "Projecteur"], statut: "Disponible" },
-  { id: 6, nom: "Salle Info 1", type: "Salle informatique", capacite: 24, etage: 2, equipements: ["Ordinateurs", "Projecteur", "Imprimante", "Climatisation"], statut: "Occupée" },
-  { id: 7, nom: "Salle Info 2", type: "Salle informatique", capacite: 20, etage: 2, equipements: ["Ordinateurs", "Projecteur", "Climatisation"], statut: "Disponible" },
-  { id: 8, nom: "Bibliothèque", type: "Bibliothèque", capacite: 40, etage: 0, equipements: ["Rayonnages", "Tables de lecture", "Ordinateurs", "Climatisation"], statut: "Disponible" },
-  { id: 9, nom: "Gymnase", type: "Salle de sport", capacite: 60, etage: 0, equipements: ["Tapis", "Paniers", "Filets", "Vestiaires"], statut: "Disponible" },
-  { id: 10, nom: "Salle C1", type: "Salle de classe", capacite: 30, etage: 2, equipements: ["Tableau blanc", "Projecteur"], statut: "En maintenance" },
-  { id: 11, nom: "Salle Polyvalente", type: "Salle polyvalente", capacite: 80, etage: 0, equipements: ["Scène", "Projecteur", "Sono", "Climatisation"], statut: "Disponible" },
-  { id: 12, nom: "Salle C2", type: "Salle de classe", capacite: 28, etage: 2, equipements: ["Tableau blanc", "Projecteur", "Climatisation"], statut: "Occupée" },
-];
+import type { TimeSlot } from "@/types/room";
 
 export const MOCK_TIMESLOTS: TimeSlot[] = [
   // Lundi

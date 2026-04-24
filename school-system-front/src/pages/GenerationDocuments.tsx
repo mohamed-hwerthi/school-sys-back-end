@@ -50,6 +50,7 @@ import {
 } from "@/hooks/useDocuments";
 import type { DocumentType, DocumentTemplateConfig } from "@/types/document";
 import { DOCUMENT_TYPE_LABELS } from "@/types/document";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -111,6 +112,7 @@ const DOC_CARDS: Array<{
 ];
 
 export default function GenerationDocuments() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("generate");
   const [selectedDocType, setSelectedDocType] = useState<DocumentType | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<number>(0);
@@ -216,10 +218,10 @@ export default function GenerationDocuments() {
       >
         <div>
           <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-            Generation de Documents
+            {t("documents.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Generez des documents officiels pour les eleves
+            {t("documents.subtitle")}
           </p>
         </div>
       </motion.div>

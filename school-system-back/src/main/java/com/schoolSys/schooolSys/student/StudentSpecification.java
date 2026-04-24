@@ -10,15 +10,22 @@ public final class StudentSpecification {
 
     public static Specification<Student> search(String query) {
         if (query == null || query.isBlank()) return NO_OP;
-        String like = "%" + query.toLowerCase() + "%";
-        return (root, cq, cb) -> cb.or(
-                cb.like(cb.lower(root.get("firstName")), like),
-                cb.like(cb.lower(root.get("lastName")), like),
-                cb.like(cb.lower(root.get("firstNameAr")), like),
-                cb.like(cb.lower(root.get("lastNameAr")), like),
-                cb.like(cb.lower(root.get("registrationNumber")), like),
-                cb.like(cb.lower(root.get("classe")), like)
-        );
+        String[] tokens = query.trim().toLowerCase().split("\\s+");
+        return (root, cq, cb) -> {
+            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
+            for (String token : tokens) {
+                String like = "%" + token + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("firstName")), like),
+                        cb.like(cb.lower(root.get("lastName")), like),
+                        cb.like(cb.lower(root.get("firstNameAr")), like),
+                        cb.like(cb.lower(root.get("lastNameAr")), like),
+                        cb.like(cb.lower(root.get("registrationNumber")), like),
+                        cb.like(cb.lower(root.get("classe")), like)
+                ));
+            }
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
     }
 
     public static Specification<Student> hasNiveau(String niveau) {

@@ -21,7 +21,7 @@ spring:
     from: ${MAIL_FROM:noreply@ecolenet.dev}
 
 server:
-  port: 8080
+  port: 8082
 
 # JWT
 app:

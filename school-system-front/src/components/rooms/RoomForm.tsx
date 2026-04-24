@@ -18,6 +18,7 @@ interface RoomFormProps {
   onSubmit: (data: RoomFormValues) => void;
   onCancel: () => void;
   submitLabel?: string;
+  isSubmitting?: boolean;
 }
 
 export function RoomForm({
@@ -25,6 +26,7 @@ export function RoomForm({
   onSubmit,
   onCancel,
   submitLabel = "Enregistrer",
+  isSubmitting = false,
 }: RoomFormProps) {
   const {
     register,
@@ -138,7 +140,7 @@ export function RoomForm({
         <Button type="button" variant="outline" onClick={onCancel}>
           Annuler
         </Button>
-        <Button type="submit" className="bg-gradient-primary shadow-btn">
+        <Button type="submit" className="bg-gradient-primary shadow-btn" disabled={isSubmitting}>
           {submitLabel}
         </Button>
       </div>

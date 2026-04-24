@@ -6,8 +6,10 @@ import { StudentForm } from "@/components/students/StudentForm";
 import { StudentFormSkeleton } from "@/components/skeletons/StudentFormSkeleton";
 import type { StudentFormValues } from "@/lib/student-schema";
 import { notify } from "@/lib/toast";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function EditStudent() {
+  const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: student, isLoading } = useStudent(Number(id));
@@ -18,7 +20,7 @@ export default function EditStudent() {
   if (!student) {
     return (
       <div className="p-8 text-center">
-        <p className="text-lg font-medium text-foreground">Élève introuvable</p>
+        <p className="text-lg font-medium text-foreground">{t("students.studentNotFound")}</p>
         <p className="text-sm text-muted-foreground mt-1">
           L'élève avec l'identifiant #{id} n'existe pas.
         </p>
@@ -26,7 +28,7 @@ export default function EditStudent() {
           onClick={() => navigate("/dashboard/eleves")}
           className="mt-4 text-sm text-primary hover:underline"
         >
-          Retour à la liste
+          {t("common.back")}
         </button>
       </div>
     );
@@ -36,9 +38,9 @@ export default function EditStudent() {
     updateStudent.mutate(
       { id: student.id, data },
       notify.mutation({
-        success: "Eleve modifie avec succes",
-        successDescription: `${data.prenom} ${data.nom} a ete mis a jour`,
-        error: "Erreur lors de la modification",
+        success: t("students.studentUpdated"),
+        successDescription: `${data.prenom} ${data.nom}`,
+        error: t("students.editError"),
         onSuccess: () => navigate("/dashboard/eleves"),
       })
     );
@@ -52,17 +54,17 @@ export default function EditStudent() {
           onClick={() => navigate("/dashboard")}
           className="hover:text-foreground transition-colors"
         >
-          Tableau de bord
+          {t("nav.dashboard")}
         </button>
         <ChevronRight className="h-3.5 w-3.5" />
         <button
           onClick={() => navigate("/dashboard/eleves")}
           className="hover:text-foreground transition-colors"
         >
-          Élèves
+          {t("nav.students")}
         </button>
         <ChevronRight className="h-3.5 w-3.5" />
-        <span className="text-foreground font-medium">Modifier</span>
+        <span className="text-foreground font-medium">{t("common.edit")}</span>
       </nav>
 
       {/* Header */}
@@ -77,7 +79,7 @@ export default function EditStudent() {
           </div>
           <div>
             <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-              Modifier l'élève
+              {t("students.editStudent")}
             </h1>
             <p className="text-sm text-muted-foreground">
               {student.prenom} {student.nom} — {student.classe}
@@ -116,7 +118,7 @@ export default function EditStudent() {
           }}
           onSubmit={handleSubmit}
           onCancel={() => navigate("/dashboard/eleves")}
-          submitLabel={updateStudent.isPending ? "Enregistrement..." : "Enregistrer les modifications"}
+          submitLabel={updateStudent.isPending ? t("common.saving") : t("students.saveChanges")}
         />
       </motion.div>
     </div>

@@ -11,6 +11,7 @@ export type Student = {
   lieuNaissance: string;
   adresse: string;
   matricule: string;
+  email?: string;
   dateInscription: string;
   statut: "Actif" | "Inactif" | "En attente";
   estBloque: boolean;

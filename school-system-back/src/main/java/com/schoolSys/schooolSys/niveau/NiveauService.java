@@ -1,11 +1,15 @@
 package com.schoolSys.schooolSys.niveau;
 
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.emploidutemps.EmploiDuTempsRepository;
+import com.schoolSys.schooolSys.examen.ExamenRepository;
 import com.schoolSys.schooolSys.niveau.dto.NiveauResponseDTO;
+import com.schoolSys.schooolSys.student.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -14,6 +18,9 @@ import java.util.List;
 public class NiveauService {
 
     private final NiveauRepository niveauRepository;
+    private final StudentRepository studentRepository;
+    private final ExamenRepository examenRepository;
+    private final EmploiDuTempsRepository emploiDuTempsRepository;
 
     public List<NiveauResponseDTO> findAll() {
         return niveauRepository.findAll().stream()
@@ -70,12 +77,39 @@ public class NiveauService {
                 .orElseThrow(() -> new ResourceNotFoundException("Niveau", niveauId));
 
         String upper = letter.toUpperCase().trim();
-        boolean removed = niveau.getClasses().removeIf(c -> c.getLetter().equals(upper));
-        if (!removed) {
-            throw new IllegalArgumentException("La section \"" + upper + "\" n'existe pas dans ce niveau");
+        Classe target = niveau.getClasses().stream()
+                .filter(c -> c.getLetter().equals(upper))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "La section \"" + upper + "\" n'existe pas dans ce niveau"));
+
+        String fullName = buildFullName(niveau.getName(), upper);
+        long studentCount = studentRepository.countByClasse(fullName);
+        long examenCount = examenRepository.findByClasseIdOrderByOrdreEtatiqueAsc(target.getId()).size();
+        long emploiCount = emploiDuTempsRepository.findByClasseId(target.getId()).size();
+
+        if (studentCount + examenCount + emploiCount > 0) {
+            List<String> reasons = new ArrayList<>();
+            if (studentCount > 0) reasons.add(studentCount + " élève(s) inscrit(s)");
+            if (examenCount > 0) reasons.add(examenCount + " examen(s)");
+            if (emploiCount > 0) reasons.add(emploiCount + " entrée(s) d'emploi du temps");
+            throw new IllegalStateException(
+                    "Impossible de supprimer la section \"" + fullName + "\" : "
+                            + String.join(", ", reasons)
+                            + ". Réaffectez ces données avant de supprimer la section.");
         }
 
+        niveau.getClasses().remove(target);
         return toResponse(niveauRepository.save(niveau));
+    }
+
+    private String buildFullName(String niveauName, String letter) {
+        StringBuilder digits = new StringBuilder();
+        for (char ch : niveauName.toCharArray()) {
+            if (Character.isDigit(ch)) digits.append(ch);
+            else break;
+        }
+        return digits.toString() + letter;
     }
 
     private NiveauResponseDTO toResponse(Niveau niveau) {

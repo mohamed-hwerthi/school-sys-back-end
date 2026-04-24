@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Users,
@@ -15,6 +16,7 @@ import {
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import { useDashboardStats, useMonthlyTrends } from "@/hooks/useReporting";
+import { useLanguage } from "@/hooks/useLanguage";
 import {
   AreaChart,
   Area,
@@ -35,30 +37,26 @@ import { CURRENCY } from "@/config/currency";
 
 /* ── Fallback / static data ──────────────────────────── */
 
-const STAT_META = [
+const STAT_META_STYLES = [
   {
-    label: "Total Élèves",
     icon: Users,
     gradient: "from-violet-500 to-purple-600",
     bg: "bg-violet-50",
     ring: "ring-violet-100",
   },
   {
-    label: "Enseignants",
     icon: UserCog,
     gradient: "from-sky-500 to-blue-600",
     bg: "bg-sky-50",
     ring: "ring-sky-100",
   },
   {
-    label: "Taux de présence",
     icon: UserCheck,
     gradient: "from-emerald-500 to-green-600",
     bg: "bg-emerald-50",
     ring: "ring-emerald-100",
   },
   {
-    label: "Revenus",
     icon: CircleDollarSign,
     gradient: "from-amber-500 to-orange-600",
     bg: "bg-amber-50",
@@ -101,11 +99,7 @@ const upcomingEvents = [
   { titre: "Journée portes ouvertes", date: "05 Mar", heure: "09:00", color: "bg-emerald-500" },
 ];
 
-const FALLBACK_QUICK_STATS = [
-  { label: "Absences aujourd'hui", value: "32", icon: AlertCircle, color: "text-red-500" },
-  { label: "Nouveaux inscrits", value: "8", icon: UserCheck, color: "text-emerald-500" },
-  { label: "Événements ce mois", value: "4", icon: Calendar, color: "text-blue-500" },
-];
+/* FALLBACK_QUICK_STATS moved inside component to access t() */
 
 /* ── Animations ──────────────────────────────────────── */
 
@@ -139,17 +133,31 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 /* ── Component ───────────────────────────────────────── */
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const loading = useSimulatedLoading(800);
   const { data: dashboardStats, isLoading: statsLoading } = useDashboardStats("2025-2026");
   const { data: monthlyTrends } = useMonthlyTrends("2025-2026");
 
+  const STAT_META = useMemo(() => [
+    { ...STAT_META_STYLES[0], label: t("dashboard.totalStudents") },
+    { ...STAT_META_STYLES[1], label: t("dashboard.teachers") },
+    { ...STAT_META_STYLES[2], label: t("dashboard.attendanceRate") },
+    { ...STAT_META_STYLES[3], label: t("dashboard.revenue") },
+  ], [t]);
+
+  const FALLBACK_QUICK_STATS = useMemo(() => [
+    { label: t("dashboard.absencesToday"), value: "32", icon: AlertCircle, color: "text-red-500" },
+    { label: t("dashboard.newEnrollments"), value: "8", icon: UserCheck, color: "text-emerald-500" },
+    { label: t("dashboard.eventsThisMonth"), value: "4", icon: Calendar, color: "text-blue-500" },
+  ], [t]);
+
   // Build stat cards from real data or fallback
   const dynamicStats = dashboardStats
     ? [
-        { ...STAT_META[0], value: dashboardStats.totalStudents.toLocaleString(), change: `${dashboardStats.totalClasses} classes` },
+        { ...STAT_META[0], value: dashboardStats.totalStudents.toLocaleString(), change: `${dashboardStats.totalClasses} ${t("dashboard.classes")}` },
         { ...STAT_META[1], value: String(dashboardStats.totalTeachers), change: "" },
         { ...STAT_META[2], value: `${(100 - dashboardStats.tauxAbsence).toFixed(1)}%`, change: "" },
-        { ...STAT_META[3], value: `${Math.round(dashboardStats.totalRevenue / 1000)}K ${CURRENCY}`, change: `${dashboardStats.tauxRecouvrement?.toFixed(0) ?? "?"}% recouvrement` },
+        { ...STAT_META[3], value: `${Math.round(dashboardStats.totalRevenue / 1000)}K ${CURRENCY}`, change: `${dashboardStats.tauxRecouvrement?.toFixed(0) ?? "?"}% ${t("dashboard.recovery")}` },
       ]
     : [
         { ...STAT_META[0], value: "...", change: "" },
@@ -204,10 +212,10 @@ export default function Dashboard() {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="h-4 w-4 text-amber-300" />
-              <span className="text-xs font-medium text-white/70 uppercase tracking-wider">Tableau de bord</span>
+              <span className="text-xs font-medium text-white/70 uppercase tracking-wider">{t("dashboard.title")}</span>
             </div>
             <h1 className="font-heading text-2xl md:text-3xl font-bold">
-              Bonjour, Administrateur
+              {t("dashboard.welcome")}, {t("common.admin")}
             </h1>
             <p className="mt-1.5 text-sm text-white/70 max-w-md">
               École Manarat Al Malika — Année scolaire 2025/2026
@@ -269,12 +277,12 @@ export default function Dashboard() {
         <motion.div variants={fadeUp} className="lg:col-span-3 rounded-2xl border border-border/40 bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="font-heading text-sm font-semibold text-foreground">Présence hebdomadaire</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Suivi quotidien des présences et absences</p>
+              <h3 className="font-heading text-sm font-semibold text-foreground">{t("dashboard.weeklyAttendance")}</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">{t("dashboard.dailyTracking")}</p>
             </div>
             <div className="flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" />Présents</span>
-              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-400" />Absents</span>
+              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" />{t("dashboard.present")}</span>
+              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-400" />{t("dashboard.absent")}</span>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={280}>
@@ -301,8 +309,8 @@ export default function Dashboard() {
 
         {/* Donut + Radial gauge */}
         <motion.div variants={fadeUp} className="lg:col-span-2 rounded-2xl border border-border/40 bg-card p-5 shadow-sm flex flex-col">
-          <h3 className="font-heading text-sm font-semibold text-foreground">Répartition par niveau</h3>
-          <p className="text-xs text-muted-foreground mt-0.5 mb-3">{totalStudentsForPie.toLocaleString()} élèves au total</p>
+          <h3 className="font-heading text-sm font-semibold text-foreground">{t("dashboard.levelDistribution")}</h3>
+          <p className="text-xs text-muted-foreground mt-0.5 mb-3">{totalStudentsForPie.toLocaleString()} {t("dashboard.studentsTotal")}</p>
           <div className="flex-1 flex items-center justify-center">
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
@@ -351,10 +359,10 @@ export default function Dashboard() {
             <div>
               <h3 className="font-heading text-sm font-semibold text-foreground flex items-center gap-2">
                 <Activity className="h-4 w-4 text-primary" />
-                {hasTrends ? "Tendances mensuelles" : "Moyenne générale"}
+                {hasTrends ? t("dashboard.monthlyTrends") : t("dashboard.generalAverage")}
               </h3>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {hasTrends ? "Inscriptions & absences par mois" : "Évolution sur le semestre"}
+                {hasTrends ? t("dashboard.enrollmentsAbsences") : t("dashboard.semesterEvolution")}
               </p>
             </div>
             {moyenneGenerale > 0 && (
@@ -387,7 +395,7 @@ export default function Dashboard() {
             </ResponsiveContainer>
           ) : (
             <div className="flex items-center justify-center h-[260px] text-sm text-muted-foreground">
-              {statsLoading ? "Chargement des tendances..." : "Aucune donnée de tendance disponible"}
+              {statsLoading ? t("dashboard.loadingTrends") : t("dashboard.noTrendData")}
             </div>
           )}
         </motion.div>
@@ -397,10 +405,10 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-heading text-sm font-semibold text-foreground flex items-center gap-2">
               <Calendar className="h-4 w-4 text-primary" />
-              Événements à venir
+              {t("dashboard.upcomingEvents")}
             </h3>
             <span className="text-xs text-primary font-medium cursor-pointer hover:underline flex items-center gap-0.5">
-              Voir tout <ArrowUpRight className="h-3 w-3" />
+              {t("common.seeAll")} <ArrowUpRight className="h-3 w-3" />
             </span>
           </div>
           <div className="space-y-2.5 flex-1">
@@ -432,7 +440,7 @@ export default function Dashboard() {
               <p className="font-heading text-xl font-bold text-foreground">
                 {dashboardStats ? `${(100 - dashboardStats.tauxAbsence).toFixed(1)}%` : "94.2%"}
               </p>
-              <p className="text-xs text-muted-foreground">Taux de presence global</p>
+              <p className="text-xs text-muted-foreground">{t("dashboard.globalAttendanceRate")}</p>
             </div>
           </div>
         </motion.div>
@@ -447,21 +455,21 @@ export default function Dashboard() {
       >
         <div className="flex items-center justify-between p-5 pb-0">
           <div>
-            <h3 className="font-heading text-sm font-semibold text-foreground">Dernières inscriptions</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Les 6 derniers élèves inscrits</p>
+            <h3 className="font-heading text-sm font-semibold text-foreground">{t("dashboard.latestEnrollments")}</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("dashboard.last6Students")}</p>
           </div>
           <span className="text-xs text-primary font-medium cursor-pointer hover:underline flex items-center gap-0.5">
-            Voir tous <ArrowUpRight className="h-3 w-3" />
+            {t("common.seeAll")} <ArrowUpRight className="h-3 w-3" />
           </span>
         </div>
         <div className="overflow-x-auto p-5 pt-4">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border/60">
-                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Élève</th>
-                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Classe</th>
-                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
-                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Statut</th>
+                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t("dashboard.student")}</th>
+                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t("dashboard.class")}</th>
+                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t("common.date")}</th>
+                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t("common.status")}</th>
               </tr>
             </thead>
             <tbody>

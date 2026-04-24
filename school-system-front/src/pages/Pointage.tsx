@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   CalendarDays,
 } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,24 +52,11 @@ import {
 } from "@/hooks/useRh";
 import type { Pointage, StatutPointage, EmployeType } from "@/types/rh";
 
-const STATUT_LABELS: Record<StatutPointage, string> = {
-  PRESENT: "Present",
-  ABSENT: "Absent",
-  RETARD: "Retard",
-  CONGE: "Conge",
-};
-
 const STATUT_COLORS: Record<StatutPointage, string> = {
   PRESENT: "bg-emerald-100 text-emerald-700",
   ABSENT: "bg-red-100 text-red-700",
   RETARD: "bg-amber-100 text-amber-700",
   CONGE: "bg-blue-100 text-blue-700",
-};
-
-const EMPLOYE_TYPE_LABELS: Record<EmployeType, string> = {
-  ENSEIGNANT: "Enseignant",
-  ADMIN: "Admin",
-  PERSONNEL: "Personnel",
 };
 
 const ITEMS_PER_PAGE = 15;
@@ -83,6 +71,21 @@ const fadeUp = {
 };
 
 export default function PointagePage() {
+  const { t } = useLanguage();
+
+  const STATUT_LABELS: Record<StatutPointage, string> = {
+    PRESENT: t("attendance.statuses.present"),
+    ABSENT: t("attendance.statuses.absent"),
+    RETARD: t("attendance.statuses.late"),
+    CONGE: t("attendance.statuses.leave"),
+  };
+
+  const EMPLOYE_TYPE_LABELS: Record<EmployeType, string> = {
+    ENSEIGNANT: t("attendance.employeeTypes.teacher"),
+    ADMIN: t("attendance.employeeTypes.admin"),
+    PERSONNEL: t("attendance.employeeTypes.staff"),
+  };
+
   const today = new Date().toISOString().split("T")[0];
   const [selectedDate, setSelectedDate] = useState(today);
   const [search, setSearch] = useState("");
@@ -133,28 +136,28 @@ export default function PointagePage() {
 
   const stats = [
     {
-      label: "Total pointages",
+      label: t("attendance.totalEntries"),
       value: pointages.length,
       icon: Clock,
       color: "bg-blue-50",
       textColor: "text-blue-700",
     },
     {
-      label: "Presents",
+      label: t("attendance.presents"),
       value: pointages.filter((p) => p.statut === "PRESENT").length,
       icon: UserCheck,
       color: "bg-emerald-50",
       textColor: "text-emerald-700",
     },
     {
-      label: "Absents",
+      label: t("attendance.absents"),
       value: pointages.filter((p) => p.statut === "ABSENT").length,
       icon: UserX,
       color: "bg-red-50",
       textColor: "text-red-700",
     },
     {
-      label: "Retards",
+      label: t("attendance.lateArrivals"),
       value: pointages.filter((p) => p.statut === "RETARD").length,
       icon: AlertTriangle,
       color: "bg-amber-50",
@@ -244,10 +247,10 @@ export default function PointagePage() {
       >
         <div>
           <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-            Pointage du personnel
+            {t("attendance.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Suivi de presence quotidien des employes
+            {t("attendance.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -266,7 +269,7 @@ export default function PointagePage() {
             onClick={openCreate}
           >
             <Plus className="h-4 w-4" />
-            Nouveau pointage
+            {t("attendance.newEntry")}
           </Button>
         </div>
       </motion.div>
@@ -312,7 +315,7 @@ export default function PointagePage() {
                 setSearch(e.target.value);
                 setCurrentPage(0);
               }}
-              placeholder="Rechercher par ID employe, type..."
+              placeholder={t("attendance.searchPlaceholder")}
               className="pl-9"
             />
           </div>
@@ -327,7 +330,7 @@ export default function PointagePage() {
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous</SelectItem>
+              <SelectItem value="all">{t("common.all")}</SelectItem>
               {(Object.keys(STATUT_LABELS) as StatutPointage[]).map((s) => (
                 <SelectItem key={s} value={s}>
                   {STATUT_LABELS[s]}
@@ -342,7 +345,7 @@ export default function PointagePage() {
               onClick={resetFilters}
               className="gap-1 text-muted-foreground hover:text-foreground"
             >
-              <X className="h-3.5 w-3.5" /> Reinitialiser
+              <X className="h-3.5 w-3.5" /> {t("common.reset")}
             </Button>
           )}
         </div>
@@ -361,25 +364,25 @@ export default function PointagePage() {
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
-                  ID Employe
+                  {t("attendance.employeeType")} ID
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
-                  Type
+                  {t("common.type")}
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">
-                  Arrivee
+                  {t("attendance.arrivalTime")}
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">
-                  Depart
+                  {t("attendance.departureTime")}
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">
-                  Heures
+                  {t("training.hours")}
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
-                  Statut
+                  {t("common.status")}
                 </th>
                 <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">
-                  Actions
+                  {t("common.actions")}
                 </th>
               </tr>
             </thead>
@@ -391,7 +394,7 @@ export default function PointagePage() {
                     className="py-16 text-center text-muted-foreground"
                   >
                     <CalendarDays className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                    <p className="font-medium">Aucun pointage pour cette date</p>
+                    <p className="font-medium">{t("attendance.noEntryForDate")}</p>
                   </td>
                 </tr>
               ) : (
@@ -457,13 +460,13 @@ export default function PointagePage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEdit(p)}>
-                            <Edit className="h-4 w-4 mr-2" /> Modifier
+                            <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDeleteTarget(p)}
                             className="text-red-600"
                           >
-                            <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                            <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -477,7 +480,7 @@ export default function PointagePage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t border-border px-4 py-3">
             <p className="text-xs text-muted-foreground">
-              Page {currentPage + 1} sur {totalPages}
+              {t("common.page")} {currentPage + 1} {t("common.of")} {totalPages}
             </p>
             <div className="flex items-center gap-1">
               <Button
@@ -508,18 +511,18 @@ export default function PointagePage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editTarget ? "Modifier le pointage" : "Nouveau pointage"}
+              {editTarget ? t("attendance.editEntry") : t("attendance.newEntry")}
             </DialogTitle>
             <DialogDescription>
               {editTarget
-                ? "Modifiez les informations du pointage."
-                : "Enregistrez un nouveau pointage pour un employe."}
+                ? t("attendance.editInfo")
+                : t("attendance.registerEntry")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="employeId">ID Employe</Label>
+                <Label htmlFor="employeId">{t("attendance.employeeType")} ID</Label>
                 <Input
                   id="employeId"
                   type="number"
@@ -531,7 +534,7 @@ export default function PointagePage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Type employe</Label>
+                <Label>{t("attendance.employeeType")}</Label>
                 <Select
                   value={form.employeType}
                   onValueChange={(v) =>
@@ -555,7 +558,7 @@ export default function PointagePage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="heureArrivee">Heure arrivee</Label>
+                <Label htmlFor="heureArrivee">{t("attendance.arrivalTime")}</Label>
                 <Input
                   id="heureArrivee"
                   type="time"
@@ -566,7 +569,7 @@ export default function PointagePage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="heureDepart">Heure depart</Label>
+                <Label htmlFor="heureDepart">{t("attendance.departureTime")}</Label>
                 <Input
                   id="heureDepart"
                   type="time"
@@ -578,7 +581,7 @@ export default function PointagePage() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label>Statut</Label>
+              <Label>{t("common.status")}</Label>
               <Select
                 value={form.statut}
                 onValueChange={(v) =>
@@ -598,7 +601,7 @@ export default function PointagePage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{t("common.notes")}</Label>
               <Textarea
                 id="notes"
                 value={form.notes}
@@ -610,7 +613,7 @@ export default function PointagePage() {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button
               onClick={handleSave}
@@ -621,8 +624,8 @@ export default function PointagePage() {
               }
             >
               {createMutation.isPending || updateMutation.isPending
-                ? "Enregistrement..."
-                : "Enregistrer"}
+                ? t("common.saving")
+                : t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -635,22 +638,21 @@ export default function PointagePage() {
       >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Supprimer le pointage</DialogTitle>
+            <DialogTitle>{t("attendance.deleteEntry")}</DialogTitle>
             <DialogDescription>
-              Etes-vous sur de vouloir supprimer ce pointage ? Cette action est
-              irreversible.
+              {t("common.deleteConfirmMsg")} ? {t("common.irreversible")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending ? "Suppression..." : "Supprimer"}
+              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

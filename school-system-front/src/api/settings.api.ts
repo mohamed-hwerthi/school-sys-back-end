@@ -8,6 +8,13 @@ export interface SchoolSettingsDTO {
   telephone: string | null;
   directeurName: string | null;
   directeurNameAr: string | null;
+  logo: string | null;
+  ville: string | null;
+  villeAr: string | null;
+  email: string | null;
+  siteWeb: string | null;
+  anneeCreation: string | null;
+  description: string | null;
 }
 
 const BASE = "/settings";

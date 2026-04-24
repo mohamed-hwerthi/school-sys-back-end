@@ -29,6 +29,7 @@ import {
 import { useCreateInscription, useCheckInscription } from "@/hooks/useInscriptions";
 import { useNiveaux } from "@/hooks/useNiveaux";
 import type { Inscription } from "@/types/inscription";
+import { useLanguage } from "@/hooks/useLanguage";
 
 // ── Zod Schemas ─────────────────────────────────────────────
 
@@ -82,6 +83,7 @@ function getDefaultAnneeScolaire(): string {
 }
 
 export default function InscriptionPubliquePage() {
+  const { t } = useLanguage();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<
     Partial<Step1Data & Step2Data & Step3Data>
@@ -293,7 +295,7 @@ export default function InscriptionPubliquePage() {
           className="text-center mb-8"
         >
           <h1 className="text-3xl font-bold text-foreground">
-            Inscription en ligne
+            {t("inscriptions.title")}
           </h1>
           <p className="text-muted-foreground mt-2">
             Remplissez le formulaire pour inscrire votre enfant

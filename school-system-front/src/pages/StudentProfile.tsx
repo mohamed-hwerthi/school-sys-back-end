@@ -27,6 +27,7 @@ import { useSchool } from "@/hooks/useSchool";
 import { StudentProfileSkeleton } from "@/components/skeletons/StudentProfileSkeleton";
 import { generateAttestation } from "@/lib/generate-attestation";
 import { PhotoUpload, getStudentPhotoUrl } from "@/components/students/PhotoUpload";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const avatarColors = [
   "bg-emerald-100 text-emerald-700",
@@ -44,6 +45,7 @@ const statusConfig: Record<string, { bg: string; text: string }> = {
 };
 
 export default function StudentProfile() {
+  const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: student, isLoading } = useStudent(Number(id));
@@ -61,11 +63,11 @@ export default function StudentProfile() {
           onClick={() => navigate("/dashboard/eleves")}
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour à la liste
+          {t("common.back")}
         </Button>
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Users className="h-12 w-12 text-muted-foreground/30 mb-4" />
-          <h2 className="font-heading text-lg font-bold text-foreground">Élève introuvable</h2>
+          <h2 className="font-heading text-lg font-bold text-foreground">{t("students.studentNotFound")}</h2>
           <p className="text-sm text-muted-foreground mt-1">
             L'élève demandé n'existe pas ou a été supprimé.
           </p>
@@ -89,7 +91,7 @@ export default function StudentProfile() {
           onClick={() => navigate("/dashboard/eleves")}
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour à la liste
+          {t("common.back")}
         </Button>
       </motion.div>
 
@@ -145,7 +147,7 @@ export default function StudentProfile() {
             onClick={() => navigate(`/dashboard/eleves/modifier/${student.id}`)}
           >
             <Edit className="h-4 w-4" />
-            Modifier
+            {t("common.edit")}
           </Button>
           <Button
             variant="outline"

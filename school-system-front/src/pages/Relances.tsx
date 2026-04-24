@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
+import { validate, type FormErrors } from "@/lib/validate";
+import { relanceSchema } from "@/lib/finance-schemas";
 import {
   Bell,
   Send,
@@ -58,25 +61,26 @@ import {
 } from "@/hooks/useRelances";
 import type { RelanceDTO, RelanceRequest, TypeRelance, StatutRelance } from "@/api/relances.api";
 
-const TYPE_LABELS: Record<TypeRelance, string> = {
-  EMAIL: "Email",
-  SMS: "SMS",
-  COURRIER: "Courrier",
-};
-
 const TYPE_ICONS: Record<TypeRelance, typeof Mail> = {
   EMAIL: Mail,
   SMS: MessageSquare,
   COURRIER: FileText,
 };
 
-const STATUT_CONFIG: Record<StatutRelance, { label: string; color: string; icon: typeof Clock }> = {
-  EN_ATTENTE: { label: "En attente", color: "bg-amber-100 text-amber-700", icon: Clock },
-  ENVOYEE: { label: "Envoyee", color: "bg-green-100 text-green-700", icon: CheckCircle },
-  ECHOUEE: { label: "Echouee", color: "bg-red-100 text-red-700", icon: XCircle },
-};
-
 export default function Relances() {
+  const { t } = useLanguage();
+
+  const TYPE_LABELS: Record<TypeRelance, string> = useMemo(() => ({
+    EMAIL: t("reminders.types.email"),
+    SMS: t("reminders.types.sms"),
+    COURRIER: t("reminders.types.mail"),
+  }), [t]);
+
+  const STATUT_CONFIG: Record<StatutRelance, { label: string; color: string; icon: typeof Clock }> = useMemo(() => ({
+    EN_ATTENTE: { label: t("reminders.statuses.pending"), color: "bg-amber-100 text-amber-700", icon: Clock },
+    ENVOYEE: { label: t("reminders.statuses.sent"), color: "bg-green-100 text-green-700", icon: CheckCircle },
+    ECHOUEE: { label: t("reminders.statuses.failed"), color: "bg-red-100 text-red-700", icon: XCircle },
+  }), [t]);
   const [tab, setTab] = useState("toutes");
   const [search, setSearch] = useState("");
   const [filterStatut, setFilterStatut] = useState<string>("all");
@@ -94,6 +98,7 @@ export default function Relances() {
     destinataire: "",
     anneeScolaire: "2025-2026",
   });
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [generateType, setGenerateType] = useState<TypeRelance>("EMAIL");
 
   const { data: relances = [], isLoading } = useRelances();
@@ -121,11 +126,17 @@ export default function Relances() {
   });
 
   const handleCreate = () => {
-    if (!form.studentId || !form.message) return;
+    const result = validate(relanceSchema, form);
+    if (!result.ok) { setFormErrors(result.errors); return; }
+    setFormErrors({});
     createRelance.mutate(form, {
       onSuccess: () => {
         setShowCreate(false);
         setForm({ studentId: 0, type: "EMAIL", message: "", destinataire: "", anneeScolaire: "2025-2026" });
+        setFormErrors({});
+      },
+      onError: (err: Error & { response?: { data?: { message?: string } } }) => {
+        setFormErrors({ _root: err.response?.data?.message ?? "Erreur lors de la création" });
       },
     });
   };
@@ -138,25 +149,25 @@ export default function Relances() {
 
   const statsCards = [
     {
-      title: "Total Relances",
+      title: t("reminders.totalReminders"),
       value: stats?.total ?? 0,
       icon: Bell,
       bg: "from-blue-500 to-blue-600",
     },
     {
-      title: "En Attente",
+      title: t("reminders.statuses.pending"),
       value: stats?.enAttente ?? 0,
       icon: Clock,
       bg: "from-amber-500 to-amber-600",
     },
     {
-      title: "Envoyees",
+      title: t("reminders.statuses.sent"),
       value: stats?.envoyees ?? 0,
       icon: Send,
       bg: "from-green-500 to-green-600",
     },
     {
-      title: "Echouees",
+      title: t("reminders.statuses.failed"),
       value: stats?.echouees ?? 0,
       icon: AlertTriangle,
       bg: "from-red-500 to-red-600",
@@ -168,17 +179,17 @@ export default function Relances() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Relances</h1>
-          <p className="text-sm text-gray-500">Gestion des relances de paiement</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("reminders.title")}</h1>
+          <p className="text-sm text-gray-500">{t("reminders.subtitle")}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowGenerate(true)}>
             <Zap className="mr-2 h-4 w-4" />
-            Generer auto
+            {t("reminders.generateAuto")}
           </Button>
           <Button onClick={() => setShowCreate(true)} className="bg-gradient-to-r from-blue-600 to-blue-700">
             <Plus className="mr-2 h-4 w-4" />
-            Nouvelle relance
+            {t("reminders.newReminder")}
           </Button>
         </div>
       </div>
@@ -207,7 +218,7 @@ export default function Relances() {
       {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Input
-          placeholder="Rechercher par eleve ou destinataire..."
+          placeholder={t("reminders.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="sm:w-72"
@@ -217,22 +228,22 @@ export default function Relances() {
             <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tous les types</SelectItem>
-            <SelectItem value="EMAIL">Email</SelectItem>
-            <SelectItem value="SMS">SMS</SelectItem>
-            <SelectItem value="COURRIER">Courrier</SelectItem>
+            <SelectItem value="all">{t("common.allTypes")}</SelectItem>
+            <SelectItem value="EMAIL">{t("reminders.types.email")}</SelectItem>
+            <SelectItem value="SMS">{t("reminders.types.sms")}</SelectItem>
+            <SelectItem value="COURRIER">{t("reminders.types.mail")}</SelectItem>
           </SelectContent>
         </Select>
         {tab === "toutes" && (
           <Select value={filterStatut} onValueChange={setFilterStatut}>
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Statut" />
+              <SelectValue placeholder={t("common.status")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les statuts</SelectItem>
-              <SelectItem value="EN_ATTENTE">En attente</SelectItem>
-              <SelectItem value="ENVOYEE">Envoyee</SelectItem>
-              <SelectItem value="ECHOUEE">Echouee</SelectItem>
+              <SelectItem value="all">{t("common.allStatuses")}</SelectItem>
+              <SelectItem value="EN_ATTENTE">{t("reminders.statuses.pending")}</SelectItem>
+              <SelectItem value="ENVOYEE">{t("reminders.statuses.sent")}</SelectItem>
+              <SelectItem value="ECHOUEE">{t("reminders.statuses.failed")}</SelectItem>
             </SelectContent>
           </Select>
         )}
@@ -241,10 +252,10 @@ export default function Relances() {
       {/* Tabs & Table */}
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
-          <TabsTrigger value="toutes">Toutes ({relances.length})</TabsTrigger>
-          <TabsTrigger value="en-attente">En attente ({relances.filter((r) => r.statut === "EN_ATTENTE").length})</TabsTrigger>
-          <TabsTrigger value="envoyees">Envoyees ({relances.filter((r) => r.statut === "ENVOYEE").length})</TabsTrigger>
-          <TabsTrigger value="echouees">Echouees ({relances.filter((r) => r.statut === "ECHOUEE").length})</TabsTrigger>
+          <TabsTrigger value="toutes">{t("common.all")} ({relances.length})</TabsTrigger>
+          <TabsTrigger value="en-attente">{t("reminders.statuses.pending")} ({relances.filter((r) => r.statut === "EN_ATTENTE").length})</TabsTrigger>
+          <TabsTrigger value="envoyees">{t("reminders.statuses.sent")} ({relances.filter((r) => r.statut === "ENVOYEE").length})</TabsTrigger>
+          <TabsTrigger value="echouees">{t("reminders.statuses.failed")} ({relances.filter((r) => r.statut === "ECHOUEE").length})</TabsTrigger>
         </TabsList>
 
         {["toutes", "en-attente", "envoyees", "echouees"].map((t) => (
@@ -253,27 +264,27 @@ export default function Relances() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
                   <tr>
-                    <th className="px-4 py-3">Eleve</th>
-                    <th className="px-4 py-3">Type</th>
-                    <th className="px-4 py-3">Destinataire</th>
-                    <th className="px-4 py-3">Montant</th>
+                    <th className="px-4 py-3">{t("common.student")}</th>
+                    <th className="px-4 py-3">{t("common.type")}</th>
+                    <th className="px-4 py-3">{t("common.recipient")}</th>
+                    <th className="px-4 py-3">{t("common.amount")}</th>
                     <th className="px-4 py-3">N°</th>
-                    <th className="px-4 py-3">Date prevue</th>
-                    <th className="px-4 py-3">Statut</th>
-                    <th className="px-4 py-3 text-right">Actions</th>
+                    <th className="px-4 py-3">{t("reminders.plannedDate")}</th>
+                    <th className="px-4 py-3">{t("common.status")}</th>
+                    <th className="px-4 py-3 text-right">{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {isLoading ? (
                     <tr>
                       <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
-                        Chargement...
+                        {t("common.loading")}
                       </td>
                     </tr>
                   ) : filtered.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
-                        Aucune relance trouvee
+                        {t("common.noResults")}
                       </td>
                     </tr>
                   ) : (
@@ -319,15 +330,15 @@ export default function Relances() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => setShowView(r)}>
-                                  <Eye className="mr-2 h-4 w-4" /> Voir
+                                  <Eye className="mr-2 h-4 w-4" /> {t("common.view")}
                                 </DropdownMenuItem>
                                 {r.statut === "EN_ATTENTE" && (
                                   <>
                                     <DropdownMenuItem onClick={() => markEnvoyee.mutate(r.id)}>
-                                      <Send className="mr-2 h-4 w-4" /> Marquer envoyee
+                                      <Send className="mr-2 h-4 w-4" /> {t("reminders.statuses.sent")}
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => markEchouee.mutate(r.id)}>
-                                      <XCircle className="mr-2 h-4 w-4" /> Marquer echouee
+                                      <XCircle className="mr-2 h-4 w-4" /> {t("reminders.statuses.failed")}
                                     </DropdownMenuItem>
                                   </>
                                 )}
@@ -335,7 +346,7 @@ export default function Relances() {
                                   className="text-red-600"
                                   onClick={() => setShowDelete(r)}
                                 >
-                                  <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+                                  <Trash2 className="mr-2 h-4 w-4" /> {t("common.delete")}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -355,18 +366,21 @@ export default function Relances() {
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Nouvelle relance</DialogTitle>
-            <DialogDescription>Creer une relance manuelle pour un eleve</DialogDescription>
+            <DialogTitle>{t("reminders.newReminder")}</DialogTitle>
+            <DialogDescription>{t("reminders.createManual")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {formErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErrors._root}</div>
+            )}
             <div>
-              <Label>Eleve *</Label>
+              <Label>{t("common.student")} *</Label>
               <Select
                 value={form.studentId ? String(form.studentId) : ""}
                 onValueChange={(v) => setForm({ ...form, studentId: Number(v) })}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selectionner un eleve" />
+                <SelectTrigger className={formErrors.studentId ? "border-red-500" : ""}>
+                  <SelectValue placeholder={t("reminders.selectStudent")} />
                 </SelectTrigger>
                 <SelectContent>
                   {students.map((s) => (
@@ -376,23 +390,24 @@ export default function Relances() {
                   ))}
                 </SelectContent>
               </Select>
+              {formErrors.studentId && <p className="text-xs text-red-600">{formErrors.studentId}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Type *</Label>
+                <Label>{t("common.type")} *</Label>
                 <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as TypeRelance })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="EMAIL">Email</SelectItem>
-                    <SelectItem value="SMS">SMS</SelectItem>
-                    <SelectItem value="COURRIER">Courrier</SelectItem>
+                    <SelectItem value="EMAIL">{t("reminders.types.email")}</SelectItem>
+                    <SelectItem value="SMS">{t("reminders.types.sms")}</SelectItem>
+                    <SelectItem value="COURRIER">{t("reminders.types.mail")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>Montant du ({CURRENCY})</Label>
+                <Label>{t("reminders.amountDue")} ({CURRENCY})</Label>
                 <Input
                   type="number"
                   value={form.montantDu ?? ""}
@@ -401,24 +416,24 @@ export default function Relances() {
               </div>
             </div>
             <div>
-              <Label>Destinataire</Label>
+              <Label>{t("common.recipient")}</Label>
               <Input
-                placeholder="Auto-rempli si vide"
+                placeholder={t("reminders.autoFilled")}
                 value={form.destinataire ?? ""}
                 onChange={(e) => setForm({ ...form, destinataire: e.target.value })}
               />
             </div>
             <div>
-              <Label>Message *</Label>
+              <Label>{t("common.message")} *</Label>
               <Textarea
                 rows={4}
                 value={form.message}
                 onChange={(e) => setForm({ ...form, message: e.target.value })}
-                placeholder="Corps du message de relance..."
+                placeholder={t("reminders.messageBody")}
               />
             </div>
             <div>
-              <Label>Date prevue</Label>
+              <Label>{t("reminders.plannedDate")}</Label>
               <Input
                 type="date"
                 value={form.datePrevue ?? ""}
@@ -428,14 +443,14 @@ export default function Relances() {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button
               onClick={handleCreate}
               disabled={!form.studentId || !form.message || createRelance.isPending}
               className="bg-gradient-to-r from-blue-600 to-blue-700"
             >
-              Creer
+              {t("common.create")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -445,22 +460,22 @@ export default function Relances() {
       <Dialog open={showGenerate} onOpenChange={setShowGenerate}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Generer des relances automatiques</DialogTitle>
+            <DialogTitle>{t("reminders.generateAuto")}</DialogTitle>
             <DialogDescription>
               Genere une relance pour chaque paiement en retard ou en attente qui n'a pas encore de relance en cours.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Type de relance</Label>
+              <Label>{t("reminders.reminderType")}</Label>
               <Select value={generateType} onValueChange={(v) => setGenerateType(v as TypeRelance)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="EMAIL">Email</SelectItem>
-                  <SelectItem value="SMS">SMS</SelectItem>
-                  <SelectItem value="COURRIER">Courrier</SelectItem>
+                  <SelectItem value="EMAIL">{t("reminders.types.email")}</SelectItem>
+                  <SelectItem value="SMS">{t("reminders.types.sms")}</SelectItem>
+                  <SelectItem value="COURRIER">{t("reminders.types.mail")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -471,7 +486,7 @@ export default function Relances() {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button
               onClick={handleGenerate}
@@ -479,7 +494,7 @@ export default function Relances() {
               className="bg-gradient-to-r from-amber-500 to-amber-600"
             >
               <Zap className="mr-2 h-4 w-4" />
-              Generer
+              {t("common.generate")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -489,7 +504,7 @@ export default function Relances() {
       <Dialog open={!!showView} onOpenChange={() => setShowView(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Details de la relance</DialogTitle>
+            <DialogTitle>{t("reminders.reminderDetails")}</DialogTitle>
             <DialogDescription>
               Relance N°{showView?.numeroRelance} - {showView?.studentFirstName} {showView?.studentLastName}
             </DialogDescription>
@@ -498,44 +513,44 @@ export default function Relances() {
             <div className="space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-gray-500">Eleve</p>
+                  <p className="text-gray-500">{t("common.student")}</p>
                   <p className="font-medium">{showView.studentFirstName} {showView.studentLastName}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Classe</p>
+                  <p className="text-gray-500">{t("common.class")}</p>
                   <p className="font-medium">{showView.studentClasse || "-"}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Type</p>
+                  <p className="text-gray-500">{t("common.type")}</p>
                   <p className="font-medium">{TYPE_LABELS[showView.type]}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Statut</p>
+                  <p className="text-gray-500">{t("common.status")}</p>
                   <Badge className={`${STATUT_CONFIG[showView.statut].color} border-0`}>
                     {STATUT_CONFIG[showView.statut].label}
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-gray-500">Destinataire</p>
+                  <p className="text-gray-500">{t("common.recipient")}</p>
                   <p className="font-medium">{showView.destinataire}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Montant du</p>
+                  <p className="text-gray-500">{t("reminders.amountDue")}</p>
                   <p className="font-semibold">
                     {showView.montantDu != null ? `${Number(showView.montantDu).toFixed(2)} ${CURRENCY}` : "-"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Date prevue</p>
+                  <p className="text-gray-500">{t("reminders.plannedDate")}</p>
                   <p className="font-medium">{showView.datePrevue}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Date d'envoi</p>
-                  <p className="font-medium">{showView.dateEnvoi || "Non envoyee"}</p>
+                  <p className="text-gray-500">{t("reminders.sendDate")}</p>
+                  <p className="font-medium">{showView.dateEnvoi || t("reminders.statuses.notSent")}</p>
                 </div>
                 {showView.paiementReference && (
                   <div>
-                    <p className="text-gray-500">Ref. paiement</p>
+                    <p className="text-gray-500">{t("reminders.paymentRef")}</p>
                     <p className="font-medium">{showView.paiementReference}</p>
                   </div>
                 )}
@@ -545,7 +560,7 @@ export default function Relances() {
                 </div>
               </div>
               <div>
-                <p className="text-gray-500 mb-1">Message</p>
+                <p className="text-gray-500 mb-1">{t("common.message")}</p>
                 <div className="rounded-lg bg-gray-50 p-3 text-gray-700 whitespace-pre-wrap">
                   {showView.message}
                 </div>
@@ -557,14 +572,14 @@ export default function Relances() {
                     onClick={() => { markEnvoyee.mutate(showView.id); setShowView(null); }}
                     className="bg-green-600 hover:bg-green-700"
                   >
-                    <Send className="mr-1 h-3.5 w-3.5" /> Marquer envoyee
+                    <Send className="mr-1 h-3.5 w-3.5" /> {t("reminders.statuses.sent")}
                   </Button>
                   <Button
                     size="sm"
                     variant="destructive"
                     onClick={() => { markEchouee.mutate(showView.id); setShowView(null); }}
                   >
-                    <XCircle className="mr-1 h-3.5 w-3.5" /> Marquer echouee
+                    <XCircle className="mr-1 h-3.5 w-3.5" /> {t("reminders.statuses.failed")}
                   </Button>
                 </div>
               )}
@@ -577,14 +592,14 @@ export default function Relances() {
       <Dialog open={!!showDelete} onOpenChange={() => setShowDelete(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Supprimer la relance</DialogTitle>
+            <DialogTitle>{t("reminders.deleteReminder")}</DialogTitle>
             <DialogDescription>
-              Etes-vous sur de vouloir supprimer cette relance pour {showDelete?.studentFirstName} {showDelete?.studentLastName} ?
+              {t("common.deleteConfirmMsg")} {showDelete?.studentFirstName} {showDelete?.studentLastName} ?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button
               variant="destructive"
@@ -592,7 +607,7 @@ export default function Relances() {
                 if (showDelete) deleteRelance.mutate(showDelete.id, { onSuccess: () => setShowDelete(null) });
               }}
             >
-              Supprimer
+              {t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

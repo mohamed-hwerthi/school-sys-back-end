@@ -3,6 +3,24 @@ import type { Incident, Sanction, DossierDisciplinaire, SanctionSuggestion } fro
 
 const BASE = "/discipline";
 
+function toSanctionPayload(data: Partial<Sanction>): Record<string, unknown> {
+  const { typeSanction, notifieParent, dateFin, ...rest } = data;
+  const payload: Record<string, unknown> = { ...rest };
+  if (typeSanction !== undefined) payload.type = typeSanction;
+  if (notifieParent !== undefined) payload.notifieParents = notifieParent;
+  if (dateFin !== undefined) payload.dateFin = dateFin === "" ? null : dateFin;
+  return payload;
+}
+
+function fromSanctionPayload(raw: Record<string, unknown>): Sanction {
+  const { type, notifieParents, ...rest } = raw;
+  return {
+    ...(rest as Omit<Sanction, "typeSanction" | "notifieParent">),
+    typeSanction: type as Sanction["typeSanction"],
+    notifieParent: Boolean(notifieParents),
+  };
+}
+
 export const disciplineApi = {
   // --- Incidents ---
   getIncidents: async (): Promise<Incident[]> => {
@@ -31,23 +49,23 @@ export const disciplineApi = {
 
   // --- Sanctions ---
   getSanctions: async (): Promise<Sanction[]> => {
-    const res = await api.get<Sanction[]>(`${BASE}/sanctions`);
-    return res.data;
+    const res = await api.get<Record<string, unknown>[]>(`${BASE}/sanctions`);
+    return res.data.map(fromSanctionPayload);
   },
 
   getSanctionsByEleve: async (eleveId: number): Promise<Sanction[]> => {
-    const res = await api.get<Sanction[]>(`${BASE}/sanctions/eleve/${eleveId}`);
-    return res.data;
+    const res = await api.get<Record<string, unknown>[]>(`${BASE}/sanctions/eleve/${eleveId}`);
+    return res.data.map(fromSanctionPayload);
   },
 
   createSanction: async (data: Omit<Sanction, "id" | "createdAt">): Promise<Sanction> => {
-    const res = await api.post<Sanction>(`${BASE}/sanctions`, data);
-    return res.data;
+    const res = await api.post<Record<string, unknown>>(`${BASE}/sanctions`, toSanctionPayload(data));
+    return fromSanctionPayload(res.data);
   },
 
   updateSanction: async (id: number, data: Partial<Sanction>): Promise<Sanction> => {
-    const res = await api.put<Sanction>(`${BASE}/sanctions/${id}`, data);
-    return res.data;
+    const res = await api.put<Record<string, unknown>>(`${BASE}/sanctions/${id}`, toSanctionPayload(data));
+    return fromSanctionPayload(res.data);
   },
 
   deleteSanction: async (id: number): Promise<void> => {

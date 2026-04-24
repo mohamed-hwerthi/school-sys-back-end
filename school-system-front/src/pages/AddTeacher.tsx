@@ -4,8 +4,10 @@ import { ChevronRight, UserPlus } from "lucide-react";
 import { useTeachers } from "@/hooks/useTeachers";
 import { TeacherForm } from "@/components/teachers/TeacherForm";
 import type { TeacherFormValues } from "@/lib/teacher-schema";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function AddTeacher() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { addTeacher } = useTeachers();
 
@@ -26,17 +28,17 @@ export default function AddTeacher() {
           onClick={() => navigate("/dashboard")}
           className="hover:text-foreground transition-colors"
         >
-          Tableau de bord
+          {t("nav.dashboard")}
         </button>
         <ChevronRight className="h-3.5 w-3.5" />
         <button
           onClick={() => navigate("/dashboard/enseignants")}
           className="hover:text-foreground transition-colors"
         >
-          Enseignants
+          {t("nav.teachers")}
         </button>
         <ChevronRight className="h-3.5 w-3.5" />
-        <span className="text-foreground font-medium">Ajouter</span>
+        <span className="text-foreground font-medium">{t("common.add")}</span>
       </nav>
 
       {/* Header */}
@@ -51,10 +53,10 @@ export default function AddTeacher() {
           </div>
           <div>
             <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-              Nouvel Enseignant
+              {t("teachers.addTeacher")}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Remplissez les informations pour ajouter un nouvel enseignant
+              {t("teachers.fillInfo")}
             </p>
           </div>
         </div>

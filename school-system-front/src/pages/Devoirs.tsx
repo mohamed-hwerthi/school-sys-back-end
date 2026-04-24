@@ -1,5 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
+import { validate, type FormErrors } from "@/lib/validate";
+import { devoirSchema, ressourceSchema } from "@/lib/devoir-schema";
 import {
   BookOpen,
   Search,
@@ -69,8 +72,11 @@ import {
   useCreateRessource,
   useDeleteRessource,
 } from "@/hooks/useDevoirs";
+import { useClasses } from "@/hooks/useClasses";
+import { useModules } from "@/hooks/useModules";
+import { useNiveaux } from "@/hooks/useNiveaux";
 import { FileUpload } from "@/components/FileUpload";
-import type { FileInfo } from "@/api/storage.api";
+import { resolveFileUrl, extractOriginalName, type FileInfo } from "@/api/storage.api";
 import type {
   Devoir,
   CreateDevoirRequest,
@@ -129,6 +135,7 @@ const fadeUp = {
 };
 
 export default function DevoirsPage() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("devoirs");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
@@ -157,6 +164,8 @@ export default function DevoirsPage() {
     titre: "",
     type: "DOCUMENT",
   });
+  const [devoirErrors, setDevoirErrors] = useState<FormErrors>({});
+  const [ressourceErrors, setRessourceErrors] = useState<FormErrors>({});
 
   // Delete confirmation
   const [deleteTarget, setDeleteTarget] = useState<Devoir | null>(null);
@@ -166,6 +175,36 @@ export default function DevoirsPage() {
   const { data: devoirs = [], isLoading: devoirsLoading } = useDevoirs();
   const { data: soumissions = [], isLoading: soumissionsLoading } = useSoumissionsByDevoir(selectedDevoirId);
   const { data: ressources = [], isLoading: ressourcesLoading } = useRessources();
+  const { niveaux } = useNiveaux();
+  const [devoirNiveauId, setDevoirNiveauId] = useState<number | undefined>();
+  const [ressourceNiveauId, setRessourceNiveauId] = useState<number | undefined>();
+  const { data: allClasses = [] } = useClasses();
+  const { data: allModules = [] } = useModules();
+  const devoirClasses = useMemo(
+    () => (devoirNiveauId ? allClasses.filter((c) => c.niveauId === devoirNiveauId) : []),
+    [allClasses, devoirNiveauId]
+  );
+  const devoirModules = useMemo(
+    () => (devoirNiveauId ? allModules.filter((m) => m.niveauId === devoirNiveauId) : []),
+    [allModules, devoirNiveauId]
+  );
+  const ressourceModules = useMemo(
+    () => (ressourceNiveauId ? allModules.filter((m) => m.niveauId === ressourceNiveauId) : []),
+    [allModules, ressourceNiveauId]
+  );
+
+  // Re-validate on change once errors are showing, so corrected fields clear
+  useEffect(() => {
+    if (Object.keys(devoirErrors).length === 0) return;
+    const result = validate(devoirSchema, devoirForm);
+    setDevoirErrors(result.ok ? {} : result.errors);
+  }, [devoirForm]);
+
+  useEffect(() => {
+    if (Object.keys(ressourceErrors).length === 0) return;
+    const result = validate(ressourceSchema, ressourceForm);
+    setRessourceErrors(result.ok ? {} : result.errors);
+  }, [ressourceForm]);
 
   // Mutations
   const createDevoir = useCreateDevoir();
@@ -219,14 +258,15 @@ export default function DevoirsPage() {
   const paginatedRessources = filteredRessources.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE);
 
   const stats = [
-    { label: "Total Devoirs", value: devoirs.length, icon: BookOpen, color: "bg-blue-50", textColor: "text-blue-700" },
-    { label: "Publies", value: devoirs.filter((d) => d.statut === "PUBLIE").length, icon: CheckCircle, color: "bg-emerald-50", textColor: "text-emerald-700" },
-    { label: "Ressources", value: ressources.length, icon: FileText, color: "bg-purple-50", textColor: "text-purple-700" },
+    { label: t("homework.totalHomework"), value: devoirs.length, icon: BookOpen, color: "bg-blue-50", textColor: "text-blue-700" },
+    { label: t("common.published"), value: devoirs.filter((d) => d.statut === "PUBLIE").length, icon: CheckCircle, color: "bg-emerald-50", textColor: "text-emerald-700" },
+    { label: t("homework.resources"), value: ressources.length, icon: FileText, color: "bg-purple-50", textColor: "text-purple-700" },
   ];
 
   const openCreateDevoir = () => {
     setEditingDevoir(null);
     setDevoirForm({ titre: "", dateLimite: "", type: "DEVOIR", pointsMax: 20, statut: "PUBLIE" });
+    setDevoirNiveauId(undefined);
     setDevoirFormOpen(true);
   };
 
@@ -244,17 +284,29 @@ export default function DevoirsPage() {
       fichierUrl: d.fichierUrl ?? undefined,
       statut: d.statut,
     });
+    const niveauFromClasse = d.classeId ? allClasses.find((c) => c.id === d.classeId)?.niveauId : undefined;
+    const niveauFromModule = d.moduleId ? allModules.find((m) => m.id === d.moduleId)?.niveauId : undefined;
+    setDevoirNiveauId(niveauFromClasse ?? niveauFromModule);
     setDevoirFormOpen(true);
   };
 
+  const onApiError = (setter: (e: FormErrors) => void) => (err: Error & { response?: { status?: number; data?: { message?: string } } }) => {
+    setter({ _root: err.response?.data?.message ?? "Erreur lors de l'enregistrement" });
+  };
+
   const handleSaveDevoir = () => {
+    const result = validate(devoirSchema, devoirForm);
+    if (!result.ok) { setDevoirErrors(result.errors); return; }
+    setDevoirErrors({});
     if (editingDevoir) {
       updateDevoir.mutate({ id: editingDevoir.id, data: devoirForm }, {
         onSuccess: () => setDevoirFormOpen(false),
+        onError: onApiError(setDevoirErrors),
       });
     } else {
       createDevoir.mutate(devoirForm, {
         onSuccess: () => setDevoirFormOpen(false),
+        onError: onApiError(setDevoirErrors),
       });
     }
   };
@@ -275,8 +327,12 @@ export default function DevoirsPage() {
   };
 
   const handleSaveRessource = () => {
+    const result = validate(ressourceSchema, ressourceForm);
+    if (!result.ok) { setRessourceErrors(result.errors); return; }
+    setRessourceErrors({});
     createRessource.mutate(ressourceForm, {
       onSuccess: () => setRessourceFormOpen(false),
+      onError: onApiError(setRessourceErrors),
     });
   };
 
@@ -301,17 +357,17 @@ export default function DevoirsPage() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">Devoirs & Ressources</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Gerez les devoirs, soumissions et ressources pedagogiques</p>
+          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">{t("homework.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{t("homework.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setRessourceForm({ titre: "", type: "DOCUMENT" }); setRessourceFormOpen(true); }}>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setRessourceForm({ titre: "", type: "DOCUMENT" }); setRessourceNiveauId(undefined); setRessourceFormOpen(true); }}>
             <Upload className="h-4 w-4" />
-            Ressource
+            {t("homework.resources")}
           </Button>
           <Button size="sm" className="gap-1.5 bg-gradient-primary shadow-btn" onClick={openCreateDevoir}>
             <Plus className="h-4 w-4" />
-            Nouveau devoir
+            {t("homework.newHomework")}
           </Button>
         </div>
       </motion.div>
@@ -333,9 +389,9 @@ export default function DevoirsPage() {
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setCurrentPage(0); }}>
         <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible" className="rounded-xl border border-border/50 bg-card p-4 shadow-sm space-y-3">
           <TabsList>
-            <TabsTrigger value="devoirs">Devoirs</TabsTrigger>
-            <TabsTrigger value="soumissions">Soumissions</TabsTrigger>
-            <TabsTrigger value="ressources">Ressources</TabsTrigger>
+            <TabsTrigger value="devoirs">{t("homework.title")}</TabsTrigger>
+            <TabsTrigger value="soumissions">{t("homework.submissions")}</TabsTrigger>
+            <TabsTrigger value="ressources">{t("homework.resources")}</TabsTrigger>
           </TabsList>
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
             <div className="relative flex-1 min-w-0">
@@ -345,10 +401,10 @@ export default function DevoirsPage() {
             {activeTab === "soumissions" && (
               <Select value={selectedDevoirId ? String(selectedDevoirId) : "all"} onValueChange={(v) => setSelectedDevoirId(v === "all" ? undefined : Number(v))}>
                 <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Selectionner un devoir" />
+                  <SelectValue placeholder={t("homework.selectHomework")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les devoirs</SelectItem>
+                  <SelectItem value="all">{t("homework.allHomework")}</SelectItem>
                   {devoirs.map((d) => (
                     <SelectItem key={d.id} value={String(d.id)}>{d.titre}</SelectItem>
                   ))}
@@ -358,7 +414,7 @@ export default function DevoirsPage() {
             {search && (
               <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setCurrentPage(0); }} className="gap-1 text-muted-foreground hover:text-foreground">
                 <X className="h-3.5 w-3.5" />
-                Reinitialiser
+                {t("common.reset")}
               </Button>
             )}
           </div>
@@ -386,7 +442,7 @@ export default function DevoirsPage() {
                     <tr>
                       <td colSpan={8} className="py-16 text-center text-muted-foreground">
                         <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                        <p className="font-medium">Aucun devoir trouve</p>
+                        <p className="font-medium">{t("homework.noHomework")}</p>
                       </td>
                     </tr>
                   ) : (
@@ -408,7 +464,7 @@ export default function DevoirsPage() {
                         <td className="py-3 px-4 hidden lg:table-cell">
                           {devoir.fichierUrl ? (
                             <a
-                              href={devoir.fichierUrl}
+                              href={resolveFileUrl(devoir.fichierUrl)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 text-primary hover:underline text-xs"
@@ -505,7 +561,7 @@ export default function DevoirsPage() {
                       <tr>
                         <td colSpan={8} className="py-16 text-center text-muted-foreground">
                           <FileText className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                          <p className="font-medium">{selectedDevoirId ? "Aucune soumission pour ce devoir" : "Selectionnez un devoir"}</p>
+                          <p className="font-medium">{selectedDevoirId ? t("homework.noSubmission") : t("homework.selectHomework")}</p>
                         </td>
                       </tr>
                     ) : (
@@ -527,7 +583,7 @@ export default function DevoirsPage() {
                           <td className="py-3 px-4 hidden md:table-cell">
                             {soumission.fichierUrl ? (
                               <a
-                                href={soumission.fichierUrl}
+                                href={resolveFileUrl(soumission.fichierUrl)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-1 text-primary hover:underline text-xs"
@@ -555,7 +611,7 @@ export default function DevoirsPage() {
                                 setCorrectionOpen(true);
                               }}>
                                 <CheckCircle className="h-4 w-4" />
-                                Corriger
+                                {t("homework.correctSubmission")}
                               </Button>
                             )}
                           </td>
@@ -588,7 +644,7 @@ export default function DevoirsPage() {
             {paginatedRessources.length === 0 ? (
               <div className="rounded-xl border border-border/50 bg-card shadow-sm py-16 text-center text-muted-foreground">
                 <FileText className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                <p className="font-medium">Aucune ressource trouvee</p>
+                <p className="font-medium">{t("homework.noResource")}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -614,7 +670,7 @@ export default function DevoirsPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             {(res.fichierUrl || res.lienExterne) && (
-                              <DropdownMenuItem onClick={() => window.open(res.fichierUrl || res.lienExterne || "", "_blank")}>
+                              <DropdownMenuItem onClick={() => window.open(res.fichierUrl ? resolveFileUrl(res.fichierUrl) : res.lienExterne || "", "_blank")}>
                                 <Download className="h-4 w-4 mr-2" /> Ouvrir
                               </DropdownMenuItem>
                             )}
@@ -660,15 +716,19 @@ export default function DevoirsPage() {
       <Dialog open={devoirFormOpen} onOpenChange={setDevoirFormOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editingDevoir ? "Modifier le devoir" : "Nouveau devoir"}</DialogTitle>
+            <DialogTitle>{editingDevoir ? t("homework.editHomework") : t("homework.newHomework")}</DialogTitle>
             <DialogDescription>
-              {editingDevoir ? "Modifiez les informations du devoir." : "Renseignez les details du nouveau devoir."}
+              {editingDevoir ? t("homework.editInfo") : t("homework.newHomeworkDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {devoirErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{devoirErrors._root}</div>
+            )}
             <div className="space-y-1.5">
-              <Label htmlFor="devoirTitre">Titre</Label>
-              <Input id="devoirTitre" value={devoirForm.titre} onChange={(e) => setDevoirForm({ ...devoirForm, titre: e.target.value })} placeholder="Titre du devoir" />
+              <Label htmlFor="devoirTitre">Titre *</Label>
+              <Input id="devoirTitre" value={devoirForm.titre} onChange={(e) => setDevoirForm({ ...devoirForm, titre: e.target.value })} placeholder="Titre du devoir" aria-invalid={!!devoirErrors.titre} className={devoirErrors.titre ? "border-red-500" : ""} />
+              {devoirErrors.titre && <p className="text-xs text-red-600">{devoirErrors.titre}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="devoirDesc">Description</Label>
@@ -700,22 +760,67 @@ export default function DevoirsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="dateLimite">Date limite</Label>
-                <Input id="dateLimite" type="date" value={devoirForm.dateLimite} onChange={(e) => setDevoirForm({ ...devoirForm, dateLimite: e.target.value })} />
+                <Label htmlFor="dateLimite">Date limite *</Label>
+                <Input id="dateLimite" type="date" value={devoirForm.dateLimite} onChange={(e) => setDevoirForm({ ...devoirForm, dateLimite: e.target.value })} aria-invalid={!!devoirErrors.dateLimite} className={devoirErrors.dateLimite ? "border-red-500" : ""} />
+                {devoirErrors.dateLimite && <p className="text-xs text-red-600">{devoirErrors.dateLimite}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="pointsMax">Points max</Label>
-                <Input id="pointsMax" type="number" value={devoirForm.pointsMax ?? 20} onChange={(e) => setDevoirForm({ ...devoirForm, pointsMax: Number(e.target.value) })} />
+                <Label htmlFor="pointsMax">Points max *</Label>
+                <Input id="pointsMax" type="number" value={devoirForm.pointsMax ?? 20} onChange={(e) => setDevoirForm({ ...devoirForm, pointsMax: Number(e.target.value) })} aria-invalid={!!devoirErrors.pointsMax} className={devoirErrors.pointsMax ? "border-red-500" : ""} />
+                {devoirErrors.pointsMax && <p className="text-xs text-red-600">{devoirErrors.pointsMax}</p>}
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="niveauId">Niveau</Label>
+              <Select
+                value={devoirNiveauId ? String(devoirNiveauId) : "none"}
+                onValueChange={(v) => {
+                  const nid = v === "none" ? undefined : Number(v);
+                  setDevoirNiveauId(nid);
+                  setDevoirForm({ ...devoirForm, classeId: undefined, moduleId: undefined });
+                }}
+              >
+                <SelectTrigger id="niveauId"><SelectValue placeholder="Selectionner un niveau" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Aucun</SelectItem>
+                  {niveaux.map((n) => (
+                    <SelectItem key={n.id} value={String(n.id)}>{n.nom}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="classeId">Classe ID</Label>
-                <Input id="classeId" type="number" value={devoirForm.classeId ?? ""} onChange={(e) => setDevoirForm({ ...devoirForm, classeId: e.target.value ? Number(e.target.value) : undefined })} placeholder="ID classe" />
+                <Label htmlFor="classeId">Classe</Label>
+                <Select
+                  value={devoirForm.classeId ? String(devoirForm.classeId) : "none"}
+                  onValueChange={(v) => setDevoirForm({ ...devoirForm, classeId: v === "none" ? undefined : Number(v) })}
+                  disabled={!devoirNiveauId}
+                >
+                  <SelectTrigger id="classeId"><SelectValue placeholder={devoirNiveauId ? "Selectionner une classe" : "Choisissez un niveau"} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Aucune</SelectItem>
+                    {devoirClasses.map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}>{c.fullName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="moduleId">Module ID</Label>
-                <Input id="moduleId" type="number" value={devoirForm.moduleId ?? ""} onChange={(e) => setDevoirForm({ ...devoirForm, moduleId: e.target.value ? Number(e.target.value) : undefined })} placeholder="ID module" />
+                <Label htmlFor="moduleId">Module</Label>
+                <Select
+                  value={devoirForm.moduleId ? String(devoirForm.moduleId) : "none"}
+                  onValueChange={(v) => setDevoirForm({ ...devoirForm, moduleId: v === "none" ? undefined : Number(v) })}
+                  disabled={!devoirNiveauId}
+                >
+                  <SelectTrigger id="moduleId"><SelectValue placeholder={devoirNiveauId ? "Selectionner un module" : "Choisissez un niveau"} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Aucun</SelectItem>
+                    {devoirModules.map((m) => (
+                      <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="space-y-1.5">
@@ -724,12 +829,12 @@ export default function DevoirsPage() {
                 <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
                   <File className="h-4 w-4 text-muted-foreground" />
                   <a
-                    href={devoirForm.fichierUrl}
+                    href={resolveFileUrl(devoirForm.fichierUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-primary hover:underline flex-1 truncate"
                   >
-                    {devoirForm.fichierUrl.split("/").pop() || "Fichier"}
+                    {extractOriginalName(devoirForm.fichierUrl) || "Fichier"}
                   </a>
                   <button
                     type="button"
@@ -752,8 +857,8 @@ export default function DevoirsPage() {
           </div>
           <DialogFooter>
             <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
-            <Button onClick={handleSaveDevoir} disabled={createDevoir.isPending || updateDevoir.isPending || !devoirForm.titre || !devoirForm.dateLimite}>
-              {(createDevoir.isPending || updateDevoir.isPending) ? "Enregistrement..." : (editingDevoir ? "Modifier" : "Creer")}
+            <Button onClick={handleSaveDevoir} disabled={createDevoir.isPending || updateDevoir.isPending}>
+              {(createDevoir.isPending || updateDevoir.isPending) ? t("common.saving") : (editingDevoir ? t("common.edit") : t("common.create"))}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -763,8 +868,8 @@ export default function DevoirsPage() {
       <Dialog open={correctionOpen} onOpenChange={setCorrectionOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Corriger la soumission</DialogTitle>
-            <DialogDescription>Attribuez une note et un commentaire a cette soumission.</DialogDescription>
+            <DialogTitle>{t("homework.correctSubmission")}</DialogTitle>
+            <DialogDescription>{t("homework.correctInfo")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
@@ -779,7 +884,7 @@ export default function DevoirsPage() {
           <DialogFooter>
             <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
             <Button onClick={handleCorrection} disabled={correctSoumission.isPending || !correctionNote}>
-              {correctSoumission.isPending ? "Correction..." : "Valider"}
+              {correctSoumission.isPending ? t("homework.correcting") : t("homework.validate")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -789,13 +894,17 @@ export default function DevoirsPage() {
       <Dialog open={ressourceFormOpen} onOpenChange={setRessourceFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Ajouter une ressource</DialogTitle>
-            <DialogDescription>Partagez une ressource pedagogique.</DialogDescription>
+            <DialogTitle>{t("homework.addResource")}</DialogTitle>
+            <DialogDescription>{t("homework.shareResource")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {ressourceErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{ressourceErrors._root}</div>
+            )}
             <div className="space-y-1.5">
-              <Label htmlFor="resTitre">Titre</Label>
-              <Input id="resTitre" value={ressourceForm.titre} onChange={(e) => setRessourceForm({ ...ressourceForm, titre: e.target.value })} placeholder="Titre de la ressource" />
+              <Label htmlFor="resTitre">Titre *</Label>
+              <Input id="resTitre" value={ressourceForm.titre} onChange={(e) => setRessourceForm({ ...ressourceForm, titre: e.target.value })} placeholder="Titre de la ressource" aria-invalid={!!ressourceErrors.titre} className={ressourceErrors.titre ? "border-red-500" : ""} />
+              {ressourceErrors.titre && <p className="text-xs text-red-600">{ressourceErrors.titre}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="resDesc">Description</Label>
@@ -818,12 +927,12 @@ export default function DevoirsPage() {
                 <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
                   <File className="h-4 w-4 text-muted-foreground" />
                   <a
-                    href={ressourceForm.fichierUrl}
+                    href={resolveFileUrl(ressourceForm.fichierUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-primary hover:underline flex-1 truncate"
                   >
-                    {ressourceForm.fichierUrl.split("/").pop() || "Fichier"}
+                    {extractOriginalName(ressourceForm.fichierUrl) || "Fichier"}
                   </a>
                   <button
                     type="button"
@@ -848,13 +957,44 @@ export default function DevoirsPage() {
               <Input id="resLien" value={ressourceForm.lienExterne ?? ""} onChange={(e) => setRessourceForm({ ...ressourceForm, lienExterne: e.target.value || undefined })} placeholder="https://..." />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="resModuleId">Module ID</Label>
-              <Input id="resModuleId" type="number" value={ressourceForm.moduleId ?? ""} onChange={(e) => setRessourceForm({ ...ressourceForm, moduleId: e.target.value ? Number(e.target.value) : undefined })} placeholder="ID module" />
+              <Label htmlFor="resNiveauId">Niveau</Label>
+              <Select
+                value={ressourceNiveauId ? String(ressourceNiveauId) : "none"}
+                onValueChange={(v) => {
+                  const nid = v === "none" ? undefined : Number(v);
+                  setRessourceNiveauId(nid);
+                  setRessourceForm({ ...ressourceForm, moduleId: undefined });
+                }}
+              >
+                <SelectTrigger id="resNiveauId"><SelectValue placeholder="Selectionner un niveau" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Aucun</SelectItem>
+                  {niveaux.map((n) => (
+                    <SelectItem key={n.id} value={String(n.id)}>{n.nom}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="resModuleId">Module</Label>
+              <Select
+                value={ressourceForm.moduleId ? String(ressourceForm.moduleId) : "none"}
+                onValueChange={(v) => setRessourceForm({ ...ressourceForm, moduleId: v === "none" ? undefined : Number(v) })}
+                disabled={!ressourceNiveauId}
+              >
+                <SelectTrigger id="resModuleId"><SelectValue placeholder={ressourceNiveauId ? "Selectionner un module" : "Choisissez un niveau"} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Aucun</SelectItem>
+                  {ressourceModules.map((m) => (
+                    <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
             <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
-            <Button onClick={handleSaveRessource} disabled={createRessource.isPending || !ressourceForm.titre}>
+            <Button onClick={handleSaveRessource} disabled={createRessource.isPending}>
               {createRessource.isPending ? "Creation..." : "Ajouter"}
             </Button>
           </DialogFooter>
@@ -865,7 +1005,7 @@ export default function DevoirsPage() {
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Supprimer le devoir</DialogTitle>
+            <DialogTitle>{t("homework.deleteHomework")}</DialogTitle>
             <DialogDescription>Etes-vous sur de vouloir supprimer "{deleteTarget?.titre}" ? Cette action est irreversible.</DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
@@ -881,7 +1021,7 @@ export default function DevoirsPage() {
       <Dialog open={!!deleteRessourceTarget} onOpenChange={(open) => !open && setDeleteRessourceTarget(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Supprimer la ressource</DialogTitle>
+            <DialogTitle>{t("homework.deleteResource")}</DialogTitle>
             <DialogDescription>Etes-vous sur de vouloir supprimer "{deleteRessourceTarget?.titre}" ? Cette action est irreversible.</DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/hooks/useLanguage";
 import {
   Users,
   UserPlus,
@@ -69,6 +70,7 @@ const avatarColors = [
 ];
 
 export default function Teachers() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { teachers, isLoading: loading, deleteTeacher: removeTeacher, importTeachers } = useTeachers();
 
@@ -112,12 +114,12 @@ export default function Teachers() {
   }).length;
 
   const stats = [
-    { label: "Total Enseignants", value: totalTeachers, icon: Users, color: "bg-blue-500", bgLight: "bg-blue-50", textColor: "text-blue-700" },
-    { label: "Actifs", value: activeTeachers, icon: UserCheck, color: "bg-emerald-500", bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
-    { label: "Hommes", value: hommes, icon: GraduationCap, color: "bg-purple-500", bgLight: "bg-purple-50", textColor: "text-purple-700" },
-    { label: "Femmes", value: femmes, icon: GraduationCap, color: "bg-pink-500", bgLight: "bg-pink-50", textColor: "text-pink-700" },
-    { label: "Inactifs", value: inactiveTeachers, icon: UserX, color: "bg-orange-500", bgLight: "bg-orange-50", textColor: "text-orange-700" },
-    { label: "Nouveaux ce mois", value: newThisMonth, icon: TrendingUp, color: "bg-cyan-500", bgLight: "bg-cyan-50", textColor: "text-cyan-700" },
+    { label: t("teachers.totalTeachers"), value: totalTeachers, icon: Users, color: "bg-blue-500", bgLight: "bg-blue-50", textColor: "text-blue-700" },
+    { label: t("common.active"), value: activeTeachers, icon: UserCheck, color: "bg-emerald-500", bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
+    { label: t("common.men"), value: hommes, icon: GraduationCap, color: "bg-purple-500", bgLight: "bg-purple-50", textColor: "text-purple-700" },
+    { label: t("common.women"), value: femmes, icon: GraduationCap, color: "bg-pink-500", bgLight: "bg-pink-50", textColor: "text-pink-700" },
+    { label: t("common.inactive"), value: inactiveTeachers, icon: UserX, color: "bg-orange-500", bgLight: "bg-orange-50", textColor: "text-orange-700" },
+    { label: t("common.newThisMonth"), value: newThisMonth, icon: TrendingUp, color: "bg-cyan-500", bgLight: "bg-cyan-50", textColor: "text-cyan-700" },
   ];
 
   // ─── Handlers ─────────────────────────────────────────
@@ -159,14 +161,14 @@ export default function Teachers() {
       >
         <div>
           <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-            Gestion des Enseignants
+            {t("teachers.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Gérez le personnel enseignant, les spécialités et le suivi
+            {t("teachers.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <ExportButton type="teachers" label="Exporter" />
+          <ExportButton type="teachers" label={t("common.export")} />
           <Button
             variant="outline"
             size="sm"
@@ -174,7 +176,7 @@ export default function Teachers() {
             onClick={() => setImportOpen(true)}
           >
             <Upload className="h-4 w-4" />
-            Importer
+            {t("common.import")}
           </Button>
           <Button
             size="sm"
@@ -182,7 +184,7 @@ export default function Teachers() {
             onClick={() => navigate("/dashboard/enseignants/ajouter")}
           >
             <UserPlus className="h-4 w-4" />
-            Nouvel Enseignant
+            {t("teachers.addTeacher")}
           </Button>
         </div>
       </motion.div>
@@ -221,7 +223,7 @@ export default function Teachers() {
             <Input
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-              placeholder="Rechercher par nom, spécialité ou email..."
+              placeholder={t("common.searchByNameEmailEtc")}
               className="pl-9"
             />
           </div>
@@ -232,7 +234,7 @@ export default function Teachers() {
                 <SelectValue placeholder="Spécialité" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Toutes les spécialités</SelectItem>
+                <SelectItem value="all">{t("common.all")}</SelectItem>
                 {SPECIALITES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
               </SelectContent>
             </Select>
@@ -241,20 +243,20 @@ export default function Teachers() {
                 <SelectValue placeholder="Statut" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous</SelectItem>
+                <SelectItem value="all">{t("common.allStatuses")}</SelectItem>
                 {STATUTS_ENSEIGNANT.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
               </SelectContent>
             </Select>
             {hasFilters && (
               <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1 text-muted-foreground hover:text-foreground">
                 <X className="h-3.5 w-3.5" />
-                Réinitialiser
+                {t("common.reset")}
               </Button>
             )}
           </div>
         </div>
         <div className="mt-2 text-xs text-muted-foreground">
-          {filtered.length} enseignant{filtered.length !== 1 ? "s" : ""} trouvé{filtered.length !== 1 ? "s" : ""}
+          {filtered.length} {t("common.found")}
         </div>
       </motion.div>
 
@@ -270,11 +272,11 @@ export default function Teachers() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Enseignant</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Spécialité</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Téléphone</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
-                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.teacher")}</th>
+                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("teachers.speciality")}</th>
+                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("common.phone")}</th>
+                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.status")}</th>
+                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -282,8 +284,8 @@ export default function Teachers() {
                 <tr>
                   <td colSpan={5} className="py-16 text-center text-muted-foreground">
                     <Users className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                    <p className="font-medium">Aucun enseignant trouvé</p>
-                    <p className="text-xs mt-1">Essayez de modifier vos filtres de recherche</p>
+                    <p className="font-medium">{t("teachers.noTeacherFound")}</p>
+                    <p className="text-xs mt-1">{t("common.tryModifyFilters")}</p>
                   </td>
                 </tr>
               ) : (
@@ -339,13 +341,13 @@ export default function Teachers() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => setViewTeacher(teacher)}>
-                              <Eye className="h-4 w-4 mr-2" /> Voir
+                              <Eye className="h-4 w-4 mr-2" /> {t("common.view")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => navigate(`/dashboard/enseignants/modifier/${teacher.id}`)}>
-                              <Edit className="h-4 w-4 mr-2" /> Modifier
+                              <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setDeleteTeacherTarget(teacher)} className="text-red-600">
-                              <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                              <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -362,7 +364,7 @@ export default function Teachers() {
         {filtered.length > ITEMS_PER_PAGE && (
           <div className="flex items-center justify-between border-t border-border px-4 py-3">
             <p className="text-xs text-muted-foreground">
-              Page {currentPage} sur {totalPages}
+              {t("common.page")} {currentPage} {t("common.of")} {totalPages}
             </p>
             <div className="flex items-center gap-1">
               <Button
@@ -403,8 +405,8 @@ export default function Teachers() {
       <Dialog open={!!viewTeacher} onOpenChange={(open) => !open && setViewTeacher(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Détails de l'enseignant</DialogTitle>
-            <DialogDescription>Informations complètes</DialogDescription>
+            <DialogTitle>{t("teachers.teacherDetails")}</DialogTitle>
+            <DialogDescription>{t("common.details")}</DialogDescription>
           </DialogHeader>
           {viewTeacher && (
             <div className="space-y-4 mt-2">
@@ -423,27 +425,27 @@ export default function Teachers() {
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <p className="text-xs text-muted-foreground">Spécialité</p>
+                  <p className="text-xs text-muted-foreground">{t("teachers.speciality")}</p>
                   <p className="font-medium">{viewTeacher.specialite}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Sexe</p>
-                  <p className="font-medium">{viewTeacher.sexe === "M" ? "Masculin" : "Féminin"}</p>
+                  <p className="text-xs text-muted-foreground">{t("common.gender")}</p>
+                  <p className="font-medium">{viewTeacher.sexe === "M" ? t("common.male") : t("common.female")}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Date de naissance</p>
+                  <p className="text-xs text-muted-foreground">{t("common.dateOfBirth")}</p>
                   <p className="font-medium">{viewTeacher.dateNaissance}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Téléphone</p>
+                  <p className="text-xs text-muted-foreground">{t("common.phone")}</p>
                   <p className="font-medium">{viewTeacher.telephone}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Email</p>
+                  <p className="text-xs text-muted-foreground">{t("common.email")}</p>
                   <p className="font-medium">{viewTeacher.email}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Date d'embauche</p>
+                  <p className="text-xs text-muted-foreground">{t("teachers.hireDate")}</p>
                   <p className="font-medium">{viewTeacher.dateEmbauche}</p>
                 </div>
               </div>

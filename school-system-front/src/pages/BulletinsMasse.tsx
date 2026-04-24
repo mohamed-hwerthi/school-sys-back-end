@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
 import {
   FileText,

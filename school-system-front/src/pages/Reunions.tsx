@@ -1,4 +1,7 @@
 import { useState, useMemo } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
+import { validate, type FormErrors } from "@/lib/validate";
+import { reunionSchema } from "@/lib/communication-schemas";
 import {
   CalendarDays,
   Plus,
@@ -49,12 +52,6 @@ import {
 import type { MeetingRequest, MeetingResponse } from "@/api/meetings.api";
 import { notify } from "@/lib/toast";
 
-const STATUT_CONFIG: Record<string, { label: string; color: string }> = {
-  PLANIFIE: { label: "Planifie", color: "bg-blue-100 text-blue-700" },
-  CONFIRME: { label: "Confirme", color: "bg-emerald-100 text-emerald-700" },
-  ANNULE: { label: "Annule", color: "bg-red-100 text-red-700" },
-};
-
 interface FormState {
   title: string;
   date: string;
@@ -80,9 +77,17 @@ const initialForm: FormState = {
 };
 
 export default function ReunionsPage() {
+  const { t } = useLanguage();
+
+  const STATUT_CONFIG: Record<string, { label: string; color: string }> = useMemo(() => ({
+    PLANIFIE: { label: t("meetings.statuses.planned"), color: "bg-blue-100 text-blue-700" },
+    CONFIRME: { label: t("meetings.statuses.confirmed"), color: "bg-emerald-100 text-emerald-700" },
+    ANNULE: { label: t("meetings.statuses.cancelled"), color: "bg-red-100 text-red-700" },
+  }), [t]);
   const [showDialog, setShowDialog] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<FormState>(initialForm);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [statutFilter, setStatutFilter] = useState<string>("ALL");
   const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
 
@@ -130,10 +135,9 @@ export default function ReunionsPage() {
   };
 
   const handleSubmit = () => {
-    if (!form.title.trim() || !form.date || !form.heureDebut || !form.heureFin) {
-      notify.error("Le titre, la date et les horaires sont requis");
-      return;
-    }
+    const result = validate(reunionSchema, form);
+    if (!result.ok) { setFormErrors(result.errors); return; }
+    setFormErrors({});
 
     const payload: MeetingRequest = {
       title: form.title,
@@ -152,27 +156,27 @@ export default function ReunionsPage() {
         { id: editId, data: payload },
         {
           onSuccess: () => {
-            notify.success("Reunion mise a jour");
+            notify.success(t("meetings.updated"));
             setShowDialog(false);
           },
-          onError: () => notify.error("Erreur lors de la mise a jour"),
+          onError: () => notify.error(t("common.updateError")),
         }
       );
     } else {
       createMeeting.mutate(payload, {
         onSuccess: () => {
-          notify.success("Reunion creee");
+          notify.success(t("meetings.created"));
           setShowDialog(false);
         },
-        onError: () => notify.error("Erreur lors de la creation"),
+        onError: () => notify.error(t("common.createError")),
       });
     }
   };
 
   const handleDelete = (id: number) => {
     deleteMeeting.mutate(id, {
-      onSuccess: () => notify.success("Reunion supprimee"),
-      onError: () => notify.error("Erreur lors de la suppression"),
+      onSuccess: () => notify.success(t("meetings.deletedMsg")),
+      onError: () => notify.error(t("common.deleteError")),
     });
   };
 
@@ -200,10 +204,10 @@ export default function ReunionsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <CalendarDays className="h-6 w-6 text-primary" />
-            Reunions
+            {t("meetings.title")}
           </h1>
           <p className="text-muted-foreground">
-            Planifiez et gerez les reunions parents-enseignants
+            {t("meetings.planDesc")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -231,15 +235,15 @@ export default function ReunionsPage() {
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">Tous les statuts</SelectItem>
-              <SelectItem value="PLANIFIE">Planifie</SelectItem>
-              <SelectItem value="CONFIRME">Confirme</SelectItem>
-              <SelectItem value="ANNULE">Annule</SelectItem>
+              <SelectItem value="ALL">{t("common.allStatuses")}</SelectItem>
+              <SelectItem value="PLANIFIE">{t("meetings.statuses.planned")}</SelectItem>
+              <SelectItem value="CONFIRME">{t("meetings.statuses.confirmed")}</SelectItem>
+              <SelectItem value="ANNULE">{t("meetings.statuses.cancelled")}</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={handleOpenCreate}>
             <Plus className="mr-2 h-4 w-4" />
-            Nouvelle reunion
+            {t("meetings.newMeeting")}
           </Button>
         </div>
       </div>
@@ -248,8 +252,8 @@ export default function ReunionsPage() {
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
           <CalendarDays className="mb-4 h-12 w-12" />
-          <p className="text-lg font-medium">Aucune reunion</p>
-          <p className="text-sm">Planifiez votre premiere reunion pour commencer.</p>
+          <p className="text-lg font-medium">{t("meetings.noMeeting")}</p>
+          <p className="text-sm">{t("meetings.planFirst")}</p>
         </div>
       ) : viewMode === "calendar" ? (
         /* Calendar-style grouped view */
@@ -293,7 +297,7 @@ export default function ReunionsPage() {
                           )}
                           {meeting.studentName && (
                             <span className="flex items-center gap-1">
-                              Eleve: {meeting.studentName}
+                              {t("common.student")}: {meeting.studentName}
                             </span>
                           )}
                         </div>
@@ -344,19 +348,19 @@ export default function ReunionsPage() {
                   {meeting.enseignantName && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <User className="h-4 w-4" />
-                      Enseignant: {meeting.enseignantName}
+                      {t("common.teacher")}: {meeting.enseignantName}
                     </div>
                   )}
                   {meeting.parentName && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Users className="h-4 w-4" />
-                      Parent: {meeting.parentName}
+                      {t("common.parent")}: {meeting.parentName}
                     </div>
                   )}
                   {meeting.studentName && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <User className="h-4 w-4" />
-                      Eleve: {meeting.studentName}
+                      {t("common.student")}: {meeting.studentName}
                     </div>
                   )}
                   {meeting.notes && (
@@ -395,27 +399,27 @@ export default function ReunionsPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {editId ? "Modifier la reunion" : "Nouvelle reunion"}
+              {editId ? t("meetings.editMeeting") : t("meetings.newMeeting")}
             </DialogTitle>
             <DialogDescription>
               {editId
-                ? "Modifiez les informations de la reunion."
-                : "Planifiez une nouvelle reunion parent-enseignant."}
+                ? t("meetings.editInfo")
+                : t("meetings.planDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="title">Titre</Label>
+              <Label htmlFor="title">{t("common.title")}</Label>
               <Input
                 id="title"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="Objet de la reunion"
+                placeholder={t("meetings.meetingSubject")}
               />
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="date">Date</Label>
+                <Label htmlFor="date">{t("common.date")}</Label>
                 <Input
                   id="date"
                   type="date"
@@ -424,7 +428,7 @@ export default function ReunionsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="heureDebut">Debut</Label>
+                <Label htmlFor="heureDebut">{t("common.start")}</Label>
                 <Input
                   id="heureDebut"
                   type="time"
@@ -433,7 +437,7 @@ export default function ReunionsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="heureFin">Fin</Label>
+                <Label htmlFor="heureFin">{t("common.end")}</Label>
                 <Input
                   id="heureFin"
                   type="time"
@@ -476,7 +480,7 @@ export default function ReunionsPage() {
                 />
               </div>
               <div>
-                <Label>Statut</Label>
+                <Label>{t("common.status")}</Label>
                 <Select
                   value={form.statut}
                   onValueChange={(v) => setForm({ ...form, statut: v })}
@@ -485,20 +489,20 @@ export default function ReunionsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PLANIFIE">Planifie</SelectItem>
-                    <SelectItem value="CONFIRME">Confirme</SelectItem>
-                    <SelectItem value="ANNULE">Annule</SelectItem>
+                    <SelectItem value="PLANIFIE">{t("meetings.statuses.planned")}</SelectItem>
+                    <SelectItem value="CONFIRME">{t("meetings.statuses.confirmed")}</SelectItem>
+                    <SelectItem value="ANNULE">{t("meetings.statuses.cancelled")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{t("common.notes")}</Label>
               <Textarea
                 id="notes"
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                placeholder="Notes sur la reunion..."
+                placeholder={t("meetings.meetingNotes")}
                 rows={3}
               />
             </div>
@@ -507,7 +511,7 @@ export default function ReunionsPage() {
             <DialogClose asChild>
               <Button variant="outline">
                 <X className="mr-2 h-4 w-4" />
-                Annuler
+                {t("common.cancel")}
               </Button>
             </DialogClose>
             <Button
@@ -517,7 +521,7 @@ export default function ReunionsPage() {
               {(createMeeting.isPending || updateMeeting.isPending) && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {editId ? "Mettre a jour" : "Planifier"}
+              {editId ? t("common.update") : t("meetings.plan")}
             </Button>
           </DialogFooter>
         </DialogContent>

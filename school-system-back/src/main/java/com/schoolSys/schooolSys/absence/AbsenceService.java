@@ -2,6 +2,9 @@ package com.schoolSys.schooolSys.absence;
 
 import com.schoolSys.schooolSys.absence.dto.*;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.niveau.Classe;
+import com.schoolSys.schooolSys.niveau.ClasseRepository;
+import com.schoolSys.schooolSys.niveau.Niveau;
 import com.schoolSys.schooolSys.student.Student;
 import com.schoolSys.schooolSys.student.StudentRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ public class AbsenceService {
     private final StudentRepository studentRepository;
     private final AbsenceSettingsRepository settingsRepository;
     private final AbsenceNotificationService notificationService;
+    private final ClasseRepository classeRepository;
 
     @Transactional
     public List<AbsenceResponseDTO> batchCreate(AbsenceBatchRequestDTO request) {
@@ -49,16 +53,57 @@ public class AbsenceService {
             .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<AbsenceResponseDTO> getByClasseAndDate(Long classeId, LocalDate date, String type) {
-        List<Long> eleveIds = getEleveIdsByClasse(classeId);
-        if (eleveIds.isEmpty()) return List.of();
         List<Absence> absences;
-        if (type != null && !type.isBlank()) {
-            absences = absenceRepository.findByDateAndEleveIdInAndType(date, eleveIds, type);
+        if (classeId == null) {
+            absences = absenceRepository.findAll().stream()
+                .filter(a -> date.equals(a.getDate()))
+                .filter(a -> type == null || type.isBlank() || type.equals(a.getType()))
+                .collect(Collectors.toList());
         } else {
-            absences = absenceRepository.findByDateAndEleveIdIn(date, eleveIds);
+            List<Long> eleveIds = getEleveIdsByClasse(classeId);
+            if (eleveIds.isEmpty()) return List.of();
+            if (type != null && !type.isBlank()) {
+                absences = absenceRepository.findByDateAndEleveIdInAndType(date, eleveIds, type);
+            } else {
+                absences = absenceRepository.findByDateAndEleveIdIn(date, eleveIds);
+            }
         }
         return absences.stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<FeuilleJourDTO> getFeuillesByDate(LocalDate date) {
+        List<Classe> classes = classeRepository.findAll();
+        return classes.stream()
+            .map(c -> {
+                String fullName = resolveClasseFullName(c.getId());
+                List<Student> eleves = fullName == null ? List.of() :
+                    studentRepository.findAll().stream()
+                        .filter(s -> fullName.equals(s.getClasse()))
+                        .collect(Collectors.toList());
+                List<Long> eleveIds = eleves.stream().map(Student::getId).collect(Collectors.toList());
+                List<Absence> absences = eleveIds.isEmpty()
+                    ? List.of()
+                    : absenceRepository.findByDateAndEleveIdIn(date, eleveIds);
+                int abs = (int) absences.stream().filter(a -> "ABSENCE".equals(a.getType())).count();
+                int ret = (int) absences.stream().filter(a -> "RETARD".equals(a.getType())).count();
+                int just = (int) absences.stream().filter(Absence::getJustifie).count();
+                return FeuilleJourDTO.builder()
+                    .classeId(c.getId())
+                    .classeLabel(fullName)
+                    .niveauName(c.getNiveau() != null ? c.getNiveau().getName() : null)
+                    .date(date)
+                    .totalEleves(eleves.size())
+                    .absences(abs)
+                    .retards(ret)
+                    .justifiees(just)
+                    .build();
+            })
+            .filter(f -> f.getTotalEleves() > 0 || f.getAbsences() > 0 || f.getRetards() > 0)
+            .sorted(Comparator.comparing(FeuilleJourDTO::getClasseLabel, Comparator.nullsLast(String::compareTo)))
+            .collect(Collectors.toList());
     }
 
     public List<AbsenceResponseDTO> getByEleve(Long eleveId) {
@@ -331,16 +376,34 @@ public class AbsenceService {
         return "NORMAL";
     }
 
+    private String resolveClasseFullName(Long classeId) {
+        Classe classe = classeRepository.findById(classeId).orElse(null);
+        if (classe == null) return null;
+        Niveau n = classe.getNiveau();
+        StringBuilder digits = new StringBuilder();
+        for (char ch : n.getName().toCharArray()) {
+            if (Character.isDigit(ch)) digits.append(ch);
+            else break;
+        }
+        return digits + classe.getLetter();
+    }
+
+    @Transactional(readOnly = true)
     private List<Long> getEleveIdsByClasse(Long classeId) {
+        String fullName = resolveClasseFullName(classeId);
+        if (fullName == null) return List.of();
         return studentRepository.findAll().stream()
-            .filter(s -> s.getClasse() != null && s.getClasse().equals(String.valueOf(classeId)))
+            .filter(s -> fullName.equals(s.getClasse()))
             .map(Student::getId)
             .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     private List<Student> getStudentsByClasse(Long classeId) {
+        String fullName = resolveClasseFullName(classeId);
+        if (fullName == null) return List.of();
         return studentRepository.findAll().stream()
-            .filter(s -> s.getClasse() != null && s.getClasse().equals(String.valueOf(classeId)))
+            .filter(s -> fullName.equals(s.getClasse()))
             .collect(Collectors.toList());
     }
 

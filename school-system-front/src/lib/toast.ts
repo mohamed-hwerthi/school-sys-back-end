@@ -104,10 +104,13 @@ export const notify = {
         opts.onSuccess?.(data);
       },
       onError: (err: TError) => {
-        const message =
-          opts.error ||
-          (err instanceof Error ? err.message : "Une erreur est survenue");
-        toast.error(message, { duration: 6000 });
+        const backendMessage = err instanceof Error ? err.message : null;
+        const fallback = opts.error || "Une erreur est survenue";
+        const primary = backendMessage && backendMessage !== "Network Error"
+          ? backendMessage
+          : fallback;
+        const description = backendMessage && primary !== fallback ? fallback : undefined;
+        toast.error(primary, { duration: 6000, description });
         opts.onError?.(err);
       },
     };

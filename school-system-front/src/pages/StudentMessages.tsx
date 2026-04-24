@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useStudent } from "@/hooks/useStudents";
 import { useMessages } from "@/hooks/useMessages";
 import { StudentMessagesSkeleton } from "@/components/skeletons/StudentMessagesSkeleton";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const avatarColors = [
   "bg-emerald-100 text-emerald-700",
@@ -23,6 +24,7 @@ const avatarColors = [
 ];
 
 export default function StudentMessages() {
+  const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const studentId = Number(id);
@@ -72,11 +74,11 @@ export default function StudentMessages() {
           onClick={() => navigate("/dashboard/eleves")}
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour à la liste
+          {t("common.back")}
         </Button>
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <MessageSquare className="h-12 w-12 text-muted-foreground/30 mb-4" />
-          <h2 className="font-heading text-lg font-bold text-foreground">Élève introuvable</h2>
+          <h2 className="font-heading text-lg font-bold text-foreground">{t("students.studentNotFound")}</h2>
           <p className="text-sm text-muted-foreground mt-1">
             L'élève demandé n'existe pas ou a été supprimé.
           </p>
@@ -109,7 +111,7 @@ export default function StudentMessages() {
           onClick={() => navigate(`/dashboard/eleves/${student.id}`)}
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour au profil
+          {t("common.back")}
         </Button>
       </motion.div>
 
@@ -149,7 +151,7 @@ export default function StudentMessages() {
           {conversation.messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-16">
               <MessageSquare className="h-10 w-10 text-muted-foreground/30 mb-3" />
-              <p className="text-sm font-medium text-muted-foreground">Aucun message</p>
+              <p className="text-sm font-medium text-muted-foreground">{t("chat.noMessages")}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Envoyez le premier message au parent de cet élève.
               </p>
@@ -173,7 +175,7 @@ export default function StudentMessages() {
                       msg.senderRole === "admin" ? "text-white/60" : "text-muted-foreground"
                     }`}
                   >
-                    {msg.senderRole === "admin" ? "Vous" : "Parent"} · {formatTime(msg.timestamp)}
+                    {msg.senderRole === "admin" ? t("chat.you") : t("common.parent")} · {formatTime(msg.timestamp)}
                   </p>
                 </div>
               </div>
@@ -194,7 +196,7 @@ export default function StudentMessages() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Écrire un message..."
+          placeholder={t("chat.typeMessage")}
           className="flex-1"
         />
         <Button
@@ -203,7 +205,7 @@ export default function StudentMessages() {
           className="gap-1.5 bg-gradient-primary shadow-btn"
         >
           <Send className="h-4 w-4" />
-          Envoyer
+          {t("chat.sendMessage")}
         </Button>
       </motion.div>
     </div>

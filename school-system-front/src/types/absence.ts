@@ -100,6 +100,17 @@ export interface RecentAbsence {
   motif?: string;
 }
 
+export interface FeuilleJour {
+  classeId: number;
+  classeLabel: string;
+  niveauName?: string;
+  date: string;
+  totalEleves: number;
+  absences: number;
+  retards: number;
+  justifiees: number;
+}
+
 export interface HistoriquePresence {
   eleveId: number;
   studentName: string;

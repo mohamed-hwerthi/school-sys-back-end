@@ -1,4 +1,7 @@
 import { useState, useMemo } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
+import { validate, type FormErrors } from "@/lib/validate";
+import { annonceSchema } from "@/lib/communication-schemas";
 import {
   Megaphone,
   Plus,
@@ -51,26 +54,11 @@ import { integrationsApi } from "@/api/integrations.api";
 import type { Annonce, AnnonceType, DestinatairesType } from "@/types/notification";
 import { notify } from "@/lib/toast";
 
-const TYPE_LABELS: Record<AnnonceType, string> = {
-  GENERAL: "General",
-  URGENT: "Urgent",
-  EVENEMENT: "Evenement",
-  REUNION: "Reunion",
-};
-
 const TYPE_COLORS: Record<AnnonceType, string> = {
   GENERAL: "bg-blue-100 text-blue-700",
   URGENT: "bg-red-100 text-red-700 border-red-300",
   EVENEMENT: "bg-purple-100 text-purple-700",
   REUNION: "bg-emerald-100 text-emerald-700",
-};
-
-const DEST_LABELS: Record<DestinatairesType, string> = {
-  TOUS: "Tous",
-  PARENTS: "Parents",
-  ENSEIGNANTS: "Enseignants",
-  ELEVES: "Eleves",
-  CLASSE: "Classe",
 };
 
 interface FormState {
@@ -92,6 +80,22 @@ const initialForm: FormState = {
 };
 
 export default function AnnoncesPage() {
+  const { t } = useLanguage();
+
+  const TYPE_LABELS: Record<AnnonceType, string> = useMemo(() => ({
+    GENERAL: t("announcements.announcementTypes.general"),
+    URGENT: t("announcements.announcementTypes.urgent"),
+    EVENEMENT: t("announcements.announcementTypes.event"),
+    REUNION: t("announcements.announcementTypes.meeting"),
+  }), [t]);
+
+  const DEST_LABELS: Record<DestinatairesType, string> = useMemo(() => ({
+    TOUS: t("announcements.recipientTypes.all"),
+    PARENTS: t("announcements.recipientTypes.parents"),
+    ENSEIGNANTS: t("announcements.recipientTypes.teachers"),
+    ELEVES: t("announcements.recipientTypes.students"),
+    CLASSE: t("announcements.recipientTypes.class"),
+  }), [t]);
   const [showDialog, setShowDialog] = useState(false);
   const [showSmsDialog, setShowSmsDialog] = useState(false);
   const [smsPhones, setSmsPhones] = useState("");
@@ -99,6 +103,7 @@ export default function AnnoncesPage() {
   const [smsSending, setSmsSending] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<FormState>(initialForm);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
 
   const { data: annonces = [], isLoading } = useAnnonces();
@@ -133,10 +138,9 @@ export default function AnnoncesPage() {
   };
 
   const handleSubmit = () => {
-    if (!form.titre.trim() || !form.contenu.trim()) {
-      notify.error("Le titre et le contenu sont requis");
-      return;
-    }
+    const result = validate(annonceSchema, form);
+    if (!result.ok) { setFormErrors(result.errors); return; }
+    setFormErrors({});
 
     const payload: Record<string, unknown> = {
       titre: form.titre,
@@ -152,27 +156,27 @@ export default function AnnoncesPage() {
         { id: editId, data: payload as Partial<Annonce> },
         {
           onSuccess: () => {
-            notify.success("Annonce mise a jour");
+            notify.success(t("announcements.updated"));
             setShowDialog(false);
           },
-          onError: () => notify.error("Erreur lors de la mise a jour"),
+          onError: () => notify.error(t("common.updateError")),
         }
       );
     } else {
       createAnnonce.mutate(payload as Omit<Annonce, "id" | "createdAt" | "actif">, {
         onSuccess: () => {
-          notify.success("Annonce creee");
+          notify.success(t("announcements.created"));
           setShowDialog(false);
         },
-        onError: () => notify.error("Erreur lors de la creation"),
+        onError: () => notify.error(t("common.createError")),
       });
     }
   };
 
   const handleDelete = (id: number) => {
     deleteAnnonce.mutate(id, {
-      onSuccess: () => notify.success("Annonce supprimee"),
-      onError: () => notify.error("Erreur lors de la suppression"),
+      onSuccess: () => notify.success(t("announcements.deletedMsg")),
+      onError: () => notify.error(t("common.deleteError")),
     });
   };
 
@@ -183,19 +187,19 @@ export default function AnnoncesPage() {
       .filter(Boolean);
 
     if (phones.length === 0 || !smsMessage.trim()) {
-      notify.error("Veuillez saisir au moins un numero et un message");
+      notify.error(t("announcements.smsValidation"));
       return;
     }
 
     setSmsSending(true);
     try {
       const result = await integrationsApi.sendBulkSms(phones, smsMessage);
-      notify.success(`SMS envoye a ${result.length}/${phones.length} destinataires`);
+      notify.success(t("announcements.smsSuccess", { sent: result.length, total: phones.length }));
       setShowSmsDialog(false);
       setSmsPhones("");
       setSmsMessage("");
     } catch {
-      notify.error("Erreur lors de l'envoi des SMS");
+      notify.error(t("announcements.smsError"));
     } finally {
       setSmsSending(false);
     }
@@ -214,9 +218,9 @@ export default function AnnoncesPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Annonces</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("announcements.title")}</h1>
           <p className="text-muted-foreground">
-            Gerez les annonces et communications de l'ecole
+            {t("announcements.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -225,7 +229,7 @@ export default function AnnoncesPage() {
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">Tous les types</SelectItem>
+              <SelectItem value="ALL">{t("announcements.announcementTypes.all")}</SelectItem>
               {(Object.keys(TYPE_LABELS) as AnnonceType[]).map((type) => (
                 <SelectItem key={type} value={type}>
                   {TYPE_LABELS[type]}
@@ -235,11 +239,11 @@ export default function AnnoncesPage() {
           </Select>
           <Button variant="outline" onClick={() => setShowSmsDialog(true)}>
             <MessageSquare className="mr-2 h-4 w-4" />
-            Envoyer SMS
+            {t("announcements.sendSms")}
           </Button>
           <Button onClick={handleOpenCreate}>
             <Plus className="mr-2 h-4 w-4" />
-            Nouvelle annonce
+            {t("announcements.newAnnouncement")}
           </Button>
         </div>
       </div>
@@ -248,8 +252,8 @@ export default function AnnoncesPage() {
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
           <Megaphone className="mb-4 h-12 w-12" />
-          <p className="text-lg font-medium">Aucune annonce</p>
-          <p className="text-sm">Creez votre premiere annonce pour commencer.</p>
+          <p className="text-lg font-medium">{t("announcements.noAnnouncement")}</p>
+          <p className="text-sm">{t("announcements.createFirst")}</p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -298,7 +302,7 @@ export default function AnnoncesPage() {
                   {annonce.dateExpiration && (
                     <Badge variant="outline" className="text-xs">
                       <Calendar className="mr-1 h-3 w-3" />
-                      Expire:{" "}
+                      {t("announcements.expires")}:{" "}
                       {new Date(annonce.dateExpiration).toLocaleDateString("fr-FR")}
                     </Badge>
                   )}
@@ -311,7 +315,7 @@ export default function AnnoncesPage() {
                   onClick={() => handleOpenEdit(annonce)}
                 >
                   <Edit className="mr-1 h-3 w-3" />
-                  Modifier
+                  {t("common.edit")}
                 </Button>
                 <Button
                   variant="ghost"
@@ -320,7 +324,7 @@ export default function AnnoncesPage() {
                   onClick={() => handleDelete(annonce.id)}
                 >
                   <Trash2 className="mr-1 h-3 w-3" />
-                  Supprimer
+                  {t("common.delete")}
                 </Button>
               </CardFooter>
             </Card>
@@ -334,37 +338,37 @@ export default function AnnoncesPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5" />
-              Envoyer SMS en masse
+              {t("announcements.bulkSms")}
             </DialogTitle>
             <DialogDescription>
-              Envoyez un SMS a tous les parents ou a une liste de numeros.
+              {t("announcements.bulkSmsDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="smsPhones">Numeros de telephone</Label>
+              <Label htmlFor="smsPhones">{t("announcements.phoneNumbers")}</Label>
               <Textarea
                 id="smsPhones"
                 value={smsPhones}
                 onChange={(e) => setSmsPhones(e.target.value)}
-                placeholder="Saisissez les numeros, separes par des virgules ou retours a la ligne...&#10;+212600000001&#10;+212600000002"
+                placeholder={t("announcements.phonePlaceholder")}
                 rows={4}
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Separez les numeros par des virgules, points-virgules ou retours a la ligne.
+                {t("announcements.phoneSeparatorHint")}
               </p>
             </div>
             <div>
-              <Label htmlFor="smsMessage">Message</Label>
+              <Label htmlFor="smsMessage">{t("common.message")}</Label>
               <Textarea
                 id="smsMessage"
                 value={smsMessage}
                 onChange={(e) => setSmsMessage(e.target.value)}
-                placeholder="Votre message SMS..."
+                placeholder={t("announcements.smsMessage")}
                 rows={3}
               />
               <p className="text-xs text-muted-foreground mt-1">
-                {smsMessage.length}/160 caracteres
+                {smsMessage.length}/160 {t("announcements.charsCount")}
               </p>
             </div>
           </div>
@@ -372,7 +376,7 @@ export default function AnnoncesPage() {
             <DialogClose asChild>
               <Button variant="outline">
                 <X className="mr-2 h-4 w-4" />
-                Annuler
+                {t("common.cancel")}
               </Button>
             </DialogClose>
             <Button onClick={handleSendBulkSms} disabled={smsSending}>
@@ -381,7 +385,7 @@ export default function AnnoncesPage() {
               ) : (
                 <Send className="mr-2 h-4 w-4" />
               )}
-              Envoyer
+              {t("common.send")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -392,37 +396,46 @@ export default function AnnoncesPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {editId ? "Modifier l'annonce" : "Nouvelle annonce"}
+              {editId ? t("announcements.editAnnouncement") : t("announcements.newAnnouncement")}
             </DialogTitle>
             <DialogDescription>
               {editId
-                ? "Modifiez les informations de l'annonce."
-                : "Remplissez les informations pour creer une nouvelle annonce."}
+                ? t("announcements.editInfo")
+                : t("announcements.fillInfo")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {formErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErrors._root}</div>
+            )}
             <div>
-              <Label htmlFor="titre">Titre</Label>
+              <Label htmlFor="titre">{t("common.title")} *</Label>
               <Input
                 id="titre"
                 value={form.titre}
                 onChange={(e) => setForm({ ...form, titre: e.target.value })}
-                placeholder="Titre de l'annonce"
+                placeholder={t("announcements.titlePlaceholder")}
+                aria-invalid={!!formErrors.titre}
+                className={formErrors.titre ? "border-red-500" : ""}
               />
+              {formErrors.titre && <p className="text-xs text-red-600">{formErrors.titre}</p>}
             </div>
             <div>
-              <Label htmlFor="contenu">Contenu</Label>
+              <Label htmlFor="contenu">{t("common.content")} *</Label>
               <Textarea
                 id="contenu"
                 value={form.contenu}
                 onChange={(e) => setForm({ ...form, contenu: e.target.value })}
-                placeholder="Contenu de l'annonce..."
+                placeholder={t("announcements.contentPlaceholder")}
                 rows={4}
+                aria-invalid={!!formErrors.contenu}
+                className={formErrors.contenu ? "border-red-500" : ""}
               />
+              {formErrors.contenu && <p className="text-xs text-red-600">{formErrors.contenu}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Type</Label>
+                <Label>{t("common.type")}</Label>
                 <Select
                   value={form.type}
                   onValueChange={(v) => setForm({ ...form, type: v as AnnonceType })}
@@ -440,7 +453,7 @@ export default function AnnoncesPage() {
                 </Select>
               </div>
               <div>
-                <Label>Destinataires</Label>
+                <Label>{t("announcements.recipients")}</Label>
                 <Select
                   value={form.destinataires}
                   onValueChange={(v) =>
@@ -462,7 +475,7 @@ export default function AnnoncesPage() {
             </div>
             {form.destinataires === "CLASSE" && (
               <div>
-                <Label htmlFor="classeId">ID de la classe</Label>
+                <Label htmlFor="classeId">{t("announcements.classId")}</Label>
                 <Input
                   id="classeId"
                   type="number"
@@ -473,7 +486,7 @@ export default function AnnoncesPage() {
               </div>
             )}
             <div>
-              <Label htmlFor="dateExpiration">Date d'expiration (optionnel)</Label>
+              <Label htmlFor="dateExpiration">{t("announcements.expiryDate")}</Label>
               <Input
                 id="dateExpiration"
                 type="datetime-local"
@@ -486,7 +499,7 @@ export default function AnnoncesPage() {
             <DialogClose asChild>
               <Button variant="outline">
                 <X className="mr-2 h-4 w-4" />
-                Annuler
+                {t("common.cancel")}
               </Button>
             </DialogClose>
             <Button
@@ -496,7 +509,7 @@ export default function AnnoncesPage() {
               {(createAnnonce.isPending || updateAnnonce.isPending) && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {editId ? "Mettre a jour" : "Creer"}
+              {editId ? t("common.update") : t("common.create")}
             </Button>
           </DialogFooter>
         </DialogContent>

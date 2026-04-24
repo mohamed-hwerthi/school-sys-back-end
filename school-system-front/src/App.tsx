@@ -14,7 +14,6 @@ import NotFound from "./pages/NotFound";
 import Forbidden from "./pages/Forbidden";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import { TeachersProvider } from "./hooks/useTeachers";
-import { RoomsProvider } from "./hooks/useRooms";
 import { MessagesProvider } from "./hooks/useMessages";
 import { SchoolProvider } from "./hooks/useSchool";
 import { Loader2 } from "lucide-react";
@@ -52,6 +51,9 @@ const GestionCaisse = lazy(() => import("./pages/GestionCaisse"));
 // Auth pages
 const UsersPage = lazy(() => import("./pages/Users"));
 const AbsencesPage = lazy(() => import("./pages/Absences"));
+const AppelAbsencePage = lazy(() => import("./pages/AppelAbsence"));
+const FeuillesJourPage = lazy(() => import("./pages/FeuillesJour"));
+const FeuilleDetailsPage = lazy(() => import("./pages/FeuilleDetails"));
 const EmploiDuTempsPage = lazy(() => import("./pages/EmploiDuTemps"));
 const DisciplinePage = lazy(() => import("./pages/Discipline"));
 const AnneeScolairePage = lazy(() => import("./pages/AnneeScolaire"));
@@ -167,9 +169,7 @@ const App = () => (
                   <SchoolProvider>
                     <MessagesProvider>
                       <TeachersProvider>
-                        <RoomsProvider>
                           <DashboardLayout />
-                        </RoomsProvider>
                       </TeachersProvider>
                     </MessagesProvider>
                   </SchoolProvider>
@@ -192,6 +192,9 @@ const App = () => (
 
               {/* Absences */}
               <Route path="absences" element={<G roles={STAFF_ROLES}><AbsencesPage /></G>} />
+              <Route path="absences/appel" element={<G roles={STAFF_ROLES}><AppelAbsencePage /></G>} />
+              <Route path="absences/feuilles" element={<G roles={STAFF_ROLES}><FeuillesJourPage /></G>} />
+              <Route path="absences/feuille" element={<G roles={STAFF_ROLES}><FeuilleDetailsPage /></G>} />
 
               {/* Inscriptions */}
               <Route path="inscriptions" element={<G roles={MANAGEMENT_ROLES}><InscriptionsPage /></G>} />

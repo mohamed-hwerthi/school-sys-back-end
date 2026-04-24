@@ -99,7 +99,7 @@ export function PhotoUpload({
     setUploading(true);
     try {
       const fileInfo = await uploadFile(file, "students");
-      const fullUrl = fileInfo.fileUrl || getFileUrl(fileInfo.filePath);
+      const fullUrl = getFileUrl(fileInfo.filePath);
 
       setPhotoUrl(fullUrl);
       if (studentId) {

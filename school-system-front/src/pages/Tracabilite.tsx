@@ -45,6 +45,7 @@ import { useAuditLogs } from "@/hooks/useAuditLogs";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import type { ActionLog } from "@/types/tracabilite";
 import { TYPES_ACTION, MODULES_ACTION } from "@/types/tracabilite";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -92,6 +93,7 @@ const moduleColors: Record<string, string> = {
 };
 
 export default function Tracabilite() {
+  const { t } = useLanguage();
   const { data, isLoading: loading } = useAuditLogs();
   const actions = data?.content ?? [];
   const [search, setSearch] = useState("");
@@ -109,10 +111,10 @@ export default function Tracabilite() {
     const modifications = actions.filter((a) => a.type === "Modification" || a.type === "Création" || a.type === "Suppression").length;
     const uniqueUsers = new Set(actions.map((a) => a.utilisateur)).size;
     return [
-      { label: "Actions aujourd'hui", value: todayActions, icon: Activity, bgLight: "bg-violet-50", textColor: "text-violet-700" },
-      { label: "Connexions", value: connexions, icon: LogIn, bgLight: "bg-purple-50", textColor: "text-purple-700" },
-      { label: "Modifications", value: modifications, icon: Edit, bgLight: "bg-blue-50", textColor: "text-blue-700" },
-      { label: "Utilisateurs actifs", value: uniqueUsers, icon: User, bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
+      { label: t("traceability.actionsToday"), value: todayActions, icon: Activity, bgLight: "bg-violet-50", textColor: "text-violet-700" },
+      { label: t("traceability.logins"), value: connexions, icon: LogIn, bgLight: "bg-purple-50", textColor: "text-purple-700" },
+      { label: t("traceability.modifications"), value: modifications, icon: Edit, bgLight: "bg-blue-50", textColor: "text-blue-700" },
+      { label: t("traceability.activeUsers"), value: uniqueUsers, icon: User, bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
     ];
   }, [actions]);
 
@@ -153,13 +155,13 @@ export default function Tracabilite() {
         <div>
           <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground flex items-center gap-2">
             <Shield className="h-6 w-6 text-violet-600" />
-            Traçabilité
+            {t("traceability.title")}
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Journal d'audit et historique des actions</p>
+          <p className="text-sm text-muted-foreground mt-0.5">{t("traceability.subtitle")}</p>
         </div>
         <Button variant="outline" size="sm" className="gap-1.5 w-fit" onClick={() => notify.success("Export du journal (simulation)")}>
           <Download className="h-4 w-4" />
-          Exporter le journal
+          {t("traceability.exportLog")}
         </Button>
       </motion.div>
 
@@ -200,7 +202,7 @@ export default function Tracabilite() {
             </Select>
             <Input type="date" value={filterDate} onChange={(e) => { setFilterDate(e.target.value); setCurrentPage(1); }} className="w-[160px]" />
             {hasFilters && (
-              <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1 text-muted-foreground"><X className="h-3.5 w-3.5" />Réinitialiser</Button>
+              <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1 text-muted-foreground"><X className="h-3.5 w-3.5" />{t("common.reset")}</Button>
             )}
           </div>
         </div>
@@ -270,7 +272,7 @@ export default function Tracabilite() {
       <Dialog open={!!viewAction} onOpenChange={(open) => !open && setViewAction(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Détails de l'action</DialogTitle>
+            <DialogTitle>{t("traceability.actionDetails")}</DialogTitle>
             <DialogDescription>Informations de traçabilité</DialogDescription>
           </DialogHeader>
           {viewAction && (() => {

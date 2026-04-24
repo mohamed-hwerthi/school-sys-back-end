@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
+import { validate, type FormErrors } from "@/lib/validate";
+import { anneeScolaireSchema, trimestreSchema, vacanceSchema, jourFerieSchema } from "@/lib/annee-schema";
 import { motion } from "framer-motion";
 import {
   Calendar,
@@ -60,6 +63,7 @@ import {
 } from "@/hooks/useAnneeScolaire";
 import { usePassages, useCreatePassage, useBulkCreatePassages } from "@/hooks/usePassages";
 import { useAllStudents } from "@/hooks/useStudents";
+import { useNiveaux } from "@/hooks/useNiveaux";
 import type { AnneeScolaire, Trimestre, Vacance, JourFerie } from "@/types/annee-scolaire";
 import type { Passage, DECISIONS } from "@/types/passage";
 
@@ -80,6 +84,10 @@ export default function AnneeScolairePage() {
   const [anneeFormOpen, setAnneeFormOpen] = useState(false);
   const [editAnnee, setEditAnnee] = useState<AnneeScolaire | null>(null);
   const [anneeForm, setAnneeForm] = useState({ label: "", dateDebut: "", dateFin: "" });
+  const [anneeErrors, setAnneeErrors] = useState<FormErrors>({});
+  const [trimestreErrors, setTrimestreErrors] = useState<FormErrors>({});
+  const [vacanceErrors, setVacanceErrors] = useState<FormErrors>({});
+  const [jourFerieErrors, setJourFerieErrors] = useState<FormErrors>({});
 
   // Trimestre form
   const [trimestreFormOpen, setTrimestreFormOpen] = useState(false);
@@ -148,55 +156,116 @@ export default function AnneeScolairePage() {
   const bulkCreatePassagesMutation = useBulkCreatePassages();
   const { data: allStudents = [] } = useAllStudents();
   const studentsInClasse = bulkClasse ? allStudents.filter((s) => s.classe === bulkClasse) : [];
+  const { niveaux, getClassesForNiveau } = useNiveaux();
 
   const selectedAnnee = annees.find((a) => a.id === selectedAnneeId);
+
+  // Reactive re-validation: once errors are shown, re-check on every form change
+  useEffect(() => {
+    if (Object.keys(anneeErrors).length === 0) return;
+    const result = validate(anneeScolaireSchema, anneeForm);
+    setAnneeErrors(result.ok ? {} : result.errors);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anneeForm]);
+
+  useEffect(() => {
+    if (Object.keys(trimestreErrors).length === 0) return;
+    const result = validate(trimestreSchema, trimestreForm);
+    setTrimestreErrors(result.ok ? {} : result.errors);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trimestreForm]);
+
+  useEffect(() => {
+    if (Object.keys(vacanceErrors).length === 0) return;
+    const result = validate(vacanceSchema, vacanceForm);
+    setVacanceErrors(result.ok ? {} : result.errors);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vacanceForm]);
+
+  useEffect(() => {
+    if (Object.keys(jourFerieErrors).length === 0) return;
+    const result = validate(jourFerieSchema, jourFerieForm);
+    setJourFerieErrors(result.ok ? {} : result.errors);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jourFerieForm]);
 
   const openCreateAnnee = () => {
     setEditAnnee(null);
     setAnneeForm({ label: "", dateDebut: "", dateFin: "" });
+    setAnneeErrors({});
     setAnneeFormOpen(true);
   };
 
   const openEditAnnee = (a: AnneeScolaire) => {
     setEditAnnee(a);
     setAnneeForm({ label: a.label, dateDebut: a.dateDebut, dateFin: a.dateFin });
+    setAnneeErrors({});
     setAnneeFormOpen(true);
   };
 
   const handleSaveAnnee = () => {
+    const result = validate(anneeScolaireSchema, anneeForm);
+    if (!result.ok) {
+      setAnneeErrors(result.errors);
+      return;
+    }
+    setAnneeErrors({});
+    const onError = (err: Error & { response?: { status?: number; data?: { message?: string } } }) => {
+      const status = err.response?.status;
+      const msg = err.response?.data?.message ?? "Erreur lors de l'enregistrement";
+      if (status === 409) setAnneeErrors({ label: msg });
+      else setAnneeErrors({ _root: msg });
+    };
     if (editAnnee) {
       updateAnneeMutation.mutate(
-        { id: editAnnee.id, data: anneeForm },
-        { onSuccess: () => setAnneeFormOpen(false) }
+        { id: editAnnee.id, data: result.data },
+        { onSuccess: () => setAnneeFormOpen(false), onError }
       );
     } else {
-      createAnneeMutation.mutate(anneeForm, {
+      createAnneeMutation.mutate(result.data, {
         onSuccess: () => setAnneeFormOpen(false),
+        onError,
       });
     }
   };
 
+  const apiError = (setter: (e: FormErrors) => void) => (err: Error & { response?: { status?: number; data?: { message?: string } } }) => {
+    const status = err.response?.status;
+    const msg = err.response?.data?.message ?? "Erreur lors de l'enregistrement";
+    if (status === 409) setter({ label: msg });
+    else setter({ _root: msg });
+  };
+
   const handleCreateTrimestre = () => {
     if (!selectedAnneeId) return;
+    const result = validate(trimestreSchema, trimestreForm);
+    if (!result.ok) { setTrimestreErrors(result.errors); return; }
+    setTrimestreErrors({});
     createTrimestreMutation.mutate(
-      { anneeScolaireId: selectedAnneeId, data: trimestreForm },
-      { onSuccess: () => setTrimestreFormOpen(false) }
+      { anneeScolaireId: selectedAnneeId, data: result.data },
+      { onSuccess: () => setTrimestreFormOpen(false), onError: apiError(setTrimestreErrors) }
     );
   };
 
   const handleCreateVacance = () => {
     if (!selectedAnneeId) return;
+    const result = validate(vacanceSchema, vacanceForm);
+    if (!result.ok) { setVacanceErrors(result.errors); return; }
+    setVacanceErrors({});
     createVacanceMutation.mutate(
-      { anneeScolaireId: selectedAnneeId, data: vacanceForm },
-      { onSuccess: () => setVacanceFormOpen(false) }
+      { anneeScolaireId: selectedAnneeId, data: result.data },
+      { onSuccess: () => setVacanceFormOpen(false), onError: apiError(setVacanceErrors) }
     );
   };
 
   const handleCreateJourFerie = () => {
     if (!selectedAnneeId) return;
+    const result = validate(jourFerieSchema, jourFerieForm);
+    if (!result.ok) { setJourFerieErrors(result.errors); return; }
+    setJourFerieErrors({});
     createJourFerieMutation.mutate(
-      { anneeScolaireId: selectedAnneeId, data: jourFerieForm },
-      { onSuccess: () => setJourFerieFormOpen(false) }
+      { anneeScolaireId: selectedAnneeId, data: result.data },
+      { onSuccess: () => setJourFerieFormOpen(false), onError: apiError(setJourFerieErrors) }
     );
   };
 
@@ -302,9 +371,13 @@ export default function AnneeScolairePage() {
 
             {/* Trimestres */}
             <TabsContent value="trimestres" className="space-y-3">
-              <div className="flex justify-end">
-                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => {
+              <div className="flex items-center justify-end gap-3">
+                {trimestres.length >= 3 && (
+                  <p className="text-xs text-muted-foreground">Maximum de 3 trimestres atteint</p>
+                )}
+                <Button size="sm" variant="outline" className="gap-1.5" disabled={trimestres.length >= 3} onClick={() => {
                   setTrimestreForm({ numero: trimestres.length + 1, label: `Trimestre ${trimestres.length + 1}`, dateDebut: "", dateFin: "", saisieNotesOuverte: false });
+                  setTrimestreErrors({});
                   setTrimestreFormOpen(true);
                 }}>
                   <Plus className="h-4 w-4" />
@@ -345,6 +418,7 @@ export default function AnneeScolairePage() {
               <div className="flex justify-end">
                 <Button size="sm" variant="outline" className="gap-1.5" onClick={() => {
                   setVacanceForm({ label: "", dateDebut: "", dateFin: "" });
+                  setVacanceErrors({});
                   setVacanceFormOpen(true);
                 }}>
                   <Plus className="h-4 w-4" />
@@ -380,6 +454,7 @@ export default function AnneeScolairePage() {
               <div className="flex justify-end">
                 <Button size="sm" variant="outline" className="gap-1.5" onClick={() => {
                   setJourFerieForm({ label: "", date: "" });
+                  setJourFerieErrors({});
                   setJourFerieFormOpen(true);
                 }}>
                   <Plus className="h-4 w-4" />
@@ -513,11 +588,32 @@ export default function AnneeScolairePage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Nouveau niveau</Label>
-                <Input value={passageForm.nouveauNiveau} onChange={(e) => setPassageForm({ ...passageForm, nouveauNiveau: e.target.value })} placeholder="Ex: 3eme annee" />
+                <Select
+                  value={passageForm.nouveauNiveau}
+                  onValueChange={(v) => setPassageForm({ ...passageForm, nouveauNiveau: v, nouvelleClasse: "" })}
+                >
+                  <SelectTrigger><SelectValue placeholder="Sélectionner un niveau..." /></SelectTrigger>
+                  <SelectContent>
+                    {niveaux.map((n) => (
+                      <SelectItem key={n.id} value={n.nom}>{n.nom}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <Label>Nouvelle classe</Label>
-                <Input value={passageForm.nouvelleClasse} onChange={(e) => setPassageForm({ ...passageForm, nouvelleClasse: e.target.value })} placeholder="Ex: 3A" />
+                <Select
+                  value={passageForm.nouvelleClasse}
+                  onValueChange={(v) => setPassageForm({ ...passageForm, nouvelleClasse: v })}
+                  disabled={!passageForm.nouveauNiveau}
+                >
+                  <SelectTrigger><SelectValue placeholder="Sélectionner une classe..." /></SelectTrigger>
+                  <SelectContent>
+                    {getClassesForNiveau(passageForm.nouveauNiveau).map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="space-y-1.5">
@@ -591,11 +687,32 @@ export default function AnneeScolairePage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Nouveau niveau</Label>
-                <Input value={bulkNouveauNiveau} onChange={(e) => setBulkNouveauNiveau(e.target.value)} placeholder="Ex: 4eme annee" />
+                <Select
+                  value={bulkNouveauNiveau}
+                  onValueChange={(v) => { setBulkNouveauNiveau(v); setBulkNouvelleClasse(""); }}
+                >
+                  <SelectTrigger><SelectValue placeholder="Sélectionner un niveau..." /></SelectTrigger>
+                  <SelectContent>
+                    {niveaux.map((n) => (
+                      <SelectItem key={n.id} value={n.nom}>{n.nom}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <Label>Nouvelle classe</Label>
-                <Input value={bulkNouvelleClasse} onChange={(e) => setBulkNouvelleClasse(e.target.value)} placeholder="Ex: 4A" />
+                <Select
+                  value={bulkNouvelleClasse}
+                  onValueChange={setBulkNouvelleClasse}
+                  disabled={!bulkNouveauNiveau}
+                >
+                  <SelectTrigger><SelectValue placeholder="Sélectionner une classe..." /></SelectTrigger>
+                  <SelectContent>
+                    {getClassesForNiveau(bulkNouveauNiveau).map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -632,24 +749,53 @@ export default function AnneeScolairePage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {anneeErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                {anneeErrors._root}
+              </div>
+            )}
             <div className="space-y-1.5">
-              <Label htmlFor="anneeLabel">Libelle</Label>
-              <Input id="anneeLabel" value={anneeForm.label} onChange={(e) => setAnneeForm({ ...anneeForm, label: e.target.value })} placeholder="Ex: 2025-2026" />
+              <Label htmlFor="anneeLabel">Libellé *</Label>
+              <Input
+                id="anneeLabel"
+                value={anneeForm.label}
+                onChange={(e) => setAnneeForm({ ...anneeForm, label: e.target.value })}
+                placeholder="Ex: 2025-2026"
+                aria-invalid={!!anneeErrors.label}
+                className={anneeErrors.label ? "border-red-500 focus-visible:ring-red-500" : ""}
+              />
+              {anneeErrors.label && <p className="text-xs text-red-600">{anneeErrors.label}</p>}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="anneeDebut">Date debut</Label>
-                <Input id="anneeDebut" type="date" value={anneeForm.dateDebut} onChange={(e) => setAnneeForm({ ...anneeForm, dateDebut: e.target.value })} />
+                <Label htmlFor="anneeDebut">Date début *</Label>
+                <Input
+                  id="anneeDebut"
+                  type="date"
+                  value={anneeForm.dateDebut}
+                  onChange={(e) => setAnneeForm({ ...anneeForm, dateDebut: e.target.value })}
+                  aria-invalid={!!anneeErrors.dateDebut}
+                  className={anneeErrors.dateDebut ? "border-red-500 focus-visible:ring-red-500" : ""}
+                />
+                {anneeErrors.dateDebut && <p className="text-xs text-red-600">{anneeErrors.dateDebut}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="anneeFin">Date fin</Label>
-                <Input id="anneeFin" type="date" value={anneeForm.dateFin} onChange={(e) => setAnneeForm({ ...anneeForm, dateFin: e.target.value })} />
+                <Label htmlFor="anneeFin">Date fin *</Label>
+                <Input
+                  id="anneeFin"
+                  type="date"
+                  value={anneeForm.dateFin}
+                  onChange={(e) => setAnneeForm({ ...anneeForm, dateFin: e.target.value })}
+                  aria-invalid={!!anneeErrors.dateFin}
+                  className={anneeErrors.dateFin ? "border-red-500 focus-visible:ring-red-500" : ""}
+                />
+                {anneeErrors.dateFin && <p className="text-xs text-red-600">{anneeErrors.dateFin}</p>}
               </div>
             </div>
           </div>
           <DialogFooter>
             <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
-            <Button onClick={handleSaveAnnee} disabled={createAnneeMutation.isPending || updateAnneeMutation.isPending || !anneeForm.label}>
+            <Button onClick={handleSaveAnnee} disabled={createAnneeMutation.isPending || updateAnneeMutation.isPending}>
               {(createAnneeMutation.isPending || updateAnneeMutation.isPending) ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </DialogFooter>
@@ -663,24 +809,31 @@ export default function AnneeScolairePage() {
             <DialogTitle>Ajouter un trimestre</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {trimestreErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{trimestreErrors._root}</div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="trimestreNum">Numero</Label>
-                <Input id="trimestreNum" type="number" min={1} max={4} value={trimestreForm.numero} onChange={(e) => setTrimestreForm({ ...trimestreForm, numero: Number(e.target.value) })} />
+                <Label htmlFor="trimestreNum">Numéro *</Label>
+                <Input id="trimestreNum" type="number" min={1} max={4} value={trimestreForm.numero} onChange={(e) => setTrimestreForm({ ...trimestreForm, numero: Number(e.target.value) })} aria-invalid={!!trimestreErrors.numero} className={trimestreErrors.numero ? "border-red-500" : ""} />
+                {trimestreErrors.numero && <p className="text-xs text-red-600">{trimestreErrors.numero}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="trimestreLabel">Libelle</Label>
-                <Input id="trimestreLabel" value={trimestreForm.label} onChange={(e) => setTrimestreForm({ ...trimestreForm, label: e.target.value })} />
+                <Label htmlFor="trimestreLabel">Libellé *</Label>
+                <Input id="trimestreLabel" value={trimestreForm.label} onChange={(e) => setTrimestreForm({ ...trimestreForm, label: e.target.value })} aria-invalid={!!trimestreErrors.label} className={trimestreErrors.label ? "border-red-500" : ""} />
+                {trimestreErrors.label && <p className="text-xs text-red-600">{trimestreErrors.label}</p>}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="trimestreDebut">Date debut</Label>
-                <Input id="trimestreDebut" type="date" value={trimestreForm.dateDebut} onChange={(e) => setTrimestreForm({ ...trimestreForm, dateDebut: e.target.value })} />
+                <Label htmlFor="trimestreDebut">Date début *</Label>
+                <Input id="trimestreDebut" type="date" value={trimestreForm.dateDebut} onChange={(e) => setTrimestreForm({ ...trimestreForm, dateDebut: e.target.value })} aria-invalid={!!trimestreErrors.dateDebut} className={trimestreErrors.dateDebut ? "border-red-500" : ""} />
+                {trimestreErrors.dateDebut && <p className="text-xs text-red-600">{trimestreErrors.dateDebut}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="trimestreFin">Date fin</Label>
-                <Input id="trimestreFin" type="date" value={trimestreForm.dateFin} onChange={(e) => setTrimestreForm({ ...trimestreForm, dateFin: e.target.value })} />
+                <Label htmlFor="trimestreFin">Date fin *</Label>
+                <Input id="trimestreFin" type="date" value={trimestreForm.dateFin} onChange={(e) => setTrimestreForm({ ...trimestreForm, dateFin: e.target.value })} aria-invalid={!!trimestreErrors.dateFin} className={trimestreErrors.dateFin ? "border-red-500" : ""} />
+                {trimestreErrors.dateFin && <p className="text-xs text-red-600">{trimestreErrors.dateFin}</p>}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -704,18 +857,24 @@ export default function AnneeScolairePage() {
             <DialogTitle>Ajouter des vacances</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {vacanceErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{vacanceErrors._root}</div>
+            )}
             <div className="space-y-1.5">
-              <Label htmlFor="vacanceLabel">Libelle</Label>
-              <Input id="vacanceLabel" value={vacanceForm.label} onChange={(e) => setVacanceForm({ ...vacanceForm, label: e.target.value })} placeholder="Ex: Vacances d'hiver" />
+              <Label htmlFor="vacanceLabel">Libellé *</Label>
+              <Input id="vacanceLabel" value={vacanceForm.label} onChange={(e) => setVacanceForm({ ...vacanceForm, label: e.target.value })} placeholder="Ex: Vacances d'hiver" aria-invalid={!!vacanceErrors.label} className={vacanceErrors.label ? "border-red-500" : ""} />
+              {vacanceErrors.label && <p className="text-xs text-red-600">{vacanceErrors.label}</p>}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="vacanceDebut">Date debut</Label>
-                <Input id="vacanceDebut" type="date" value={vacanceForm.dateDebut} onChange={(e) => setVacanceForm({ ...vacanceForm, dateDebut: e.target.value })} />
+                <Label htmlFor="vacanceDebut">Date début *</Label>
+                <Input id="vacanceDebut" type="date" value={vacanceForm.dateDebut} onChange={(e) => setVacanceForm({ ...vacanceForm, dateDebut: e.target.value })} aria-invalid={!!vacanceErrors.dateDebut} className={vacanceErrors.dateDebut ? "border-red-500" : ""} />
+                {vacanceErrors.dateDebut && <p className="text-xs text-red-600">{vacanceErrors.dateDebut}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="vacanceFin">Date fin</Label>
-                <Input id="vacanceFin" type="date" value={vacanceForm.dateFin} onChange={(e) => setVacanceForm({ ...vacanceForm, dateFin: e.target.value })} />
+                <Label htmlFor="vacanceFin">Date fin *</Label>
+                <Input id="vacanceFin" type="date" value={vacanceForm.dateFin} onChange={(e) => setVacanceForm({ ...vacanceForm, dateFin: e.target.value })} aria-invalid={!!vacanceErrors.dateFin} className={vacanceErrors.dateFin ? "border-red-500" : ""} />
+                {vacanceErrors.dateFin && <p className="text-xs text-red-600">{vacanceErrors.dateFin}</p>}
               </div>
             </div>
           </div>
@@ -735,13 +894,18 @@ export default function AnneeScolairePage() {
             <DialogTitle>Ajouter un jour ferie</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {jourFerieErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{jourFerieErrors._root}</div>
+            )}
             <div className="space-y-1.5">
-              <Label htmlFor="jfLabel">Libelle</Label>
-              <Input id="jfLabel" value={jourFerieForm.label} onChange={(e) => setJourFerieForm({ ...jourFerieForm, label: e.target.value })} placeholder="Ex: Fete de l'independance" />
+              <Label htmlFor="jfLabel">Libellé *</Label>
+              <Input id="jfLabel" value={jourFerieForm.label} onChange={(e) => setJourFerieForm({ ...jourFerieForm, label: e.target.value })} placeholder="Ex: Fête de l'indépendance" aria-invalid={!!jourFerieErrors.label} className={jourFerieErrors.label ? "border-red-500" : ""} />
+              {jourFerieErrors.label && <p className="text-xs text-red-600">{jourFerieErrors.label}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="jfDate">Date</Label>
-              <Input id="jfDate" type="date" value={jourFerieForm.date} onChange={(e) => setJourFerieForm({ ...jourFerieForm, date: e.target.value })} />
+              <Label htmlFor="jfDate">Date *</Label>
+              <Input id="jfDate" type="date" value={jourFerieForm.date} onChange={(e) => setJourFerieForm({ ...jourFerieForm, date: e.target.value })} aria-invalid={!!jourFerieErrors.date} className={jourFerieErrors.date ? "border-red-500" : ""} />
+              {jourFerieErrors.date && <p className="text-xs text-red-600">{jourFerieErrors.date}</p>}
             </div>
           </div>
           <DialogFooter>

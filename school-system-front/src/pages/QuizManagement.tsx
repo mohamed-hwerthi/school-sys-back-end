@@ -1,5 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
+import { validate, type FormErrors } from "@/lib/validate";
+import { quizSchema, questionSchema } from "@/lib/quiz-schema";
 import {
   ClipboardList,
   Search,
@@ -65,6 +68,11 @@ import {
   useTentativesByQuiz,
   useQuizStats,
 } from "@/hooks/useQuiz";
+import { useClasses } from "@/hooks/useClasses";
+import { useModules } from "@/hooks/useModules";
+import { useNiveaux } from "@/hooks/useNiveaux";
+import { useAllStudents } from "@/hooks/useStudents";
+import { toast } from "sonner";
 import type {
   Quiz,
   CreateQuizRequest,
@@ -97,7 +105,7 @@ const TYPE_QUESTION_LABELS: Record<TypeQuestion, string> = {
   REPONSE_COURTE: "Reponse courte",
 };
 
-const ITEMS_PER_PAGE = 15;
+const ITEMS_PER_PAGE = 8;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -109,6 +117,7 @@ const fadeUp = {
 };
 
 export default function QuizManagementPage() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("quizzes");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
@@ -135,9 +144,12 @@ export default function QuizManagementPage() {
     ordre: 1,
     choix: [],
   });
+  const [quizErrors, setQuizErrors] = useState<FormErrors>({});
+  const [questionErrors, setQuestionErrors] = useState<FormErrors>({});
 
   // Results
   const [selectedResultQuizId, setSelectedResultQuizId] = useState<number | undefined>();
+  const [tentativesPage, setTentativesPage] = useState(0);
 
   // Delete
   const [deleteTarget, setDeleteTarget] = useState<Quiz | null>(null);
@@ -148,6 +160,39 @@ export default function QuizManagementPage() {
   const { data: questions = [], isLoading: questionsLoading } = useQuestions(selectedQuizId);
   const { data: tentatives = [], isLoading: tentativesLoading } = useTentativesByQuiz(selectedResultQuizId);
   const { data: quizStats } = useQuizStats(selectedResultQuizId);
+  const { data: allStudents = [] } = useAllStudents();
+  const studentsById = useMemo(
+    () => new Map(allStudents.map((s) => [s.id, s])),
+    [allStudents]
+  );
+  const tentativesTotalPages = Math.max(1, Math.ceil(tentatives.length / ITEMS_PER_PAGE));
+  const paginatedTentatives = tentatives.slice(
+    tentativesPage * ITEMS_PER_PAGE,
+    (tentativesPage + 1) * ITEMS_PER_PAGE
+  );
+  const { niveaux } = useNiveaux();
+  const [quizNiveauId, setQuizNiveauId] = useState<number | undefined>();
+  const { data: allClasses = [] } = useClasses();
+  const { data: allModules = [] } = useModules();
+  const quizClasses = useMemo(
+    () => (quizNiveauId ? allClasses.filter((c) => c.niveauId === quizNiveauId) : []),
+    [allClasses, quizNiveauId]
+  );
+  const quizModules = useMemo(
+    () => (quizNiveauId ? allModules.filter((m) => m.niveauId === quizNiveauId) : []),
+    [allModules, quizNiveauId]
+  );
+
+  // Re-validate on change once errors are showing
+  useEffect(() => {
+    if (Object.keys(quizErrors).length === 0) return;
+    const result = validate(quizSchema, quizForm);
+    setQuizErrors(result.ok ? {} : result.errors);
+  }, [quizForm]);
+
+  useEffect(() => {
+    setTentativesPage(0);
+  }, [selectedResultQuizId]);
 
   // Mutations
   const createQuiz = useCreateQuiz();
@@ -173,14 +218,15 @@ export default function QuizManagementPage() {
   const paginatedQuizzes = filteredQuizzes.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE);
 
   const stats = [
-    { label: "Total Quiz", value: quizzes.length, icon: ClipboardList, color: "bg-blue-50", textColor: "text-blue-700" },
-    { label: "Publies", value: quizzes.filter((q) => q.statut === "PUBLIE" || q.statut === "EN_COURS").length, icon: Send, color: "bg-emerald-50", textColor: "text-emerald-700" },
-    { label: "Questions totales", value: quizzes.reduce((a, q) => a + q.totalQuestions, 0), icon: ListPlus, color: "bg-purple-50", textColor: "text-purple-700" },
+    { label: t("quiz.totalQuiz"), value: quizzes.length, icon: ClipboardList, color: "bg-blue-50", textColor: "text-blue-700" },
+    { label: t("common.published"), value: quizzes.filter((q) => q.statut === "PUBLIE" || q.statut === "EN_COURS").length, icon: Send, color: "bg-emerald-50", textColor: "text-emerald-700" },
+    { label: t("quiz.totalQuestions"), value: quizzes.reduce((a, q) => a + q.totalQuestions, 0), icon: ListPlus, color: "bg-purple-50", textColor: "text-purple-700" },
   ];
 
   const openCreateQuiz = () => {
     setEditingQuiz(null);
     setQuizForm({ titre: "", dureeMinutes: 60, noteTotale: 20, tentativesMax: 1, statut: "BROUILLON" });
+    setQuizNiveauId(undefined);
     setQuizFormOpen(true);
   };
 
@@ -202,17 +248,29 @@ export default function QuizManagementPage() {
       dateFin: q.dateFin ?? undefined,
       statut: q.statut,
     });
+    const niveauFromClasse = q.classeId ? allClasses.find((c) => c.id === q.classeId)?.niveauId : undefined;
+    const niveauFromModule = q.moduleId ? allModules.find((m) => m.id === q.moduleId)?.niveauId : undefined;
+    setQuizNiveauId(niveauFromClasse ?? niveauFromModule);
     setQuizFormOpen(true);
   };
 
+  const onApiError = (setter: (e: FormErrors) => void) => (err: Error & { response?: { status?: number; data?: { message?: string } } }) => {
+    setter({ _root: err.response?.data?.message ?? "Erreur lors de l'enregistrement" });
+  };
+
   const handleSaveQuiz = () => {
+    const result = validate(quizSchema, quizForm);
+    if (!result.ok) { setQuizErrors(result.errors); return; }
+    setQuizErrors({});
     if (editingQuiz) {
       updateQuiz.mutate({ id: editingQuiz.id, data: quizForm }, {
         onSuccess: () => setQuizFormOpen(false),
+        onError: onApiError(setQuizErrors),
       });
     } else {
       createQuiz.mutate(quizForm, {
         onSuccess: () => setQuizFormOpen(false),
+        onError: onApiError(setQuizErrors),
       });
     }
   };
@@ -220,7 +278,12 @@ export default function QuizManagementPage() {
   const handleDeleteQuiz = () => {
     if (!deleteTarget) return;
     deleteQuiz.mutate(deleteTarget.id, {
-      onSuccess: () => setDeleteTarget(null),
+      onSuccess: () => {
+        toast.success("Quiz supprime avec succes");
+        setDeleteTarget(null);
+      },
+      onError: (err: Error & { response?: { data?: { message?: string } } }) =>
+        toast.error(err.response?.data?.message ?? "Erreur lors de la suppression"),
     });
   };
 
@@ -257,13 +320,18 @@ export default function QuizManagementPage() {
 
   const handleSaveQuestion = () => {
     if (!selectedQuizId) return;
+    const result = validate(questionSchema, questionForm);
+    if (!result.ok) { setQuestionErrors(result.errors); return; }
+    setQuestionErrors({});
     if (editingQuestion) {
       updateQuestion.mutate({ quizId: selectedQuizId, questionId: editingQuestion.id, data: questionForm }, {
         onSuccess: () => setQuestionFormOpen(false),
+        onError: onApiError(setQuestionErrors),
       });
     } else {
       createQuestion.mutate({ quizId: selectedQuizId, data: questionForm }, {
         onSuccess: () => setQuestionFormOpen(false),
+        onError: onApiError(setQuestionErrors),
       });
     }
   };
@@ -312,12 +380,12 @@ export default function QuizManagementPage() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">Examens en Ligne</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Creez et gerez les quiz et examens en ligne</p>
+          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">{t("quiz.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{t("quiz.subtitle")}</p>
         </div>
         <Button size="sm" className="gap-1.5 bg-gradient-primary shadow-btn" onClick={openCreateQuiz}>
           <Plus className="h-4 w-4" />
-          Nouveau quiz
+          {t("quiz.newQuiz")}
         </Button>
       </motion.div>
 
@@ -607,7 +675,7 @@ export default function QuizManagementPage() {
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-border bg-muted/30">
-                            <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Eleve ID</th>
+                            <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Élève</th>
                             <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Date</th>
                             <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Score</th>
                             <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Pourcentage</th>
@@ -624,9 +692,22 @@ export default function QuizManagementPage() {
                               </td>
                             </tr>
                           ) : (
-                            tentatives.map((t) => (
+                            paginatedTentatives.map((t) => {
+                              const student = studentsById.get(t.eleveId);
+                              return (
                               <tr key={t.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
-                                <td className="py-3 px-4 font-medium text-foreground">#{t.eleveId}</td>
+                                <td className="py-3 px-4 font-medium text-foreground">
+                                  {student ? (
+                                    <div className="flex flex-col">
+                                      <span>{student.prenom} {student.nom}</span>
+                                      {student.email && (
+                                        <span className="text-xs text-muted-foreground">{student.email}</span>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <span>#{t.eleveId}</span>
+                                  )}
+                                </td>
                                 <td className="py-3 px-4 hidden sm:table-cell text-muted-foreground">
                                   {new Date(t.dateDebut).toLocaleDateString("fr-FR")}
                                 </td>
@@ -647,10 +728,24 @@ export default function QuizManagementPage() {
                                   </Badge>
                                 </td>
                               </tr>
-                            ))
+                              );
+                            })
                           )}
                         </tbody>
                       </table>
+                    </div>
+                  )}
+                  {tentativesTotalPages > 1 && (
+                    <div className="flex items-center justify-between border-t border-border px-4 py-3">
+                      <p className="text-xs text-muted-foreground">Page {tentativesPage + 1} sur {tentativesTotalPages}</p>
+                      <div className="flex items-center gap-1">
+                        <Button variant="outline" size="icon" className="h-8 w-8" disabled={tentativesPage === 0} onClick={() => setTentativesPage((p) => p - 1)}>
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="icon" className="h-8 w-8" disabled={tentativesPage >= tentativesTotalPages - 1} onClick={() => setTentativesPage((p) => p + 1)}>
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -670,9 +765,13 @@ export default function QuizManagementPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {quizErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{quizErrors._root}</div>
+            )}
             <div className="space-y-1.5">
-              <Label htmlFor="quizTitre">Titre</Label>
-              <Input id="quizTitre" value={quizForm.titre} onChange={(e) => setQuizForm({ ...quizForm, titre: e.target.value })} placeholder="Titre du quiz" />
+              <Label htmlFor="quizTitre">Titre *</Label>
+              <Input id="quizTitre" value={quizForm.titre} onChange={(e) => setQuizForm({ ...quizForm, titre: e.target.value })} placeholder="Titre du quiz" aria-invalid={!!quizErrors.titre} className={quizErrors.titre ? "border-red-500" : ""} />
+              {quizErrors.titre && <p className="text-xs text-red-600">{quizErrors.titre}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="quizDesc">Description</Label>
@@ -680,12 +779,14 @@ export default function QuizManagementPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="dureeMin">Duree (min)</Label>
-                <Input id="dureeMin" type="number" value={quizForm.dureeMinutes ?? 60} onChange={(e) => setQuizForm({ ...quizForm, dureeMinutes: Number(e.target.value) })} />
+                <Label htmlFor="dureeMin">Durée (min) *</Label>
+                <Input id="dureeMin" type="number" value={quizForm.dureeMinutes ?? 60} onChange={(e) => setQuizForm({ ...quizForm, dureeMinutes: Number(e.target.value) })} aria-invalid={!!quizErrors.dureeMinutes} className={quizErrors.dureeMinutes ? "border-red-500" : ""} />
+                {quizErrors.dureeMinutes && <p className="text-xs text-red-600">{quizErrors.dureeMinutes}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="noteTotale">Note totale</Label>
-                <Input id="noteTotale" type="number" value={quizForm.noteTotale ?? 20} onChange={(e) => setQuizForm({ ...quizForm, noteTotale: Number(e.target.value) })} />
+                <Label htmlFor="noteTotale">Note totale *</Label>
+                <Input id="noteTotale" type="number" value={quizForm.noteTotale ?? 20} onChange={(e) => setQuizForm({ ...quizForm, noteTotale: Number(e.target.value) })} aria-invalid={!!quizErrors.noteTotale} className={quizErrors.noteTotale ? "border-red-500" : ""} />
+                {quizErrors.noteTotale && <p className="text-xs text-red-600">{quizErrors.noteTotale}</p>}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -694,26 +795,69 @@ export default function QuizManagementPage() {
                 <Input id="tentativesMax" type="number" value={quizForm.tentativesMax ?? 1} onChange={(e) => setQuizForm({ ...quizForm, tentativesMax: Number(e.target.value) })} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="classeId">Classe ID</Label>
-                <Input id="classeId" type="number" value={quizForm.classeId ?? ""} onChange={(e) => setQuizForm({ ...quizForm, classeId: e.target.value ? Number(e.target.value) : undefined })} placeholder="ID classe" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="moduleIdQuiz">Module ID</Label>
-                <Input id="moduleIdQuiz" type="number" value={quizForm.moduleId ?? ""} onChange={(e) => setQuizForm({ ...quizForm, moduleId: e.target.value ? Number(e.target.value) : undefined })} placeholder="ID module" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Statut</Label>
-                <Select value={quizForm.statut} onValueChange={(v) => setQuizForm({ ...quizForm, statut: v as StatutQuiz })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Label htmlFor="quizNiveau">Niveau</Label>
+                <Select
+                  value={quizNiveauId ? String(quizNiveauId) : "none"}
+                  onValueChange={(v) => {
+                    const nid = v === "none" ? undefined : Number(v);
+                    setQuizNiveauId(nid);
+                    setQuizForm({ ...quizForm, classeId: undefined, moduleId: undefined });
+                  }}
+                >
+                  <SelectTrigger id="quizNiveau"><SelectValue placeholder="Selectionner un niveau" /></SelectTrigger>
                   <SelectContent>
-                    {(Object.keys(STATUT_LABELS) as StatutQuiz[]).map((s) => (
-                      <SelectItem key={s} value={s}>{STATUT_LABELS[s]}</SelectItem>
+                    <SelectItem value="none">Aucun</SelectItem>
+                    {niveaux.map((n) => (
+                      <SelectItem key={n.id} value={String(n.id)}>{n.nom}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="classeId">Classe</Label>
+                <Select
+                  value={quizForm.classeId ? String(quizForm.classeId) : "none"}
+                  onValueChange={(v) => setQuizForm({ ...quizForm, classeId: v === "none" ? undefined : Number(v) })}
+                  disabled={!quizNiveauId}
+                >
+                  <SelectTrigger id="classeId"><SelectValue placeholder={quizNiveauId ? "Selectionner une classe" : "Choisissez un niveau"} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Aucune</SelectItem>
+                    {quizClasses.map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}>{c.fullName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="moduleIdQuiz">Module</Label>
+                <Select
+                  value={quizForm.moduleId ? String(quizForm.moduleId) : "none"}
+                  onValueChange={(v) => setQuizForm({ ...quizForm, moduleId: v === "none" ? undefined : Number(v) })}
+                  disabled={!quizNiveauId}
+                >
+                  <SelectTrigger id="moduleIdQuiz"><SelectValue placeholder={quizNiveauId ? "Selectionner un module" : "Choisissez un niveau"} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Aucun</SelectItem>
+                    {quizModules.map((m) => (
+                      <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Statut</Label>
+              <Select value={quizForm.statut} onValueChange={(v) => setQuizForm({ ...quizForm, statut: v as StatutQuiz })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(STATUT_LABELS) as StatutQuiz[]).map((s) => (
+                    <SelectItem key={s} value={s}>{STATUT_LABELS[s]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-3">
               <div className="flex items-center gap-2">
@@ -732,7 +876,7 @@ export default function QuizManagementPage() {
           </div>
           <DialogFooter>
             <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
-            <Button onClick={handleSaveQuiz} disabled={createQuiz.isPending || updateQuiz.isPending || !quizForm.titre}>
+            <Button onClick={handleSaveQuiz} disabled={createQuiz.isPending || updateQuiz.isPending}>
               {(createQuiz.isPending || updateQuiz.isPending) ? "Enregistrement..." : (editingQuiz ? "Modifier" : "Creer")}
             </Button>
           </DialogFooter>
@@ -749,9 +893,13 @@ export default function QuizManagementPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {questionErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{questionErrors._root}</div>
+            )}
             <div className="space-y-1.5">
-              <Label htmlFor="qTexte">Question</Label>
-              <Textarea id="qTexte" value={questionForm.texte} onChange={(e) => setQuestionForm({ ...questionForm, texte: e.target.value })} placeholder="Texte de la question..." rows={3} />
+              <Label htmlFor="qTexte">Question *</Label>
+              <Textarea id="qTexte" value={questionForm.texte} onChange={(e) => setQuestionForm({ ...questionForm, texte: e.target.value })} placeholder="Texte de la question..." rows={3} aria-invalid={!!questionErrors.texte} className={questionErrors.texte ? "border-red-500" : ""} />
+              {questionErrors.texte && <p className="text-xs text-red-600">{questionErrors.texte}</p>}
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
@@ -832,7 +980,7 @@ export default function QuizManagementPage() {
           </div>
           <DialogFooter>
             <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
-            <Button onClick={handleSaveQuestion} disabled={createQuestion.isPending || updateQuestion.isPending || !questionForm.texte}>
+            <Button onClick={handleSaveQuestion} disabled={createQuestion.isPending || updateQuestion.isPending}>
               {(createQuestion.isPending || updateQuestion.isPending) ? "Enregistrement..." : (editingQuestion ? "Modifier" : "Ajouter")}
             </Button>
           </DialogFooter>

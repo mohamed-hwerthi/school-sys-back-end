@@ -14,4 +14,11 @@ public class SchoolSettingsDTO {
     private String telephone;
     private String directeurName;
     private String directeurNameAr;
+    private String logo;
+    private String ville;
+    private String villeAr;
+    private String email;
+    private String siteWeb;
+    private String anneeCreation;
+    private String description;
 }

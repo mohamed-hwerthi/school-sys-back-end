@@ -40,6 +40,27 @@ public class SchoolSettings {
     @Column(name = "directeur_name_ar")
     private String directeurNameAr;
 
+    @Column(columnDefinition = "TEXT")
+    private String logo;
+
+    @Column
+    private String ville;
+
+    @Column(name = "ville_ar")
+    private String villeAr;
+
+    @Column
+    private String email;
+
+    @Column(name = "site_web")
+    private String siteWeb;
+
+    @Column(name = "annee_creation", length = 10)
+    private String anneeCreation;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

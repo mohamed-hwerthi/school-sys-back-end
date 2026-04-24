@@ -45,6 +45,7 @@ import {
   useChildEmploiDuTemps,
 } from "@/hooks/useParentPortal";
 import type { Child } from "@/types/notification";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const JOURS = ["", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
@@ -422,6 +423,7 @@ function EmploiDuTempsTab({ studentId }: { studentId: number }) {
 }
 
 export default function ParentPortalPage() {
+  const { t } = useLanguage();
   const { data: children = [], isLoading } = useChildren();
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
 
@@ -446,7 +448,7 @@ export default function ParentPortalPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <GraduationCap className="h-6 w-6" />
-          Portail Parent
+          {t("nav.parentPortal")}
         </h1>
         <p className="text-muted-foreground">
           Suivez la scolarite de vos enfants
@@ -456,7 +458,7 @@ export default function ParentPortalPage() {
       {children.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
           <Users className="mb-4 h-12 w-12" />
-          <p className="text-lg font-medium">Aucun enfant associe</p>
+          <p className="text-lg font-medium">{t("parentPortal.noChild")}</p>
           <p className="text-sm">
             Contactez l'administration pour lier votre compte a vos enfants.
           </p>
@@ -466,7 +468,7 @@ export default function ParentPortalPage() {
           {/* Children selector */}
           <div>
             <h2 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Mes enfants
+              {t("parentPortal.myChildren")}
             </h2>
             <ChildSelector
               children={children}

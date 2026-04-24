@@ -1,23 +1,88 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import React from "react";
+import { useSchoolSettings, useUpdateSchoolSettings } from "./useSchoolSettings";
 import type { SchoolInfo } from "@/types/school";
-import { DEFAULT_SCHOOL_INFO } from "@/data/school";
+import type { SchoolSettingsDTO } from "@/api/settings.api";
 
 interface SchoolContextValue {
   school: SchoolInfo;
-  updateSchool: (data: Partial<SchoolInfo>) => void;
+  updateSchool: (data: Partial<SchoolInfo>) => Promise<void>;
+  isLoading: boolean;
+  isSaving: boolean;
 }
 
 const SchoolContext = createContext<SchoolContextValue | null>(null);
 
+function toSchoolInfo(dto: SchoolSettingsDTO): SchoolInfo {
+  return {
+    nom: dto.schoolName ?? "",
+    nomAr: dto.schoolNameAr ?? "",
+    logo: dto.logo ?? "",
+    adresse: dto.adresse ?? "",
+    ville: dto.ville ?? "",
+    villeAr: dto.villeAr ?? "",
+    telephone: dto.telephone ?? "",
+    email: dto.email ?? "",
+    siteWeb: dto.siteWeb ?? "",
+    directeur: dto.directeurName ?? "",
+    anneeCreation: dto.anneeCreation ?? "",
+    description: dto.description ?? "",
+  };
+}
+
+function toDTO(data: Partial<SchoolInfo>, current: SchoolSettingsDTO): SchoolSettingsDTO {
+  return {
+    ...current,
+    schoolName: data.nom ?? current.schoolName,
+    schoolNameAr: data.nomAr ?? current.schoolNameAr,
+    logo: data.logo ?? current.logo,
+    adresse: data.adresse ?? current.adresse,
+    ville: data.ville ?? current.ville,
+    villeAr: data.villeAr ?? current.villeAr,
+    telephone: data.telephone ?? current.telephone,
+    email: data.email ?? current.email,
+    siteWeb: data.siteWeb ?? current.siteWeb,
+    directeurName: data.directeur ?? current.directeurName,
+    anneeCreation: data.anneeCreation ?? current.anneeCreation,
+    description: data.description ?? current.description,
+  };
+}
+
+const DEFAULT_DTO: SchoolSettingsDTO = {
+  schoolName: "",
+  schoolNameAr: null,
+  anneeScolaire: "",
+  adresse: null,
+  telephone: null,
+  directeurName: null,
+  directeurNameAr: null,
+  logo: null,
+  ville: null,
+  villeAr: null,
+  email: null,
+  siteWeb: null,
+  anneeCreation: null,
+  description: null,
+};
+
 export function SchoolProvider({ children }: { children: ReactNode }) {
-  const [school, setSchool] = useState<SchoolInfo>(DEFAULT_SCHOOL_INFO);
+  const { data: settings, isLoading } = useSchoolSettings();
+  const mutation = useUpdateSchoolSettings();
 
-  const updateSchool = useCallback((data: Partial<SchoolInfo>) => {
-    setSchool((prev) => ({ ...prev, ...data }));
-  }, []);
+  const currentDTO = settings ?? DEFAULT_DTO;
+  const school = toSchoolInfo(currentDTO);
 
-  const value: SchoolContextValue = { school, updateSchool };
+  const updateSchool = async (data: Partial<SchoolInfo>) => {
+    const dto = toDTO(data, currentDTO);
+    await mutation.mutateAsync(dto);
+  };
+
+  const value: SchoolContextValue = {
+    school,
+    updateSchool,
+    isLoading,
+    isSaving: mutation.isPending,
+  };
 
   return React.createElement(SchoolContext.Provider, { value }, children);
 }

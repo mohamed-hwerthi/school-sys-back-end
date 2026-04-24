@@ -1,51 +1,69 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight, Edit } from "lucide-react";
-import { useRooms } from "@/hooks/useRooms";
+import { ChevronRight, Edit, Loader2 } from "lucide-react";
+import { useRoom, useUpdateRoom } from "@/hooks/useRooms";
 import { RoomForm } from "@/components/rooms/RoomForm";
-import { StudentFormSkeleton } from "@/components/skeletons/StudentFormSkeleton";
-import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
+import { toast } from "sonner";
 import type { RoomFormValues } from "@/lib/room-schema";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function EditRoom() {
+  const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getRoom, updateRoom } = useRooms();
-  const loading = useSimulatedLoading(800);
+  const { data: room, isLoading } = useRoom(Number(id));
+  const updateRoom = useUpdateRoom();
 
-  const room = getRoom(Number(id));
-
-  if (loading) return <StudentFormSkeleton />;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (!room) {
     return (
       <div className="p-8 text-center">
-        <p className="text-lg font-medium text-foreground">Salle introuvable</p>
+        <p className="text-lg font-medium text-foreground">{t("rooms.roomNotFound")}</p>
         <p className="text-sm text-muted-foreground mt-1">
-          La salle avec l'identifiant #{id} n'existe pas.
+          #{id}
         </p>
         <button
           onClick={() => navigate("/dashboard/emploi-salles")}
           className="mt-4 text-sm text-primary hover:underline"
         >
-          Retour à la liste
+          {t("common.back")}
         </button>
       </div>
     );
   }
 
   const handleSubmit = (data: RoomFormValues) => {
-    updateRoom(room.id, {
-      nom: data.nom,
-      type: data.type,
-      capacite: data.capacite,
-      etage: data.etage,
-      equipements: data.equipements
-        ? data.equipements.split(",").map((e) => e.trim()).filter(Boolean)
-        : [],
-      statut: data.statut,
-    });
-    navigate("/dashboard/emploi-salles");
+    updateRoom.mutate(
+      {
+        id: room.id,
+        data: {
+          nom: data.nom,
+          type: data.type,
+          capacite: data.capacite,
+          etage: data.etage,
+          equipements: data.equipements
+            ? data.equipements.split(",").map((e) => e.trim()).filter(Boolean)
+            : [],
+          statut: data.statut,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Salle modifiée avec succès");
+          navigate("/dashboard/emploi-salles");
+        },
+        onError: (err) => {
+          toast.error(err.message || "Erreur lors de la modification");
+        },
+      }
+    );
   };
 
   return (
@@ -56,17 +74,17 @@ export default function EditRoom() {
           onClick={() => navigate("/dashboard")}
           className="hover:text-foreground transition-colors"
         >
-          Tableau de bord
+          {t("nav.dashboard")}
         </button>
         <ChevronRight className="h-3.5 w-3.5" />
         <button
           onClick={() => navigate("/dashboard/emploi-salles")}
           className="hover:text-foreground transition-colors"
         >
-          Emploi - Salles
+          {t("rooms.title")}
         </button>
         <ChevronRight className="h-3.5 w-3.5" />
-        <span className="text-foreground font-medium">Modifier</span>
+        <span className="text-foreground font-medium">{t("common.edit")}</span>
       </nav>
 
       {/* Header */}
@@ -107,7 +125,8 @@ export default function EditRoom() {
           }}
           onSubmit={handleSubmit}
           onCancel={() => navigate("/dashboard/emploi-salles")}
-          submitLabel="Enregistrer les modifications"
+          submitLabel={t("rooms.saveChanges")}
+          isSubmitting={updateRoom.isPending}
         />
       </motion.div>
     </div>

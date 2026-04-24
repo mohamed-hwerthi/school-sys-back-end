@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
+import { validate, type FormErrors } from "@/lib/validate";
+import { createUserSchema, editUserSchema } from "@/lib/user-schema";
 import {
   Users,
   UserPlus,
@@ -64,15 +67,6 @@ const ROLES: UserRole[] = [
   "PARENT",
 ];
 
-const ROLE_LABELS: Record<UserRole, string> = {
-  SUPER_ADMIN: "Super Admin",
-  ADMIN: "Administrateur",
-  DIRECTEUR: "Directeur",
-  ENSEIGNANT: "Enseignant",
-  COMPTABLE: "Comptable",
-  PARENT: "Parent",
-};
-
 const ROLE_COLORS: Record<UserRole, string> = {
   SUPER_ADMIN: "bg-red-100 text-red-700",
   ADMIN: "bg-purple-100 text-purple-700",
@@ -109,6 +103,16 @@ const emptyForm: CreateUserRequest = {
 };
 
 export default function UsersPage() {
+  const { t } = useLanguage();
+
+  const ROLE_LABELS: Record<UserRole, string> = useMemo(() => ({
+    SUPER_ADMIN: t("users.roles.superAdmin"),
+    ADMIN: t("users.roles.admin"),
+    DIRECTEUR: t("users.roles.director"),
+    ENSEIGNANT: t("users.roles.teacher"),
+    COMPTABLE: t("users.roles.accountant"),
+    PARENT: t("users.roles.parent"),
+  }), [t]);
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [currentPage, setCurrentPage] = useState(0);
@@ -131,6 +135,7 @@ export default function UsersPage() {
   const [editTarget, setEditTarget] = useState<UserItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<UserItem | null>(null);
   const [form, setForm] = useState<CreateUserRequest>(emptyForm);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   const users = pagedData?.content ?? [];
   const totalElements = pagedData?.totalElements ?? 0;
@@ -141,9 +146,9 @@ export default function UsersPage() {
   const inactiveUsers = totalUsers - activeUsers;
 
   const stats = [
-    { label: "Total Utilisateurs", value: totalUsers, color: "bg-blue-50", textColor: "text-blue-700" },
-    { label: "Actifs", value: activeUsers, color: "bg-emerald-50", textColor: "text-emerald-700" },
-    { label: "Inactifs", value: inactiveUsers, color: "bg-red-50", textColor: "text-red-700" },
+    { label: t("users.totalUsers"), value: totalUsers, color: "bg-blue-50", textColor: "text-blue-700" },
+    { label: t("common.active"), value: activeUsers, color: "bg-emerald-50", textColor: "text-emerald-700" },
+    { label: t("common.inactive"), value: inactiveUsers, color: "bg-red-50", textColor: "text-red-700" },
   ];
 
   const hasFilters = search || filterRole !== "all";
@@ -172,13 +177,23 @@ export default function UsersPage() {
   };
 
   const handleSave = () => {
+    const schema = editTarget ? editUserSchema : createUserSchema;
+    const result = validate(schema, form);
+    if (!result.ok) { setFormErrors(result.errors); return; }
+    setFormErrors({});
+    const onError = (err: Error & { response?: { data?: { message?: string } } }) => {
+      const status = (err as Error & { response?: { status?: number } }).response?.status;
+      const msg = err.response?.data?.message ?? "Erreur lors de l'enregistrement";
+      if (status === 409) setFormErrors({ email: msg });
+      else setFormErrors({ _root: msg });
+    };
     if (editTarget) {
       updateMutation.mutate(
         { id: editTarget.id, data: form },
-        { onSuccess: () => setFormOpen(false) }
+        { onSuccess: () => setFormOpen(false), onError }
       );
     } else {
-      createMutation.mutate(form, { onSuccess: () => setFormOpen(false) });
+      createMutation.mutate(form, { onSuccess: () => setFormOpen(false), onError });
     }
   };
 
@@ -212,15 +227,15 @@ export default function UsersPage() {
       >
         <div>
           <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-            Gestion des Utilisateurs
+            {t("users.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Gerez les comptes utilisateurs, les roles et les acces
+            {t("users.subtitle")}
           </p>
         </div>
         <Button size="sm" className="gap-1.5 bg-gradient-primary shadow-btn" onClick={openCreate}>
           <UserPlus className="h-4 w-4" />
-          Nouvel Utilisateur
+          {t("users.newUser")}
         </Button>
       </motion.div>
 
@@ -252,7 +267,7 @@ export default function UsersPage() {
             <Input
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }}
-              placeholder="Rechercher par nom, email..."
+              placeholder={t("users.searchPlaceholder")}
               className="pl-9"
             />
           </div>
@@ -263,7 +278,7 @@ export default function UsersPage() {
                 <SelectValue placeholder="Role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les roles</SelectItem>
+                <SelectItem value="all">{t("users.allRoles")}</SelectItem>
                 {ROLES.map((r) => (
                   <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
                 ))}
@@ -272,13 +287,13 @@ export default function UsersPage() {
             {hasFilters && (
               <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1 text-muted-foreground hover:text-foreground">
                 <X className="h-3.5 w-3.5" />
-                Reinitialiser
+                {t("common.reset")}
               </Button>
             )}
           </div>
         </div>
         <div className="mt-2 text-xs text-muted-foreground flex items-center gap-2">
-          {totalElements} utilisateur{totalElements !== 1 ? "s" : ""} trouve{totalElements !== 1 ? "s" : ""}
+          {totalElements} {t("common.found")}
           {isFetching && <Loader2 className="h-3 w-3 animate-spin" />}
         </div>
       </motion.div>
@@ -301,8 +316,8 @@ export default function UsersPage() {
                 <tr>
                   <td colSpan={5} className="py-16 text-center text-muted-foreground">
                     <Users className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                    <p className="font-medium">Aucun utilisateur trouve</p>
-                    <p className="text-xs mt-1">Essayez de modifier vos filtres</p>
+                    <p className="font-medium">{t("users.noUser")}</p>
+                    <p className="text-xs mt-1">{t("common.tryModifyFilters")}</p>
                   </td>
                 </tr>
               ) : (
@@ -328,7 +343,7 @@ export default function UsersPage() {
                     </td>
                     <td className="py-3 px-4">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${user.isActive ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
-                        {user.isActive ? "Actif" : "Inactif"}
+                        {user.isActive ? t("common.active") : t("common.inactive")}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right">
@@ -356,14 +371,14 @@ export default function UsersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEdit(user)}>
-                            <Edit className="h-4 w-4 mr-2" /> Modifier
+                            <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => toggleMutation.mutate(user.id)}>
                             {user.isActive ? <ShieldOff className="h-4 w-4 mr-2" /> : <ShieldCheck className="h-4 w-4 mr-2" />}
-                            {user.isActive ? "Desactiver" : "Activer"}
+                            {user.isActive ? t("common.deactivate") : t("common.activate")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setDeleteTarget(user)} className="text-red-600">
-                            <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                            <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -377,7 +392,7 @@ export default function UsersPage() {
 
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t border-border px-4 py-3">
-            <p className="text-xs text-muted-foreground">Page {currentPage + 1} sur {totalPages}</p>
+            <p className="text-xs text-muted-foreground">{t("common.page")} {currentPage + 1} {t("common.of")} {totalPages}</p>
             <div className="flex items-center gap-1">
               <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage === 0} onClick={() => setCurrentPage((p) => p - 1)}>
                 <ChevronLeft className="h-4 w-4" />
@@ -406,34 +421,34 @@ export default function UsersPage() {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editTarget ? "Modifier l'utilisateur" : "Nouvel utilisateur"}</DialogTitle>
+            <DialogTitle>{editTarget ? t("users.editUser") : t("users.newUser")}</DialogTitle>
             <DialogDescription>
-              {editTarget ? "Modifiez les informations du compte." : "Remplissez les informations pour creer un nouveau compte."}
+              {editTarget ? t("users.editInfo") : t("users.fillInfo")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="firstName">Prenom</Label>
+                <Label htmlFor="firstName">{t("common.firstName")}</Label>
                 <Input id="firstName" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="lastName">Nom</Label>
+                <Label htmlFor="lastName">{t("common.lastName")}</Label>
                 <Input id="lastName" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("common.email")}</Label>
               <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </div>
             {!editTarget && (
               <div className="space-y-1.5">
-                <Label htmlFor="password">Mot de passe</Label>
+                <Label htmlFor="password">{t("common.password")}</Label>
                 <Input id="password" type="password" value={form.password ?? ""} onChange={(e) => setForm({ ...form, password: e.target.value })} />
               </div>
             )}
             <div className="space-y-1.5">
-              <Label>Role</Label>
+              <Label>{t("common.role")}</Label>
               <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v as UserRole })}>
                 <SelectTrigger>
                   <SelectValue />
@@ -448,10 +463,10 @@ export default function UsersPage() {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button onClick={handleSave} disabled={createMutation.isPending || updateMutation.isPending}>
-              {(createMutation.isPending || updateMutation.isPending) ? "Enregistrement..." : "Enregistrer"}
+              {(createMutation.isPending || updateMutation.isPending) ? t("common.saving") : t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -461,21 +476,21 @@ export default function UsersPage() {
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogTitle>{t("common.confirmDelete")}</DialogTitle>
             <DialogDescription>
-              Etes-vous sur de vouloir supprimer l'utilisateur{" "}
+              {t("common.deleteConfirmMsg")}{" "}
               <span className="font-semibold text-foreground">
                 {deleteTarget?.firstName} {deleteTarget?.lastName}
               </span>{" "}
-              ? Cette action est irreversible.
+              ? {t("common.irreversible")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? "Suppression..." : "Supprimer"}
+              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

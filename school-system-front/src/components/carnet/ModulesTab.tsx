@@ -54,10 +54,6 @@ export default function ModulesTab() {
   );
   const { data: domaines = [] } = useDomaines(selectedNiveauId || undefined);
 
-  // Flatten sous-domaines for the selected domaine in form
-  const formDomaine = domaines.find((d) => d.id === form.domaineId);
-  const formSousDomaines: SousDomaineDTO[] = formDomaine?.sousDomaines ?? [];
-
   const createModule = useCreateModule();
   const updateModule = useUpdateModule();
   const deleteModule = useDeleteModule();
@@ -66,6 +62,10 @@ export default function ModulesTab() {
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<ModuleRequest>({ ...emptyForm });
   const [deleteTarget, setDeleteTarget] = useState<ModuleDTO | null>(null);
+
+  // Flatten sous-domaines for the selected domaine in form
+  const formDomaine = domaines.find((d) => d.id === form.domaineId);
+  const formSousDomaines: SousDomaineDTO[] = formDomaine?.sousDomaines ?? [];
 
   const openAdd = () => {
     if (!selectedNiveauId) {

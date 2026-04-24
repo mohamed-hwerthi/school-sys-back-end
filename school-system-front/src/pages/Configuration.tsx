@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Settings,
@@ -35,6 +35,7 @@ import { CURRENCY } from "@/config/currency";
 import { useNiveaux } from "@/hooks/useNiveaux";
 import { useAllStudents } from "@/hooks/useStudents";
 import { useSchoolSettings, useUpdateSchoolSettings } from "@/hooks/useSchoolSettings";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -47,17 +48,18 @@ const fadeUp = {
 
 type ConfigSection = "general" | "horaires" | "niveaux" | "notifications" | "securite" | "apparence" | "sauvegarde";
 
-const sections: { key: ConfigSection; label: string; icon: React.ElementType; description: string }[] = [
-  { key: "general", label: "Général", icon: School, description: "Informations générales et année scolaire" },
-  { key: "horaires", label: "Horaires", icon: Clock, description: "Horaires de cours et récréations" },
-  { key: "niveaux", label: "Niveaux & Classes", icon: GraduationCap, description: "Gestion des niveaux scolaires" },
-  { key: "notifications", label: "Notifications", icon: Bell, description: "Paramètres des notifications" },
-  { key: "securite", label: "Sécurité", icon: Shield, description: "Mots de passe et accès" },
-  { key: "apparence", label: "Apparence", icon: Palette, description: "Thème et personnalisation" },
-  { key: "sauvegarde", label: "Sauvegarde", icon: Database, description: "Sauvegarde et restauration" },
-];
-
 export default function Configuration() {
+  const { t } = useLanguage();
+
+  const sections: { key: ConfigSection; label: string; icon: React.ElementType; description: string }[] = useMemo(() => [
+    { key: "general", label: t("nav.home"), icon: School, description: t("configuration.title") },
+    { key: "horaires", label: t("configuration.schedule"), icon: Clock, description: t("configuration.schedule") },
+    { key: "niveaux", label: t("nav.levelsClasses"), icon: GraduationCap, description: t("configuration.levelManagement") },
+    { key: "notifications", label: t("configuration.notificationsSection"), icon: Bell, description: t("configuration.notificationsSection") },
+    { key: "securite", label: t("auth.twoFactor"), icon: Shield, description: t("auth.twoFactor") },
+    { key: "apparence", label: t("configuration.theme"), icon: Palette, description: t("configuration.theme") },
+    { key: "sauvegarde", label: t("configuration.backupRestore"), icon: Database, description: t("configuration.backupRestore") },
+  ], [t]);
   const loading = useSimulatedLoading(800);
   const { niveaux } = useNiveaux();
   const { data: students = [] } = useAllStudents();
@@ -122,14 +124,14 @@ export default function Configuration() {
         directeurNameAr: directeurNameAr || null,
       },
       {
-        onSuccess: () => notify.success("Configuration sauvegardée avec succès"),
-        onError: () => notify.error("Erreur lors de la sauvegarde"),
+        onSuccess: () => notify.success(t("common.success")),
+        onError: () => notify.error(t("common.error")),
       }
     );
   };
 
   const handleReset = () => {
-    notify.info("Configuration réinitialisée aux valeurs par défaut");
+    notify.info(t("common.reset"));
   };
 
   if (loading) return <DashboardSkeleton />;
@@ -144,17 +146,17 @@ export default function Configuration() {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
-          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">Configuration</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Paramètres généraux de l'établissement</p>
+          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">{t("configuration.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{t("configuration.title")}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1.5" onClick={handleReset}>
             <RotateCcw className="h-4 w-4" />
-            Réinitialiser
+            {t("common.reset")}
           </Button>
           <Button size="sm" className="gap-1.5 bg-gradient-primary shadow-btn" onClick={handleSave}>
             <Save className="h-4 w-4" />
-            Sauvegarder
+            {t("common.save")}
           </Button>
         </div>
       </motion.div>
@@ -187,54 +189,54 @@ export default function Configuration() {
           {activeSection === "general" && (
             <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm space-y-6">
               <div>
-                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><School className="h-5 w-5 text-primary" />Paramètres généraux</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Configuration de base de l'établissement</p>
+                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><School className="h-5 w-5 text-primary" />{t("configuration.title")}</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("configuration.title")}</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Nom de l'école</label>
+                  <label className="text-sm font-medium">{t("documents.schoolName")}</label>
                   <Input value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="École Primaire..." />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Nom en arabe</label>
+                  <label className="text-sm font-medium">{t("bulletins.schoolNameAr")}</label>
                   <Input value={schoolNameAr} onChange={(e) => setSchoolNameAr(e.target.value)} placeholder="المدرسة الابتدائية..." dir="rtl" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Année scolaire</label>
+                  <label className="text-sm font-medium">{t("common.schoolYear")}</label>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <Input value={anneeScolaire} onChange={(e) => setAnneeScolaire(e.target.value)} placeholder="2025 / 2026" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Téléphone</label>
+                  <label className="text-sm font-medium">{t("common.phone")}</label>
                   <Input value={telephone} onChange={(e) => setTelephone(e.target.value)} placeholder="+216 XX XXX XXX" />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                  <label className="text-sm font-medium">Adresse</label>
+                  <label className="text-sm font-medium">{t("common.address")}</label>
                   <Input value={adresse} onChange={(e) => setAdresse(e.target.value)} placeholder="Rue, Ville, Code Postal" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Directeur(trice)</label>
+                  <label className="text-sm font-medium">{t("schoolInfo.directorName")}</label>
                   <Input value={directeurName} onChange={(e) => setDirecteurName(e.target.value)} placeholder="Nom du directeur" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Directeur(trice) en arabe</label>
+                  <label className="text-sm font-medium">{t("schoolInfo.directorName")} (AR)</label>
                   <Input value={directeurNameAr} onChange={(e) => setDirecteurNameAr(e.target.value)} placeholder="اسم المدير" dir="rtl" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Langue</label>
+                  <label className="text-sm font-medium">{t("configuration.language")}</label>
                   <Select value={langue} onValueChange={setLangue}>
                     <SelectTrigger><Globe className="h-4 w-4 mr-2 text-muted-foreground" /><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="fr">Français</SelectItem>
-                      <SelectItem value="ar">Arabe</SelectItem>
-                      <SelectItem value="en">Anglais</SelectItem>
+                      <SelectItem value="fr">{t("language.french")}</SelectItem>
+                      <SelectItem value="ar">{t("language.arabic")}</SelectItem>
+                      <SelectItem value="en">{t("language.english")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Devise</label>
+                  <label className="text-sm font-medium">{t("configuration.currency")}</label>
                   <Select value={devise} onValueChange={setDevise}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -247,9 +249,9 @@ export default function Configuration() {
               </div>
               <div className="rounded-lg bg-muted/40 p-4">
                 <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-2"><Users className="h-4 w-4 text-blue-500" /><span className="font-medium">{students.length}</span> <span className="text-muted-foreground">élèves</span></div>
-                  <div className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-purple-500" /><span className="font-medium">{niveaux.length}</span> <span className="text-muted-foreground">niveaux</span></div>
-                  <div className="flex items-center gap-2"><GraduationCap className="h-4 w-4 text-emerald-500" /><span className="font-medium">{niveaux.reduce((sum, n) => sum + n.sections.length, 0)}</span> <span className="text-muted-foreground">classes</span></div>
+                  <div className="flex items-center gap-2"><Users className="h-4 w-4 text-blue-500" /><span className="font-medium">{students.length}</span> <span className="text-muted-foreground">{t("nav.students")}</span></div>
+                  <div className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-purple-500" /><span className="font-medium">{niveaux.length}</span> <span className="text-muted-foreground">{t("nav.levels")}</span></div>
+                  <div className="flex items-center gap-2"><GraduationCap className="h-4 w-4 text-emerald-500" /><span className="font-medium">{niveaux.reduce((sum, n) => sum + n.sections.length, 0)}</span> <span className="text-muted-foreground">{t("nav.classes")}</span></div>
                 </div>
               </div>
             </div>
@@ -259,8 +261,8 @@ export default function Configuration() {
           {activeSection === "horaires" && (
             <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm space-y-6">
               <div>
-                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><Clock className="h-5 w-5 text-primary" />Horaires scolaires</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Définissez les créneaux horaires</p>
+                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><Clock className="h-5 w-5 text-primary" />{t("configuration.schedule")}</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("configuration.schedule")}</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -291,8 +293,8 @@ export default function Configuration() {
           {activeSection === "niveaux" && (
             <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm space-y-6">
               <div>
-                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><GraduationCap className="h-5 w-5 text-primary" />Niveaux & Classes</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Vue d'ensemble des niveaux scolaires</p>
+                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><GraduationCap className="h-5 w-5 text-primary" />{t("nav.levelsClasses")}</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("configuration.levelOverview")}</p>
               </div>
               <div className="space-y-3">
                 {niveaux.map((niveau) => {
@@ -319,7 +321,7 @@ export default function Configuration() {
               </div>
               <Button variant="outline" size="sm" className="gap-1.5" onClick={() => window.location.href = "/dashboard/config/niveaux"}>
                 <Settings className="h-4 w-4" />
-                Gérer les niveaux
+                {t("configuration.levelManagement")}
               </Button>
             </div>
           )}
@@ -328,14 +330,14 @@ export default function Configuration() {
           {activeSection === "notifications" && (
             <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm space-y-6">
               <div>
-                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><Bell className="h-5 w-5 text-primary" />Notifications</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Paramètres des alertes et rappels</p>
+                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><Bell className="h-5 w-5 text-primary" />{t("configuration.notificationsSection")}</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("configuration.notificationsSection")}</p>
               </div>
               <div className="space-y-4">
                 {[
-                  { label: "Notifications par email", desc: "Recevoir les alertes par email", value: notifEmail, onChange: setNotifEmail },
-                  { label: "Notifications SMS", desc: "Envoyer des SMS aux parents", value: notifSMS, onChange: setNotifSMS },
-                  { label: "Notifications push", desc: "Notifications dans le navigateur", value: notifPush, onChange: setNotifPush },
+                  { label: t("configuration.emailNotifications"), desc: t("configuration.emailAlerts"), value: notifEmail, onChange: setNotifEmail },
+                  { label: t("configuration.smsNotifications"), desc: t("configuration.smsToParents"), value: notifSMS, onChange: setNotifSMS },
+                  { label: t("configuration.pushNotifications"), desc: t("configuration.browserNotifications"), value: notifPush, onChange: setNotifPush },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between rounded-lg bg-muted/40 p-4">
                     <div>
@@ -413,17 +415,17 @@ export default function Configuration() {
           {activeSection === "apparence" && (
             <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm space-y-6">
               <div>
-                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><Palette className="h-5 w-5 text-primary" />Apparence</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Personnalisation visuelle</p>
+                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><Palette className="h-5 w-5 text-primary" />{t("configuration.theme")}</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("configuration.theme")}</p>
               </div>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Thème</label>
                   <div className="flex gap-3">
                     {[
-                      { value: "light", label: "Clair", bg: "bg-white border-2" },
-                      { value: "dark", label: "Sombre", bg: "bg-gray-900 border-2" },
-                      { value: "auto", label: "Auto", bg: "bg-gradient-to-r from-white to-gray-900 border-2" },
+                      { value: "light", label: t("configuration.themes.light"), bg: "bg-white border-2" },
+                      { value: "dark", label: t("configuration.themes.dark"), bg: "bg-gray-900 border-2" },
+                      { value: "auto", label: t("configuration.themes.auto"), bg: "bg-gradient-to-r from-white to-gray-900 border-2" },
                     ].map((t) => (
                       <button
                         key={t.value}
@@ -437,7 +439,7 @@ export default function Configuration() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Couleur primaire</label>
+                  <label className="text-sm font-medium">{t("configuration.primaryColor")}</label>
                   <div className="flex items-center gap-3">
                     <input type="color" value={couleurPrimaire} onChange={(e) => setCouleurPrimaire(e.target.value)} className="h-10 w-10 rounded-lg cursor-pointer" />
                     <Input value={couleurPrimaire} onChange={(e) => setCouleurPrimaire(e.target.value)} className="w-32" />
@@ -452,8 +454,8 @@ export default function Configuration() {
           {activeSection === "sauvegarde" && (
             <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm space-y-6">
               <div>
-                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><Database className="h-5 w-5 text-primary" />Sauvegarde & Restauration</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Gérer les sauvegardes de données</p>
+                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><Database className="h-5 w-5 text-primary" />{t("configuration.backupRestore")}</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">{t("configuration.backupRestore")}</p>
               </div>
               <div className="space-y-4">
                 <div className="rounded-lg bg-muted/40 p-4">
@@ -468,7 +470,7 @@ export default function Configuration() {
                 <div className="rounded-lg bg-muted/40 p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-sm">Sauvegarde automatique</p>
+                      <p className="font-medium text-sm">{t("configuration.autoBackup")}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">Tous les jours à 02:00</p>
                     </div>
                     <Badge className="bg-blue-100 text-blue-700">Active</Badge>

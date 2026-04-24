@@ -5,8 +5,10 @@ import { useTeachers } from "@/hooks/useTeachers";
 import { TeacherForm } from "@/components/teachers/TeacherForm";
 import { StudentFormSkeleton } from "@/components/skeletons/StudentFormSkeleton";
 import type { TeacherFormValues } from "@/lib/teacher-schema";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function EditTeacher() {
+  const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getTeacher, updateTeacher, isLoading } = useTeachers();
@@ -18,7 +20,7 @@ export default function EditTeacher() {
   if (!teacher) {
     return (
       <div className="p-8 text-center">
-        <p className="text-lg font-medium text-foreground">Enseignant introuvable</p>
+        <p className="text-lg font-medium text-foreground">{t("teachers.teacherNotFound")}</p>
         <p className="text-sm text-muted-foreground mt-1">
           L'enseignant avec l'identifiant #{id} n'existe pas.
         </p>
@@ -26,7 +28,7 @@ export default function EditTeacher() {
           onClick={() => navigate("/dashboard/enseignants")}
           className="mt-4 text-sm text-primary hover:underline"
         >
-          Retour à la liste
+          {t("common.back")}
         </button>
       </div>
     );
@@ -49,17 +51,17 @@ export default function EditTeacher() {
           onClick={() => navigate("/dashboard")}
           className="hover:text-foreground transition-colors"
         >
-          Tableau de bord
+          {t("nav.dashboard")}
         </button>
         <ChevronRight className="h-3.5 w-3.5" />
         <button
           onClick={() => navigate("/dashboard/enseignants")}
           className="hover:text-foreground transition-colors"
         >
-          Enseignants
+          {t("nav.teachers")}
         </button>
         <ChevronRight className="h-3.5 w-3.5" />
-        <span className="text-foreground font-medium">Modifier</span>
+        <span className="text-foreground font-medium">{t("common.edit")}</span>
       </nav>
 
       {/* Header */}
@@ -74,7 +76,7 @@ export default function EditTeacher() {
           </div>
           <div>
             <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-              Modifier l'enseignant
+              {t("teachers.editTeacher")}
             </h1>
             <p className="text-sm text-muted-foreground">
               {teacher.prenom} {teacher.nom} — {teacher.specialite}
@@ -102,7 +104,7 @@ export default function EditTeacher() {
           }}
           onSubmit={handleSubmit}
           onCancel={() => navigate("/dashboard/enseignants")}
-          submitLabel="Enregistrer les modifications"
+          submitLabel={t("teachers.saveChanges")}
         />
       </motion.div>
     </div>

@@ -14,7 +14,6 @@ import {
 import {
   LogOut,
   User,
-  Globe,
   MessageSquare,
   Search,
   Bell,
@@ -26,27 +25,60 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/hooks/useLanguage";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
-const ROUTE_NAMES: Record<string, string> = {
-  dashboard: "Tableau de bord",
-  eleves: "Élèves",
-  ajouter: "Ajouter",
-  modifier: "Modifier",
-  config: "Configuration",
-  niveaux: "Niveaux",
-  messages: "Messages",
+const ROUTE_I18N_KEYS: Record<string, string> = {
+  dashboard: "nav.dashboard",
+  eleves: "nav.students",
+  ajouter: "common.add",
+  modifier: "common.edit",
+  config: "nav.configuration",
+  niveaux: "nav.levels",
+  messages: "nav.messages",
+  enseignants: "nav.teachers",
+  absences: "nav.absences",
+  discipline: "nav.discipline",
+  calendrier: "nav.calendar",
+  inscriptions: "nav.inscriptions",
+  finance: "nav.finance",
+  depenses: "nav.expenses",
+  tresorerie: "nav.treasury",
+  caisse: "nav.cashRegister",
+  factures: "nav.invoices",
+  relances: "nav.reminders",
+  rapports: "nav.reports",
+  annonces: "nav.announcements",
+  notifications: "nav.notifications",
+  reunions: "nav.meetings",
+  circulaires: "nav.circulars",
+  contrats: "nav.contractsLeaves",
+  evaluations: "nav.evaluations",
+  devoirs: "nav.homework",
+  quiz: "nav.exams",
+  carnets: "nav.gradeBooks",
+  bulletins: "nav.bulletins",
+  utilisateurs: "nav.users",
+  configuration: "nav.configuration",
+  statistique: "nav.statistics",
+  analytics: "nav.analytics",
+  transport: "nav.transport",
+  bibliotheque: "nav.library",
+  cantine: "nav.canteen",
 };
 
 function Breadcrumb() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const segments = location.pathname.split("/").filter(Boolean);
 
   if (segments.length <= 1) return null;
 
   const crumbs = segments.map((seg, i) => {
     const isId = /^\d+$/.test(seg);
-    const label = isId ? `#${seg}` : (ROUTE_NAMES[seg] || seg);
+    const i18nKey = ROUTE_I18N_KEYS[seg];
+    const label = isId ? `#${seg}` : (i18nKey ? t(i18nKey) : seg);
     const path = "/" + segments.slice(0, i + 1).join("/");
     const isLast = i === segments.length - 1;
 
@@ -77,6 +109,7 @@ function Breadcrumb() {
 export function Navbar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const handleLogout = useCallback(async () => {
@@ -111,7 +144,7 @@ export function Navbar() {
       <div className="hidden lg:flex items-center mx-auto">
         <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-muted/40 px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted/60 transition-colors cursor-pointer w-64">
           <Search className="h-3.5 w-3.5" />
-          <span className="flex-1">Rechercher...</span>
+          <span className="flex-1">{t("common.searchPlaceholder")}</span>
           <kbd className="hidden xl:inline-flex items-center gap-0.5 rounded border border-border/60 bg-background/80 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
             Ctrl+K
           </kbd>
@@ -120,14 +153,7 @@ export function Navbar() {
 
       <div className="ml-auto flex items-center gap-1.5">
         {/* Language Toggle */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="hidden sm:flex gap-1.5 text-xs rounded-full h-8 px-3 hover:bg-muted/60 transition-all"
-        >
-          <Globe className="h-3.5 w-3.5" />
-          <span className="font-medium">FR</span>
-        </Button>
+        <LanguageSwitcher />
 
         {/* SMS Badge */}
         <Badge
@@ -201,11 +227,11 @@ export function Navbar() {
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
-              Profil
+              {t("common.profile")}
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Settings className="mr-2 h-4 w-4" />
-              Paramètres
+              {t("common.settings")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -213,7 +239,7 @@ export function Navbar() {
               onClick={handleLogout}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              Déconnexion
+              {t("common.logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

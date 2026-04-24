@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { validate, type FormErrors } from "@/lib/validate";
+import { circuitSchema } from "@/lib/services-schemas";
 import {
   Bus,
   MapPin,
@@ -144,6 +146,7 @@ function CircuitsTab() {
   const [currentPage, setCurrentPage] = useState(0);
 
   // Form state
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [form, setForm] = useState<CreateCircuitRequest>({
     nom: "",
     description: "",
@@ -186,13 +189,17 @@ function CircuitsTab() {
   };
 
   const handleSubmit = () => {
+    const result = validate(circuitSchema, form);
+    if (!result.ok) { setFormErrors(result.errors); return; }
+    setFormErrors({});
+    const onError = (err: Error & { response?: { data?: { message?: string } } }) => setFormErrors({ _root: err.response?.data?.message ?? "Erreur" });
     if (editingCircuit) {
       updateMutation.mutate(
         { id: editingCircuit.id, data: form },
-        { onSuccess: () => setShowDialog(false) }
+        { onSuccess: () => setShowDialog(false), onError }
       );
     } else {
-      createMutation.mutate(form, { onSuccess: () => setShowDialog(false) });
+      createMutation.mutate(form, { onSuccess: () => setShowDialog(false), onError });
     }
   };
 

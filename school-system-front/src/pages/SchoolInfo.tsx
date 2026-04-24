@@ -1,16 +1,17 @@
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { schoolSchema, type SchoolFormValues } from "@/lib/school-schema";
 import { useSchool } from "@/hooks/useSchool";
-import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
+import { uploadFile, getFileUrl } from "@/api/storage.api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { notify } from "@/lib/toast";
-import { Save, Upload, ImageIcon } from "lucide-react";
+import { Save, Upload, ImageIcon, Loader2 } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 function SchoolInfoSkeleton() {
   return (
@@ -45,15 +46,17 @@ function SchoolInfoSkeleton() {
 }
 
 export default function SchoolInfo() {
-  const loading = useSimulatedLoading(800);
-  const { school, updateSchool } = useSchool();
+  const { t } = useLanguage();
+  const { school, updateSchool, isLoading, isSaving } = useSchool();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [logoPreview, setLogoPreview] = useState("");
+  const [pendingLogoFile, setPendingLogoFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
+    reset,
     formState: { errors },
   } = useForm<SchoolFormValues>({
     resolver: zodResolver(schoolSchema),
@@ -73,36 +76,75 @@ export default function SchoolInfo() {
     },
   });
 
-  const logoPreview = watch("logo");
+  useEffect(() => {
+    if (!isLoading) {
+      reset({
+        nom: school.nom,
+        nomAr: school.nomAr,
+        logo: school.logo,
+        adresse: school.adresse,
+        ville: school.ville,
+        villeAr: school.villeAr,
+        telephone: school.telephone,
+        email: school.email,
+        siteWeb: school.siteWeb,
+        directeur: school.directeur,
+        anneeCreation: school.anneeCreation,
+        description: school.description,
+      });
+      setLogoPreview(school.logo || "");
+    }
+  }, [isLoading, school, reset]);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      notify.error("Veuillez sélectionner un fichier image");
+      notify.error(t("schoolInfo.selectImage"));
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      notify.error("L'image ne doit pas dépasser 2 Mo");
+      notify.error(t("schoolInfo.maxSize"));
       return;
     }
 
+    // Show local preview immediately
     const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      setValue("logo", dataUrl);
-    };
+    reader.onload = () => setLogoPreview(reader.result as string);
     reader.readAsDataURL(file);
+
+    // Keep the file for upload on save
+    setPendingLogoFile(file);
   };
 
-  const onSubmit = (data: SchoolFormValues) => {
-    updateSchool(data);
-    notify.success("Informations de l'école enregistrées");
+  const onSubmit = async (data: SchoolFormValues) => {
+    try {
+      setIsUploading(true);
+      let logoUrl = school.logo;
+
+      // Upload new logo file if one was selected
+      if (pendingLogoFile) {
+        const fileInfo = await uploadFile(pendingLogoFile, "school");
+        logoUrl = getFileUrl(fileInfo.filePath);
+      }
+
+      await updateSchool({ ...data, logo: logoUrl });
+      setPendingLogoFile(null);
+      notify.success(t("schoolInfo.saved"));
+    } catch (err) {
+      notify.error(
+        err instanceof Error ? err.message : "Erreur lors de l'enregistrement"
+      );
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  if (loading) return <SchoolInfoSkeleton />;
+  const busy = isSaving || isUploading;
+
+  if (isLoading) return <SchoolInfoSkeleton />;
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
@@ -119,9 +161,14 @@ export default function SchoolInfo() {
         <Button
           onClick={handleSubmit(onSubmit)}
           className="bg-gradient-primary shadow-btn gap-1.5"
+          disabled={busy}
         >
-          <Save className="h-4 w-4" />
-          Enregistrer
+          {busy ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
+          {busy ? t("common.saving") : t("common.save")}
         </Button>
       </div>
 

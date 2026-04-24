@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { validate, type FormErrors } from "@/lib/validate";
+import { bourseSchema } from "@/lib/services-schemas";
 import {
   GraduationCap,
   Search,
@@ -49,6 +51,7 @@ import {
 } from "@/hooks/useBourses";
 import type { BourseDTO, BourseRequest } from "@/api/bourses.api";
 import { CURRENCY } from "@/config/currency";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const ANNEES = ["2025-2026", "2024-2025", "2023-2024"];
 
@@ -80,6 +83,7 @@ const STATUT_VARIANT: Record<string, "default" | "secondary" | "destructive" | "
 };
 
 export default function Bourses() {
+  const { t } = useLanguage();
   const [anneeScolaire, setAnneeScolaire] = useState(ANNEES[0]);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -110,6 +114,7 @@ export default function Bourses() {
     motif: "",
   };
   const [form, setForm] = useState<BourseRequest>(emptyForm);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   // Filter bourses
   const filteredBourses = useMemo(() => {
@@ -161,16 +166,17 @@ export default function Bourses() {
   };
 
   const handleCreate = () => {
-    if (!form.studentId || !form.label || !form.montant) {
-      notify.error("Veuillez remplir les champs obligatoires");
-      return;
-    }
+    const result = validate(bourseSchema, form);
+    if (!result.ok) { setFormErrors(result.errors); return; }
+    setFormErrors({});
     createBourse.mutate(form, {
       onSuccess: () => {
         notify.success("Bourse ajoutee");
         setAddDialogOpen(false);
       },
-      onError: (err) => notify.error(err.message),
+      onError: (err: Error & { response?: { data?: { message?: string } } }) => {
+        setFormErrors({ _root: err.response?.data?.message ?? err.message });
+      },
     });
   };
 
@@ -330,7 +336,7 @@ export default function Bourses() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
-            Bourses et aides financieres
+            {t("scholarships.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Gestion des bourses, aides et exonerations — {anneeScolaire}
@@ -350,7 +356,7 @@ export default function Bourses() {
             </SelectContent>
           </Select>
           <Button className="bg-gradient-primary shadow-btn gap-2" onClick={openAdd}>
-            <Plus className="h-4 w-4" /> Nouvelle bourse
+            <Plus className="h-4 w-4" /> {t("scholarships.newScholarship")}
           </Button>
         </div>
       </div>
@@ -369,7 +375,7 @@ export default function Bourses() {
               <DollarSign className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <p className="text-xs text-green-600 font-medium">Total accorde</p>
+              <p className="text-xs text-green-600 font-medium">{t("scholarships.totalGranted")}</p>
               <p className="text-xl font-bold text-green-700">
                 {stats.totalMontant.toLocaleString()} {CURRENCY}
               </p>
@@ -389,7 +395,7 @@ export default function Bourses() {
               <Users className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs text-blue-600 font-medium">Beneficiaires</p>
+              <p className="text-xs text-blue-600 font-medium">{t("scholarships.beneficiaries")}</p>
               <p className="text-xl font-bold text-blue-700">
                 {stats.totalBeneficiaires}
               </p>
@@ -409,7 +415,7 @@ export default function Bourses() {
               <GraduationCap className="h-5 w-5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground font-medium">Bourses actives</p>
+              <p className="text-xs text-muted-foreground font-medium">{t("scholarships.activeScholarships")}</p>
               <p className="text-xl font-bold text-foreground">{stats.activeCount}</p>
             </div>
           </div>
@@ -427,7 +433,7 @@ export default function Bourses() {
               <PauseCircle className="h-5 w-5 text-orange-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground font-medium">Suspendues</p>
+              <p className="text-xs text-muted-foreground font-medium">{t("scholarships.suspended")}</p>
               <p className="text-xl font-bold text-foreground">{stats.suspended}</p>
             </div>
           </div>
@@ -439,7 +445,7 @@ export default function Bourses() {
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher par nom ou libelle..."
+            placeholder={t("scholarships.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -519,7 +525,7 @@ export default function Bourses() {
                     colSpan={7}
                     className="py-12 text-center text-muted-foreground"
                   >
-                    Aucune bourse trouvee
+                    {t("scholarships.noScholarship")}
                   </td>
                 </tr>
               ) : (
@@ -597,7 +603,7 @@ export default function Bourses() {
       <Dialog open={!!viewBourse} onOpenChange={() => setViewBourse(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Detail de la bourse</DialogTitle>
+            <DialogTitle>{t("scholarships.scholarshipDetail")}</DialogTitle>
           </DialogHeader>
           {viewBourse && (
             <div className="space-y-3 text-sm">

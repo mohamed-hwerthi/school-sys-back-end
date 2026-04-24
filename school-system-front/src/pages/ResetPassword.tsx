@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Lock, ArrowLeft, CheckCircle, Loader2, AlertCircle, GraduationCap, Sparkles } from "lucide-react";
 import { authApi } from "@/api/auth.api";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const container = {
   hidden: { opacity: 0 },
@@ -14,6 +15,7 @@ const item = {
 };
 
 const ResetPassword = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") || "";
@@ -30,12 +32,12 @@ const ResetPassword = () => {
     setError(null);
 
     if (newPassword.length < 8) {
-      setError("Le mot de passe doit contenir au moins 8 caractères.");
+      setError(t("auth.minChars"));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas.");
+      setError(t("auth.passwordsDoNotMatch"));
       return;
     }
 
@@ -106,7 +108,7 @@ const ResetPassword = () => {
 
           <motion.div variants={item} className="mb-8 text-center">
             <h2 className="font-heading text-2xl font-bold text-foreground">
-              Nouveau mot de passe
+              {t("auth.newPassword")}
             </h2>
             <p className="mt-1.5 text-sm text-muted-foreground">
               Choisissez un nouveau mot de passe pour votre compte
@@ -160,7 +162,7 @@ const ResetPassword = () => {
               <form onSubmit={handleSubmit} className="w-full max-w-[280px] space-y-4">
                 <motion.div variants={item} className="relative">
                   <label className="mb-1.5 block text-xs font-semibold text-foreground">
-                    Nouveau mot de passe
+                    {t("auth.newPassword")}
                   </label>
                   <div className="relative">
                     <Lock className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "new" ? "text-primary" : "text-muted-foreground"}`} />
@@ -180,13 +182,13 @@ const ResetPassword = () => {
 
                 <motion.div variants={item} className="relative">
                   <label className="mb-1.5 block text-xs font-semibold text-foreground">
-                    Confirmer le mot de passe
+                    {t("auth.confirmPassword")}
                   </label>
                   <div className="relative">
                     <Lock className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "confirm" ? "text-primary" : "text-muted-foreground"}`} />
                     <input
                       type="password"
-                      placeholder="Retapez le mot de passe"
+                      placeholder={t("auth.retypePassword")}
                       value={confirmPassword}
                       onFocus={() => setFocused("confirm")}
                       onBlur={() => setFocused(null)}

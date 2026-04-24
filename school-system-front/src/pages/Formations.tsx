@@ -16,6 +16,7 @@ import {
   MapPin,
   UserPlus,
 } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,13 +59,6 @@ import type {
   AddParticipantRequest,
 } from "@/types/rh";
 
-const STATUT_LABELS: Record<StatutFormation, string> = {
-  PLANIFIEE: "Planifiee",
-  EN_COURS: "En cours",
-  TERMINEE: "Terminee",
-  ANNULEE: "Annulee",
-};
-
 const STATUT_COLORS: Record<StatutFormation, string> = {
   PLANIFIEE: "bg-blue-100 text-blue-700",
   EN_COURS: "bg-amber-100 text-amber-700",
@@ -84,6 +78,15 @@ const fadeUp = {
 };
 
 export default function FormationsPage() {
+  const { t } = useLanguage();
+
+  const STATUT_LABELS: Record<StatutFormation, string> = {
+    PLANIFIEE: t("training.statuses.planned"),
+    EN_COURS: t("training.statuses.inProgress"),
+    TERMINEE: t("training.statuses.completed"),
+    ANNULEE: t("training.statuses.cancelled"),
+  };
+
   const [search, setSearch] = useState("");
   const [filterStatut, setFilterStatut] = useState("all");
   const [currentPage, setCurrentPage] = useState(0);
@@ -151,28 +154,28 @@ export default function FormationsPage() {
 
   const stats = [
     {
-      label: "Total formations",
+      label: t("training.totalTrainings"),
       value: formations.length,
       icon: GraduationCap,
       color: "bg-blue-50",
       textColor: "text-blue-700",
     },
     {
-      label: "En cours",
+      label: t("training.statuses.inProgress"),
       value: formations.filter((f) => f.statut === "EN_COURS").length,
       icon: CalendarDays,
       color: "bg-amber-50",
       textColor: "text-amber-700",
     },
     {
-      label: "Terminees",
+      label: t("training.completed"),
       value: formations.filter((f) => f.statut === "TERMINEE").length,
       icon: GraduationCap,
       color: "bg-emerald-50",
       textColor: "text-emerald-700",
     },
     {
-      label: "Participants",
+      label: t("training.participants"),
       value: formations.reduce(
         (sum, f) => sum + (f.participants?.length ?? 0),
         0
@@ -297,10 +300,10 @@ export default function FormationsPage() {
       >
         <div>
           <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-            Formations
+            {t("training.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Gestion des formations et developpement professionnel
+            {t("training.subtitle")}
           </p>
         </div>
         <Button
@@ -309,7 +312,7 @@ export default function FormationsPage() {
           onClick={openCreate}
         >
           <Plus className="h-4 w-4" />
-          Nouvelle formation
+          {t("training.newTraining")}
         </Button>
       </motion.div>
 
@@ -354,7 +357,7 @@ export default function FormationsPage() {
                 setSearch(e.target.value);
                 setCurrentPage(0);
               }}
-              placeholder="Rechercher par titre, formateur, lieu..."
+              placeholder={t("training.searchPlaceholder")}
               className="pl-9"
             />
           </div>
@@ -369,7 +372,7 @@ export default function FormationsPage() {
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous</SelectItem>
+              <SelectItem value="all">{t("common.all")}</SelectItem>
               {(Object.keys(STATUT_LABELS) as StatutFormation[]).map((s) => (
                 <SelectItem key={s} value={s}>
                   {STATUT_LABELS[s]}
@@ -384,7 +387,7 @@ export default function FormationsPage() {
               onClick={resetFilters}
               className="gap-1 text-muted-foreground hover:text-foreground"
             >
-              <X className="h-3.5 w-3.5" /> Reinitialiser
+              <X className="h-3.5 w-3.5" /> {t("common.reset")}
             </Button>
           )}
         </div>
@@ -403,25 +406,25 @@ export default function FormationsPage() {
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
-                  Titre
+                  {t("common.title")}
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">
-                  Formateur
+                  {t("training.trainer")}
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">
-                  Dates
+                  {t("common.date")}
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">
-                  Lieu
+                  {t("training.location")}
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">
-                  Participants
+                  {t("training.participants")}
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
-                  Statut
+                  {t("common.status")}
                 </th>
                 <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">
-                  Actions
+                  {t("common.actions")}
                 </th>
               </tr>
             </thead>
@@ -433,7 +436,7 @@ export default function FormationsPage() {
                     className="py-16 text-center text-muted-foreground"
                   >
                     <GraduationCap className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                    <p className="font-medium">Aucune formation trouvee</p>
+                    <p className="font-medium">{t("training.noTraining")}</p>
                   </td>
                 </tr>
               ) : (
@@ -496,7 +499,7 @@ export default function FormationsPage() {
                           size="icon"
                           className="h-8 w-8 text-muted-foreground hover:text-blue-600"
                           onClick={() => openParticipantDialog(f)}
-                          title="Gerer les participants"
+                          title={t("training.manageParticipants")}
                         >
                           <UserPlus className="h-4 w-4" />
                         </Button>
@@ -531,16 +534,16 @@ export default function FormationsPage() {
                           <DropdownMenuItem
                             onClick={() => openParticipantDialog(f)}
                           >
-                            <UserPlus className="h-4 w-4 mr-2" /> Participants
+                            <UserPlus className="h-4 w-4 mr-2" /> {t("training.participants")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => openEdit(f)}>
-                            <Edit className="h-4 w-4 mr-2" /> Modifier
+                            <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDeleteTarget(f)}
                             className="text-red-600"
                           >
-                            <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                            <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -554,7 +557,7 @@ export default function FormationsPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t border-border px-4 py-3">
             <p className="text-xs text-muted-foreground">
-              Page {currentPage + 1} sur {totalPages}
+              {t("common.page")} {currentPage + 1} {t("common.of")} {totalPages}
             </p>
             <div className="flex items-center gap-1">
               <Button
@@ -585,26 +588,26 @@ export default function FormationsPage() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {editTarget ? "Modifier la formation" : "Nouvelle formation"}
+              {editTarget ? t("training.editTraining") : t("training.newTraining")}
             </DialogTitle>
             <DialogDescription>
               {editTarget
-                ? "Modifiez les details de la formation."
-                : "Creez une nouvelle formation pour le personnel."}
+                ? t("training.editInfo")
+                : t("training.createTraining")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="titre">Titre</Label>
+              <Label htmlFor="titre">{t("common.title")}</Label>
               <Input
                 id="titre"
                 value={form.titre}
                 onChange={(e) => setForm({ ...form, titre: e.target.value })}
-                placeholder="Titre de la formation"
+                placeholder={t("training.trainingTitle")}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t("common.description")}</Label>
               <Textarea
                 id="description"
                 value={form.description ?? ""}
@@ -617,29 +620,29 @@ export default function FormationsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="formateur">Formateur</Label>
+                <Label htmlFor="formateur">{t("training.trainer")}</Label>
                 <Input
                   id="formateur"
                   value={form.formateur ?? ""}
                   onChange={(e) =>
                     setForm({ ...form, formateur: e.target.value })
                   }
-                  placeholder="Nom du formateur"
+                  placeholder={t("training.trainerName")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="lieu">Lieu</Label>
+                <Label htmlFor="lieu">{t("training.location")}</Label>
                 <Input
                   id="lieu"
                   value={form.lieu ?? ""}
                   onChange={(e) => setForm({ ...form, lieu: e.target.value })}
-                  placeholder="Lieu"
+                  placeholder={t("training.location")}
                 />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="dateDebut">Date debut</Label>
+                <Label htmlFor="dateDebut">{t("common.startDate")}</Label>
                 <Input
                   id="dateDebut"
                   type="date"
@@ -650,7 +653,7 @@ export default function FormationsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="dateFin">Date fin</Label>
+                <Label htmlFor="dateFin">{t("common.endDate")}</Label>
                 <Input
                   id="dateFin"
                   type="date"
@@ -663,7 +666,7 @@ export default function FormationsPage() {
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="nombreHeures">Heures</Label>
+                <Label htmlFor="nombreHeures">{t("training.hours")}</Label>
                 <Input
                   id="nombreHeures"
                   type="number"
@@ -680,7 +683,7 @@ export default function FormationsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="cout">Cout (MAD)</Label>
+                <Label htmlFor="cout">{t("training.cost")}</Label>
                 <Input
                   id="cout"
                   type="number"
@@ -695,7 +698,7 @@ export default function FormationsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Statut</Label>
+                <Label>{t("common.status")}</Label>
                 <Select
                   value={form.statut}
                   onValueChange={(v) =>
@@ -720,7 +723,7 @@ export default function FormationsPage() {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button
               onClick={handleSave}
@@ -732,8 +735,8 @@ export default function FormationsPage() {
               }
             >
               {createMutation.isPending || updateMutation.isPending
-                ? "Enregistrement..."
-                : "Enregistrer"}
+                ? t("common.saving")
+                : t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -747,10 +750,10 @@ export default function FormationsPage() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              Participants - {selectedFormation?.titre}
+              {t("training.participants")} - {selectedFormation?.titre}
             </DialogTitle>
             <DialogDescription>
-              Gerez les participants de cette formation.
+              {t("training.manageParticipants")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
@@ -759,7 +762,7 @@ export default function FormationsPage() {
             selectedFormation.participants.length > 0 ? (
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">
-                  Participants inscrits
+                  {t("training.participants")}
                 </Label>
                 <div className="max-h-[200px] overflow-y-auto space-y-1.5">
                   {selectedFormation.participants.map((p) => (
@@ -802,14 +805,14 @@ export default function FormationsPage() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">
-                Aucun participant inscrit
+                {t("common.noData")}
               </p>
             )}
 
             {/* Add participant form */}
             <div className="border-t border-border pt-4 space-y-3">
               <Label className="text-xs text-muted-foreground">
-                Ajouter un participant
+                {t("training.addParticipant")}
               </Label>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
@@ -842,9 +845,9 @@ export default function FormationsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ENSEIGNANT">Enseignant</SelectItem>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
-                      <SelectItem value="PERSONNEL">Personnel</SelectItem>
+                      <SelectItem value="ENSEIGNANT">{t("attendance.employeeTypes.teacher")}</SelectItem>
+                      <SelectItem value="ADMIN">{t("attendance.employeeTypes.admin")}</SelectItem>
+                      <SelectItem value="PERSONNEL">{t("attendance.employeeTypes.staff")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -859,14 +862,14 @@ export default function FormationsPage() {
               >
                 <UserPlus className="h-4 w-4" />
                 {addParticipantMutation.isPending
-                  ? "Ajout..."
-                  : "Ajouter le participant"}
+                  ? t("training.adding")
+                  : t("training.addParticipant")}
               </Button>
             </div>
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Fermer</Button>
+              <Button variant="outline">{t("common.close")}</Button>
             </DialogClose>
           </DialogFooter>
         </DialogContent>
@@ -879,22 +882,21 @@ export default function FormationsPage() {
       >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Supprimer la formation</DialogTitle>
+            <DialogTitle>{t("training.deleteTraining")}</DialogTitle>
             <DialogDescription>
-              Etes-vous sur de vouloir supprimer la formation &quot;
-              {deleteTarget?.titre}&quot; ? Cette action est irreversible.
+              {t("common.deleteConfirmMsg")} &quot;{deleteTarget?.titre}&quot; ? {t("common.irreversible")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending ? "Suppression..." : "Supprimer"}
+              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

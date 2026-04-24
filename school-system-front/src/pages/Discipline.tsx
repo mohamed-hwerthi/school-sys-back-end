@@ -56,7 +56,10 @@ import {
   useCreateSanction,
   useDeleteSanction,
 } from "@/hooks/useDiscipline";
+import { useAllStudents } from "@/hooks/useStudents";
 import type { Incident, Sanction, TypeIncident, GraviteType, TypeSanction } from "@/types/discipline";
+import { validate, type FormErrors } from "@/lib/validate";
+import { incidentSchema, sanctionSchema } from "@/lib/discipline-schema";
 
 const TYPE_INCIDENT_LABELS: Record<TypeIncident, string> = {
   BAGARRE: "Bagarre",
@@ -112,12 +115,14 @@ export default function DisciplinePage() {
   // Incident form state
   const [incidentFormOpen, setIncidentFormOpen] = useState(false);
   const [incidentForm, setIncidentForm] = useState({
-    dateIncident: new Date().toISOString().split("T")[0],
-    typeIncident: "AUTRE" as TypeIncident,
+    titre: "",
+    date: new Date().toISOString().split("T")[0],
+    type: "AUTRE" as TypeIncident,
     description: "",
     gravite: "LEGERE" as GraviteType,
-    elevesIds: [] as number[],
-    enseignantId: undefined as number | undefined,
+    lieu: "",
+    elevesImpliques: [] as { eleveId: number; roleEleve?: string }[],
+    signaleParId: undefined as number | undefined,
   });
 
   // Sanction form state
@@ -131,12 +136,56 @@ export default function DisciplinePage() {
     dateFin: "",
     notifieParent: false,
   });
+  const [sanctionNiveau, setSanctionNiveau] = useState<string>("");
+  const [incidentErrors, setIncidentErrors] = useState<FormErrors>({});
+  const [sanctionErrors, setSanctionErrors] = useState<FormErrors>({});
+  const [sanctionClasse, setSanctionClasse] = useState<string>("");
 
   const [deleteIncidentTarget, setDeleteIncidentTarget] = useState<Incident | null>(null);
   const [deleteSanctionTarget, setDeleteSanctionTarget] = useState<Sanction | null>(null);
 
   const { data: incidents = [], isLoading: incidentsLoading } = useIncidents();
-  const { data: sanctions = [], isLoading: sanctionsLoading } = useSanctions();
+  const { data: sanctionsRaw = [], isLoading: sanctionsLoading } = useSanctions();
+  const { data: allStudents = [] } = useAllStudents();
+
+  const studentNameById = useMemo(() => {
+    const m = new Map<number, string>();
+    allStudents.forEach((s) => m.set(s.id, `${s.nom} ${s.prenom}`.trim()));
+    return m;
+  }, [allStudents]);
+
+  const sanctions = useMemo(
+    () =>
+      sanctionsRaw.map((s) => ({
+        ...s,
+        eleveNom: s.eleveNom ?? studentNameById.get(s.eleveId),
+      })),
+    [sanctionsRaw, studentNameById],
+  );
+
+  const niveauOptions = useMemo(
+    () => [...new Set(allStudents.map((s) => s.niveau).filter(Boolean))].sort(),
+    [allStudents],
+  );
+  const classeOptions = useMemo(
+    () =>
+      [
+        ...new Set(
+          allStudents
+            .filter((s) => !sanctionNiveau || s.niveau === sanctionNiveau)
+            .map((s) => s.classe)
+            .filter(Boolean),
+        ),
+      ].sort(),
+    [allStudents, sanctionNiveau],
+  );
+  const eleveOptions = useMemo(
+    () =>
+      allStudents
+        .filter((s) => (!sanctionNiveau || s.niveau === sanctionNiveau) && (!sanctionClasse || s.classe === sanctionClasse))
+        .sort((a, b) => `${a.nom} ${a.prenom}`.localeCompare(`${b.nom} ${b.prenom}`)),
+    [allStudents, sanctionNiveau, sanctionClasse],
+  );
   const createIncidentMutation = useCreateIncident();
   const deleteIncidentMutation = useDeleteIncident();
   const createSanctionMutation = useCreateSanction();
@@ -149,15 +198,16 @@ export default function DisciplinePage() {
       const q = search.toLowerCase();
       list = list.filter(
         (inc) =>
+          inc.titre?.toLowerCase().includes(q) ||
           inc.description?.toLowerCase().includes(q) ||
-          TYPE_INCIDENT_LABELS[inc.typeIncident].toLowerCase().includes(q)
+          TYPE_INCIDENT_LABELS[inc.type].toLowerCase().includes(q)
       );
     }
     if (filterGravite !== "all") {
       list = list.filter((inc) => inc.gravite === filterGravite);
     }
     if (filterType !== "all") {
-      list = list.filter((inc) => inc.typeIncident === filterType);
+      list = list.filter((inc) => inc.type === filterType);
     }
     return list;
   }, [incidents, search, filterGravite, filterType]);
@@ -202,15 +252,28 @@ export default function DisciplinePage() {
     { label: "Sanctions Actives", value: sanctions.length, icon: Gavel, color: "bg-purple-50", textColor: "text-purple-700" },
   ];
 
+  const apiError = (setter: (e: FormErrors) => void) => (err: Error & { response?: { status?: number; data?: { message?: string } } }) => {
+    const msg = err.response?.data?.message ?? "Erreur lors de l'enregistrement";
+    setter({ _root: msg });
+  };
+
   const handleCreateIncident = () => {
+    const result = validate(incidentSchema, incidentForm);
+    if (!result.ok) { setIncidentErrors(result.errors); return; }
+    setIncidentErrors({});
     createIncidentMutation.mutate(incidentForm, {
       onSuccess: () => setIncidentFormOpen(false),
+      onError: apiError(setIncidentErrors),
     });
   };
 
   const handleCreateSanction = () => {
+    const result = validate(sanctionSchema, sanctionForm);
+    if (!result.ok) { setSanctionErrors(result.errors); return; }
+    setSanctionErrors({});
     createSanctionMutation.mutate(sanctionForm, {
       onSuccess: () => setSanctionFormOpen(false),
+      onError: apiError(setSanctionErrors),
     });
   };
 
@@ -248,13 +311,15 @@ export default function DisciplinePage() {
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
             setSanctionForm({ eleveId: 0, incidentId: undefined, typeSanction: "AVERTISSEMENT", description: "", dateDebut: new Date().toISOString().split("T")[0], dateFin: "", notifieParent: false });
+            setSanctionNiveau("");
+            setSanctionClasse("");
             setSanctionFormOpen(true);
           }}>
             <Gavel className="h-4 w-4" />
             Sanction
           </Button>
           <Button size="sm" className="gap-1.5 bg-gradient-primary shadow-btn" onClick={() => {
-            setIncidentForm({ dateIncident: new Date().toISOString().split("T")[0], typeIncident: "AUTRE", description: "", gravite: "LEGERE", elevesIds: [], enseignantId: undefined });
+            setIncidentForm({ titre: "", date: new Date().toISOString().split("T")[0], type: "AUTRE", description: "", gravite: "LEGERE", lieu: "", elevesImpliques: [], signaleParId: undefined });
             setIncidentFormOpen(true);
           }}>
             <Plus className="h-4 w-4" />
@@ -350,9 +415,9 @@ export default function DisciplinePage() {
                   ) : (
                     paginatedIncidents.map((inc) => (
                       <tr key={inc.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
-                        <td className="py-3 px-4 text-muted-foreground">{new Date(inc.dateIncident).toLocaleDateString("fr-FR")}</td>
+                        <td className="py-3 px-4 text-muted-foreground">{new Date(inc.date).toLocaleDateString("fr-FR")}</td>
                         <td className="py-3 px-4">
-                          <Badge variant="outline">{TYPE_INCIDENT_LABELS[inc.typeIncident]}</Badge>
+                          <Badge variant="outline">{TYPE_INCIDENT_LABELS[inc.type]}</Badge>
                         </td>
                         <td className="py-3 px-4 hidden sm:table-cell">
                           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${GRAVITE_COLORS[inc.gravite]}`}>
@@ -363,7 +428,7 @@ export default function DisciplinePage() {
                           {inc.description ?? "-"}
                         </td>
                         <td className="py-3 px-4 hidden lg:table-cell text-muted-foreground">
-                          {inc.elevesIds.length} eleve{inc.elevesIds.length !== 1 ? "s" : ""}
+                          {inc.elevesImpliques?.length ?? 0} eleve{(inc.elevesImpliques?.length ?? 0) !== 1 ? "s" : ""}
                         </td>
                         <td className="py-3 px-4 text-right">
                           <div className="hidden sm:flex items-center justify-end gap-1">
@@ -481,14 +546,29 @@ export default function DisciplinePage() {
             <DialogDescription>Renseignez les details de l'incident disciplinaire.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {incidentErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{incidentErrors._root}</div>
+            )}
             <div className="space-y-1.5">
-              <Label htmlFor="dateIncident">Date</Label>
-              <Input id="dateIncident" type="date" value={incidentForm.dateIncident} onChange={(e) => setIncidentForm({ ...incidentForm, dateIncident: e.target.value })} />
+              <Label htmlFor="incidentTitre">Titre *</Label>
+              <Input id="incidentTitre" value={incidentForm.titre} onChange={(e) => setIncidentForm({ ...incidentForm, titre: e.target.value })} placeholder="Ex: Bagarre en cour de recreation" aria-invalid={!!incidentErrors.titre} className={incidentErrors.titre ? "border-red-500" : ""} />
+              {incidentErrors.titre && <p className="text-xs text-red-600">{incidentErrors.titre}</p>}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="dateIncident">Date *</Label>
+                <Input id="dateIncident" type="date" value={incidentForm.date} onChange={(e) => setIncidentForm({ ...incidentForm, date: e.target.value })} aria-invalid={!!incidentErrors.date} className={incidentErrors.date ? "border-red-500" : ""} />
+                {incidentErrors.date && <p className="text-xs text-red-600">{incidentErrors.date}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="incidentLieu">Lieu</Label>
+                <Input id="incidentLieu" value={incidentForm.lieu} onChange={(e) => setIncidentForm({ ...incidentForm, lieu: e.target.value })} placeholder="Ex: Cour, Salle 3B..." />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Type</Label>
-                <Select value={incidentForm.typeIncident} onValueChange={(v) => setIncidentForm({ ...incidentForm, typeIncident: v as TypeIncident })}>
+                <Select value={incidentForm.type} onValueChange={(v) => setIncidentForm({ ...incidentForm, type: v as TypeIncident })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {(Object.keys(TYPE_INCIDENT_LABELS) as TypeIncident[]).map((t) => (
@@ -533,9 +613,71 @@ export default function DisciplinePage() {
             <DialogDescription>Definissez la sanction pour l'eleve concerne.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {sanctionErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{sanctionErrors._root}</div>
+            )}
+            {sanctionErrors.eleveId && (
+              <p className="text-xs text-red-600">{sanctionErrors.eleveId}</p>
+            )}
+            {sanctionErrors.dateFin && (
+              <p className="text-xs text-red-600">Date fin: {sanctionErrors.dateFin}</p>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Niveau *</Label>
+                <Select
+                  value={sanctionNiveau || undefined}
+                  onValueChange={(v) => {
+                    setSanctionNiveau(v);
+                    setSanctionClasse("");
+                    setSanctionForm({ ...sanctionForm, eleveId: 0 });
+                  }}
+                >
+                  <SelectTrigger><SelectValue placeholder="Choisir un niveau" /></SelectTrigger>
+                  <SelectContent>
+                    {niveauOptions.map((n) => (
+                      <SelectItem key={n} value={n}>{n}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Classe *</Label>
+                <Select
+                  value={sanctionClasse || undefined}
+                  onValueChange={(v) => {
+                    setSanctionClasse(v);
+                    setSanctionForm({ ...sanctionForm, eleveId: 0 });
+                  }}
+                  disabled={!sanctionNiveau}
+                >
+                  <SelectTrigger><SelectValue placeholder={sanctionNiveau ? "Choisir une classe" : "Niveau d'abord"} /></SelectTrigger>
+                  <SelectContent>
+                    {classeOptions.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <div className="space-y-1.5">
-              <Label htmlFor="sanctionEleveId">ID Eleve</Label>
-              <Input id="sanctionEleveId" type="number" value={sanctionForm.eleveId || ""} onChange={(e) => setSanctionForm({ ...sanctionForm, eleveId: Number(e.target.value) })} placeholder="ID de l'eleve" />
+              <Label>Eleve *</Label>
+              <Select
+                value={sanctionForm.eleveId ? String(sanctionForm.eleveId) : undefined}
+                onValueChange={(v) => setSanctionForm({ ...sanctionForm, eleveId: Number(v) })}
+                disabled={!sanctionClasse}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={sanctionClasse ? "Selectionner un eleve" : "Classe d'abord"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {eleveOptions.map((e) => (
+                    <SelectItem key={e.id} value={String(e.id)}>
+                      {e.nom} {e.prenom} {e.matricule ? `(${e.matricule})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
               <Label>Type de sanction</Label>
@@ -577,7 +719,7 @@ export default function DisciplinePage() {
             <DialogClose asChild>
               <Button variant="outline">Annuler</Button>
             </DialogClose>
-            <Button onClick={handleCreateSanction} disabled={createSanctionMutation.isPending || !sanctionForm.eleveId}>
+            <Button onClick={handleCreateSanction} disabled={createSanctionMutation.isPending}>
               {createSanctionMutation.isPending ? "Creation..." : "Ajouter"}
             </Button>
           </DialogFooter>

@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { validate, type FormErrors } from "@/lib/validate";
+import { fichePaieSchema } from "@/lib/communication-schemas";
 import {
   Banknote,
   Search,
@@ -15,6 +17,7 @@ import {
   Clock,
   DollarSign,
 } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -50,21 +53,6 @@ import {
 } from "@/hooks/useRh";
 import type { FichePaie, CreateFichePaieRequest } from "@/types/rh";
 
-const MOIS_LABELS: Record<number, string> = {
-  1: "Janvier",
-  2: "Fevrier",
-  3: "Mars",
-  4: "Avril",
-  5: "Mai",
-  6: "Juin",
-  7: "Juillet",
-  8: "Aout",
-  9: "Septembre",
-  10: "Octobre",
-  11: "Novembre",
-  12: "Decembre",
-};
-
 const ITEMS_PER_PAGE = 15;
 
 const fadeUp = {
@@ -80,6 +68,22 @@ const currentYear = new Date().getFullYear();
 const currentMonth = new Date().getMonth() + 1;
 
 export default function PaiePage() {
+  const { t } = useLanguage();
+
+  const MOIS_LABELS: Record<number, string> = {
+    1: t("common.months.january"),
+    2: t("common.months.february"),
+    3: t("common.months.march"),
+    4: t("common.months.april"),
+    5: t("common.months.may"),
+    6: t("common.months.june"),
+    7: t("common.months.july"),
+    8: t("common.months.august"),
+    9: t("common.months.september"),
+    10: t("common.months.october"),
+    11: t("common.months.november"),
+    12: t("common.months.december"),
+  };
   const [filterMois, setFilterMois] = useState(String(currentMonth));
   const [filterAnnee, setFilterAnnee] = useState(String(currentYear));
   const [search, setSearch] = useState("");
@@ -101,6 +105,7 @@ export default function PaiePage() {
     paye: false,
     commentaire: "",
   });
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   const [deleteTarget, setDeleteTarget] = useState<FichePaie | null>(null);
 
@@ -147,28 +152,28 @@ export default function PaiePage() {
 
   const stats = [
     {
-      label: "Masse salariale",
+      label: t("payroll.payrollTotal"),
       value: `${totalMasse.toLocaleString()} MAD`,
       icon: DollarSign,
       color: "bg-blue-50",
       textColor: "text-blue-700",
     },
     {
-      label: "Fiches",
+      label: t("payroll.totalPayslips"),
       value: filtered.length,
       icon: Banknote,
       color: "bg-purple-50",
       textColor: "text-purple-700",
     },
     {
-      label: "Payees",
+      label: t("payroll.paidPayslips"),
       value: totalPaye,
       icon: CheckCircle,
       color: "bg-emerald-50",
       textColor: "text-emerald-700",
     },
     {
-      label: "En attente",
+      label: t("common.pending"),
       value: totalNonPaye,
       icon: Clock,
       color: "bg-amber-50",
@@ -222,14 +227,19 @@ export default function PaiePage() {
   };
 
   const handleSave = () => {
+    const result = validate(fichePaieSchema, form);
+    if (!result.ok) { setFormErrors(result.errors); return; }
+    setFormErrors({});
+    const onError = (err: Error & { response?: { data?: { message?: string } } }) => setFormErrors({ _root: err.response?.data?.message ?? "Erreur" });
     if (editTarget) {
       updateMutation.mutate(
         { id: editTarget.id, data: form },
-        { onSuccess: () => setFormOpen(false) }
+        { onSuccess: () => setFormOpen(false), onError }
       );
     } else {
       createMutation.mutate(form, {
         onSuccess: () => setFormOpen(false),
+        onError,
       });
     }
   };
@@ -269,10 +279,10 @@ export default function PaiePage() {
       >
         <div>
           <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-            Fiches de paie
+            {t("payroll.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Gestion des salaires et fiches de paie du personnel
+            {t("payroll.subtitle")}
           </p>
         </div>
         <Button
@@ -281,7 +291,7 @@ export default function PaiePage() {
           onClick={openCreate}
         >
           <Plus className="h-4 w-4" />
-          Nouvelle fiche de paie
+          {t("payroll.newPayslip")}
         </Button>
       </motion.div>
 
@@ -329,7 +339,7 @@ export default function PaiePage() {
               <SelectValue placeholder="Mois" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les mois</SelectItem>
+              <SelectItem value="all">{t("finance.allMonths")}</SelectItem>
               {Object.entries(MOIS_LABELS).map(([k, v]) => (
                 <SelectItem key={k} value={k}>
                   {v}
@@ -348,7 +358,7 @@ export default function PaiePage() {
               <SelectValue placeholder="Annee" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Toutes</SelectItem>
+              <SelectItem value="all">{t("common.all")}</SelectItem>
               {years.map((y) => (
                 <SelectItem key={y} value={String(y)}>
                   {y}
@@ -364,7 +374,7 @@ export default function PaiePage() {
                 setSearch(e.target.value);
                 setCurrentPage(0);
               }}
-              placeholder="Rechercher par ID employe..."
+              placeholder={t("payroll.searchPlaceholder")}
               className="pl-9"
             />
           </div>
@@ -379,9 +389,9 @@ export default function PaiePage() {
               <SelectValue placeholder="Paiement" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous</SelectItem>
-              <SelectItem value="oui">Payees</SelectItem>
-              <SelectItem value="non">Non payees</SelectItem>
+              <SelectItem value="all">{t("common.all")}</SelectItem>
+              <SelectItem value="oui">{t("payroll.paidPayslips")}</SelectItem>
+              <SelectItem value="non">{t("payroll.unpaidPayslips")}</SelectItem>
             </SelectContent>
           </Select>
           {hasFilters && (
@@ -391,7 +401,7 @@ export default function PaiePage() {
               onClick={resetFilters}
               className="gap-1 text-muted-foreground hover:text-foreground"
             >
-              <X className="h-3.5 w-3.5" /> Reinitialiser
+              <X className="h-3.5 w-3.5" /> {t("common.reset")}
             </Button>
           )}
         </div>
@@ -410,28 +420,28 @@ export default function PaiePage() {
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
-                  Employe
+                  {t("common.teacher")}
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">
-                  Periode
+                  {t("common.trimester")}
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">
-                  Salaire base
+                  {t("payroll.baseSalary")}
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">
-                  Primes
+                  {t("payroll.bonuses")}
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">
-                  Retenues
+                  {t("payroll.deductions")}
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
                   Net
                 </th>
                 <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
-                  Statut
+                  {t("common.status")}
                 </th>
                 <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">
-                  Actions
+                  {t("common.actions")}
                 </th>
               </tr>
             </thead>
@@ -443,7 +453,7 @@ export default function PaiePage() {
                     className="py-16 text-center text-muted-foreground"
                   >
                     <Banknote className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                    <p className="font-medium">Aucune fiche de paie trouvee</p>
+                    <p className="font-medium">{t("payroll.noPayslip")}</p>
                   </td>
                 </tr>
               ) : (
@@ -485,7 +495,7 @@ export default function PaiePage() {
                             : "bg-amber-100 text-amber-700"
                         }`}
                       >
-                        {f.paye ? "Payee" : "En attente"}
+                        {f.paye ? t("payroll.statuses.paid") : t("payroll.statuses.pending")}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right">
@@ -519,13 +529,13 @@ export default function PaiePage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEdit(f)}>
-                            <Edit className="h-4 w-4 mr-2" /> Modifier
+                            <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDeleteTarget(f)}
                             className="text-red-600"
                           >
-                            <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                            <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -539,7 +549,7 @@ export default function PaiePage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t border-border px-4 py-3">
             <p className="text-xs text-muted-foreground">
-              Page {currentPage + 1} sur {totalPages}
+              {t("common.page")} {currentPage + 1} {t("common.of")} {totalPages}
             </p>
             <div className="flex items-center gap-1">
               <Button
@@ -570,18 +580,18 @@ export default function PaiePage() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {editTarget ? "Modifier la fiche de paie" : "Nouvelle fiche de paie"}
+              {editTarget ? t("payroll.editPayslip") : t("payroll.newPayslip")}
             </DialogTitle>
             <DialogDescription>
               {editTarget
-                ? "Modifiez les details de la fiche de paie."
-                : "Creez une nouvelle fiche de paie pour un employe."}
+                ? t("payroll.editInfo")
+                : t("payroll.createPayslip")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="paieEmployeId">ID Employe</Label>
+                <Label htmlFor="paieEmployeId">{t("attendance.employeeType")} ID</Label>
                 <Input
                   id="paieEmployeId"
                   type="number"
@@ -593,7 +603,7 @@ export default function PaiePage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Type</Label>
+                <Label>{t("common.type")}</Label>
                 <Select
                   value={form.employeType}
                   onValueChange={(v) =>
@@ -604,16 +614,16 @@ export default function PaiePage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ENSEIGNANT">Enseignant</SelectItem>
-                    <SelectItem value="ADMIN">Admin</SelectItem>
-                    <SelectItem value="PERSONNEL">Personnel</SelectItem>
+                    <SelectItem value="ENSEIGNANT">{t("attendance.employeeTypes.teacher")}</SelectItem>
+                    <SelectItem value="ADMIN">{t("attendance.employeeTypes.admin")}</SelectItem>
+                    <SelectItem value="PERSONNEL">{t("attendance.employeeTypes.staff")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Mois</Label>
+                <Label>{t("finance.month")}</Label>
                 <Select
                   value={String(form.mois)}
                   onValueChange={(v) =>
@@ -633,7 +643,7 @@ export default function PaiePage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="paieAnnee">Annee</Label>
+                <Label htmlFor="paieAnnee">{t("payroll.year")}</Label>
                 <Input
                   id="paieAnnee"
                   type="number"
@@ -645,7 +655,7 @@ export default function PaiePage() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="salaireBase">Salaire base (MAD)</Label>
+              <Label htmlFor="salaireBase">{t("payroll.baseSalary")}</Label>
               <Input
                 id="salaireBase"
                 type="number"
@@ -658,7 +668,7 @@ export default function PaiePage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="primes">Primes (MAD)</Label>
+                <Label htmlFor="primes">{t("payroll.bonuses")}</Label>
                 <Input
                   id="primes"
                   type="number"
@@ -670,7 +680,7 @@ export default function PaiePage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="retenues">Retenues (MAD)</Label>
+                <Label htmlFor="retenues">{t("payroll.deductions")}</Label>
                 <Input
                   id="retenues"
                   type="number"
@@ -684,7 +694,7 @@ export default function PaiePage() {
             </div>
             <div className="rounded-lg bg-muted/50 p-3 flex items-center justify-between">
               <span className="text-sm font-medium text-muted-foreground">
-                Salaire net
+                Net
               </span>
               <span className="text-lg font-bold text-foreground">
                 {form.salaireNet.toLocaleString()} MAD
@@ -692,7 +702,7 @@ export default function PaiePage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="datePaiement">Date de paiement</Label>
+                <Label htmlFor="datePaiement">{t("payroll.paymentDate")}</Label>
                 <Input
                   id="datePaiement"
                   type="date"
@@ -703,7 +713,7 @@ export default function PaiePage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Statut paiement</Label>
+                <Label>{t("payroll.payment")} {t("common.status").toLowerCase()}</Label>
                 <Select
                   value={form.paye ? "true" : "false"}
                   onValueChange={(v) =>
@@ -714,14 +724,14 @@ export default function PaiePage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="false">En attente</SelectItem>
-                    <SelectItem value="true">Payee</SelectItem>
+                    <SelectItem value="false">{t("payroll.statuses.pending")}</SelectItem>
+                    <SelectItem value="true">{t("payroll.statuses.paid")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="commentaire">Commentaire</Label>
+              <Label htmlFor="commentaire">{t("common.comment")}</Label>
               <Textarea
                 id="commentaire"
                 value={form.commentaire ?? ""}
@@ -735,7 +745,7 @@ export default function PaiePage() {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button
               onClick={handleSave}
@@ -747,8 +757,8 @@ export default function PaiePage() {
               }
             >
               {createMutation.isPending || updateMutation.isPending
-                ? "Enregistrement..."
-                : "Enregistrer"}
+                ? t("common.saving")
+                : t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -761,22 +771,21 @@ export default function PaiePage() {
       >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Supprimer la fiche de paie</DialogTitle>
+            <DialogTitle>{t("payroll.deletePayslip")}</DialogTitle>
             <DialogDescription>
-              Etes-vous sur de vouloir supprimer cette fiche de paie ? Cette action
-              est irreversible.
+              {t("common.deleteConfirmMsg")} ? {t("common.irreversible")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending ? "Suppression..." : "Supprimer"}
+              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

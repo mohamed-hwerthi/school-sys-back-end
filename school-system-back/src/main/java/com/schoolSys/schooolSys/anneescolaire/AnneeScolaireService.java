@@ -20,12 +20,14 @@ public class AnneeScolaireService {
 
     // --- AnneeScolaire CRUD ---
 
+    @Transactional(readOnly = true)
     public List<AnneeScolaireResponseDTO> getAllAnnees() {
         return anneeScolaireRepository.findAll().stream()
             .map(this::toDto)
             .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public AnneeScolaireResponseDTO getAnneeById(Long id) {
         AnneeScolaire annee = anneeScolaireRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("AnneeScolaire", id));
@@ -182,6 +184,15 @@ public class AnneeScolaireService {
 
     // --- Trimestre operations ---
 
+    @Transactional(readOnly = true)
+    public List<TrimestreDTO> getTrimestresByAnnee(Long anneeScolaireId) {
+        if (!anneeScolaireRepository.existsById(anneeScolaireId))
+            throw new ResourceNotFoundException("AnneeScolaire", anneeScolaireId);
+        return trimestreRepository.findByAnneeScolaireId(anneeScolaireId).stream()
+            .map(this::toTrimestreDto)
+            .collect(Collectors.toList());
+    }
+
     @Transactional
     public TrimestreDTO addTrimestre(Long anneeScolaireId, TrimestreDTO dto) {
         AnneeScolaire annee = anneeScolaireRepository.findById(anneeScolaireId)
@@ -219,6 +230,15 @@ public class AnneeScolaireService {
 
     // --- Vacance operations ---
 
+    @Transactional(readOnly = true)
+    public List<VacanceDTO> getVacancesByAnnee(Long anneeScolaireId) {
+        if (!anneeScolaireRepository.existsById(anneeScolaireId))
+            throw new ResourceNotFoundException("AnneeScolaire", anneeScolaireId);
+        return vacanceRepository.findByAnneeScolaireId(anneeScolaireId).stream()
+            .map(this::toVacanceDto)
+            .collect(Collectors.toList());
+    }
+
     @Transactional
     public VacanceDTO addVacance(Long anneeScolaireId, VacanceDTO dto) {
         AnneeScolaire annee = anneeScolaireRepository.findById(anneeScolaireId)
@@ -249,6 +269,15 @@ public class AnneeScolaireService {
     }
 
     // --- JourFerie operations ---
+
+    @Transactional(readOnly = true)
+    public List<JourFerieDTO> getJoursFeriesByAnnee(Long anneeScolaireId) {
+        if (!anneeScolaireRepository.existsById(anneeScolaireId))
+            throw new ResourceNotFoundException("AnneeScolaire", anneeScolaireId);
+        return jourFerieRepository.findByAnneeScolaireId(anneeScolaireId).stream()
+            .map(this::toJourFerieDto)
+            .collect(Collectors.toList());
+    }
 
     @Transactional
     public JourFerieDTO addJourFerie(Long anneeScolaireId, JourFerieDTO dto) {

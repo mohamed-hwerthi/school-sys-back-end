@@ -1,5 +1,13 @@
 import { useState } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
+import { validate, type FormErrors } from "@/lib/validate";
+import { z } from "zod";
+
+const bulletinTemplateSchema = z.object({
+  nom: z.string().trim().min(2, "Nom requis (min 2 caractères)"),
+  footerText: z.string().optional(),
+});
 import {
   Plus,
   Pencil,
@@ -70,6 +78,7 @@ export default function BulletinTemplates() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [form, setForm] = useState<BulletinTemplateDTO>(emptyTemplate);
   const [isEditing, setIsEditing] = useState(false);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   const openCreate = () => {
     setForm({ ...emptyTemplate });
@@ -84,10 +93,9 @@ export default function BulletinTemplates() {
   };
 
   const handleSave = async () => {
-    if (!form.nom.trim()) {
-      notify.error("Le nom du template est requis");
-      return;
-    }
+    const result = validate(bulletinTemplateSchema, form);
+    if (!result.ok) { setFormErrors(result.errors); return; }
+    setFormErrors({});
     try {
       if (isEditing && form.id) {
         await updateMut.mutateAsync({ id: form.id, dto: form });
@@ -97,8 +105,9 @@ export default function BulletinTemplates() {
         notify.success("Template cree");
       }
       setDialogOpen(false);
-    } catch {
-      notify.error("Erreur lors de la sauvegarde");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setFormErrors({ _root: e.response?.data?.message ?? "Erreur lors de la sauvegarde" });
     }
   };
 
@@ -272,13 +281,19 @@ export default function BulletinTemplates() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {formErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErrors._root}</div>
+            )}
             <div>
               <Label>Nom du template *</Label>
               <Input
                 value={form.nom}
                 onChange={(e) => set("nom", e.target.value)}
                 placeholder="Ex: Template officiel"
+                aria-invalid={!!formErrors.nom}
+                className={formErrors.nom ? "border-red-500" : ""}
               />
+              {formErrors.nom && <p className="text-xs text-red-600">{formErrors.nom}</p>}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

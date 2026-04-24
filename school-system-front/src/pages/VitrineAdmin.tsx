@@ -32,8 +32,10 @@ import {
   useReplyToContact,
 } from "@/hooks/useVitrineAdmin";
 import type { VitrineConfig, VitrinePage, VitrineAnnouncement, VitrineContact } from "@/types/vitrine";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function VitrineAdmin() {
+  const { t } = useLanguage();
   const { data: config, isLoading: configLoading } = useVitrineConfig();
   const { data: pages, isLoading: pagesLoading } = useVitrinePages();
   const { data: announcements, isLoading: annLoading } = useVitrineAnnouncements();
@@ -51,7 +53,7 @@ export default function VitrineAdmin() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Site Vitrine</h1>
+          <h1 className="text-2xl font-bold">{t("showcase.adminTitle")}</h1>
           <p className="text-muted-foreground">Configurez le site web public de votre &eacute;tablissement</p>
         </div>
         <div className="flex items-center gap-3">

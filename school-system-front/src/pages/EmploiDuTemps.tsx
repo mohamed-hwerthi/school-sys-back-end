@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
 import {
   Calendar,
@@ -46,15 +47,6 @@ import { useModules } from "@/hooks/useModules";
 import type { EmploiDuTempsEntry, Creneau, Conflit, TeachingAssignment, TimetableGenerateResponse } from "@/types/emploi-du-temps";
 import { useRooms } from "@/hooks/useRooms";
 
-const JOURS = [
-  { value: 1, label: "Lundi" },
-  { value: 2, label: "Mardi" },
-  { value: 3, label: "Mercredi" },
-  { value: 4, label: "Jeudi" },
-  { value: 5, label: "Vendredi" },
-  { value: 6, label: "Samedi" },
-];
-
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({
@@ -74,6 +66,17 @@ const SLOT_COLORS = [
 ];
 
 export default function EmploiDuTempsPage() {
+  const { t } = useLanguage();
+
+  const JOURS = useMemo(() => [
+    { value: 1, label: t("common.days.monday") },
+    { value: 2, label: t("common.days.tuesday") },
+    { value: 3, label: t("common.days.wednesday") },
+    { value: 4, label: t("common.days.thursday") },
+    { value: 5, label: t("common.days.friday") },
+    { value: 6, label: t("common.days.saturday") },
+  ], [t]);
+
   const [selectedClasseId, setSelectedClasseId] = useState(0);
   const [editingEntry, setEditingEntry] = useState<{
     jour: number;
@@ -277,10 +280,10 @@ export default function EmploiDuTempsPage() {
       >
         <div>
           <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-            Emploi du Temps
+            {t("schedule.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Gerez l'emploi du temps par classe
+            {t("rooms.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -294,7 +297,7 @@ export default function EmploiDuTempsPage() {
             }}
           >
             <Wand2 className="h-4 w-4" />
-            Generer automatiquement
+            {t("common.generate")}
           </Button>
           <Button
             variant="outline"
@@ -303,7 +306,7 @@ export default function EmploiDuTempsPage() {
             onClick={() => setCreneauDialogOpen(true)}
           >
             <Plus className="h-4 w-4" />
-            Nouveau creneau
+            {t("schedule.newSlot")}
           </Button>
           {hasLocalChanges && (
             <Button
@@ -317,7 +320,7 @@ export default function EmploiDuTempsPage() {
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              Enregistrer
+              {t("common.save")}
             </Button>
           )}
         </div>
@@ -342,7 +345,7 @@ export default function EmploiDuTempsPage() {
           >
             <SelectTrigger className="w-[250px]">
               <Calendar className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-              <SelectValue placeholder="Selectionner une classe" />
+              <SelectValue placeholder={t("schedule.selectClass")} />
             </SelectTrigger>
             <SelectContent>
               {classes.map((c) => (
@@ -364,7 +367,7 @@ export default function EmploiDuTempsPage() {
         >
           <div className="flex items-center gap-2 text-orange-700 font-medium">
             <AlertTriangle className="h-4 w-4" />
-            Conflits detectes
+            {t("schedule.unresolvedConflicts")}
           </div>
           <ul className="text-sm text-orange-600 list-disc pl-5 space-y-1">
             {conflits.map((c, i) => (
@@ -373,7 +376,7 @@ export default function EmploiDuTempsPage() {
           </ul>
           <div className="flex gap-2 pt-1">
             <Button variant="outline" size="sm" onClick={() => setConflits([])}>
-              Corriger
+              {t("common.edit")}
             </Button>
             <Button
               variant="default"
@@ -381,7 +384,7 @@ export default function EmploiDuTempsPage() {
               onClick={handleForceSave}
               disabled={saveMutation.isPending}
             >
-              Enregistrer quand meme
+              {t("common.save")}
             </Button>
           </div>
         </motion.div>
@@ -406,7 +409,7 @@ export default function EmploiDuTempsPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
                     <th className="py-3 px-3 text-left text-xs font-semibold text-muted-foreground w-[100px]">
-                      Creneau
+                      {t("common.type")}
                     </th>
                     {JOURS.map((j) => (
                       <th
@@ -433,7 +436,7 @@ export default function EmploiDuTempsPage() {
                         </div>
                         {creneau.type !== "COURS" && (
                           <Badge variant="outline" className="text-[10px] mt-0.5">
-                            {creneau.type === "PAUSE" ? "Pause" : "Recreation"}
+                            {creneau.type === "PAUSE" ? t("schedule.slotType.break") : t("schedule.slotType.recess")}
                           </Badge>
                         )}
                       </td>
@@ -473,7 +476,7 @@ export default function EmploiDuTempsPage() {
                                   )}
                                   {entry.salle && (
                                     <div className="text-[10px] opacity-60">
-                                      Salle: {entry.salle}
+                                      {t("schedule.room")}: {entry.salle}
                                     </div>
                                   )}
                                 </>
@@ -503,10 +506,10 @@ export default function EmploiDuTempsPage() {
         >
           <Calendar className="h-10 w-10 mx-auto mb-3 opacity-30 text-muted-foreground" />
           <p className="font-medium text-muted-foreground">
-            Selectionnez une classe
+            {t("schedule.selectClass")}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Choisissez une classe pour afficher et modifier son emploi du temps
+            {t("rooms.subtitle")}
           </p>
         </motion.div>
       )}
@@ -520,8 +523,8 @@ export default function EmploiDuTempsPage() {
           <DialogHeader>
             <DialogTitle>
               {editingEntry?.existing
-                ? "Modifier le creneau"
-                : "Assigner un creneau"}
+                ? t("schedule.editSlot")
+                : t("schedule.assignSlot")}
             </DialogTitle>
             <DialogDescription>
               {JOURS.find((j) => j.value === editingEntry?.jour)?.label} -{" "}
@@ -530,10 +533,10 @@ export default function EmploiDuTempsPage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Matiere</Label>
+              <Label>{t("schedule.subject")}</Label>
               <Select value={entryModuleId} onValueChange={setEntryModuleId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner une matiere" />
+                  <SelectValue placeholder={t("schedule.selectSubject")} />
                 </SelectTrigger>
                 <SelectContent>
                   {modules.map((m) => (
@@ -545,13 +548,13 @@ export default function EmploiDuTempsPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Enseignant</Label>
+              <Label>{t("common.teacher")}</Label>
               <Select
                 value={entryEnseignantId}
                 onValueChange={setEntryEnseignantId}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner un enseignant" />
+                  <SelectValue placeholder={t("schedule.selectTeacher")} />
                 </SelectTrigger>
                 <SelectContent>
                   {teachers.map((t) => (
@@ -563,12 +566,12 @@ export default function EmploiDuTempsPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="salle">Salle</Label>
+              <Label htmlFor="salle">{t("schedule.room")}</Label>
               <Input
                 id="salle"
                 value={entrySalle}
                 onChange={(e) => setEntrySalle(e.target.value)}
-                placeholder="Ex: Salle 101"
+                placeholder={t("schedule.roomPlaceholder")}
               />
             </div>
           </div>
@@ -579,13 +582,13 @@ export default function EmploiDuTempsPage() {
                 onClick={handleRemoveSlot}
                 className="mr-auto"
               >
-                Supprimer
+                {t("common.delete")}
               </Button>
             )}
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
-            <Button onClick={handleSaveSlot}>Enregistrer</Button>
+            <Button onClick={handleSaveSlot}>{t("common.save")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -594,26 +597,26 @@ export default function EmploiDuTempsPage() {
       <Dialog open={creneauDialogOpen} onOpenChange={setCreneauDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Nouveau creneau horaire</DialogTitle>
+            <DialogTitle>{t("schedule.newSlot")}</DialogTitle>
             <DialogDescription>
-              Definissez un nouveau creneau horaire pour l'emploi du temps.
+              {t("schedule.newSlot")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="creneauLabel">Libelle</Label>
+              <Label htmlFor="creneauLabel">{t("common.title")}</Label>
               <Input
                 id="creneauLabel"
                 value={newCreneau.label}
                 onChange={(e) =>
                   setNewCreneau({ ...newCreneau, label: e.target.value })
                 }
-                placeholder="Ex: 1ere heure"
+                placeholder={t("schedule.labelPlaceholder")}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="heureDebut">Heure debut</Label>
+                <Label htmlFor="heureDebut">{t("schedule.startTime")}</Label>
                 <Input
                   id="heureDebut"
                   type="time"
@@ -624,7 +627,7 @@ export default function EmploiDuTempsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="heureFin">Heure fin</Label>
+                <Label htmlFor="heureFin">{t("schedule.endTime")}</Label>
                 <Input
                   id="heureFin"
                   type="time"
@@ -650,16 +653,16 @@ export default function EmploiDuTempsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="COURS">Cours</SelectItem>
-                  <SelectItem value="PAUSE">Pause</SelectItem>
-                  <SelectItem value="RECREATION">Recreation</SelectItem>
+                  <SelectItem value="COURS">{t("schedule.slotType.course")}</SelectItem>
+                  <SelectItem value="PAUSE">{t("schedule.slotType.break")}</SelectItem>
+                  <SelectItem value="RECREATION">{t("schedule.slotType.recess")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button
               onClick={handleCreateCreneau}
@@ -671,8 +674,8 @@ export default function EmploiDuTempsPage() {
               }
             >
               {createCreneauMutation.isPending
-                ? "Creation..."
-                : "Creer"}
+                ? t("common.creating")
+                : t("common.create")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -684,10 +687,10 @@ export default function EmploiDuTempsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Wand2 className="h-5 w-5" />
-              Generation automatique de l'emploi du temps
+              {t("common.generate")}
             </DialogTitle>
             <DialogDescription>
-              Definissez les affectations (classe + module + enseignant + heures/semaine) et selectionnez les salles disponibles.
+              {t("schedule.addSlot")}
             </DialogDescription>
           </DialogHeader>
 
@@ -707,8 +710,8 @@ export default function EmploiDuTempsPage() {
                   )}
                   <span className={generateResult.status === "SOLVED" ? "text-green-700" : "text-orange-700"}>
                     {generateResult.status === "SOLVED"
-                      ? "Emploi du temps genere avec succes"
-                      : "Generation terminee avec des conflits"}
+                      ? t("schedule.generatedSuccess")
+                      : t("schedule.generatedConflicts")}
                   </span>
                 </div>
                 <p className="text-sm mt-1 opacity-70">
@@ -717,7 +720,7 @@ export default function EmploiDuTempsPage() {
               </div>
               {generateResult.unresolvedConflicts.length > 0 && (
                 <div className="rounded-lg border border-orange-200 bg-orange-50 p-3">
-                  <p className="text-sm font-medium text-orange-700 mb-1">Conflits non resolus:</p>
+                  <p className="text-sm font-medium text-orange-700 mb-1">{t("schedule.unresolvedConflicts")}:</p>
                   <ul className="text-xs text-orange-600 list-disc pl-4 space-y-0.5">
                     {generateResult.unresolvedConflicts.map((c, i) => (
                       <li key={i}>{c}</li>
@@ -727,7 +730,7 @@ export default function EmploiDuTempsPage() {
               )}
               <DialogFooter>
                 <Button variant="outline" onClick={handleCloseGenerateDialog}>
-                  Fermer
+                  {t("common.close")}
                 </Button>
               </DialogFooter>
             </div>
@@ -736,10 +739,10 @@ export default function EmploiDuTempsPage() {
             <div className="space-y-5 py-2">
               {/* Add assignment form */}
               <div className="space-y-3">
-                <Label className="text-sm font-semibold">Ajouter une affectation</Label>
+                <Label className="text-sm font-semibold">{t("schedule.addSlot")}</Label>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Classe</Label>
+                    <Label className="text-xs text-muted-foreground">{t("common.class")}</Label>
                     <Select
                       value={newAssignment.classeId ? String(newAssignment.classeId) : ""}
                       onValueChange={(v) => setNewAssignment({ ...newAssignment, classeId: Number(v) })}
@@ -755,7 +758,7 @@ export default function EmploiDuTempsPage() {
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Module</Label>
+                    <Label className="text-xs text-muted-foreground">{t("grades.modules")}</Label>
                     <Select
                       value={newAssignment.moduleId ? String(newAssignment.moduleId) : ""}
                       onValueChange={(v) => setNewAssignment({ ...newAssignment, moduleId: Number(v) })}
@@ -771,7 +774,7 @@ export default function EmploiDuTempsPage() {
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Enseignant</Label>
+                    <Label className="text-xs text-muted-foreground">{t("common.teacher")}</Label>
                     <Select
                       value={newAssignment.enseignantId ? String(newAssignment.enseignantId) : ""}
                       onValueChange={(v) => setNewAssignment({ ...newAssignment, enseignantId: Number(v) })}
@@ -789,7 +792,7 @@ export default function EmploiDuTempsPage() {
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Heures/semaine</Label>
+                    <Label className="text-xs text-muted-foreground">{t("schedule.startTime")}</Label>
                     <div className="flex gap-2">
                       <Input
                         type="number"
@@ -843,7 +846,7 @@ export default function EmploiDuTempsPage() {
               {/* Room selection */}
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">
-                  Salles disponibles ({selectedRooms.length} selectionnees)
+                  {t("rooms.availablePlural")} ({selectedRooms.length})
                 </Label>
                 <div className="grid grid-cols-3 gap-1.5 max-h-32 overflow-y-auto">
                   {availableRooms.map((room) => (
@@ -865,7 +868,7 @@ export default function EmploiDuTempsPage() {
 
               {/* Timeout */}
               <div className="flex items-center gap-3">
-                <Label className="text-sm whitespace-nowrap">Timeout (secondes):</Label>
+                <Label className="text-sm whitespace-nowrap">Timeout (s):</Label>
                 <Input
                   type="number"
                   min={5}
@@ -878,7 +881,7 @@ export default function EmploiDuTempsPage() {
 
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant="outline">Annuler</Button>
+                  <Button variant="outline">{t("common.cancel")}</Button>
                 </DialogClose>
                 <Button
                   onClick={handleGenerate}
@@ -888,12 +891,12 @@ export default function EmploiDuTempsPage() {
                   {generateMutation.isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Resolution en cours...
+                      {t("common.generating")}
                     </>
                   ) : (
                     <>
                       <Wand2 className="h-4 w-4" />
-                      Generer
+                      {t("common.generate")}
                     </>
                   )}
                 </Button>

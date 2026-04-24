@@ -29,6 +29,13 @@ public class SchoolSettingsService {
         s.setTelephone(dto.getTelephone());
         s.setDirecteurName(dto.getDirecteurName());
         s.setDirecteurNameAr(dto.getDirecteurNameAr());
+        s.setLogo(dto.getLogo());
+        s.setVille(dto.getVille());
+        s.setVilleAr(dto.getVilleAr());
+        s.setEmail(dto.getEmail());
+        s.setSiteWeb(dto.getSiteWeb());
+        s.setAnneeCreation(dto.getAnneeCreation());
+        s.setDescription(dto.getDescription());
         s.setUpdatedAt(LocalDateTime.now());
         return toDTO(repository.save(s));
     }
@@ -47,6 +54,13 @@ public class SchoolSettingsService {
                 .telephone(s.getTelephone())
                 .directeurName(s.getDirecteurName())
                 .directeurNameAr(s.getDirecteurNameAr())
+                .logo(s.getLogo())
+                .ville(s.getVille())
+                .villeAr(s.getVilleAr())
+                .email(s.getEmail())
+                .siteWeb(s.getSiteWeb())
+                .anneeCreation(s.getAnneeCreation())
+                .description(s.getDescription())
                 .build();
     }
 }

@@ -57,6 +57,7 @@ import {
 } from "@/hooks/useBudget";
 import type { BudgetDTO, BudgetRequest } from "@/api/budget.api";
 import { CURRENCY } from "@/config/currency";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const ANNEES = ["2025-2026", "2024-2025", "2023-2024"];
 
@@ -85,6 +86,7 @@ const MOIS_LABELS: Record<number, string> = {
 };
 
 export default function Previsions() {
+  const { t } = useLanguage();
   const [anneeScolaire, setAnneeScolaire] = useState(ANNEES[0]);
   const [filterType, setFilterType] = useState<"all" | "RECETTE" | "DEPENSE">("all");
 
@@ -287,7 +289,7 @@ export default function Previsions() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Previsions budgetaires</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("forecasts.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Suivi du budget previsionnel et realise
           </p>
@@ -329,7 +331,7 @@ export default function Previsions() {
               <TrendingUp className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <p className="text-xs text-green-600 font-medium">Recettes prevues</p>
+              <p className="text-xs text-green-600 font-medium">{t("forecasts.plannedRevenue")}</p>
               <p className="text-xl font-bold text-green-700">
                 {(previsionData?.totalRecettesPrevues ?? 0).toLocaleString()} {CURRENCY}
               </p>
@@ -349,7 +351,7 @@ export default function Previsions() {
               <TrendingDown className="h-5 w-5 text-red-600" />
             </div>
             <div>
-              <p className="text-xs text-red-600 font-medium">Depenses prevues</p>
+              <p className="text-xs text-red-600 font-medium">{t("forecasts.plannedExpenses")}</p>
               <p className="text-xl font-bold text-red-700">
                 {(previsionData?.totalDepensesPrevues ?? 0).toLocaleString()} {CURRENCY}
               </p>
@@ -369,7 +371,7 @@ export default function Previsions() {
               <Calculator className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs text-blue-600 font-medium">Solde prevu</p>
+              <p className="text-xs text-blue-600 font-medium">{t("forecasts.plannedBalance")}</p>
               <p className="text-xl font-bold text-blue-700">
                 {(previsionData?.soldePrevu ?? 0).toLocaleString()} {CURRENCY}
               </p>
@@ -389,7 +391,7 @@ export default function Previsions() {
               <ArrowUpDown className="h-5 w-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-xs text-purple-600 font-medium">Variance</p>
+              <p className="text-xs text-purple-600 font-medium">{t("forecasts.variance")}</p>
               <p
                 className={`text-xl font-bold ${
                   (previsionData?.variance ?? 0) >= 0 ? "text-green-700" : "text-red-700"
@@ -566,7 +568,7 @@ export default function Previsions() {
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Nouvelle ligne budgetaire</DialogTitle>
+            <DialogTitle>{t("forecasts.newBudgetLine")}</DialogTitle>
             <DialogDescription>
               Ajouter une prevision de recette ou de depense
             </DialogDescription>
@@ -591,7 +593,7 @@ export default function Previsions() {
       <Dialog open={!!editBudget} onOpenChange={() => setEditBudget(null)}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Modifier la ligne budgetaire</DialogTitle>
+            <DialogTitle>{t("forecasts.editBudgetLine")}</DialogTitle>
           </DialogHeader>
           {formFields}
           <DialogFooter>

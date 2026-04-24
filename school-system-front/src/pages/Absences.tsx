@@ -53,8 +53,10 @@ import {
   useDeleteAbsence,
 } from "@/hooks/useAbsences";
 import { useClasses } from "@/hooks/useClasses";
+import { useAllStudents } from "@/hooks/useStudents";
 import ExportButton from "@/components/ExportButton";
 import type { Absence } from "@/types/absence";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -66,9 +68,13 @@ const fadeUp = {
 };
 
 export default function AbsencesPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const today = new Date().toISOString().split("T")[0];
-  const [selectedClasseId, setSelectedClasseId] = useState(0);
-  const [selectedDate, setSelectedDate] = useState(today);
+  const initialClasseId = Number(searchParams.get("classeId")) || -1;
+  const initialDate = searchParams.get("date") || today;
+  const [selectedClasseId, setSelectedClasseId] = useState<number>(initialClasseId);
+  const [selectedDate, setSelectedDate] = useState(initialDate);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterJustifie, setFilterJustifie] = useState("all");
@@ -79,12 +85,24 @@ export default function AbsencesPage() {
   const [deleteTarget, setDeleteTarget] = useState<Absence | null>(null);
 
   const { data: classes = [] } = useClasses();
-  const { data: absences = [], isLoading, isFetching } = useAbsencesByClasseDate(
+  const { data: allStudents = [] } = useAllStudents();
+  const { data: absencesRaw = [], isLoading, isFetching } = useAbsencesByClasseDate(
     selectedClasseId,
     selectedDate
   );
+  const absences = useMemo(() => {
+    const byId = new Map(allStudents.map((s) => [s.id, s]));
+    return absencesRaw.map((a) => {
+      const s = byId.get(a.eleveId);
+      return {
+        ...a,
+        eleveNom: a.eleveNom ?? s?.nom,
+        elevePrenom: a.elevePrenom ?? s?.prenom,
+      };
+    });
+  }, [absencesRaw, allStudents]);
   const { data: stats } = useAbsenceStats(
-    selectedClasseId || undefined,
+    selectedClasseId > 0 ? selectedClasseId : undefined,
     undefined,
     undefined
   );
@@ -174,7 +192,7 @@ export default function AbsencesPage() {
     },
   ];
 
-  if (isLoading && selectedClasseId > 0) {
+  if (isLoading && selectedClasseId !== 0) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -199,11 +217,27 @@ export default function AbsencesPage() {
             Consultez et gerez les absences et retards des eleves
           </p>
         </div>
-        <ExportButton
-          type="absences"
-          label="Exporter"
-          filters={{ from: selectedDate, to: selectedDate }}
-        />
+        <div className="flex items-center gap-2">
+          <ExportButton
+            type="absences"
+            label="Exporter"
+            filters={{ from: selectedDate, to: selectedDate }}
+          />
+          {selectedClasseId > 0 && (
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate(`/dashboard/absences/feuille?classeId=${selectedClasseId}&date=${selectedDate}`)}>
+              <FileCheck className="h-4 w-4" />
+              Feuille complète
+            </Button>
+          )}
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate("/dashboard/absences/feuilles")}>
+            <CalendarDays className="h-4 w-4" />
+            Feuilles du jour
+          </Button>
+          <Button size="sm" className="gap-1.5 bg-gradient-primary shadow-btn" onClick={() => navigate("/dashboard/absences/appel")}>
+            <ClipboardList className="h-4 w-4" />
+            Faire l'appel
+          </Button>
+        </div>
       </motion.div>
 
       {/* Stats */}
@@ -238,9 +272,9 @@ export default function AbsencesPage() {
           <div className="flex items-center gap-3 flex-1">
             <div className="flex-1">
               <Select
-                value={selectedClasseId ? String(selectedClasseId) : ""}
+                value={selectedClasseId === -1 ? "all" : String(selectedClasseId)}
                 onValueChange={(v) => {
-                  setSelectedClasseId(Number(v));
+                  setSelectedClasseId(v === "all" ? -1 : Number(v));
                   setCurrentPage(0);
                 }}
               >
@@ -249,6 +283,7 @@ export default function AbsencesPage() {
                   <SelectValue placeholder="Selectionner une classe" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="all">Toutes les classes</SelectItem>
                   {classes.map((c) => (
                     <SelectItem key={c.id} value={String(c.id)}>
                       {c.fullName}
@@ -313,7 +348,7 @@ export default function AbsencesPage() {
       </motion.div>
 
       {/* Table */}
-      {selectedClasseId > 0 ? (
+      {selectedClasseId !== 0 ? (
         <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible" className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

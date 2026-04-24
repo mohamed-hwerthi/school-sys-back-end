@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { validate, type FormErrors } from "@/lib/validate";
+import { menuSchema } from "@/lib/services-schemas";
 import {
   UtensilsCrossed,
   CalendarDays,
@@ -160,6 +162,7 @@ function MenusTab() {
   const [filterRegime, setFilterRegime] = useState("all");
   const [selectedWeek, setSelectedWeek] = useState("");
 
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [form, setForm] = useState<CreateMenuRequest>({
     dateMenu: "",
     jourSemaine: "LUNDI",
@@ -215,10 +218,14 @@ function MenusTab() {
   };
 
   const handleSubmit = () => {
+    const result = validate(menuSchema, form);
+    if (!result.ok) { setFormErrors(result.errors); return; }
+    setFormErrors({});
+    const onError = (err: Error & { response?: { data?: { message?: string } } }) => setFormErrors({ _root: err.response?.data?.message ?? "Erreur" });
     if (editingMenu) {
-      updateMutation.mutate({ id: editingMenu.id, data: form }, { onSuccess: () => setShowDialog(false) });
+      updateMutation.mutate({ id: editingMenu.id, data: form }, { onSuccess: () => setShowDialog(false), onError });
     } else {
-      createMutation.mutate(form, { onSuccess: () => setShowDialog(false) });
+      createMutation.mutate(form, { onSuccess: () => setShowDialog(false), onError });
     }
   };
 

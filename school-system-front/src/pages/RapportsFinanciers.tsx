@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
 import {
   BarChart3,
@@ -69,6 +70,7 @@ function downloadCSV(filename: string, headers: string[], rows: string[][]) {
 }
 
 export default function RapportsFinanciers() {
+  const { t } = useLanguage();
   const [tab, setTab] = useState("recapitulatif");
   const [searchEleve, setSearchEleve] = useState("");
   const { data: rapport, isLoading } = useRapportFinancier();
@@ -77,7 +79,7 @@ export default function RapportsFinanciers() {
   if (isLoading || !rapport) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-400">Chargement du rapport...</p>
+        <p className="text-gray-400">{t("reportsFinancial.loadingReport")}</p>
       </div>
     );
   }
@@ -253,10 +255,10 @@ export default function RapportsFinanciers() {
   ].filter((d) => d.value > 0);
 
   const summaryCards = [
-    { label: "Total Encaisse", value: r.totalPaye, icon: DollarSign, color: "from-green-500 to-green-600", arrow: ArrowUpRight },
-    { label: "Total Impayes", value: r.totalImpayes, icon: TrendingUp, color: "from-red-500 to-red-600", arrow: ArrowDownRight },
-    { label: "Solde Net", value: r.soldeNet, icon: BarChart3, color: "from-blue-500 to-blue-600", arrow: r.soldeNet >= 0 ? ArrowUpRight : ArrowDownRight },
-    { label: "Taux Recouvrement", value: r.tauxRecouvrement, icon: TrendingUp, color: "from-violet-500 to-violet-600", suffix: "%", arrow: ArrowUpRight },
+    { label: t("reportsFinancial.totalCollected"), value: r.totalPaye, icon: DollarSign, color: "from-green-500 to-green-600", arrow: ArrowUpRight },
+    { label: t("reportsFinancial.totalUnpaid"), value: r.totalImpayes, icon: TrendingUp, color: "from-red-500 to-red-600", arrow: ArrowDownRight },
+    { label: t("reportsFinancial.netBalance"), value: r.soldeNet, icon: BarChart3, color: "from-blue-500 to-blue-600", arrow: r.soldeNet >= 0 ? ArrowUpRight : ArrowDownRight },
+    { label: t("reportsFinancial.recoveryRate"), value: r.tauxRecouvrement, icon: TrendingUp, color: "from-violet-500 to-violet-600", suffix: "%", arrow: ArrowUpRight },
   ];
 
   return (
@@ -264,8 +266,8 @@ export default function RapportsFinanciers() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Rapports Financiers</h1>
-          <p className="text-sm text-gray-500">Analyse financiere et exports - 2025-2026</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("reportsFinancial.title")}</h1>
+          <p className="text-sm text-gray-500">{t("reportsFinancial.subtitle")} - 2025-2026</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={exportPDF}>
@@ -308,10 +310,10 @@ export default function RapportsFinanciers() {
       {/* Tabs */}
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
-          <TabsTrigger value="recapitulatif">Recapitulatif</TabsTrigger>
-          <TabsTrigger value="par-mois">Par Mois</TabsTrigger>
-          <TabsTrigger value="par-classe">Par Classe</TabsTrigger>
-          <TabsTrigger value="par-eleve">Par Eleve</TabsTrigger>
+          <TabsTrigger value="recapitulatif">{t("reportsFinancial.summary")}</TabsTrigger>
+          <TabsTrigger value="par-mois">{t("reportsFinancial.byMonth")}</TabsTrigger>
+          <TabsTrigger value="par-classe">{t("reportsFinancial.byClass")}</TabsTrigger>
+          <TabsTrigger value="par-eleve">{t("reportsFinancial.byStudent")}</TabsTrigger>
         </TabsList>
 
         {/* ─── Recapitulatif ─── */}
@@ -319,18 +321,18 @@ export default function RapportsFinanciers() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Key Figures */}
             <div className="rounded-xl border bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold">Chiffres cles</h3>
+              <h3 className="mb-4 text-lg font-semibold">{t("reportsFinancial.keyFigures")}</h3>
               <div className="space-y-3 text-sm">
                 {[
-                  { l: "Total Du", v: `${fmt(r.totalDu)} ${CURRENCY}` },
-                  { l: "Total Paye", v: `${fmt(r.totalPaye)} ${CURRENCY}` },
-                  { l: "Total Impayes", v: `${fmt(r.totalImpayes)} ${CURRENCY}`, c: "text-red-600 font-semibold" },
-                  { l: "Total Depenses", v: `${fmt(r.totalDepenses)} ${CURRENCY}` },
-                  { l: "Solde Net", v: `${fmt(r.soldeNet)} ${CURRENCY}`, c: r.soldeNet >= 0 ? "text-green-600 font-semibold" : "text-red-600 font-semibold" },
-                  { l: "Taux Recouvrement", v: `${fmt(r.tauxRecouvrement)}%` },
-                  { l: "Total Remises", v: `${fmt(r.totalRemises)} ${CURRENCY}` },
-                  { l: "Total Penalites", v: `${fmt(r.totalPenalites)} ${CURRENCY}` },
-                  { l: "Nb Relances", v: String(r.nbRelances) },
+                  { l: t("reportsFinancial.totalDue"), v: `${fmt(r.totalDu)} ${CURRENCY}` },
+                  { l: t("reportsFinancial.totalPaid"), v: `${fmt(r.totalPaye)} ${CURRENCY}` },
+                  { l: t("reportsFinancial.totalUnpaid"), v: `${fmt(r.totalImpayes)} ${CURRENCY}`, c: "text-red-600 font-semibold" },
+                  { l: t("reportsFinancial.totalExpenses"), v: `${fmt(r.totalDepenses)} ${CURRENCY}` },
+                  { l: t("reportsFinancial.netBalance"), v: `${fmt(r.soldeNet)} ${CURRENCY}`, c: r.soldeNet >= 0 ? "text-green-600 font-semibold" : "text-red-600 font-semibold" },
+                  { l: t("reportsFinancial.recoveryRate"), v: `${fmt(r.tauxRecouvrement)}%` },
+                  { l: t("reportsFinancial.totalDiscounts"), v: `${fmt(r.totalRemises)} ${CURRENCY}` },
+                  { l: t("reportsFinancial.totalPenalties"), v: `${fmt(r.totalPenalites)} ${CURRENCY}` },
+                  { l: t("reportsFinancial.nbReminders"), v: String(r.nbRelances) },
                 ].map((row) => (
                   <div key={row.l} className="flex justify-between border-b pb-2">
                     <span className="text-gray-600">{row.l}</span>
@@ -342,7 +344,7 @@ export default function RapportsFinanciers() {
 
             {/* Pie Chart */}
             <div className="rounded-xl border bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold">Repartition des paiements</h3>
+              <h3 className="mb-4 text-lg font-semibold">{t("reportsFinancial.paymentDistribution")}</h3>
               <div className="h-72">
                 <ResponsiveContainer>
                   <PieChart>
@@ -370,7 +372,7 @@ export default function RapportsFinanciers() {
 
             {/* Chart */}
             <div className="rounded-xl border bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold">Evolution mensuelle</h3>
+              <h3 className="mb-4 text-lg font-semibold">{t("reportsFinancial.monthlyEvolution")}</h3>
               <div className="h-72">
                 <ResponsiveContainer>
                   <BarChart data={rapport.parMois}>
@@ -439,7 +441,7 @@ export default function RapportsFinanciers() {
 
             {/* Chart */}
             <div className="rounded-xl border bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold">Recouvrement par classe</h3>
+              <h3 className="mb-4 text-lg font-semibold">{t("reportsFinancial.recoveryByClass")}</h3>
               <div className="h-72">
                 <ResponsiveContainer>
                   <BarChart data={rapport.parClasse} layout="vertical">
@@ -501,7 +503,7 @@ export default function RapportsFinanciers() {
           <div className="space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <Input
-                placeholder="Rechercher un eleve..."
+                placeholder={t("reportsFinancial.searchStudent")}
                 value={searchEleve}
                 onChange={(e) => setSearchEleve(e.target.value)}
                 className="sm:w-72"
@@ -527,7 +529,7 @@ export default function RapportsFinanciers() {
                   {filteredEleves.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
-                        Aucun eleve trouve
+                        {t("common.noResults")}
                       </td>
                     </tr>
                   ) : (

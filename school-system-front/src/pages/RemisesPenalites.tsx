@@ -1,5 +1,27 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
+import { validate, type FormErrors } from "@/lib/validate";
+import { z } from "zod";
+
+// Inline schemas — simpler than importing: form shape differs slightly from generic remise/penalite
+const remiseFormSchema = z.object({
+  studentId: z.coerce.number().int().positive("Élève requis"),
+  valeur: z.coerce.number().positive("Valeur > 0"),
+  motif: z.string().optional(),
+  type: z.string().optional(),
+  anneeScolaire: z.string().optional(),
+  estPourcentage: z.boolean().optional(),
+});
+
+const penaliteFormSchema = z.object({
+  studentId: z.coerce.number().int().positive("Élève requis"),
+  montant: z.coerce.number().positive("Montant > 0"),
+  motif: z.string().trim().min(3, "Motif requis (min 3 caractères)"),
+  dateApplication: z.string().optional(),
+  anneeScolaire: z.string().optional(),
+  payee: z.boolean().optional(),
+});
 import {
   Tag,
   AlertTriangle,
@@ -69,14 +91,6 @@ const fadeUp = {
   }),
 };
 
-const TYPE_REMISE_LABELS: Record<string, string> = {
-  FRATRIE: "Fratrie",
-  BOURSE: "Bourse",
-  PERSONNEL: "Personnel",
-  ANTICIPATION: "Anticipation",
-  COMMERCIAL: "Commercial",
-};
-
 const TYPE_REMISE_COLORS: Record<string, string> = {
   FRATRIE: "bg-blue-50 text-blue-700",
   BOURSE: "bg-emerald-50 text-emerald-700",
@@ -88,6 +102,16 @@ const TYPE_REMISE_COLORS: Record<string, string> = {
 type TabKey = "remises" | "penalites";
 
 export default function RemisesPenalites() {
+  const { t } = useLanguage();
+
+  const TYPE_REMISE_LABELS: Record<string, string> = useMemo(() => ({
+    FRATRIE: t("discountsPage.discountTypes.sibling"),
+    BOURSE: t("discountsPage.discountTypes.scholarship"),
+    PERSONNEL: t("discountsPage.discountTypes.personal"),
+    ANTICIPATION: t("discountsPage.discountTypes.early"),
+    COMMERCIAL: t("discountsPage.discountTypes.commercial"),
+  }), [t]);
+
   const [activeTab, setActiveTab] = useState<TabKey>("remises");
   const { data: students = [] } = useAllStudents();
   const { data: typesFrais = [] } = useTypesFrais();
@@ -120,6 +144,8 @@ export default function RemisesPenalites() {
     active: true,
   };
   const [remiseForm, setRemiseForm] = useState<RemiseRequest>(emptyRemiseForm);
+  const [remiseErrors, setRemiseErrors] = useState<FormErrors>({});
+  const [penaliteErrors, setPenaliteErrors] = useState<FormErrors>({});
 
   const openAddRemise = () => {
     setRemiseForm(emptyRemiseForm);
@@ -143,21 +169,20 @@ export default function RemisesPenalites() {
   };
 
   const handleSaveRemise = () => {
-    if (!remiseForm.studentId || !remiseForm.valeur) {
-      notify.error("Veuillez remplir les champs obligatoires");
-      return;
-    }
+    const result = validate(remiseFormSchema, remiseForm);
+    if (!result.ok) { setRemiseErrors(result.errors); return; }
+    setRemiseErrors({});
     if (editRemise) {
       updateRemise.mutate(
         { id: editRemise.id, data: remiseForm },
         {
-          onSuccess: () => { notify.success("Remise modifiee"); setRemiseDialogOpen(false); setEditRemise(null); },
+          onSuccess: () => { notify.success(t("discountsPage.discountUpdated")); setRemiseDialogOpen(false); setEditRemise(null); },
           onError: (err) => notify.error(err.message),
         }
       );
     } else {
       createRemise.mutate(remiseForm, {
-        onSuccess: () => { notify.success("Remise ajoutee"); setRemiseDialogOpen(false); },
+        onSuccess: () => { notify.success(t("discountsPage.discountAdded")); setRemiseDialogOpen(false); },
         onError: (err) => notify.error(err.message),
       });
     }
@@ -166,7 +191,7 @@ export default function RemisesPenalites() {
   const handleDeleteRemise = () => {
     if (!deleteRemiseTarget) return;
     deleteRemiseMut.mutate(deleteRemiseTarget.id, {
-      onSuccess: () => { notify.success("Remise supprimee"); setDeleteRemiseTarget(null); },
+      onSuccess: () => { notify.success(t("discountsPage.discountDeleted")); setDeleteRemiseTarget(null); },
       onError: (err) => notify.error(err.message),
     });
   };
@@ -208,21 +233,20 @@ export default function RemisesPenalites() {
   };
 
   const handleSavePenalite = () => {
-    if (!penaliteForm.studentId || !penaliteForm.montant || !penaliteForm.motif) {
-      notify.error("Veuillez remplir les champs obligatoires");
-      return;
-    }
+    const result = validate(penaliteFormSchema, penaliteForm);
+    if (!result.ok) { setPenaliteErrors(result.errors); return; }
+    setPenaliteErrors({});
     if (editPenalite) {
       updatePenalite.mutate(
         { id: editPenalite.id, data: penaliteForm },
         {
-          onSuccess: () => { notify.success("Penalite modifiee"); setPenaliteDialogOpen(false); setEditPenalite(null); },
+          onSuccess: () => { notify.success(t("discountsPage.penaltyUpdated")); setPenaliteDialogOpen(false); setEditPenalite(null); },
           onError: (err) => notify.error(err.message),
         }
       );
     } else {
       createPenalite.mutate(penaliteForm, {
-        onSuccess: () => { notify.success("Penalite ajoutee"); setPenaliteDialogOpen(false); },
+        onSuccess: () => { notify.success(t("discountsPage.penaltyAdded")); setPenaliteDialogOpen(false); },
         onError: (err) => notify.error(err.message),
       });
     }
@@ -231,7 +255,7 @@ export default function RemisesPenalites() {
   const handleDeletePenalite = () => {
     if (!deletePenaliteTarget) return;
     deletePenaliteMut.mutate(deletePenaliteTarget.id, {
-      onSuccess: () => { notify.success("Penalite supprimee"); setDeletePenaliteTarget(null); },
+      onSuccess: () => { notify.success(t("discountsPage.penaltyDeleted")); setDeletePenaliteTarget(null); },
       onError: (err) => notify.error(err.message),
     });
   };
@@ -262,9 +286,9 @@ export default function RemisesPenalites() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Remises & Penalites</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("discountsPage.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Gestion des reductions et frais de retard — {ANNEE}
+            {t("discountsPage.title")} — {ANNEE}
           </p>
         </div>
         <Button
@@ -272,7 +296,7 @@ export default function RemisesPenalites() {
           onClick={activeTab === "remises" ? openAddRemise : openAddPenalite}
         >
           <Plus className="h-4 w-4" />
-          {activeTab === "remises" ? "Nouvelle remise" : "Nouvelle penalite"}
+          {activeTab === "remises" ? t("discountsPage.newDiscount") : t("discountsPage.newPenalty")}
         </Button>
       </div>
 
@@ -283,7 +307,7 @@ export default function RemisesPenalites() {
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-emerald-100 p-2.5"><Tag className="h-5 w-5 text-emerald-600" /></div>
             <div>
-              <p className="text-xs text-emerald-600 font-medium">Remises actives</p>
+              <p className="text-xs text-emerald-600 font-medium">{t("discountsPage.activeDiscounts")}</p>
               <p className="text-xl font-bold text-emerald-700">{remises.filter((r) => r.active).length}</p>
             </div>
           </div>
@@ -293,7 +317,7 @@ export default function RemisesPenalites() {
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-blue-100 p-2.5"><Percent className="h-5 w-5 text-blue-600" /></div>
             <div>
-              <p className="text-xs text-blue-600 font-medium">Total remises (fixe)</p>
+              <p className="text-xs text-blue-600 font-medium">{t("discountsPage.totalDiscountsFixed")}</p>
               <p className="text-xl font-bold text-blue-700">{totalRemises.toLocaleString()} {CURRENCY}</p>
             </div>
           </div>
@@ -303,7 +327,7 @@ export default function RemisesPenalites() {
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-red-100 p-2.5"><AlertTriangle className="h-5 w-5 text-red-600" /></div>
             <div>
-              <p className="text-xs text-red-600 font-medium">Penalites impayees</p>
+              <p className="text-xs text-red-600 font-medium">{t("discountsPage.unpaidPenalties")}</p>
               <p className="text-xl font-bold text-red-700">{penalitesImpayees.toLocaleString()} {CURRENCY}</p>
             </div>
           </div>
@@ -313,8 +337,8 @@ export default function RemisesPenalites() {
       {/* Tabs */}
       <div className="flex gap-1 bg-muted/50 rounded-lg p-1 w-fit">
         {([
-          { key: "remises" as TabKey, label: "Remises", icon: Tag, count: remises.length },
-          { key: "penalites" as TabKey, label: "Penalites", icon: AlertTriangle, count: penalites.length },
+          { key: "remises" as TabKey, label: t("discountsPage.discounts"), icon: Tag, count: remises.length },
+          { key: "penalites" as TabKey, label: t("discountsPage.penalties"), icon: AlertTriangle, count: penalites.length },
         ]).map((tab) => (
           <button
             key={tab.key}
@@ -339,18 +363,18 @@ export default function RemisesPenalites() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Eleve</th>
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Type</th>
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Frais concerne</th>
-                  <th className="py-3 px-4 text-right font-semibold text-muted-foreground">Valeur</th>
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Motif</th>
-                  <th className="py-3 px-4 text-center font-semibold text-muted-foreground">Statut</th>
-                  <th className="py-3 px-4 text-center font-semibold text-muted-foreground">Actions</th>
+                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("common.student")}</th>
+                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("common.type")}</th>
+                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("discountsPage.relatedFee")}</th>
+                  <th className="py-3 px-4 text-right font-semibold text-muted-foreground">{t("common.amount")}</th>
+                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("discountsPage.reason")}</th>
+                  <th className="py-3 px-4 text-center font-semibold text-muted-foreground">{t("common.status")}</th>
+                  <th className="py-3 px-4 text-center font-semibold text-muted-foreground">{t("common.actions")}</th>
                 </tr>
               </thead>
               <tbody>
                 {remises.length === 0 ? (
-                  <tr><td colSpan={7} className="py-12 text-center text-muted-foreground">Aucune remise enregistree</td></tr>
+                  <tr><td colSpan={7} className="py-12 text-center text-muted-foreground">{t("discountsPage.noDiscount")}</td></tr>
                 ) : (
                   remises.map((r) => (
                     <tr key={r.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
@@ -361,7 +385,7 @@ export default function RemisesPenalites() {
                         </Badge>
                       </td>
                       <td className="py-3 px-4 text-muted-foreground text-xs">
-                        {r.typeFraisNom ?? "Tous les frais"}
+                        {r.typeFraisNom ?? t("discountsPage.allFees")}
                       </td>
                       <td className="py-3 px-4 text-right font-semibold text-emerald-600 whitespace-nowrap">
                         -{r.valeur.toLocaleString()}{r.estPourcentage ? "%" : ` ${CURRENCY}`}
@@ -369,7 +393,7 @@ export default function RemisesPenalites() {
                       <td className="py-3 px-4 text-xs text-muted-foreground">{r.motif || "—"}</td>
                       <td className="py-3 px-4 text-center">
                         <Badge variant={r.active ? "default" : "secondary"} className="text-[10px]">
-                          {r.active ? "Active" : "Inactive"}
+                          {r.active ? t("common.active") : t("common.inactive")}
                         </Badge>
                       </td>
                       <td className="py-3 px-4 text-center">
@@ -379,10 +403,10 @@ export default function RemisesPenalites() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => openEditRemise(r)}>
-                              <Edit className="h-3.5 w-3.5 mr-2" /> Modifier
+                              <Edit className="h-3.5 w-3.5 mr-2" /> {t("common.edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setDeleteRemiseTarget(r)} className="text-destructive">
-                              <Trash2 className="h-3.5 w-3.5 mr-2" /> Supprimer
+                              <Trash2 className="h-3.5 w-3.5 mr-2" /> {t("common.delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -403,18 +427,18 @@ export default function RemisesPenalites() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Eleve</th>
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Motif</th>
-                  <th className="py-3 px-4 text-right font-semibold text-muted-foreground">Montant</th>
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Date</th>
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Paiement lie</th>
-                  <th className="py-3 px-4 text-center font-semibold text-muted-foreground">Payee</th>
-                  <th className="py-3 px-4 text-center font-semibold text-muted-foreground">Actions</th>
+                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("common.student")}</th>
+                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("discountsPage.reason")}</th>
+                  <th className="py-3 px-4 text-right font-semibold text-muted-foreground">{t("common.amount")}</th>
+                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("common.date")}</th>
+                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("discountsPage.linkedPayment")}</th>
+                  <th className="py-3 px-4 text-center font-semibold text-muted-foreground">{t("finance.paid")}</th>
+                  <th className="py-3 px-4 text-center font-semibold text-muted-foreground">{t("common.actions")}</th>
                 </tr>
               </thead>
               <tbody>
                 {penalites.length === 0 ? (
-                  <tr><td colSpan={7} className="py-12 text-center text-muted-foreground">Aucune penalite enregistree</td></tr>
+                  <tr><td colSpan={7} className="py-12 text-center text-muted-foreground">{t("discountsPage.noPenalty")}</td></tr>
                 ) : (
                   penalites.map((p) => (
                     <tr key={p.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
@@ -432,7 +456,7 @@ export default function RemisesPenalites() {
                       <td className="py-3 px-4 text-center">
                         <button
                           onClick={() => togglePayee.mutate(p.id, {
-                            onSuccess: () => notify.success(p.payee ? "Marquee comme impayee" : "Marquee comme payee"),
+                            onSuccess: () => notify.success(p.payee ? t("discountsPage.markUnpaid") : t("discountsPage.markPaid")),
                           })}
                           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors cursor-pointer ${
                             p.payee
@@ -441,7 +465,7 @@ export default function RemisesPenalites() {
                           }`}
                         >
                           {p.payee ? <Check className="h-3 w-3" /> : <Ban className="h-3 w-3" />}
-                          {p.payee ? "Payee" : "Impayee"}
+                          {p.payee ? t("finance.paid") : t("finance.unpaid")}
                         </button>
                       </td>
                       <td className="py-3 px-4 text-center">
@@ -451,10 +475,10 @@ export default function RemisesPenalites() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => openEditPenalite(p)}>
-                              <Edit className="h-3.5 w-3.5 mr-2" /> Modifier
+                              <Edit className="h-3.5 w-3.5 mr-2" /> {t("common.edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setDeletePenaliteTarget(p)} className="text-destructive">
-                              <Trash2 className="h-3.5 w-3.5 mr-2" /> Supprimer
+                              <Trash2 className="h-3.5 w-3.5 mr-2" /> {t("common.delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -472,18 +496,18 @@ export default function RemisesPenalites() {
       <Dialog open={remiseDialogOpen} onOpenChange={setRemiseDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editRemise ? "Modifier la remise" : "Nouvelle remise"}</DialogTitle>
-            <DialogDescription>Appliquer une reduction a un eleve</DialogDescription>
+            <DialogTitle>{editRemise ? t("discountsPage.editDiscount") : t("discountsPage.newDiscount")}</DialogTitle>
+            <DialogDescription>{t("discountsPage.applyDiscount")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>Eleve *</Label>
+                <Label>{t("common.student")} *</Label>
                 <Select
                   value={remiseForm.studentId ? String(remiseForm.studentId) : ""}
                   onValueChange={(v) => setRemiseForm({ ...remiseForm, studentId: Number(v) })}
                 >
-                  <SelectTrigger><SelectValue placeholder="Choisir" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("common.select")} /></SelectTrigger>
                   <SelectContent>
                     {students.filter((s) => s.statut === "Actif").map((s) => (
                       <SelectItem key={s.id} value={String(s.id)}>{s.prenom} {s.nom} ({s.classe})</SelectItem>
@@ -492,7 +516,7 @@ export default function RemisesPenalites() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Type *</Label>
+                <Label>{t("common.type")} *</Label>
                 <Select
                   value={remiseForm.type}
                   onValueChange={(v) => setRemiseForm({ ...remiseForm, type: v as RemiseRequest["type"] })}
@@ -506,14 +530,14 @@ export default function RemisesPenalites() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Frais concerne</Label>
+                <Label>{t("discountsPage.relatedFee")}</Label>
                 <Select
                   value={remiseForm.typeFraisId ? String(remiseForm.typeFraisId) : "all"}
                   onValueChange={(v) => setRemiseForm({ ...remiseForm, typeFraisId: v === "all" ? null : Number(v) })}
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les frais</SelectItem>
+                    <SelectItem value="all">{t("discountsPage.allFees")}</SelectItem>
                     {typesFrais.map((tf) => (
                       <SelectItem key={tf.id} value={String(tf.id)}>{tf.nom}</SelectItem>
                     ))}
@@ -521,7 +545,7 @@ export default function RemisesPenalites() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Valeur *</Label>
+                <Label>{t("common.amount")} *</Label>
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
@@ -540,7 +564,7 @@ export default function RemisesPenalites() {
                   onCheckedChange={(v) => setRemiseForm({ ...remiseForm, estPourcentage: !!v })}
                   id="estPourcentage"
                 />
-                <Label htmlFor="estPourcentage" className="cursor-pointer">En pourcentage</Label>
+                <Label htmlFor="estPourcentage" className="cursor-pointer">{t("discountsPage.inPercentage")}</Label>
               </div>
               <div className="flex items-end gap-2 pb-1">
                 <Checkbox
@@ -548,24 +572,24 @@ export default function RemisesPenalites() {
                   onCheckedChange={(v) => setRemiseForm({ ...remiseForm, active: !!v })}
                   id="remiseActive"
                 />
-                <Label htmlFor="remiseActive" className="cursor-pointer">Active</Label>
+                <Label htmlFor="remiseActive" className="cursor-pointer">{t("common.active")}</Label>
               </div>
               <div className="space-y-1.5 sm:col-span-2">
-                <Label>Motif</Label>
+                <Label>{t("discountsPage.reason")}</Label>
                 <Textarea
                   value={remiseForm.motif ?? ""}
                   onChange={(e) => setRemiseForm({ ...remiseForm, motif: e.target.value })}
                   rows={2}
-                  placeholder="Raison de la remise..."
+                  placeholder={t("discountsPage.discountReason")}
                 />
               </div>
             </div>
           </div>
           <DialogFooter>
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
             <Button className="bg-gradient-primary shadow-btn" onClick={handleSaveRemise}
               disabled={createRemise.isPending || updateRemise.isPending}>
-              {(createRemise.isPending || updateRemise.isPending) ? "Enregistrement..." : "Enregistrer"}
+              {(createRemise.isPending || updateRemise.isPending) ? t("common.saving") : t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -575,18 +599,18 @@ export default function RemisesPenalites() {
       <Dialog open={penaliteDialogOpen} onOpenChange={setPenaliteDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editPenalite ? "Modifier la penalite" : "Nouvelle penalite"}</DialogTitle>
-            <DialogDescription>Appliquer des frais de retard a un eleve</DialogDescription>
+            <DialogTitle>{editPenalite ? t("discountsPage.editPenalty") : t("discountsPage.newPenalty")}</DialogTitle>
+            <DialogDescription>{t("discountsPage.applyPenalty")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>Eleve *</Label>
+                <Label>{t("common.student")} *</Label>
                 <Select
                   value={penaliteForm.studentId ? String(penaliteForm.studentId) : ""}
                   onValueChange={(v) => setPenaliteForm({ ...penaliteForm, studentId: Number(v) })}
                 >
-                  <SelectTrigger><SelectValue placeholder="Choisir" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("common.select")} /></SelectTrigger>
                   <SelectContent>
                     {students.filter((s) => s.statut === "Actif").map((s) => (
                       <SelectItem key={s.id} value={String(s.id)}>{s.prenom} {s.nom} ({s.classe})</SelectItem>
@@ -595,7 +619,7 @@ export default function RemisesPenalites() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Montant ({CURRENCY}) *</Label>
+                <Label>{t("common.amount")} ({CURRENCY}) *</Label>
                 <Input
                   type="number"
                   value={penaliteForm.montant || ""}
@@ -603,7 +627,7 @@ export default function RemisesPenalites() {
                 />
               </div>
               <div className="space-y-1.5 sm:col-span-2">
-                <Label>Motif *</Label>
+                <Label>{t("discountsPage.reason")} *</Label>
                 <Input
                   value={penaliteForm.motif}
                   onChange={(e) => setPenaliteForm({ ...penaliteForm, motif: e.target.value })}
@@ -611,7 +635,7 @@ export default function RemisesPenalites() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Date d'application</Label>
+                <Label>{t("common.date")}</Label>
                 <Input
                   type="date"
                   value={penaliteForm.dateApplication ?? ""}
@@ -624,15 +648,15 @@ export default function RemisesPenalites() {
                   onCheckedChange={(v) => setPenaliteForm({ ...penaliteForm, payee: !!v })}
                   id="penalitePayee"
                 />
-                <Label htmlFor="penalitePayee" className="cursor-pointer">Deja payee</Label>
+                <Label htmlFor="penalitePayee" className="cursor-pointer">{t("finance.paid")}</Label>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
             <Button className="bg-gradient-primary shadow-btn" onClick={handleSavePenalite}
               disabled={createPenalite.isPending || updatePenalite.isPending}>
-              {(createPenalite.isPending || updatePenalite.isPending) ? "Enregistrement..." : "Enregistrer"}
+              {(createPenalite.isPending || updatePenalite.isPending) ? t("common.saving") : t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -642,16 +666,16 @@ export default function RemisesPenalites() {
       <Dialog open={!!deleteRemiseTarget} onOpenChange={() => setDeleteRemiseTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogTitle>{t("common.confirmDelete")}</DialogTitle>
             <DialogDescription>
               Supprimer la remise de {deleteRemiseTarget?.studentFirstName} {deleteRemiseTarget?.studentLastName} ?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
             <Button variant="destructive" onClick={handleDeleteRemise}
               disabled={deleteRemiseMut.isPending}>
-              {deleteRemiseMut.isPending ? "Suppression..." : "Supprimer"}
+              {deleteRemiseMut.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -661,16 +685,16 @@ export default function RemisesPenalites() {
       <Dialog open={!!deletePenaliteTarget} onOpenChange={() => setDeletePenaliteTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogTitle>{t("common.confirmDelete")}</DialogTitle>
             <DialogDescription>
               Supprimer la penalite de {deletePenaliteTarget?.studentFirstName} {deletePenaliteTarget?.studentLastName} ?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
             <Button variant="destructive" onClick={handleDeletePenalite}
               disabled={deletePenaliteMut.isPending}>
-              {deletePenaliteMut.isPending ? "Suppression..." : "Supprimer"}
+              {deletePenaliteMut.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

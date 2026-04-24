@@ -56,7 +56,7 @@ export function useWebSocket() {
   const [connected, setConnected] = useState(false);
 
   const getWsUrl = useCallback(() => {
-    const apiUrl = env.API_URL || "http://localhost:8080/api";
+    const apiUrl = env.API_URL || "http://localhost:8082/api";
     // Derive WS base URL from API URL
     const baseUrl = apiUrl.replace(/\/api\/?$/, "");
     const wsBase = baseUrl.replace(/^http/, "ws");

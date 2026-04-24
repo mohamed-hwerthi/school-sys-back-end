@@ -11,8 +11,7 @@ spring:
       ddl-auto: validate
     show-sql: false
     properties:
-      hibernate:
-        default_schema: public
+      hibernate: {}
 
   flyway:
     enabled: true

@@ -1,5 +1,8 @@
 import { useState, useMemo } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
+import { validate, type FormErrors } from "@/lib/validate";
+import { contratSchema, congeSchema } from "@/lib/communication-schemas";
 import {
   FileText,
   Search,
@@ -65,26 +68,6 @@ import {
 import { useTeachers } from "@/hooks/useTeachers";
 import type { ContratEnseignant, Conge, TypeContrat, TypeConge, StatutConge } from "@/types/contrat";
 
-const TYPE_CONTRAT_LABELS: Record<TypeContrat, string> = {
-  CDI: "CDI",
-  CDD: "CDD",
-  VACATAIRE: "Vacataire",
-};
-
-const TYPE_CONGE_LABELS: Record<TypeConge, string> = {
-  ANNUEL: "Annuel",
-  MALADIE: "Maladie",
-  MATERNITE: "Maternite",
-  EXCEPTIONNEL: "Exceptionnel",
-  SANS_SOLDE: "Sans solde",
-};
-
-const STATUT_CONGE_LABELS: Record<StatutConge, string> = {
-  EN_ATTENTE: "En attente",
-  APPROUVE: "Approuve",
-  REFUSE: "Refuse",
-};
-
 const STATUT_CONGE_COLORS: Record<StatutConge, string> = {
   EN_ATTENTE: "bg-amber-100 text-amber-700",
   APPROUVE: "bg-emerald-100 text-emerald-700",
@@ -103,6 +86,27 @@ const fadeUp = {
 };
 
 export default function ContratsPage() {
+  const { t } = useLanguage();
+
+  const TYPE_CONTRAT_LABELS: Record<TypeContrat, string> = useMemo(() => ({
+    CDI: "CDI",
+    CDD: "CDD",
+    VACATAIRE: t("contracts.contractTypes.substitute"),
+  }), [t]);
+
+  const TYPE_CONGE_LABELS: Record<TypeConge, string> = useMemo(() => ({
+    ANNUEL: t("contracts.contractTypes.annual"),
+    MALADIE: t("contracts.leaveTypes.sick"),
+    MATERNITE: t("contracts.leaveTypes.maternity"),
+    EXCEPTIONNEL: t("contracts.contractTypes.exceptional"),
+    SANS_SOLDE: t("contracts.leaveTypes.unpaid"),
+  }), [t]);
+
+  const STATUT_CONGE_LABELS: Record<StatutConge, string> = useMemo(() => ({
+    EN_ATTENTE: t("common.pending"),
+    APPROUVE: t("meetings.statuses.confirmed"),
+    REFUSE: t("meetings.statuses.cancelled"),
+  }), [t]);
   const [activeTab, setActiveTab] = useState("contrats");
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -128,6 +132,8 @@ export default function ContratsPage() {
     dateFin: "",
     motif: "",
   });
+  const [contratErrors, setContratErrors] = useState<FormErrors>({});
+  const [congeErrors, setCongeErrors] = useState<FormErrors>({});
 
   const [deleteContratTarget, setDeleteContratTarget] = useState<ContratEnseignant | null>(null);
   const [deleteCongeTarget, setDeleteCongeTarget] = useState<Conge | null>(null);
@@ -146,7 +152,7 @@ export default function ContratsPage() {
 
   const getTeacherName = (id: number) => {
     const t = teachers.find((t) => t.id === id);
-    return t ? `${t.prenom} ${t.nom}` : `Enseignant #${id}`;
+    return t ? `${t.prenom} ${t.nom}` : `#${id}`;
   };
 
   // Filtered contrats
@@ -189,9 +195,9 @@ export default function ContratsPage() {
   };
 
   const stats = [
-    { label: "Total Contrats", value: contrats.length, icon: FileText, color: "bg-blue-50", textColor: "text-blue-700" },
+    { label: t("contracts.totalContracts"), value: contrats.length, icon: FileText, color: "bg-blue-50", textColor: "text-blue-700" },
     { label: "CDI", value: contrats.filter((c) => c.typeContrat === "CDI").length, icon: Briefcase, color: "bg-emerald-50", textColor: "text-emerald-700" },
-    { label: "Conges en attente", value: conges.filter((c) => c.statut === "EN_ATTENTE").length, icon: Clock, color: "bg-amber-50", textColor: "text-amber-700" },
+    { label: t("contracts.pendingLeaves"), value: conges.filter((c) => c.statut === "EN_ATTENTE").length, icon: Clock, color: "bg-amber-50", textColor: "text-amber-700" },
   ];
 
   const openCreateContrat = () => {
@@ -213,6 +219,9 @@ export default function ContratsPage() {
   };
 
   const handleSaveContrat = () => {
+    const result = validate(contratSchema, { ...contratForm, salaire: contratForm.salaireBase });
+    if (!result.ok) { setContratErrors(result.errors); return; }
+    setContratErrors({});
     const payload = {
       ...contratForm,
       dateFin: contratForm.dateFin || undefined,
@@ -221,16 +230,20 @@ export default function ContratsPage() {
     if (editContrat) {
       updateContratMutation.mutate(
         { id: editContrat.id, data: payload },
-        { onSuccess: () => setContratFormOpen(false) }
+        { onSuccess: () => setContratFormOpen(false), onError: (err: Error & { response?: { data?: { message?: string } } }) => setContratErrors({ _root: err.response?.data?.message ?? "Erreur" }) }
       );
     } else {
       createContratMutation.mutate(payload as Omit<ContratEnseignant, "id">, {
         onSuccess: () => setContratFormOpen(false),
+        onError: (err: Error & { response?: { data?: { message?: string } } }) => setContratErrors({ _root: err.response?.data?.message ?? "Erreur" }),
       });
     }
   };
 
   const handleCreateConge = () => {
+    const result = validate(congeSchema, { ...congeForm, type: congeForm.typeConge });
+    if (!result.ok) { setCongeErrors(result.errors); return; }
+    setCongeErrors({});
     const payload = {
       enseignantId: congeForm.enseignantId,
       typeConge: congeForm.typeConge,
@@ -240,6 +253,7 @@ export default function ContratsPage() {
     };
     createCongeMutation.mutate(payload, {
       onSuccess: () => setCongeFormOpen(false),
+      onError: (err: Error & { response?: { data?: { message?: string } } }) => setCongeErrors({ _root: err.response?.data?.message ?? "Erreur" }),
     });
   };
 
@@ -271,8 +285,8 @@ export default function ContratsPage() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">Contrats & Conges</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Gerez les contrats des enseignants et les demandes de conge</p>
+          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">{t("contracts.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{t("contracts.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
@@ -280,11 +294,11 @@ export default function ContratsPage() {
             setCongeFormOpen(true);
           }}>
             <CalendarDays className="h-4 w-4" />
-            Demande de conge
+            {t("contracts.leaveRequest")}
           </Button>
           <Button size="sm" className="gap-1.5 bg-gradient-primary shadow-btn" onClick={openCreateContrat}>
             <Plus className="h-4 w-4" />
-            Nouveau contrat
+            {t("contracts.newContract")}
           </Button>
         </div>
       </motion.div>
@@ -312,7 +326,7 @@ export default function ContratsPage() {
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
             <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher par enseignant..." className="pl-9" />
+              <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder={t("common.searchPlaceholder")} className="pl-9" />
             </div>
             {activeTab === "contrats" && (
               <Select value={filterType} onValueChange={(v) => { setFilterType(v); setCurrentPage(0); }}>
@@ -330,7 +344,7 @@ export default function ContratsPage() {
             )}
             {hasFilters && (
               <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1 text-muted-foreground hover:text-foreground">
-                <X className="h-3.5 w-3.5" /> Reinitialiser
+                <X className="h-3.5 w-3.5" /> {t("common.reset")}
               </Button>
             )}
           </div>
@@ -343,12 +357,12 @@ export default function ContratsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Enseignant</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Type</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Date debut</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Date fin</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Salaire base</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.teacher")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.type")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("common.startDate")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("common.endDate")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">{t("contracts.baseSalary")}</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -356,7 +370,7 @@ export default function ContratsPage() {
                     <tr>
                       <td colSpan={6} className="py-16 text-center text-muted-foreground">
                         <FileText className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                        <p className="font-medium">Aucun contrat trouve</p>
+                        <p className="font-medium">{t("common.noResults")}</p>
                       </td>
                     </tr>
                   ) : (
@@ -396,7 +410,7 @@ export default function ContratsPage() {
             </div>
             {totalPages > 1 && activeTab === "contrats" && (
               <div className="flex items-center justify-between border-t border-border px-4 py-3">
-                <p className="text-xs text-muted-foreground">Page {currentPage + 1} sur {totalPages}</p>
+                <p className="text-xs text-muted-foreground">{t("common.page")} {currentPage + 1} {t("common.of")} {totalPages}</p>
                 <div className="flex items-center gap-1">
                   <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage === 0} onClick={() => setCurrentPage((p) => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
                   <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage >= totalPages - 1} onClick={() => setCurrentPage((p) => p + 1)}><ChevronRight className="h-4 w-4" /></Button>
@@ -413,13 +427,13 @@ export default function ContratsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Enseignant</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Type</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Debut</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Fin</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Motif</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.teacher")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.type")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("common.start")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("common.end")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("discountsPage.reason")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.status")}</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -427,7 +441,7 @@ export default function ContratsPage() {
                     <tr>
                       <td colSpan={7} className="py-16 text-center text-muted-foreground">
                         <CalendarDays className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                        <p className="font-medium">Aucune demande de conge</p>
+                        <p className="font-medium">{t("contracts.noLeave")}</p>
                       </td>
                     </tr>
                   ) : (
@@ -469,10 +483,10 @@ export default function ContratsPage() {
                               {conge.statut === "EN_ATTENTE" && (
                                 <>
                                   <DropdownMenuItem onClick={() => approuverCongeMutation.mutate(conge.id)}>
-                                    <CheckCircle className="h-4 w-4 mr-2" /> Approuver
+                                    <CheckCircle className="h-4 w-4 mr-2" /> {t("common.confirm")}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => refuserCongeMutation.mutate(conge.id)}>
-                                    <XCircle className="h-4 w-4 mr-2" /> Refuser
+                                    <XCircle className="h-4 w-4 mr-2" /> {t("common.cancel")}
                                   </DropdownMenuItem>
                                 </>
                               )}
@@ -490,7 +504,7 @@ export default function ContratsPage() {
             </div>
             {totalPages > 1 && activeTab === "conges" && (
               <div className="flex items-center justify-between border-t border-border px-4 py-3">
-                <p className="text-xs text-muted-foreground">Page {currentPage + 1} sur {totalPages}</p>
+                <p className="text-xs text-muted-foreground">{t("common.page")} {currentPage + 1} {t("common.of")} {totalPages}</p>
                 <div className="flex items-center gap-1">
                   <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage === 0} onClick={() => setCurrentPage((p) => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
                   <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage >= totalPages - 1} onClick={() => setCurrentPage((p) => p + 1)}><ChevronRight className="h-4 w-4" /></Button>
@@ -505,14 +519,14 @@ export default function ContratsPage() {
       <Dialog open={contratFormOpen} onOpenChange={setContratFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editContrat ? "Modifier le contrat" : "Nouveau contrat"}</DialogTitle>
-            <DialogDescription>{editContrat ? "Modifiez les informations du contrat." : "Creez un nouveau contrat pour un enseignant."}</DialogDescription>
+            <DialogTitle>{editContrat ? t("contracts.editContract") : t("contracts.newContract")}</DialogTitle>
+            <DialogDescription>{editContrat ? t("contracts.editInfo") : t("contracts.createContract")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Enseignant</Label>
+              <Label>{t("common.teacher")}</Label>
               <Select value={contratForm.enseignantId ? String(contratForm.enseignantId) : ""} onValueChange={(v) => setContratForm({ ...contratForm, enseignantId: Number(v) })}>
-                <SelectTrigger><SelectValue placeholder="Selectionner un enseignant" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("common.select")} /></SelectTrigger>
                 <SelectContent>
                   {teachers.map((t) => (
                     <SelectItem key={t.id} value={String(t.id)}>{t.prenom} {t.nom}</SelectItem>
@@ -521,7 +535,7 @@ export default function ContratsPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Type de contrat</Label>
+              <Label>{t("common.type")}</Label>
               <Select value={contratForm.typeContrat} onValueChange={(v) => setContratForm({ ...contratForm, typeContrat: v as TypeContrat })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -533,23 +547,23 @@ export default function ContratsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="contratDebut">Date debut</Label>
+                <Label htmlFor="contratDebut">{t("common.startDate")}</Label>
                 <Input id="contratDebut" type="date" value={contratForm.dateDebut} onChange={(e) => setContratForm({ ...contratForm, dateDebut: e.target.value })} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="contratFin">Date fin</Label>
+                <Label htmlFor="contratFin">{t("common.endDate")}</Label>
                 <Input id="contratFin" type="date" value={contratForm.dateFin} onChange={(e) => setContratForm({ ...contratForm, dateFin: e.target.value })} />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="salaireBase">Salaire base (MAD)</Label>
+              <Label htmlFor="salaireBase">{t("contracts.baseSalary")}</Label>
               <Input id="salaireBase" type="number" value={contratForm.salaireBase || ""} onChange={(e) => setContratForm({ ...contratForm, salaireBase: Number(e.target.value) })} placeholder="0" />
             </div>
           </div>
           <DialogFooter>
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
-            <Button onClick={handleSaveContrat} disabled={createContratMutation.isPending || updateContratMutation.isPending || !contratForm.enseignantId}>
-              {(createContratMutation.isPending || updateContratMutation.isPending) ? "Enregistrement..." : "Enregistrer"}
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
+            <Button onClick={handleSaveContrat} disabled={createContratMutation.isPending || updateContratMutation.isPending}>
+              {(createContratMutation.isPending || updateContratMutation.isPending) ? t("common.saving") : t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -559,14 +573,14 @@ export default function ContratsPage() {
       <Dialog open={congeFormOpen} onOpenChange={setCongeFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Demande de conge</DialogTitle>
-            <DialogDescription>Enregistrez une demande de conge pour un enseignant.</DialogDescription>
+            <DialogTitle>{t("contracts.leaveRequest")}</DialogTitle>
+            <DialogDescription>{t("contracts.registerLeave")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Enseignant</Label>
+              <Label>{t("common.teacher")}</Label>
               <Select value={congeForm.enseignantId ? String(congeForm.enseignantId) : ""} onValueChange={(v) => setCongeForm({ ...congeForm, enseignantId: Number(v) })}>
-                <SelectTrigger><SelectValue placeholder="Selectionner un enseignant" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("common.select")} /></SelectTrigger>
                 <SelectContent>
                   {teachers.map((t) => (
                     <SelectItem key={t.id} value={String(t.id)}>{t.prenom} {t.nom}</SelectItem>
@@ -575,7 +589,7 @@ export default function ContratsPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Type de conge</Label>
+              <Label>{t("common.type")}</Label>
               <Select value={congeForm.typeConge} onValueChange={(v) => setCongeForm({ ...congeForm, typeConge: v as TypeConge })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -587,23 +601,23 @@ export default function ContratsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="congeDebut">Date debut</Label>
+                <Label htmlFor="congeDebut">{t("common.startDate")}</Label>
                 <Input id="congeDebut" type="date" value={congeForm.dateDebut} onChange={(e) => setCongeForm({ ...congeForm, dateDebut: e.target.value })} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="congeFin">Date fin</Label>
+                <Label htmlFor="congeFin">{t("common.endDate")}</Label>
                 <Input id="congeFin" type="date" value={congeForm.dateFin} onChange={(e) => setCongeForm({ ...congeForm, dateFin: e.target.value })} />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="congeMotif">Motif</Label>
-              <Textarea id="congeMotif" value={congeForm.motif} onChange={(e) => setCongeForm({ ...congeForm, motif: e.target.value })} placeholder="Motif du conge..." rows={2} />
+              <Label htmlFor="congeMotif">{t("discountsPage.reason")}</Label>
+              <Textarea id="congeMotif" value={congeForm.motif} onChange={(e) => setCongeForm({ ...congeForm, motif: e.target.value })} placeholder={t("contracts.leaveReason")} rows={2} />
             </div>
           </div>
           <DialogFooter>
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
-            <Button onClick={handleCreateConge} disabled={createCongeMutation.isPending || !congeForm.enseignantId || !congeForm.dateDebut || !congeForm.dateFin}>
-              {createCongeMutation.isPending ? "Creation..." : "Soumettre"}
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
+            <Button onClick={handleCreateConge} disabled={createCongeMutation.isPending}>
+              {createCongeMutation.isPending ? t("common.creating") : t("common.submit")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -613,13 +627,13 @@ export default function ContratsPage() {
       <Dialog open={!!deleteContratTarget} onOpenChange={(open) => !open && setDeleteContratTarget(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Supprimer le contrat</DialogTitle>
-            <DialogDescription>Etes-vous sur de vouloir supprimer ce contrat ? Cette action est irreversible.</DialogDescription>
+            <DialogTitle>{t("contracts.deleteContract")}</DialogTitle>
+            <DialogDescription>{t("common.deleteConfirmMsg")} ? {t("common.irreversible")}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
             <Button variant="destructive" onClick={handleDeleteContrat} disabled={deleteContratMutation.isPending}>
-              {deleteContratMutation.isPending ? "Suppression..." : "Supprimer"}
+              {deleteContratMutation.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -629,13 +643,13 @@ export default function ContratsPage() {
       <Dialog open={!!deleteCongeTarget} onOpenChange={(open) => !open && setDeleteCongeTarget(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Supprimer la demande de conge</DialogTitle>
-            <DialogDescription>Etes-vous sur de vouloir supprimer cette demande de conge ?</DialogDescription>
+            <DialogTitle>{t("contracts.deleteLeave")}</DialogTitle>
+            <DialogDescription>{t("common.deleteConfirmMsg")} ?</DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
             <Button variant="destructive" onClick={handleDeleteConge} disabled={deleteCongeMutation.isPending}>
-              {deleteCongeMutation.isPending ? "Suppression..." : "Supprimer"}
+              {deleteCongeMutation.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

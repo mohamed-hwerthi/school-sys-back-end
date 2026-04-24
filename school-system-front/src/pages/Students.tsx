@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/hooks/useLanguage";
 import {
   Users,
   UserPlus,
@@ -72,21 +73,31 @@ const avatarColors = [
 ];
 
 export default function Students() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { niveaux } = useNiveaux();
 
   // Filters state
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterNiveau, setFilterNiveau] = useState("all");
   const [filterStatut, setFilterStatut] = useState("all");
   const [filterClasse, setFilterClasse] = useState("all");
   const [currentPage, setCurrentPage] = useState(0); // 0-indexed for backend
 
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+      setCurrentPage(0);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
   // Server-side paginated query
   const { data: pagedData, isLoading, isFetching } = useStudentsPaged({
     page: currentPage,
     size: ITEMS_PER_PAGE,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     niveau: filterNiveau !== "all" ? filterNiveau : undefined,
     classe: filterClasse !== "all" ? filterClasse : undefined,
     status: filterStatut !== "all" ? filterStatut : undefined,
@@ -124,12 +135,12 @@ export default function Students() {
   }).length;
 
   const stats = [
-    { label: "Total Élèves", value: totalStudents, icon: Users, color: "bg-blue-500", bgLight: "bg-blue-50", textColor: "text-blue-700" },
-    { label: "Actifs", value: activeStudents, icon: UserCheck, color: "bg-emerald-500", bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
-    { label: "Garçons", value: garcons, icon: GraduationCap, color: "bg-purple-500", bgLight: "bg-purple-50", textColor: "text-purple-700" },
-    { label: "Filles", value: filles, icon: GraduationCap, color: "bg-pink-500", bgLight: "bg-pink-50", textColor: "text-pink-700" },
-    { label: "Inactifs", value: inactiveStudents, icon: UserX, color: "bg-orange-500", bgLight: "bg-orange-50", textColor: "text-orange-700" },
-    { label: "Nouveaux ce mois", value: newThisMonth, icon: TrendingUp, color: "bg-cyan-500", bgLight: "bg-cyan-50", textColor: "text-cyan-700" },
+    { label: t("students.totalStudents"), value: totalStudents, icon: Users, color: "bg-blue-500", bgLight: "bg-blue-50", textColor: "text-blue-700" },
+    { label: t("students.activeStudents"), value: activeStudents, icon: UserCheck, color: "bg-emerald-500", bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
+    { label: t("common.boys"), value: garcons, icon: GraduationCap, color: "bg-purple-500", bgLight: "bg-purple-50", textColor: "text-purple-700" },
+    { label: t("common.girls"), value: filles, icon: GraduationCap, color: "bg-pink-500", bgLight: "bg-pink-50", textColor: "text-pink-700" },
+    { label: t("students.inactiveStudents"), value: inactiveStudents, icon: UserX, color: "bg-orange-500", bgLight: "bg-orange-50", textColor: "text-orange-700" },
+    { label: t("common.newThisMonth"), value: newThisMonth, icon: TrendingUp, color: "bg-cyan-500", bgLight: "bg-cyan-50", textColor: "text-cyan-700" },
   ];
 
   // Handlers
@@ -163,7 +174,7 @@ export default function Students() {
     "En attente": { bg: "bg-amber-100", text: "text-amber-700" },
   };
 
-  if (isLoading) return <StudentsListSkeleton />;
+  if (isLoading && !pagedData) return <StudentsListSkeleton />;
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
@@ -176,14 +187,14 @@ export default function Students() {
       >
         <div>
           <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-            Gestion des Élèves
+            {t("students.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Gérez les inscriptions, les dossiers et le suivi des élèves
+            {t("students.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <ExportButton type="students" label="Exporter" />
+          <ExportButton type="students" label={t("common.export")} />
           <Button
             variant="outline"
             size="sm"
@@ -191,7 +202,7 @@ export default function Students() {
             onClick={() => setImportOpen(true)}
           >
             <Upload className="h-4 w-4" />
-            Importer
+            {t("common.import")}
           </Button>
           <Button
             size="sm"
@@ -199,7 +210,7 @@ export default function Students() {
             onClick={() => navigate("/dashboard/eleves/ajouter")}
           >
             <UserPlus className="h-4 w-4" />
-            Nouvel Élève
+            {t("students.newStudent")}
           </Button>
         </div>
       </motion.div>
@@ -238,7 +249,7 @@ export default function Students() {
             <Input
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }}
-              placeholder="Rechercher par nom, matricule, classe..."
+              placeholder={t("students.searchPlaceholder")}
               className="pl-9"
             />
           </div>
@@ -249,7 +260,7 @@ export default function Students() {
                 <SelectValue placeholder="Niveau" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les niveaux</SelectItem>
+                <SelectItem value="all">{t("common.allLevels")}</SelectItem>
                 {niveaux.map((n) => (<SelectItem key={n.nom} value={n.nom}>{n.nom}</SelectItem>))}
               </SelectContent>
             </Select>
@@ -258,7 +269,7 @@ export default function Students() {
                 <SelectValue placeholder="Classe" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Toutes</SelectItem>
+                <SelectItem value="all">{t("common.allClasses")}</SelectItem>
                 {CLASSES.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
               </SelectContent>
             </Select>
@@ -267,20 +278,20 @@ export default function Students() {
                 <SelectValue placeholder="Statut" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous</SelectItem>
+                <SelectItem value="all">{t("common.allStatuses")}</SelectItem>
                 {STATUTS.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
               </SelectContent>
             </Select>
             {hasFilters && (
               <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1 text-muted-foreground hover:text-foreground">
                 <X className="h-3.5 w-3.5" />
-                Réinitialiser
+                {t("common.reset")}
               </Button>
             )}
           </div>
         </div>
         <div className="mt-2 text-xs text-muted-foreground flex items-center gap-2">
-          {totalElements} élève{totalElements !== 1 ? "s" : ""} trouvé{totalElements !== 1 ? "s" : ""}
+          {totalElements} {t("common.found")}
           {isFetching && <Loader2 className="h-3 w-3 animate-spin" />}
         </div>
       </motion.div>
@@ -297,13 +308,13 @@ export default function Students() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Élève</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Matricule</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Classe</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Niveau</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Tél. Parent</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
-                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.student")}</th>
+                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("students.matricule")}</th>
+                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("students.class")}</th>
+                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("students.level")}</th>
+                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">{t("students.parentPhone")}</th>
+                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.status")}</th>
+                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -311,8 +322,8 @@ export default function Students() {
                 <tr>
                   <td colSpan={7} className="py-16 text-center text-muted-foreground">
                     <Users className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                    <p className="font-medium">Aucun élève trouvé</p>
-                    <p className="text-xs mt-1">Essayez de modifier vos filtres de recherche</p>
+                    <p className="font-medium">{t("students.noStudentFound")}</p>
+                    <p className="text-xs mt-1">{t("common.tryModifyFilters")}</p>
                   </td>
                 </tr>
               ) : (
@@ -377,13 +388,13 @@ export default function Students() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => navigate(`/dashboard/eleves/${student.id}`)}>
-                            <Eye className="h-4 w-4 mr-2" /> Profil
+                            <Eye className="h-4 w-4 mr-2" /> {t("common.profile")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => navigate(`/dashboard/eleves/modifier/${student.id}`)}>
-                            <Edit className="h-4 w-4 mr-2" /> Modifier
+                            <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setDeleteStudentTarget(student)} className="text-red-600">
-                            <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                            <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -399,7 +410,7 @@ export default function Students() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t border-border px-4 py-3">
             <p className="text-xs text-muted-foreground">
-              Page {currentPage + 1} sur {totalPages}
+              {t("common.page")} {currentPage + 1} {t("common.of")} {totalPages}
             </p>
             <div className="flex items-center gap-1">
               <Button
@@ -452,25 +463,25 @@ export default function Students() {
       <Dialog open={!!deleteStudentTarget} onOpenChange={(open) => !open && setDeleteStudentTarget(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogTitle>{t("common.confirmDelete")}</DialogTitle>
             <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer l'élève{" "}
+              {t("common.deleteConfirmMsg")}{" "}
               <span className="font-semibold text-foreground">
                 {deleteStudentTarget?.prenom} {deleteStudentTarget?.nom}
               </span>{" "}
-              ? Cette action est irréversible.
+              ? {t("common.irreversible")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending ? "Suppression..." : "Supprimer"}
+              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

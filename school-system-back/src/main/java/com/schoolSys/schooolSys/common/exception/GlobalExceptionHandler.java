@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -62,9 +65,87 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleConflict(DataIntegrityViolationException ex) {
-        log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
+        String causeMessage = ex.getMostSpecificCause().getMessage();
+        log.warn("Data integrity violation: {}", causeMessage);
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ApiResponse.error("A record with the same unique value already exists"));
+                .body(ApiResponse.error(translateConstraintViolation(causeMessage)));
+    }
+
+    private static final Pattern UNIQUE_CONSTRAINT_PATTERN =
+            Pattern.compile("unique constraint \"([^\"]+)\"");
+    private static final Pattern DETAIL_KEY_PATTERN =
+            Pattern.compile("Key \\(([^)]+)\\)=\\(([^)]*)\\)");
+    private static final Pattern FK_CONSTRAINT_PATTERN =
+            Pattern.compile("foreign key constraint \"([^\"]+)\"");
+
+    private static final Map<String, String> FIELD_LABELS = Map.ofEntries(
+            Map.entry("email", "email"),
+            Map.entry("matricule", "matricule"),
+            Map.entry("registration_number", "numéro d'inscription"),
+            Map.entry("username", "nom d'utilisateur"),
+            Map.entry("phone", "téléphone"),
+            Map.entry("cin", "CIN"),
+            Map.entry("name", "nom"),
+            Map.entry("slug", "identifiant"),
+            Map.entry("code", "code")
+    );
+
+    private String translateConstraintViolation(String causeMessage) {
+        if (causeMessage == null) {
+            return "Violation de contrainte d'intégrité";
+        }
+
+        Matcher detail = DETAIL_KEY_PATTERN.matcher(causeMessage);
+        String column = null;
+        String value = null;
+        if (detail.find()) {
+            column = detail.group(1).trim();
+            value = detail.group(2).trim();
+        }
+
+        if (causeMessage.contains("duplicate key") || causeMessage.contains("unique constraint")) {
+            String field = column != null ? friendlyField(column) : null;
+            if (field == null) {
+                Matcher uq = UNIQUE_CONSTRAINT_PATTERN.matcher(causeMessage);
+                if (uq.find()) field = friendlyField(extractColumnFromConstraint(uq.group(1)));
+            }
+            if (field != null) {
+                return value != null && !value.isEmpty()
+                        ? "Le champ « " + field + " » avec la valeur « " + value + " » existe déjà"
+                        : "Le champ « " + field + " » doit être unique — cette valeur existe déjà";
+            }
+            return "Cette valeur existe déjà (contrainte d'unicité)";
+        }
+
+        if (causeMessage.contains("foreign key") || causeMessage.contains("violates foreign key")) {
+            Matcher fk = FK_CONSTRAINT_PATTERN.matcher(causeMessage);
+            String ref = fk.find() ? fk.group(1) : null;
+            return ref != null
+                    ? "Référence invalide ou utilisée ailleurs (" + ref + ")"
+                    : "Cette donnée est référencée par un autre enregistrement et ne peut pas être modifiée/supprimée";
+        }
+
+        if (causeMessage.contains("not-null") || causeMessage.contains("null value")) {
+            return column != null
+                    ? "Le champ « " + friendlyField(column) + " » est obligatoire"
+                    : "Un champ obligatoire est manquant";
+        }
+
+        return "Violation de contrainte d'intégrité";
+    }
+
+    private String extractColumnFromConstraint(String constraintName) {
+        if (constraintName == null) return null;
+        String stripped = constraintName;
+        if (stripped.endsWith("_key")) stripped = stripped.substring(0, stripped.length() - 4);
+        int firstUnderscore = stripped.indexOf('_');
+        return firstUnderscore >= 0 ? stripped.substring(firstUnderscore + 1) : stripped;
+    }
+
+    private String friendlyField(String column) {
+        if (column == null) return null;
+        String key = column.toLowerCase().trim();
+        return FIELD_LABELS.getOrDefault(key, key.replace('_', ' '));
     }
 
     /**

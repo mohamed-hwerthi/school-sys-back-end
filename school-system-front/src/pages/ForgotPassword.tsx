@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, ArrowLeft, CheckCircle, Loader2, AlertCircle, GraduationCap, Sparkles } from "lucide-react";
 import { authApi } from "@/api/auth.api";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const container = {
   hidden: { opacity: 0 },
@@ -14,6 +15,7 @@ const item = {
 };
 
 const ForgotPassword = () => {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [focused, setFocused] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -156,7 +158,7 @@ const ForgotPassword = () => {
                         Envoi en cours...
                       </>
                     ) : (
-                      "Envoyer le lien"
+                      t("auth.sendLink")
                     )}
                   </motion.button>
                 </motion.div>

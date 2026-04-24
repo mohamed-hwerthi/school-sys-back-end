@@ -1,17 +1,28 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { absencesApi } from "@/api/absences.api";
-import type { Absence, AbsenceBatchRequest, AbsenceStats } from "@/types/absence";
+import type { Absence, AbsenceBatchRequest, AbsenceStats, FeuilleJour } from "@/types/absence";
 
 const ABSENCES_KEY = "absences";
 
 /**
- * Absences by class + date.
+ * Absences by class + date. Pass classeId <= 0 to get all classes for the date.
  */
 export function useAbsencesByClasseDate(classeId: number, date: string) {
   return useQuery<Absence[]>({
     queryKey: [ABSENCES_KEY, "classe", classeId, date],
     queryFn: () => absencesApi.getByClasseDate(classeId, date),
-    enabled: classeId > 0 && !!date,
+    enabled: !!date,
+  });
+}
+
+/**
+ * One "feuille" per class for a given date (counts of absents/retards/justifiees).
+ */
+export function useFeuillesByDate(date: string) {
+  return useQuery<FeuilleJour[]>({
+    queryKey: [ABSENCES_KEY, "feuilles", date],
+    queryFn: () => absencesApi.getFeuillesByDate(date),
+    enabled: !!date,
   });
 }
 

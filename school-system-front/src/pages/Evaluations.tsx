@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
 import {
   ClipboardCheck,
@@ -53,10 +54,29 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
-import { useExamens, useDeleteExamen } from "@/hooks/useExamens";
+import { useExamens, useExamensRaw, useDeleteExamen, useCreateExamen, useUpdateExamen } from "@/hooks/useExamens";
+import { useModules } from "@/hooks/useModules";
+import { useClasses } from "@/hooks/useClasses";
+import { useTeachers } from "@/hooks/useTeachers";
 import type { Evaluation, ResultatEvaluation } from "@/types/evaluation";
 import { TYPES_EVALUATION, STATUTS_EVALUATION, MATIERES } from "@/types/evaluation";
+
+type VersionKind = "both" | "etatique" | "privee";
+
+const emptyCreateForm = {
+  name: "",
+  namePrive: "",
+  moduleId: "",
+  classeId: "",
+  teacherId: "",
+  coefficient: 1,
+  ordre: 1,
+  version: "both" as VersionKind,
+};
+
+type CreateFormErrors = Partial<Record<keyof typeof emptyCreateForm, string>>;
 
 const ITEMS_PER_PAGE = 8;
 
@@ -81,8 +101,15 @@ const PIE_COLORS = ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#ef4444"];
 type TabKey = "overview" | "liste" | "resultats";
 
 export default function Evaluations() {
+  const { t } = useLanguage();
   const { data: evaluations = [], isLoading: loading } = useExamens();
+  const { data: examensRaw = [] } = useExamensRaw();
   const deleteExamen = useDeleteExamen();
+  const createExamen = useCreateExamen();
+  const updateExamen = useUpdateExamen();
+  const { data: modules = [] } = useModules();
+  const { data: classes = [] } = useClasses();
+  const { teachers } = useTeachers();
   const resultats: ResultatEvaluation[] = [];
 
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
@@ -94,6 +121,41 @@ export default function Evaluations() {
   const [viewEval, setViewEval] = useState<Evaluation | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Evaluation | null>(null);
 
+  // Create / Edit dialog (shared form)
+  const [formOpen, setFormOpen] = useState(false);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [createForm, setCreateForm] = useState(emptyCreateForm);
+  const [createErrors, setCreateErrors] = useState<CreateFormErrors>({});
+
+  const openCreate = () => {
+    setEditId(null);
+    setCreateForm(emptyCreateForm);
+    setCreateErrors({});
+    setFormOpen(true);
+  };
+
+  const openEdit = (e: Evaluation) => {
+    const raw = examensRaw.find((x) => x.id === e.id);
+    if (!raw) return;
+    setEditId(raw.id);
+    setCreateForm({
+      name: raw.name,
+      namePrive: raw.namePrive ?? "",
+      moduleId: String(raw.moduleId),
+      classeId: String(raw.classeId),
+      teacherId: raw.teacherId ? String(raw.teacherId) : "",
+      coefficient: raw.coeffEtatique || raw.coeffPrive || 1,
+      ordre: raw.ordreEtatique || raw.ordrePrive || 1,
+      version: raw.versionEtatique && raw.versionPrivee
+        ? "both"
+        : raw.versionEtatique
+          ? "etatique"
+          : "privee",
+    });
+    setCreateErrors({});
+    setFormOpen(true);
+  };
+
   // Stats
   const total = evaluations.length;
   const planifiees = evaluations.filter((e) => e.statut === "Planifiée").length;
@@ -104,10 +166,10 @@ export default function Evaluations() {
   }, [resultats]);
 
   const stats = [
-    { label: "Total évaluations", value: total, icon: ClipboardCheck, bgLight: "bg-rose-50", textColor: "text-rose-700" },
-    { label: "Planifiées", value: planifiees, icon: Calendar, bgLight: "bg-blue-50", textColor: "text-blue-700" },
-    { label: "Terminées", value: terminees, icon: CheckCircle2, bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
-    { label: "Moyenne générale", value: `${moyenneGenerale}/20`, icon: Award, bgLight: "bg-purple-50", textColor: "text-purple-700" },
+    { label: t("evaluations.title"), value: total, icon: ClipboardCheck, bgLight: "bg-rose-50", textColor: "text-rose-700" },
+    { label: t("common.pending"), value: planifiees, icon: Calendar, bgLight: "bg-blue-50", textColor: "text-blue-700" },
+    { label: t("evaluations.completed"), value: terminees, icon: CheckCircle2, bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
+    { label: t("grades.generalAverage"), value: `${moyenneGenerale}/20`, icon: Award, bgLight: "bg-purple-50", textColor: "text-purple-700" },
   ];
 
   // Charts data
@@ -172,6 +234,47 @@ export default function Evaluations() {
     setCurrentPage(1);
   };
 
+  const validateCreate = (): CreateFormErrors => {
+    const errs: CreateFormErrors = {};
+    if (!createForm.name.trim()) errs.name = "Le nom est requis";
+    if (!createForm.moduleId) errs.moduleId = "Le module est requis";
+    if (!createForm.classeId) errs.classeId = "La classe est requise";
+    if (!Number.isFinite(createForm.coefficient) || createForm.coefficient <= 0) errs.coefficient = "Coefficient invalide";
+    if (!Number.isFinite(createForm.ordre) || createForm.ordre < 1) errs.ordre = "Ordre invalide";
+    return errs;
+  };
+
+  const handleSubmitForm = () => {
+    const errs = validateCreate();
+    setCreateErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+    const versionEtatique = createForm.version !== "privee";
+    const versionPrivee = createForm.version !== "etatique";
+    const payload = {
+      name: createForm.name.trim(),
+      namePrive: createForm.namePrive.trim() || undefined,
+      coeffEtatique: createForm.coefficient,
+      coeffPrive: createForm.coefficient,
+      ordreEtatique: createForm.ordre,
+      ordrePrive: createForm.ordre,
+      classeId: Number(createForm.classeId),
+      moduleId: Number(createForm.moduleId),
+      teacherId: createForm.teacherId ? Number(createForm.teacherId) : undefined,
+      versionEtatique,
+      versionPrivee,
+    };
+    const onSuccess = () => {
+      notify.success(editId ? "Évaluation modifiée" : "Évaluation créée");
+      setFormOpen(false);
+    };
+    const onError = () => notify.error(editId ? "Erreur lors de la modification" : "Erreur lors de la création");
+    if (editId) {
+      updateExamen.mutate({ id: editId, data: payload }, { onSuccess, onError });
+    } else {
+      createExamen.mutate(payload, { onSuccess, onError });
+    }
+  };
+
   const handleDelete = () => {
     if (!deleteTarget) return;
     deleteExamen.mutate(deleteTarget.id, {
@@ -187,9 +290,9 @@ export default function Evaluations() {
   };
 
   const tabs: { key: TabKey; label: string; icon: React.ElementType }[] = [
-    { key: "overview", label: "Vue d'ensemble", icon: BarChart3 },
-    { key: "liste", label: "Liste", icon: ClipboardCheck },
-    { key: "resultats", label: "Résultats", icon: Award },
+    { key: "overview", label: t("grades.overviewLabel"), icon: BarChart3 },
+    { key: "liste", label: t("evaluations.title"), icon: ClipboardCheck },
+    { key: "resultats", label: t("grades.results"), icon: Award },
   ];
 
   if (loading) return <DashboardSkeleton />;
@@ -205,20 +308,20 @@ export default function Evaluations() {
       >
         <div>
           <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-            Évaluations
+            {t("evaluations.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Gestion des contrôles, examens et résultats
+            {t("evaluations.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1.5">
             <Download className="h-4 w-4" />
-            Exporter
+            {t("common.export")}
           </Button>
-          <Button size="sm" className="gap-1.5 bg-gradient-primary shadow-btn" onClick={() => notify.info("Fonctionnalité de création à venir")}>
+          <Button size="sm" className="gap-1.5 bg-gradient-primary shadow-btn" onClick={openCreate}>
             <Plus className="h-4 w-4" />
-            Nouvelle évaluation
+            {t("common.new")}
           </Button>
         </div>
       </motion.div>
@@ -272,7 +375,7 @@ export default function Evaluations() {
           <div className="rounded-xl border border-border/50 bg-card p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-semibold text-foreground">Évaluations par matière</h3>
+              <h3 className="text-sm font-semibold text-foreground">{t("evaluations.title")}</h3>
             </div>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={barData}>
@@ -287,7 +390,7 @@ export default function Evaluations() {
           <div className="rounded-xl border border-border/50 bg-card p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <BookOpen className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-semibold text-foreground">Répartition par type</h3>
+              <h3 className="text-sm font-semibold text-foreground">{t("grades.distribution")}</h3>
             </div>
             <ResponsiveContainer width="100%" height={280}>
               <PieChart>
@@ -310,13 +413,13 @@ export default function Evaluations() {
             <div className="flex flex-col lg:flex-row lg:items-center gap-3">
               <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} placeholder="Rechercher par titre, enseignant, matière..." className="pl-9" />
+                <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} placeholder={t("common.searchPlaceholder")} className="pl-9" />
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Select value={filterType} onValueChange={(v) => { setFilterType(v); setCurrentPage(1); }}>
                   <SelectTrigger className="w-[170px]"><Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" /><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les types</SelectItem>
+                    <SelectItem value="all">{t("common.allTypes")}</SelectItem>
                     {TYPES_EVALUATION.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -336,7 +439,7 @@ export default function Evaluations() {
                 </Select>
                 {hasFilters && (
                   <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1 text-muted-foreground hover:text-foreground">
-                    <X className="h-3.5 w-3.5" />Réinitialiser
+                    <X className="h-3.5 w-3.5" />{t("common.reset")}
                   </Button>
                 )}
               </div>
@@ -349,19 +452,19 @@ export default function Evaluations() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Évaluation</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Type</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Date</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Classe</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("evaluations.title")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("common.type")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("common.date")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">{t("common.class")}</th>
+                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.status")}</th>
+                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginated.length === 0 ? (
                     <tr><td colSpan={6} className="py-16 text-center text-muted-foreground">
                       <ClipboardCheck className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                      <p className="font-medium">Aucune évaluation trouvée</p>
+                      <p className="font-medium">{t("common.noResults")}</p>
                     </td></tr>
                   ) : paginated.map((e) => (
                     <tr key={e.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
@@ -390,7 +493,7 @@ export default function Evaluations() {
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-blue-600" onClick={() => setViewEval(e)}><Eye className="h-4 w-4" /></Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-amber-600" onClick={() => notify.info("Modification à venir")}><Edit className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-amber-600" onClick={() => openEdit(e)}><Edit className="h-4 w-4" /></Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-600" onClick={() => setDeleteTarget(e)}><Trash2 className="h-4 w-4" /></Button>
                         </div>
                       </td>
@@ -438,11 +541,11 @@ export default function Evaluations() {
                 {res ? (
                   <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="rounded-lg bg-muted/40 p-3 text-center">
-                      <p className="text-xs text-muted-foreground mb-1">Copies</p>
+                      <p className="text-xs text-muted-foreground mb-1">{t("common.total")}</p>
                       <p className="font-heading text-lg font-bold flex items-center justify-center gap-1"><Users className="h-4 w-4 text-blue-500" />{res.count}</p>
                     </div>
                     <div className="rounded-lg bg-muted/40 p-3 text-center">
-                      <p className="text-xs text-muted-foreground mb-1">Moyenne</p>
+                      <p className="text-xs text-muted-foreground mb-1">{t("grades.average")}</p>
                       <p className="font-heading text-lg font-bold flex items-center justify-center gap-1"><TrendingUp className="h-4 w-4 text-purple-500" />{res.avg}/20</p>
                     </div>
                     <div className="rounded-lg bg-muted/40 p-3 text-center">
@@ -456,7 +559,7 @@ export default function Evaluations() {
                   </div>
                 ) : (
                   <div className="mt-4 rounded-lg bg-muted/30 p-4 text-center text-xs text-muted-foreground">
-                    Aucun résultat saisi pour cette évaluation
+                    {t("common.noResults")}
                   </div>
                 )}
               </div>
@@ -469,8 +572,8 @@ export default function Evaluations() {
       <Dialog open={!!viewEval} onOpenChange={(open) => !open && setViewEval(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Détails de l'évaluation</DialogTitle>
-            <DialogDescription>Informations complètes</DialogDescription>
+            <DialogTitle>{t("common.details")}</DialogTitle>
+            <DialogDescription>{t("common.details")}</DialogDescription>
           </DialogHeader>
           {viewEval && (
             <div className="space-y-4 mt-2">
@@ -502,18 +605,149 @@ export default function Evaluations() {
         </DialogContent>
       </Dialog>
 
+      {/* Create / Edit Dialog */}
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editId ? "Modifier l'évaluation" : "Nouvelle évaluation"}</DialogTitle>
+            <DialogDescription>Définissez les informations de l'évaluation.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="eval-name">Nom *</Label>
+              <Input
+                id="eval-name"
+                value={createForm.name}
+                onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="Ex: Contrôle 1"
+                aria-invalid={!!createErrors.name}
+                className={createErrors.name ? "border-red-500 focus-visible:ring-red-500" : ""}
+              />
+              {createErrors.name && <p className="text-xs text-red-600">{createErrors.name}</p>}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Module *</Label>
+                <Select value={createForm.moduleId} onValueChange={(v) => setCreateForm((f) => ({ ...f, moduleId: v }))}>
+                  <SelectTrigger aria-invalid={!!createErrors.moduleId} className={createErrors.moduleId ? "border-red-500" : ""}>
+                    <SelectValue placeholder="Sélectionner..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {modules.map((m) => (
+                      <SelectItem key={m.id} value={String(m.id)}>
+                        {m.name} {m.niveauName ? `(${m.niveauName})` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {createErrors.moduleId && <p className="text-xs text-red-600">{createErrors.moduleId}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label>Classe *</Label>
+                <Select value={createForm.classeId} onValueChange={(v) => setCreateForm((f) => ({ ...f, classeId: v }))}>
+                  <SelectTrigger aria-invalid={!!createErrors.classeId} className={createErrors.classeId ? "border-red-500" : ""}>
+                    <SelectValue placeholder="Sélectionner..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {classes.map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}>
+                        {c.fullName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {createErrors.classeId && <p className="text-xs text-red-600">{createErrors.classeId}</p>}
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Enseignant</Label>
+              <Select value={createForm.teacherId} onValueChange={(v) => setCreateForm((f) => ({ ...f, teacherId: v }))}>
+                <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
+                <SelectContent>
+                  {teachers.map((tch) => (
+                    <SelectItem key={tch.id} value={String(tch.id)}>
+                      {tch.prenom} {tch.nom} {tch.specialite ? `· ${tch.specialite}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="eval-coef">Coefficient *</Label>
+                <Input
+                  id="eval-coef"
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={createForm.coefficient}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, coefficient: Number(e.target.value) }))}
+                  aria-invalid={!!createErrors.coefficient}
+                  className={createErrors.coefficient ? "border-red-500" : ""}
+                />
+                {createErrors.coefficient && <p className="text-xs text-red-600">{createErrors.coefficient}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="eval-ordre">Ordre *</Label>
+                <Input
+                  id="eval-ordre"
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={createForm.ordre}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, ordre: Number(e.target.value) }))}
+                  aria-invalid={!!createErrors.ordre}
+                  className={createErrors.ordre ? "border-red-500" : ""}
+                />
+                {createErrors.ordre && <p className="text-xs text-red-600">{createErrors.ordre}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label>Version</Label>
+                <Select value={createForm.version} onValueChange={(v) => setCreateForm((f) => ({ ...f, version: v as VersionKind }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="both">Les deux</SelectItem>
+                    <SelectItem value="etatique">Étatique</SelectItem>
+                    <SelectItem value="privee">Privée</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {createForm.version !== "etatique" && (
+              <div className="space-y-1.5">
+                <Label htmlFor="eval-nameprive">Nom (version privée)</Label>
+                <Input
+                  id="eval-nameprive"
+                  value={createForm.namePrive}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, namePrive: e.target.value }))}
+                  placeholder="Optionnel"
+                />
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
+            <Button onClick={handleSubmitForm} disabled={createExamen.isPending || updateExamen.isPending}>
+              {(createExamen.isPending || updateExamen.isPending)
+                ? (editId ? "Modification..." : "Création...")
+                : (editId ? t("common.save") : t("common.create"))}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Dialog */}
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogTitle>{t("common.confirmDelete")}</DialogTitle>
             <DialogDescription>
-              Supprimer <span className="font-semibold text-foreground">{deleteTarget?.titre}</span> ? Cette action est irréversible.
+              {t("common.deleteConfirmMsg")} <span className="font-semibold text-foreground">{deleteTarget?.titre}</span> ? {t("common.irreversible")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
-            <Button variant="destructive" onClick={handleDelete}>Supprimer</Button>
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
+            <Button variant="destructive" onClick={handleDelete}>{t("common.delete")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

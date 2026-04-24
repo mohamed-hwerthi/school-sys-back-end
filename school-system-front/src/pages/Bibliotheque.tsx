@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { validate, type FormErrors } from "@/lib/validate";
+import { livreSchema } from "@/lib/services-schemas";
 import {
   BookOpen,
   Search,
@@ -119,6 +121,7 @@ function CatalogueTab() {
     imageUrl: "",
   };
   const [form, setForm] = useState<CreateLivreRequest>(emptyForm);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   const openAdd = () => {
     setForm(emptyForm);
@@ -142,16 +145,17 @@ function CatalogueTab() {
   };
 
   const handleCreate = () => {
-    if (!form.titre) {
-      notify.error("Le titre est obligatoire");
-      return;
-    }
+    const result = validate(livreSchema, form);
+    if (!result.ok) { setFormErrors(result.errors); return; }
+    setFormErrors({});
     createLivre.mutate(form, {
       onSuccess: () => {
         notify.success("Livre ajoute au catalogue");
         setAddDialogOpen(false);
       },
-      onError: (err) => notify.error(err.message),
+      onError: (err: Error & { response?: { data?: { message?: string } } }) => {
+        setFormErrors({ _root: err.response?.data?.message ?? err.message });
+      },
     });
   };
 

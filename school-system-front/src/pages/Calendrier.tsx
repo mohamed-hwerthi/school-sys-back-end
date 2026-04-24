@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { type FormErrors } from "@/lib/validate";
 import {
   ChevronLeft,
   ChevronRight,
@@ -8,51 +9,74 @@ import {
   Megaphone,
   Sun,
   Info,
+  Plus,
+  Trash2,
+  MapPin,
+  CalendarDays,
+  Users,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAnnonces } from "@/hooks/useAnnonces";
 import { useExamensRaw } from "@/hooks/useExamens";
+import { useLanguage } from "@/hooks/useLanguage";
+import {
+  useEvenements,
+  useCreateEvenement,
+  useDeleteEvenement,
+} from "@/hooks/useEvenements";
+import type { EvenementType } from "@/types/evenement";
+import { notify } from "@/lib/toast";
 
 /* ── Types ──────────────────────────────────────────────── */
 
 interface CalendarEvent {
   date: string; // YYYY-MM-DD
   label: string;
-  type: "holiday" | "exam" | "annonce";
+  type: "holiday" | "exam" | "annonce" | "custom";
+  customId?: number;
+  customType?: EvenementType;
+  description?: string;
+  lieu?: string;
+  dateFin?: string;
 }
 
 /* ── Tunisian school holidays 2025-2026 ─────────────────── */
 
 const SCHOOL_HOLIDAYS: CalendarEvent[] = [
-  // Rentree scolaire
   { date: "2025-09-15", label: "Rentree scolaire", type: "holiday" },
-  // Vacances d'automne
   ...daysInRange("2025-10-27", "2025-11-02").map((d) => ({ date: d, label: "Vacances d'automne", type: "holiday" as const })),
-  // Mouled (approximation)
   { date: "2025-09-05", label: "Mouled Ennabi", type: "holiday" },
-  // Vacances de fin de 1er trimestre
   ...daysInRange("2025-12-22", "2026-01-04").map((d) => ({ date: d, label: "Vacances d'hiver", type: "holiday" as const })),
-  // Revolution Day
   { date: "2026-01-14", label: "Fete de la Revolution", type: "holiday" },
-  // Vacances de mi-annee (fin 2e trimestre)
   ...daysInRange("2026-03-16", "2026-03-22").map((d) => ({ date: d, label: "Vacances de printemps", type: "holiday" as const })),
-  // Fete de l'independance
   { date: "2026-03-20", label: "Fete de l'Independance", type: "holiday" },
-  // Jour des martyrs
   { date: "2026-04-09", label: "Journee des Martyrs", type: "holiday" },
-  // Fete du travail
   { date: "2026-05-01", label: "Fete du Travail", type: "holiday" },
-  // Fete de la Republique
   { date: "2026-07-25", label: "Fete de la Republique", type: "holiday" },
-  // Fin annee scolaire
   { date: "2026-06-30", label: "Fin de l'annee scolaire", type: "holiday" },
-  // Aid El-Fitr (approximation)
   ...daysInRange("2026-03-20", "2026-03-22").map((d) => ({ date: d, label: "Aid El-Fitr (approx.)", type: "holiday" as const })),
-  // Aid El-Adha (approximation)
   ...daysInRange("2026-05-27", "2026-05-29").map((d) => ({ date: d, label: "Aid El-Adha (approx.)", type: "holiday" as const })),
 ];
 
-/** Generate all dates between start and end (inclusive). */
 function daysInRange(start: string, end: string): string[] {
   const result: string[] = [];
   const cur = new Date(start);
@@ -85,68 +109,106 @@ function getDaysInMonth(year: number, month: number): number {
   return new Date(year, month + 1, 0).getDate();
 }
 
-/** 0 = Mon, 6 = Sun */
 function getFirstDayOfWeek(year: number, month: number): number {
   const day = new Date(year, month, 1).getDay();
-  return day === 0 ? 6 : day - 1; // convert Sun=0 to Mon-based
+  return day === 0 ? 6 : day - 1;
 }
 
 const EVENT_COLORS: Record<CalendarEvent["type"], { dot: string; bg: string; text: string }> = {
   holiday: { dot: "bg-amber-500", bg: "bg-amber-50", text: "text-amber-700" },
   exam: { dot: "bg-red-500", bg: "bg-red-50", text: "text-red-700" },
   annonce: { dot: "bg-blue-500", bg: "bg-blue-50", text: "text-blue-700" },
+  custom: { dot: "bg-emerald-500", bg: "bg-emerald-50", text: "text-emerald-700" },
 };
 
 const EVENT_ICONS: Record<CalendarEvent["type"], React.ElementType> = {
   holiday: Sun,
   exam: BookOpen,
   annonce: Megaphone,
+  custom: Sparkles,
+};
+
+const CUSTOM_TYPE_LABELS: Record<EvenementType, string> = {
+  GENERAL: "Général",
+  REUNION: "Réunion",
+  SORTIE: "Sortie scolaire",
+  EXAMEN: "Examen",
+  FERIE: "Férié",
+  AUTRE: "Autre",
+};
+
+interface FormState {
+  titre: string;
+  description: string;
+  dateDebut: string;
+  dateFin: string;
+  type: EvenementType;
+  lieu: string;
+}
+
+const initialForm: FormState = {
+  titre: "",
+  description: "",
+  dateDebut: "",
+  dateFin: "",
+  type: "GENERAL",
+  lieu: "",
 };
 
 /* ── Component ──────────────────────────────────────────── */
 
 export default function Calendrier() {
+  const { t } = useLanguage();
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
 
-  // Fetch annonces and examens
   const { data: annonces = [] } = useAnnonces(false);
   const { data: examens = [] } = useExamensRaw();
+  const { data: customEvents = [] } = useEvenements();
+  const createEvent = useCreateEvenement();
+  const deleteEvent = useDeleteEvenement();
 
-  // Build events list
+  const [showDialog, setShowDialog] = useState(false);
+  const [form, setForm] = useState<FormState>(initialForm);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+
   const events = useMemo<CalendarEvent[]>(() => {
     const list: CalendarEvent[] = [...SCHOOL_HOLIDAYS];
 
-    // Examens -- they may not have a date field, but the ExamenDTO has no date.
-    // We'll show them generically for the current month if they exist.
-    examens.forEach((ex) => {
-      // ExamenDTO doesn't have a date field, so we skip date-based placement
-      // but keep them in the sidebar list
-    });
-
-    // Annonces with datePublication
     annonces.forEach((a) => {
       if (a.datePublication) {
         const dateStr = a.datePublication.split("T")[0];
-        list.push({
-          date: dateStr,
-          label: a.titre,
-          type: "annonce",
-        });
+        list.push({ date: dateStr, label: a.titre, type: "annonce" });
       }
     });
 
-    return list;
-  }, [annonces, examens]);
+    customEvents.forEach((ev) => {
+      const dates = ev.dateFin
+        ? daysInRange(ev.dateDebut, ev.dateFin)
+        : [ev.dateDebut];
+      dates.forEach((d) => {
+        list.push({
+          date: d,
+          label: ev.titre,
+          type: "custom",
+          customId: ev.id,
+          customType: ev.type,
+          description: ev.description,
+          lieu: ev.lieu,
+          dateFin: ev.dateFin,
+        });
+      });
+    });
 
-  // Group events by date for current month
+    return list;
+  }, [annonces, customEvents]);
+
   const eventsByDate = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
     for (const ev of events) {
       const existing = map.get(ev.date) ?? [];
-      // Deduplicate by label
-      if (!existing.some((e) => e.label === ev.label && e.type === ev.type)) {
+      if (!existing.some((e) => e.label === ev.label && e.type === ev.type && e.customId === ev.customId)) {
         existing.push(ev);
       }
       map.set(ev.date, existing);
@@ -154,23 +216,20 @@ export default function Calendrier() {
     return map;
   }, [events]);
 
-  // Calendar grid
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfWeek(year, month);
   const todayStr = toDateStr(today.getFullYear(), today.getMonth(), today.getDate());
 
-  // Selected day for detail
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const selectedEvents = selectedDate ? eventsByDate.get(selectedDate) ?? [] : [];
 
-  // Events for current month (for sidebar)
   const monthEvents = useMemo(() => {
     const prefix = `${year}-${pad(month + 1)}`;
     const result: CalendarEvent[] = [];
     const seen = new Set<string>();
     for (const ev of events) {
       if (ev.date.startsWith(prefix)) {
-        const key = `${ev.date}|${ev.label}`;
+        const key = `${ev.date}|${ev.label}|${ev.customId ?? ""}`;
         if (!seen.has(key)) {
           seen.add(key);
           result.push(ev);
@@ -201,7 +260,50 @@ export default function Calendrier() {
     setSelectedDate(todayStr);
   };
 
-  // Build grid cells
+  const handleOpenCreate = (prefillDate?: string) => {
+    setForm({
+      ...initialForm,
+      dateDebut: prefillDate ?? todayStr,
+    });
+    setShowDialog(true);
+  };
+
+  const handleSubmit = () => {
+    const errs: FormErrors = {};
+    if (!form.titre.trim()) errs.titre = "Le titre est requis";
+    if (!form.dateDebut) errs.dateDebut = "La date de début est requise";
+    if (form.dateFin && form.dateFin < form.dateDebut) errs.dateFin = "La date de fin doit être après la date de début";
+    if (Object.keys(errs).length) { setFormErrors(errs); return; }
+    setFormErrors({});
+
+    createEvent.mutate(
+      {
+        titre: form.titre.trim(),
+        description: form.description.trim() || undefined,
+        dateDebut: form.dateDebut,
+        dateFin: form.dateFin || undefined,
+        type: form.type,
+        lieu: form.lieu.trim() || undefined,
+      },
+      {
+        onSuccess: () => {
+          notify.success("Événement ajouté");
+          setShowDialog(false);
+          setForm(initialForm);
+        },
+        onError: () => notify.error("Erreur lors de la création"),
+      }
+    );
+  };
+
+  const handleDeleteCustom = (id: number) => {
+    if (!confirm("Supprimer cet événement ?")) return;
+    deleteEvent.mutate(id, {
+      onSuccess: () => notify.success("Événement supprimé"),
+      onError: () => notify.error("Erreur lors de la suppression"),
+    });
+  };
+
   const cells: Array<{ day: number | null; dateStr: string | null }> = [];
   for (let i = 0; i < firstDay; i++) {
     cells.push({ day: null, dateStr: null });
@@ -209,7 +311,6 @@ export default function Calendrier() {
   for (let d = 1; d <= daysInMonth; d++) {
     cells.push({ day: d, dateStr: toDateStr(year, month, d) });
   }
-  // Fill remaining cells to complete grid (up to 42 = 6 rows)
   while (cells.length % 7 !== 0) {
     cells.push({ day: null, dateStr: null });
   }
@@ -234,20 +335,25 @@ export default function Calendrier() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={goToToday}>
-            Aujourd'hui
+            {t("common.today")}
+          </Button>
+          <Button size="sm" onClick={() => handleOpenCreate(selectedDate ?? undefined)}>
+            <Plus className="mr-1.5 h-4 w-4" />
+            Nouvel événement
           </Button>
         </div>
       </motion.div>
 
       {/* Legend */}
       <div className="flex flex-wrap gap-4 text-xs">
-        {(["holiday", "exam", "annonce"] as const).map((type) => {
+        {(["holiday", "exam", "annonce", "custom"] as const).map((type) => {
           const Icon = EVENT_ICONS[type];
           const colors = EVENT_COLORS[type];
           const labels: Record<string, string> = {
             holiday: "Vacances / Jours feries",
             exam: "Examens",
-            annonce: "Annonces / Evenements",
+            annonce: "Annonces",
+            custom: "Événements",
           };
           return (
             <span key={type} className={`flex items-center gap-1.5 rounded-md px-2 py-1 ${colors.bg} ${colors.text} font-medium`}>
@@ -266,7 +372,6 @@ export default function Calendrier() {
           transition={{ duration: 0.3, delay: 0.05 }}
           className="lg:col-span-3 rounded-2xl border border-border/40 bg-card shadow-sm overflow-hidden"
         >
-          {/* Month navigation */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-border/40">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ChevronLeft className="h-5 w-5" />
@@ -279,7 +384,6 @@ export default function Calendrier() {
             </Button>
           </div>
 
-          {/* Day headers */}
           <div className="grid grid-cols-7 border-b border-border/40">
             {DAYS_FR.map((d) => (
               <div key={d} className="py-2 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -288,7 +392,6 @@ export default function Calendrier() {
             ))}
           </div>
 
-          {/* Day cells */}
           <div className="grid grid-cols-7">
             {cells.map((cell, i) => {
               if (cell.day === null) {
@@ -304,6 +407,7 @@ export default function Calendrier() {
                 <button
                   key={dateStr}
                   onClick={() => setSelectedDate(dateStr === selectedDate ? null : dateStr)}
+                  onDoubleClick={() => handleOpenCreate(dateStr)}
                   className={`min-h-[80px] border-b border-r border-border/20 p-1.5 text-left transition-colors relative group
                     ${isToday ? "bg-primary/5" : ""}
                     ${isSelected ? "bg-primary/10 ring-2 ring-primary/30 ring-inset" : ""}
@@ -316,16 +420,13 @@ export default function Calendrier() {
                   `}>
                     {cell.day}
                   </span>
-                  {/* Event dots */}
                   {dayEvents.length > 0 && (
                     <div className="flex flex-wrap gap-0.5 mt-0.5">
-                      {/* Show unique type dots */}
                       {Array.from(new Set(dayEvents.map((e) => e.type))).map((type) => (
                         <span key={type} className={`h-1.5 w-1.5 rounded-full ${EVENT_COLORS[type].dot}`} />
                       ))}
                     </div>
                   )}
-                  {/* First event label (truncated) on larger screens */}
                   {dayEvents.length > 0 && (
                     <p className="hidden md:block text-[10px] leading-tight text-muted-foreground truncate mt-0.5 max-w-full">
                       {dayEvents[0].label}
@@ -342,24 +443,34 @@ export default function Calendrier() {
           </div>
         </motion.div>
 
-        {/* Sidebar — events for month or selected day */}
+        {/* Sidebar */}
         <motion.div
           initial={{ opacity: 0, x: 10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
           className="lg:col-span-1 space-y-4"
         >
-          {/* Selected day detail */}
           {selectedDate && (
             <div className="rounded-2xl border border-border/40 bg-card p-4 shadow-sm">
-              <h3 className="font-heading text-sm font-semibold text-foreground mb-3">
-                {new Date(selectedDate + "T00:00:00").toLocaleDateString("fr-FR", {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </h3>
+              <div className="flex items-start justify-between mb-3 gap-2">
+                <h3 className="font-heading text-sm font-semibold text-foreground">
+                  {new Date(selectedDate + "T00:00:00").toLocaleDateString("fr-FR", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0"
+                  onClick={() => handleOpenCreate(selectedDate)}
+                  title="Ajouter un événement ce jour"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
               {selectedEvents.length === 0 ? (
                 <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                   <Info className="h-3.5 w-3.5" />
@@ -373,7 +484,29 @@ export default function Calendrier() {
                     return (
                       <div key={`${ev.date}-${i}`} className={`flex items-start gap-2 rounded-lg p-2 ${colors.bg}`}>
                         <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${colors.text}`} />
-                        <span className={`text-xs font-medium ${colors.text}`}>{ev.label}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-xs font-medium ${colors.text}`}>{ev.label}</p>
+                          {ev.type === "custom" && ev.customType && (
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              {CUSTOM_TYPE_LABELS[ev.customType]}
+                              {ev.lieu && ` • ${ev.lieu}`}
+                            </p>
+                          )}
+                          {ev.description && (
+                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{ev.description}</p>
+                          )}
+                        </div>
+                        {ev.type === "custom" && ev.customId && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 shrink-0 text-destructive hover:text-destructive"
+                            onClick={() => handleDeleteCustom(ev.customId!)}
+                            title="Supprimer"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        )}
                       </div>
                     );
                   })}
@@ -382,13 +515,12 @@ export default function Calendrier() {
             </div>
           )}
 
-          {/* Month events list */}
           <div className="rounded-2xl border border-border/40 bg-card p-4 shadow-sm">
             <h3 className="font-heading text-sm font-semibold text-foreground mb-3">
               Evenements - {MONTHS_FR[month]}
             </h3>
             {monthEvents.length === 0 ? (
-              <p className="text-xs text-muted-foreground">Aucun evenement ce mois</p>
+              <p className="text-xs text-muted-foreground">{t("calendar.noEvent")}</p>
             ) : (
               <div className="space-y-1.5 max-h-[400px] overflow-y-auto">
                 {monthEvents.map((ev, i) => {
@@ -417,7 +549,6 @@ export default function Calendrier() {
             )}
           </div>
 
-          {/* Upcoming exams */}
           {examens.length > 0 && (
             <div className="rounded-2xl border border-border/40 bg-card p-4 shadow-sm">
               <h3 className="font-heading text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
@@ -439,6 +570,109 @@ export default function Calendrier() {
           )}
         </motion.div>
       </div>
+
+      {/* Create event dialog */}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarDays className="h-5 w-5" />
+              Nouvel événement
+            </DialogTitle>
+            <DialogDescription>
+              Ajoutez un événement personnalisé au calendrier scolaire.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="titre">Titre *</Label>
+              <Input
+                id="titre"
+                value={form.titre}
+                onChange={(e) => setForm({ ...form, titre: e.target.value })}
+                placeholder="ex : Conseil de classe 6ème A"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="dateDebut">Date de début *</Label>
+                <Input
+                  id="dateDebut"
+                  type="date"
+                  value={form.dateDebut}
+                  onChange={(e) => setForm({ ...form, dateDebut: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="dateFin">Date de fin</Label>
+                <Input
+                  id="dateFin"
+                  type="date"
+                  value={form.dateFin}
+                  onChange={(e) => setForm({ ...form, dateFin: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="type">Type</Label>
+              <Select
+                value={form.type}
+                onValueChange={(v) => setForm({ ...form, type: v as EvenementType })}
+              >
+                <SelectTrigger id="type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(CUSTOM_TYPE_LABELS) as EvenementType[]).map((k) => (
+                    <SelectItem key={k} value={k}>
+                      {CUSTOM_TYPE_LABELS[k]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="lieu" className="flex items-center gap-1">
+                <MapPin className="h-3.5 w-3.5" />
+                Lieu
+              </Label>
+              <Input
+                id="lieu"
+                value={form.lieu}
+                onChange={(e) => setForm({ ...form, lieu: e.target.value })}
+                placeholder="ex : Salle des professeurs"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="description" className="flex items-center gap-1">
+                <Users className="h-3.5 w-3.5" />
+                Description
+              </Label>
+              <Textarea
+                id="description"
+                rows={3}
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="Détails supplémentaires..."
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDialog(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSubmit} disabled={createEvent.isPending}>
+              {createEvent.isPending ? "Création..." : "Créer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

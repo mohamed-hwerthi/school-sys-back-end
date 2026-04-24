@@ -32,7 +32,7 @@ import { useNiveaux } from "@/hooks/useNiveaux";
 import { useClasses } from "@/hooks/useClasses";
 import { useModules } from "@/hooks/useModules";
 import {
-  useExamens,
+  useExamensRaw,
   useCreateExamen,
   useUpdateExamen,
   useDeleteExamen,
@@ -67,7 +67,7 @@ export default function ExamensTab() {
 
   const { data: classes = [] } = useClasses(filterNiveauId || undefined);
   const { data: modules = [] } = useModules(filterNiveauId || undefined);
-  const { data: examens = [], isLoading } = useExamens(
+  const { data: examens = [], isLoading } = useExamensRaw(
     filterModuleId || undefined,
     filterClasseId || undefined
   );

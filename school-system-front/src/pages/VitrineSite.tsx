@@ -7,12 +7,14 @@ import VitrineSEO from "@/components/vitrine/VitrineSEO";
 import VitrinePreviewBanner from "@/components/vitrine/VitrinePreviewBanner";
 import VitrineWhatsAppButton from "@/components/vitrine/VitrineWhatsAppButton";
 import VitrineSkeleton from "@/components/vitrine/VitrineSkeleton";
+import { useLanguage } from "@/hooks/useLanguage";
 
 /**
  * Public vitrine page — renders the school's showcase website.
  * URL: /vitrine/:slug or /vitrine/:slug/:pageSlug
  */
 export default function VitrineSite() {
+  const { t } = useLanguage();
   const { slug, pageSlug } = useParams<{ slug: string; pageSlug?: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -26,8 +28,8 @@ export default function VitrineSite() {
   if (isError || !data) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Site introuvable</h1>
-        <p className="text-gray-500">Ce site vitrine n'existe pas ou n'est pas encore publie.</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("showcase.siteNotFound")}</h1>
+        <p className="text-gray-500">{t("showcase.siteNotFoundDesc")}</p>
         <button
           onClick={() => navigate("/")}
           className="text-sm font-medium text-blue-600 hover:underline"
@@ -52,8 +54,8 @@ export default function VitrineSite() {
         <VitrineNavbar config={config} pages={pages} />
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Page introuvable</h1>
-            <p className="mt-2 text-gray-500">Cette page n'existe pas.</p>
+            <h1 className="text-2xl font-bold text-gray-900">{t("showcase.pageNotFound")}</h1>
+            <p className="mt-2 text-gray-500">{t("showcase.pageNotFoundDesc")}</p>
           </div>
         </div>
         <VitrineFooter config={config} />

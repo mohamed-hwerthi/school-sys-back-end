@@ -6,12 +6,17 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import java.time.LocalDateTime;
 
 /**
  * JPA entity representing a student's enrollment in a course.
  */
 @Entity
 @Table(name = "enrollments")
+@SQLDelete(sql = "UPDATE enrollments SET deleted = true, deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted = false")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -39,4 +44,11 @@ public class Enrollment {
     public enum EnrollmentStatus {
         ACTIVE, DROPPED, COMPLETED
     }
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

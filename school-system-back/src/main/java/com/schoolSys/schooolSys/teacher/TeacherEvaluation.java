@@ -5,9 +5,13 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "teacher_evaluations")
+@SQLDelete(sql = "UPDATE teacher_evaluations SET deleted = true, deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted = false")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -75,4 +79,11 @@ public class TeacherEvaluation {
             noteGlobale = BigDecimal.valueOf((double) sum / count).setScale(1, java.math.RoundingMode.HALF_UP);
         }
     }
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

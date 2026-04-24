@@ -4,9 +4,14 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "students")
+@SQLDelete(sql = "UPDATE students SET deleted = true, deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted = false")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -78,4 +83,11 @@ public class Student {
 
     @Column(unique = true, length = 20)
     private String matricule;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

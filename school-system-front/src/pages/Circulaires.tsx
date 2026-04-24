@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { useCirculaires, useDeleteCirculaire, usePublishCirculaire, useArchiveCirculaire } from "@/hooks/useCirculaires";
 import { motion } from "framer-motion";
 import {
@@ -71,6 +72,7 @@ const typeConfig: Record<string, { bg: string; text: string; icon: React.Element
 };
 
 export default function Circulaires() {
+  const { t } = useLanguage();
   const { data: circulaires = [], isLoading: loading } = useCirculaires();
   const deleteMutation = useDeleteCirculaire();
   const publishMutation = usePublishCirculaire();
@@ -84,10 +86,10 @@ export default function Circulaires() {
   const [deleteTarget, setDeleteTarget] = useState<Circulaire | null>(null);
 
   const stats = [
-    { label: "Total", value: circulaires.length, icon: Newspaper, bgLight: "bg-lime-50", textColor: "text-lime-700" },
-    { label: "Publiées", value: circulaires.filter((c) => c.statut === "Publiée").length, icon: Send, bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
-    { label: "Brouillons", value: circulaires.filter((c) => c.statut === "Brouillon").length, icon: Edit, bgLight: "bg-gray-50", textColor: "text-gray-700" },
-    { label: "Urgentes", value: circulaires.filter((c) => c.type === "Urgent").length, icon: AlertTriangle, bgLight: "bg-red-50", textColor: "text-red-700" },
+    { label: t("circulars.totalCirculars"), value: circulaires.length, icon: Newspaper, bgLight: "bg-lime-50", textColor: "text-lime-700" },
+    { label: t("circulars.publishedCirculars"), value: circulaires.filter((c) => c.statut === "Publiée").length, icon: Send, bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
+    { label: t("circulars.draftCirculars"), value: circulaires.filter((c) => c.statut === "Brouillon").length, icon: Edit, bgLight: "bg-gray-50", textColor: "text-gray-700" },
+    { label: t("circulars.urgentCirculars"), value: circulaires.filter((c) => c.type === "Urgent").length, icon: AlertTriangle, bgLight: "bg-red-50", textColor: "text-red-700" },
   ];
 
   const filtered = useMemo(() => {
@@ -139,12 +141,12 @@ export default function Circulaires() {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
-          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">Circulaires</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Communications, règlements et annonces</p>
+          <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">{t("circulars.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{t("circulars.subtitle")}</p>
         </div>
         <Button size="sm" className="gap-1.5 bg-gradient-primary shadow-btn w-fit" onClick={() => notify.info("Création de circulaire à venir")}>
           <Plus className="h-4 w-4" />
-          Nouvelle circulaire
+          {t("circulars.newCircular")}
         </Button>
       </motion.div>
 
@@ -166,7 +168,7 @@ export default function Circulaires() {
         <div className="flex flex-col lg:flex-row lg:items-center gap-3">
           <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} placeholder="Rechercher par titre ou contenu..." className="pl-9" />
+            <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} placeholder={t("circulars.searchPlaceholder")} className="pl-9" />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Select value={filterType} onValueChange={(v) => { setFilterType(v); setCurrentPage(1); }}>
@@ -191,7 +193,7 @@ export default function Circulaires() {
               </SelectContent>
             </Select>
             {hasFilters && (
-              <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1 text-muted-foreground"><X className="h-3.5 w-3.5" />Réinitialiser</Button>
+              <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1 text-muted-foreground"><X className="h-3.5 w-3.5" />{t("common.reset")}</Button>
             )}
           </div>
         </div>
@@ -203,7 +205,7 @@ export default function Circulaires() {
         {paginated.length === 0 ? (
           <motion.div custom={5} variants={fadeUp} initial="hidden" animate="visible" className="rounded-xl border border-border/50 bg-card p-12 text-center text-muted-foreground">
             <Newspaper className="h-10 w-10 mx-auto mb-3 opacity-30" />
-            <p className="font-medium">Aucune circulaire trouvée</p>
+            <p className="font-medium">{t("common.noResults")}</p>
           </motion.div>
         ) : paginated.map((c, i) => {
           const TypeIcon = typeConfig[c.type]?.icon || FileText;
@@ -260,7 +262,7 @@ export default function Circulaires() {
       {/* Pagination */}
       {filtered.length > ITEMS_PER_PAGE && (
         <div className="flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">Page {currentPage} sur {totalPages}</p>
+          <p className="text-xs text-muted-foreground">{t("common.page")} {currentPage} {t("common.of")} {totalPages}</p>
           <div className="flex items-center gap-1">
             <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
@@ -289,10 +291,10 @@ export default function Circulaires() {
             <div className="space-y-4 mt-2">
               <div className="rounded-lg bg-muted/40 p-4 text-sm whitespace-pre-line">{viewCirculaire.contenu}</div>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><p className="text-xs text-muted-foreground">Auteur</p><p className="font-medium">{viewCirculaire.auteur}</p></div>
-                <div><p className="text-xs text-muted-foreground">Date création</p><p className="font-medium">{viewCirculaire.dateCreation}</p></div>
-                {viewCirculaire.datePublication && <div><p className="text-xs text-muted-foreground">Date publication</p><p className="font-medium">{viewCirculaire.datePublication}</p></div>}
-                {viewCirculaire.pieceJointe && <div><p className="text-xs text-muted-foreground">Pièce jointe</p><p className="font-medium text-blue-600">{viewCirculaire.pieceJointe}</p></div>}
+                <div><p className="text-xs text-muted-foreground">{t("reports.author")}</p><p className="font-medium">{viewCirculaire.auteur}</p></div>
+                <div><p className="text-xs text-muted-foreground">{t("common.date")}</p><p className="font-medium">{viewCirculaire.dateCreation}</p></div>
+                {viewCirculaire.datePublication && <div><p className="text-xs text-muted-foreground">{t("common.published")}</p><p className="font-medium">{viewCirculaire.datePublication}</p></div>}
+                {viewCirculaire.pieceJointe && <div><p className="text-xs text-muted-foreground">{t("reports.file")}</p><p className="font-medium text-blue-600">{viewCirculaire.pieceJointe}</p></div>}
               </div>
             </div>
           )}
@@ -303,12 +305,12 @@ export default function Circulaires() {
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
-            <DialogDescription>Supprimer <span className="font-semibold text-foreground">{deleteTarget?.titre}</span> ?</DialogDescription>
+            <DialogTitle>{t("common.confirmDelete")}</DialogTitle>
+            <DialogDescription>{t("common.deleteConfirmMsg")} <span className="font-semibold text-foreground">{deleteTarget?.titre}</span> ?</DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
-            <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
-            <Button variant="destructive" onClick={handleDelete}>Supprimer</Button>
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
+            <Button variant="destructive" onClick={handleDelete}>{t("common.delete")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

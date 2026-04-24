@@ -3,7 +3,7 @@ import { Upload, X, FileIcon, ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import type { FileInfo } from "@/api/storage.api";
+import { uploadFile, type FileInfo } from "@/api/storage.api";
 
 export interface FileUploadProps {
   /** Storage folder to upload files into (e.g. "students", "devoirs"). */
@@ -60,6 +60,32 @@ export function FileUpload({
   const [files, setFiles] = useState<SelectedFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
 
+  const updateEntry = useCallback(
+    (file: File, patch: Partial<SelectedFile>) => {
+      setFiles((prev) =>
+        prev.map((f) => (f.file === file ? { ...f, ...patch } : f))
+      );
+    },
+    []
+  );
+
+  const uploadEntry = useCallback(
+    async (file: File) => {
+      updateEntry(file, { uploading: true, progress: 10, error: undefined });
+      try {
+        updateEntry(file, { progress: 50 });
+        const info = await uploadFile(file, folder);
+        updateEntry(file, { uploading: false, progress: 100, uploaded: info });
+        onUpload?.(info);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Erreur lors de l'upload";
+        updateEntry(file, { uploading: false, progress: 0, error: message });
+      }
+    },
+    [folder, onUpload, updateEntry]
+  );
+
   const addFiles = useCallback(
     (newFiles: FileList | File[]) => {
       const fileArray = Array.from(newFiles);
@@ -71,12 +97,10 @@ export function FileUpload({
           progress: 0,
         };
 
-        // Validate size
         if (file.size > maxSize) {
           entry.error = `Taille maximale: ${formatFileSize(maxSize)}`;
         }
 
-        // Create image preview
         if (isImageFile(file) && !entry.error) {
           entry.preview = URL.createObjectURL(file);
         }
@@ -85,8 +109,12 @@ export function FileUpload({
       });
 
       setFiles((prev) => (multiple ? [...prev, ...selectedFiles] : selectedFiles));
+
+      selectedFiles.forEach((entry) => {
+        if (!entry.error) void uploadEntry(entry.file);
+      });
     },
-    [maxSize, multiple]
+    [maxSize, multiple, uploadEntry]
   );
 
   const handleDragOver = useCallback(
@@ -137,59 +165,6 @@ export function FileUpload({
     },
     [onRemove]
   );
-
-  const uploadSingleFile = useCallback(
-    async (index: number) => {
-      setFiles((prev) =>
-        prev.map((f, i) =>
-          i === index ? { ...f, uploading: true, progress: 10, error: undefined } : f
-        )
-      );
-
-      try {
-        // Import dynamically to avoid circular deps
-        const { uploadFile } = await import("@/api/storage.api");
-
-        setFiles((prev) =>
-          prev.map((f, i) => (i === index ? { ...f, progress: 50 } : f))
-        );
-
-        const info = await uploadFile(files[index].file, folder);
-
-        setFiles((prev) =>
-          prev.map((f, i) =>
-            i === index
-              ? { ...f, uploading: false, progress: 100, uploaded: info }
-              : f
-          )
-        );
-
-        onUpload?.(info);
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Erreur lors de l'upload";
-        setFiles((prev) =>
-          prev.map((f, i) =>
-            i === index
-              ? { ...f, uploading: false, progress: 0, error: message }
-              : f
-          )
-        );
-      }
-    },
-    [files, folder, onUpload]
-  );
-
-  const uploadAll = useCallback(async () => {
-    for (let i = 0; i < files.length; i++) {
-      if (!files[i].uploaded && !files[i].error) {
-        await uploadSingleFile(i);
-      }
-    }
-  }, [files, uploadSingleFile]);
-
-  const hasFilesToUpload = files.some((f) => !f.uploaded && !f.error);
-  const isUploading = files.some((f) => f.uploading);
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -300,28 +275,6 @@ export function FileUpload({
               </div>
             </div>
           ))}
-
-          {/* Upload button */}
-          {hasFilesToUpload && (
-            <Button
-              onClick={uploadAll}
-              disabled={isUploading || disabled}
-              className="w-full"
-            >
-              {isUploading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Upload en cours...
-                </>
-              ) : (
-                <>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Uploader {files.filter((f) => !f.uploaded && !f.error).length}{" "}
-                  fichier(s)
-                </>
-              )}
-            </Button>
-          )}
         </div>
       )}
     </div>

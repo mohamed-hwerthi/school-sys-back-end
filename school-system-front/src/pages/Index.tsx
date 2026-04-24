@@ -5,6 +5,7 @@ import { Mail, Lock, GraduationCap, ArrowRight, Sparkles, Loader2, AlertCircle, 
 import { useAuth } from "@/hooks/useAuth";
 import { loginSchema } from "@/lib/auth-schema";
 import schoolHero from "@/assets/school-hero.png";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const container = {
   hidden: { opacity: 0 },
@@ -16,6 +17,7 @@ const item = {
 };
 
 const Index = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { login, verify2FA, cancelTwoFactor, isAuthenticated, twoFactorPending } = useAuth();
   const [email, setEmail] = useState("");
@@ -234,7 +236,7 @@ const Index = () => {
                   <ShieldCheck className="h-7 w-7 text-primary" />
                 </div>
                 <h2 className="font-heading text-2xl font-bold text-foreground">
-                  Vérification 2FA
+                  {t("auth.twoFactor")}
                 </h2>
                 <p className="mt-1.5 text-sm text-muted-foreground">
                   Saisissez le code de votre application d'authentification
@@ -314,10 +316,10 @@ const Index = () => {
             <>
               <motion.div variants={item} className="mb-8 text-center">
                 <h2 className="font-heading text-2xl font-bold text-foreground">
-                  Bon retour !
+                  {t("auth.welcomeBack")}
                 </h2>
                 <p className="mt-1.5 text-sm text-muted-foreground">
-                  Connectez-vous à votre espace
+                  {t("auth.signIn")}
                 </p>
               </motion.div>
 
@@ -336,7 +338,7 @@ const Index = () => {
                 {/* Email */}
                 <motion.div variants={item} className="relative">
                   <label className="mb-1.5 block text-xs font-semibold text-foreground">
-                    E-mail
+                    {t("auth.email")}
                   </label>
                   <div className="relative">
                     <Mail className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "email" ? "text-primary" : "text-muted-foreground"}`} />
@@ -355,7 +357,7 @@ const Index = () => {
                 {/* Password */}
                 <motion.div variants={item} className="relative">
                   <label className="mb-1.5 block text-xs font-semibold text-foreground">
-                    Mot de passe
+                    {t("auth.password")}
                   </label>
                   <div className="relative">
                     <Lock className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "pass" ? "text-primary" : "text-muted-foreground"}`} />
@@ -374,7 +376,7 @@ const Index = () => {
                 {/* Forgot password */}
                 <motion.div variants={item} className="text-right">
                   <Link to="/forgot-password" className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
-                    Mot de passe oublié ?
+                    {t("auth.forgotPassword")}
                   </Link>
                 </motion.div>
 
@@ -394,7 +396,7 @@ const Index = () => {
                       </>
                     ) : (
                       <>
-                        Se connecter
+                        {t("auth.loginButton")}
                         <ArrowRight className="h-4 w-4" />
                       </>
                     )}

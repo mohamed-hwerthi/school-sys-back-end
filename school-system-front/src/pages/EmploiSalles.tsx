@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -48,11 +49,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRooms } from "@/hooks/useRooms";
-import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
+import { useRooms, useDeleteRoom } from "@/hooks/useRooms";
+import { MOCK_TIMESLOTS } from "@/data/rooms";
 import { EmploiSallesSkeleton } from "@/components/skeletons/EmploiSallesSkeleton";
 import { ROOM_TYPES, ROOM_STATUTS, JOURS, HEURES } from "@/types/room";
 import type { Room, TimeSlot, Jour } from "@/types/room";
+import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -94,9 +96,12 @@ const slotColors = [
 ];
 
 export default function EmploiSalles() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
-  const { rooms, timeSlots, deleteRoom: removeRoom, deleteTimeSlot } = useRooms();
-  const loading = useSimulatedLoading(800);
+  const { data: rooms = [], isLoading } = useRooms();
+  const deleteRoomMutation = useDeleteRoom();
+  // TimeSlots still use mock data (no backend yet)
+  const timeSlots = MOCK_TIMESLOTS;
 
   const [activeTab, setActiveTab] = useState<"salles" | "emploi">("salles");
   const [search, setSearch] = useState("");
@@ -167,12 +172,12 @@ export default function EmploiSalles() {
   const totalCreneaux = timeSlots.length;
 
   const stats = [
-    { label: "Total Salles", value: totalRooms, icon: Building2, color: "bg-blue-500", bgLight: "bg-blue-50", textColor: "text-blue-700" },
-    { label: "Disponibles", value: disponibles, icon: CheckCircle2, color: "bg-emerald-500", bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
-    { label: "Occupées", value: occupees, icon: Users, color: "bg-purple-500", bgLight: "bg-purple-50", textColor: "text-purple-700" },
-    { label: "En maintenance", value: enMaintenance, icon: Wrench, color: "bg-amber-500", bgLight: "bg-amber-50", textColor: "text-amber-700" },
-    { label: "Capacité totale", value: totalCapacite, icon: Users, color: "bg-pink-500", bgLight: "bg-pink-50", textColor: "text-pink-700" },
-    { label: "Créneaux", value: totalCreneaux, icon: Clock, color: "bg-cyan-500", bgLight: "bg-cyan-50", textColor: "text-cyan-700" },
+    { label: t("rooms.totalRooms"), value: totalRooms, icon: Building2, color: "bg-blue-500", bgLight: "bg-blue-50", textColor: "text-blue-700" },
+    { label: t("rooms.availablePlural"), value: disponibles, icon: CheckCircle2, color: "bg-emerald-500", bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
+    { label: t("common.active"), value: occupees, icon: Users, color: "bg-purple-500", bgLight: "bg-purple-50", textColor: "text-purple-700" },
+    { label: t("schedule.maintenance"), value: enMaintenance, icon: Wrench, color: "bg-amber-500", bgLight: "bg-amber-50", textColor: "text-amber-700" },
+    { label: t("common.total"), value: totalCapacite, icon: Users, color: "bg-pink-500", bgLight: "bg-pink-50", textColor: "text-pink-700" },
+    { label: t("common.total"), value: totalCreneaux, icon: Clock, color: "bg-cyan-500", bgLight: "bg-cyan-50", textColor: "text-cyan-700" },
   ];
 
   // ─── Handlers ─────────────────────────────────────────
@@ -189,13 +194,20 @@ export default function EmploiSalles() {
 
   const handleDeleteRoom = () => {
     if (!deleteRoomTarget) return;
-    removeRoom(deleteRoomTarget.id);
-    setDeleteRoomTarget(null);
+    deleteRoomMutation.mutate(deleteRoomTarget.id, {
+      onSuccess: () => {
+        toast.success("Salle supprimée avec succès");
+        setDeleteRoomTarget(null);
+      },
+      onError: (err) => {
+        toast.error(err.message || "Erreur lors de la suppression");
+      },
+    });
   };
 
   const getRoomName = (id: number) => rooms.find((r) => r.id === id)?.nom ?? "—";
 
-  if (loading) return <EmploiSallesSkeleton />;
+  if (isLoading) return <EmploiSallesSkeleton />;
 
   // ─── Render ───────────────────────────────────────────
   return (
@@ -209,16 +221,16 @@ export default function EmploiSalles() {
       >
         <div>
           <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-            Emploi du Temps & Salles
+            {t("rooms.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Gérez les salles de classe et les emplois du temps
+            {t("rooms.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1.5">
             <Download className="h-4 w-4" />
-            Exporter
+            {t("common.export")}
           </Button>
           <Button
             size="sm"
@@ -226,7 +238,7 @@ export default function EmploiSalles() {
             onClick={() => navigate("/dashboard/emploi-salles/ajouter")}
           >
             <Plus className="h-4 w-4" />
-            Nouvelle Salle
+            {t("rooms.newRoom")}
           </Button>
         </div>
       </motion.div>
@@ -247,7 +259,7 @@ export default function EmploiSalles() {
           }`}
         >
           <DoorOpen className="h-4 w-4" />
-          Salles
+          {t("nav.rooms")}
         </button>
         <button
           onClick={() => setActiveTab("emploi")}
@@ -258,7 +270,7 @@ export default function EmploiSalles() {
           }`}
         >
           <CalendarDays className="h-4 w-4" />
-          Emploi du Temps
+          {t("nav.schedule")}
         </button>
       </motion.div>
 
@@ -302,7 +314,7 @@ export default function EmploiSalles() {
                     setSearch(e.target.value);
                     setCurrentPage(1);
                   }}
-                  placeholder="Rechercher par nom ou type..."
+                  placeholder={t("rooms.searchPlaceholder")}
                   className="pl-9"
                 />
               </div>
@@ -319,7 +331,7 @@ export default function EmploiSalles() {
                     <SelectValue placeholder="Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les types</SelectItem>
+                    <SelectItem value="all">{t("rooms.allTypes")}</SelectItem>
                     {ROOM_TYPES.map((t) => (
                       <SelectItem key={t} value={t}>
                         {t}
@@ -373,14 +385,13 @@ export default function EmploiSalles() {
                     className="gap-1 text-muted-foreground hover:text-foreground"
                   >
                     <X className="h-3.5 w-3.5" />
-                    Réinitialiser
+                    {t("common.reset")}
                   </Button>
                 )}
               </div>
             </div>
             <div className="mt-2 text-xs text-muted-foreground">
-              {filteredRooms.length} salle{filteredRooms.length !== 1 ? "s" : ""} trouvée
-              {filteredRooms.length !== 1 ? "s" : ""}
+              {filteredRooms.length} {t("common.found")}
             </div>
           </motion.div>
 
@@ -397,22 +408,22 @@ export default function EmploiSalles() {
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
                     <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
-                      Salle
+                      {t("schedule.room")}
                     </th>
                     <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">
-                      Type
+                      {t("common.type")}
                     </th>
                     <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">
-                      Capacité
+                      {t("transport.capacity")}
                     </th>
                     <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">
-                      Étage
+                      {t("common.level")}
                     </th>
                     <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
-                      Statut
+                      {t("common.status")}
                     </th>
                     <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">
-                      Actions
+                      {t("common.actions")}
                     </th>
                   </tr>
                 </thead>
@@ -421,9 +432,9 @@ export default function EmploiSalles() {
                     <tr>
                       <td colSpan={6} className="py-16 text-center text-muted-foreground">
                         <Building2 className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                        <p className="font-medium">Aucune salle trouvée</p>
+                        <p className="font-medium">{t("rooms.roomNotFound")}</p>
                         <p className="text-xs mt-1">
-                          Essayez de modifier vos filtres de recherche
+                          {t("common.tryModifyFilters")}
                         </p>
                       </td>
                     </tr>
@@ -599,7 +610,7 @@ export default function EmploiSalles() {
                   <SelectValue placeholder="Salle" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Toutes les salles</SelectItem>
+                  <SelectItem value="all">{t("rooms.allRooms")}</SelectItem>
                   {rooms.map((r) => (
                     <SelectItem key={r.id} value={String(r.id)}>
                       {r.nom}
@@ -616,7 +627,7 @@ export default function EmploiSalles() {
                   <SelectValue placeholder="Jour" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les jours</SelectItem>
+                  <SelectItem value="all">{t("rooms.allDays")}</SelectItem>
                   {JOURS.map((j) => (
                     <SelectItem key={j} value={j}>
                       {j}
@@ -635,7 +646,7 @@ export default function EmploiSalles() {
                   className="gap-1 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-3.5 w-3.5" />
-                  Réinitialiser
+                  {t("common.reset")}
                 </Button>
               )}
               <div className="sm:ml-auto text-xs text-muted-foreground">
@@ -730,7 +741,7 @@ export default function EmploiSalles() {
             animate="visible"
             className="rounded-xl border border-border/50 bg-card p-4 shadow-sm"
           >
-            <p className="text-xs font-semibold text-muted-foreground mb-2">Matières</p>
+            <p className="text-xs font-semibold text-muted-foreground mb-2">{t("schedule.subject")}</p>
             <div className="flex flex-wrap gap-2">
               {Object.entries(subjectColorMap).map(([matiere, colorClass]) => (
                 <span
@@ -749,8 +760,8 @@ export default function EmploiSalles() {
       <Dialog open={!!viewRoom} onOpenChange={(open) => !open && setViewRoom(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Détails de la salle</DialogTitle>
-            <DialogDescription>Informations complètes</DialogDescription>
+            <DialogTitle>{t("rooms.roomDetails")}</DialogTitle>
+            <DialogDescription>{t("common.details")}</DialogDescription>
           </DialogHeader>
           {viewRoom && (
             <div className="space-y-4 mt-2">
@@ -817,19 +828,19 @@ export default function EmploiSalles() {
       >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogTitle>{t("common.confirmDelete")}</DialogTitle>
             <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer la salle{" "}
+              {t("common.deleteConfirmMsg")}{" "}
               <span className="font-semibold text-foreground">{deleteRoomTarget?.nom}</span> ?
-              Tous les créneaux associés seront également supprimés. Cette action est irréversible.
+              {t("common.irreversible")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
             <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
-            <Button variant="destructive" onClick={handleDeleteRoom}>
-              Supprimer
+            <Button variant="destructive" onClick={handleDeleteRoom} disabled={deleteRoomMutation.isPending}>
+              {deleteRoomMutation.isPending ? t("common.deleting") : t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
