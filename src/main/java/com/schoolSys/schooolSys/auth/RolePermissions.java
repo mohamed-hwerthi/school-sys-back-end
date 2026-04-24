@@ -27,14 +27,14 @@ public final class RolePermissions {
 
         // ── DIRECTEUR ──────────────────────────────────────────
         m.put(UserRole.DIRECTEUR, EnumSet.of(
-                READ_STUDENTS, WRITE_STUDENTS,
-                READ_TEACHERS, WRITE_TEACHERS,
+                READ_STUDENTS, WRITE_STUDENTS, DELETE_STUDENTS,
+                READ_TEACHERS, WRITE_TEACHERS, DELETE_TEACHERS,
                 MANAGE_TEACHERS,
                 READ_NOTES, WRITE_NOTES,
-                READ_ABSENCES,
-                READ_FINANCE,
-                READ_EMPLOI_DU_TEMPS,
-                READ_DISCIPLINE,
+                READ_ABSENCES, WRITE_ABSENCES,
+                READ_FINANCE, WRITE_FINANCE,
+                READ_EMPLOI_DU_TEMPS, WRITE_EMPLOI_DU_TEMPS,
+                READ_DISCIPLINE, WRITE_DISCIPLINE,
                 READ_MESSAGES, WRITE_MESSAGES,
                 READ_BULLETINS, GENERATE_BULLETINS,
                 MANAGE_ANNEE_SCOLAIRE,

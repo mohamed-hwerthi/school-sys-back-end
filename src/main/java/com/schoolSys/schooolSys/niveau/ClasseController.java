@@ -4,6 +4,7 @@ import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.niveau.dto.ClasseResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
@@ -17,6 +18,7 @@ public class ClasseController {
     private final ClasseRepository classeRepository;
 
     @GetMapping
+    @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<ClasseResponseDTO>>> getAll(
             @RequestParam(required = false) Long niveauId) {
         List<Classe> classes = niveauId != null

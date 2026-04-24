@@ -58,19 +58,24 @@ public class AnneeScolaireController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/activate")
+    @RequestMapping(value = "/{id}/activate", method = { RequestMethod.PUT, RequestMethod.PATCH })
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
     public ResponseEntity<ApiResponse<AnneeScolaireResponseDTO>> activateAnnee(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.activateAnnee(id)));
     }
 
-    @PutMapping("/{id}/cloturer")
+    @RequestMapping(value = "/{id}/cloturer", method = { RequestMethod.PUT, RequestMethod.PATCH })
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
     public ResponseEntity<ApiResponse<AnneeScolaireResponseDTO>> cloturerAnnee(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.cloturerAnnee(id)));
     }
 
     // --- Trimestre endpoints ---
+
+    @GetMapping("/{anneeScolaireId}/trimestres")
+    public ResponseEntity<ApiResponse<List<TrimestreDTO>>> getTrimestres(@PathVariable Long anneeScolaireId) {
+        return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.getTrimestresByAnnee(anneeScolaireId)));
+    }
 
     @PostMapping("/{anneeScolaireId}/trimestres")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
@@ -98,6 +103,11 @@ public class AnneeScolaireController {
 
     // --- Vacance endpoints ---
 
+    @GetMapping("/{anneeScolaireId}/vacances")
+    public ResponseEntity<ApiResponse<List<VacanceDTO>>> getVacances(@PathVariable Long anneeScolaireId) {
+        return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.getVacancesByAnnee(anneeScolaireId)));
+    }
+
     @PostMapping("/{anneeScolaireId}/vacances")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
     public ResponseEntity<ApiResponse<VacanceDTO>> addVacance(
@@ -123,6 +133,11 @@ public class AnneeScolaireController {
     }
 
     // --- JourFerie endpoints ---
+
+    @GetMapping("/{anneeScolaireId}/jours-feries")
+    public ResponseEntity<ApiResponse<List<JourFerieDTO>>> getJoursFeries(@PathVariable Long anneeScolaireId) {
+        return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.getJoursFeriesByAnnee(anneeScolaireId)));
+    }
 
     @PostMapping("/{anneeScolaireId}/jours-feries")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")

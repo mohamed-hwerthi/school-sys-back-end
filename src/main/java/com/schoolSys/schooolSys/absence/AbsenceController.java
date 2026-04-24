@@ -30,10 +30,17 @@ public class AbsenceController {
     @GetMapping
     @PreAuthorize("hasAuthority('READ_ABSENCES')")
     public ResponseEntity<ApiResponse<List<AbsenceResponseDTO>>> getByClasseAndDate(
-            @RequestParam Long classeId,
+            @RequestParam(required = false) Long classeId,
             @RequestParam LocalDate date,
             @RequestParam(required = false) String type) {
         return ResponseEntity.ok(ApiResponse.ok(absenceService.getByClasseAndDate(classeId, date, type)));
+    }
+
+    @GetMapping("/feuilles")
+    @PreAuthorize("hasAuthority('READ_ABSENCES')")
+    public ResponseEntity<ApiResponse<List<FeuilleJourDTO>>> getFeuillesByDate(
+            @RequestParam LocalDate date) {
+        return ResponseEntity.ok(ApiResponse.ok(absenceService.getFeuillesByDate(date)));
     }
 
     @GetMapping("/eleve/{eleveId}")

@@ -4,11 +4,16 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "trimestres", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"annee_scolaire_id", "numero"})
 })
+@SQLDelete(sql = "UPDATE trimestres SET deleted = true, deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted = false")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -40,4 +45,11 @@ public class Trimestre {
     @Column(name = "saisie_notes_ouverte", nullable = false)
     @Builder.Default
     private Boolean saisieNotesOuverte = true;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

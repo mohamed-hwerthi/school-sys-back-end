@@ -10,4 +10,8 @@ public class ClassroomRequestDTO {
     private String name;
     private Integer capacity;
     private String location;
+    private String type;
+    private Integer floor;
+    private String equipment;
+    private String status;
 }
