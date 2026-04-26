@@ -43,6 +43,10 @@ public class Note {
     @Column(columnDefinition = "TEXT")
     private String observation;
 
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private String statut = "PRESENT";
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

@@ -325,13 +325,13 @@ export default function ContratsPage() {
           </TabsList>
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
             <div className="relative flex-1 min-w-0">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder={t("common.searchPlaceholder")} className="pl-9" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder={t("common.searchPlaceholder")} className="ps-9" />
             </div>
             {activeTab === "contrats" && (
               <Select value={filterType} onValueChange={(v) => { setFilterType(v); setCurrentPage(0); }}>
                 <SelectTrigger className="w-[150px]">
-                  <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                  <Filter className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -357,12 +357,12 @@ export default function ContratsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.teacher")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.type")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("common.startDate")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("common.endDate")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">{t("contracts.baseSalary")}</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">{t("common.teacher")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">{t("common.type")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("common.startDate")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("common.endDate")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">{t("contracts.baseSalary")}</th>
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -383,7 +383,7 @@ export default function ContratsPage() {
                         <td className="py-3 px-4 hidden sm:table-cell text-muted-foreground">{new Date(contrat.dateDebut).toLocaleDateString("fr-FR")}</td>
                         <td className="py-3 px-4 hidden md:table-cell text-muted-foreground">{contrat.dateFin ? new Date(contrat.dateFin).toLocaleDateString("fr-FR") : "-"}</td>
                         <td className="py-3 px-4 hidden lg:table-cell text-muted-foreground">{contrat.salaireBase ? `${contrat.salaireBase.toLocaleString()} MAD` : "-"}</td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3 px-4 text-end">
                           <div className="hidden sm:flex items-center justify-end gap-1">
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-amber-600" onClick={() => openEditContrat(contrat)}>
                               <Edit className="h-4 w-4" />
@@ -397,8 +397,8 @@ export default function ContratsPage() {
                               <Button variant="ghost" size="icon" className="h-8 w-8 sm:hidden"><MoreHorizontal className="h-4 w-4" /></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openEditContrat(contrat)}><Edit className="h-4 w-4 mr-2" /> Modifier</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setDeleteContratTarget(contrat)} className="text-red-600"><Trash2 className="h-4 w-4 mr-2" /> Supprimer</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => openEditContrat(contrat)}><Edit className="h-4 w-4 me-2" /> Modifier</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setDeleteContratTarget(contrat)} className="text-red-600"><Trash2 className="h-4 w-4 me-2" /> Supprimer</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </td>
@@ -427,13 +427,13 @@ export default function ContratsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.teacher")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.type")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("common.start")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("common.end")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("discountsPage.reason")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.status")}</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">{t("common.teacher")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">{t("common.type")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("common.start")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("common.end")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("discountsPage.reason")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">{t("common.status")}</th>
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -459,7 +459,7 @@ export default function ContratsPage() {
                             {STATUT_CONGE_LABELS[conge.statut]}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3 px-4 text-end">
                           <div className="hidden sm:flex items-center justify-end gap-1">
                             {conge.statut === "EN_ATTENTE" && (
                               <>
@@ -483,15 +483,15 @@ export default function ContratsPage() {
                               {conge.statut === "EN_ATTENTE" && (
                                 <>
                                   <DropdownMenuItem onClick={() => approuverCongeMutation.mutate(conge.id)}>
-                                    <CheckCircle className="h-4 w-4 mr-2" /> {t("common.confirm")}
+                                    <CheckCircle className="h-4 w-4 me-2" /> {t("common.confirm")}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => refuserCongeMutation.mutate(conge.id)}>
-                                    <XCircle className="h-4 w-4 mr-2" /> {t("common.cancel")}
+                                    <XCircle className="h-4 w-4 me-2" /> {t("common.cancel")}
                                   </DropdownMenuItem>
                                 </>
                               )}
                               <DropdownMenuItem onClick={() => setDeleteCongeTarget(conge)} className="text-red-600">
-                                <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                                <Trash2 className="h-4 w-4 me-2" /> Supprimer
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

@@ -350,7 +350,7 @@ export default function FormationsPage() {
       >
         <div className="flex flex-col lg:flex-row lg:items-center gap-3">
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => {
@@ -358,7 +358,7 @@ export default function FormationsPage() {
                 setCurrentPage(0);
               }}
               placeholder={t("training.searchPlaceholder")}
-              className="pl-9"
+              className="ps-9"
             />
           </div>
           <Select
@@ -405,25 +405,25 @@ export default function FormationsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                   {t("common.title")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">
                   {t("training.trainer")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">
                   {t("common.date")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">
                   {t("training.location")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">
                   {t("training.participants")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                   {t("common.status")}
                 </th>
-                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">
                   {t("common.actions")}
                 </th>
               </tr>
@@ -492,7 +492,7 @@ export default function FormationsPage() {
                         {STATUT_LABELS[f.statut]}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-end">
                       <div className="hidden sm:flex items-center justify-end gap-1">
                         <Button
                           variant="ghost"
@@ -534,16 +534,16 @@ export default function FormationsPage() {
                           <DropdownMenuItem
                             onClick={() => openParticipantDialog(f)}
                           >
-                            <UserPlus className="h-4 w-4 mr-2" /> {t("training.participants")}
+                            <UserPlus className="h-4 w-4 me-2" /> {t("training.participants")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => openEdit(f)}>
-                            <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
+                            <Edit className="h-4 w-4 me-2" /> {t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDeleteTarget(f)}
                             className="text-red-600"
                           >
-                            <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
+                            <Trash2 className="h-4 w-4 me-2" /> {t("common.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

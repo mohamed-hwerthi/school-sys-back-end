@@ -25,8 +25,9 @@ export function AppSidebar() {
   const activeSectionLabel = useMemo(() => {
     for (const section of sidebarSections) {
       for (const item of section.items) {
-        if (item.url === "/dashboard" && location.pathname === "/dashboard") return section.label;
-        if (item.url !== "/dashboard" && location.pathname.startsWith(item.url)) return section.label;
+        const itemPath = item.url.split("?")[0];
+        if (itemPath === "/dashboard" && location.pathname === "/dashboard") return section.label;
+        if (itemPath !== "/dashboard" && location.pathname.startsWith(itemPath)) return section.label;
       }
     }
     return "Accueil";
@@ -39,8 +40,16 @@ export function AppSidebar() {
   };
 
   const isActive = (url: string) => {
-    if (url === "/dashboard") return location.pathname === "/dashboard";
-    return location.pathname.startsWith(url);
+    const [path, query] = url.split("?");
+    if (path === "/dashboard") return location.pathname === "/dashboard";
+    if (!location.pathname.startsWith(path)) return false;
+    if (!query) return true;
+    const target = new URLSearchParams(query);
+    const current = new URLSearchParams(location.search);
+    for (const [k, v] of target) {
+      if (current.get(k) !== v) return false;
+    }
+    return true;
   };
 
   // TODO: re-enable role-based filtering once roles are finalized.
@@ -106,13 +115,13 @@ export function AppSidebar() {
         {/* Search */}
         <div className="mt-4 group-data-[collapsible=icon]:hidden">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t("common.searchPlaceholder")}
-              className="w-full rounded-xl border-0 bg-muted/50 py-2 pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground/40 focus:bg-muted/80 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
+              className="w-full rounded-xl border-0 bg-muted/50 py-2 ps-9 pe-3 text-xs text-foreground placeholder:text-muted-foreground/40 focus:bg-muted/80 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
             />
           </div>
         </div>
@@ -131,7 +140,7 @@ export function AppSidebar() {
                 {/* Section header */}
                 <button
                   onClick={() => toggleSection(section.label)}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:p-2.5 ${
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start transition-all duration-200 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:p-2.5 ${
                     hasActiveItem
                       ? "bg-primary/[0.06] text-foreground"
                       : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
@@ -164,7 +173,7 @@ export function AppSidebar() {
                     isOpen ? "max-h-[600px] opacity-100 mt-0.5" : "max-h-0 opacity-0"
                   }`}
                 >
-                  <div className="ml-[22px] border-l-[1.5px] border-border/40 pl-3 space-y-[2px] pb-1">
+                  <div className="ms-[22px] border-s-[1.5px] border-border/40 ps-3 space-y-[2px] pb-1">
                     {section.items.map((item) => {
                       const ItemIcon = item.icon;
                       const active = isActive(item.url);
@@ -203,7 +212,7 @@ export function AppSidebar() {
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white text-[11px] font-bold shadow-md">
                 {initials}
               </div>
-              <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-emerald-500" />
+              <div className="absolute -bottom-0.5 -end-0.5 h-3 w-3 rounded-full border-2 border-card bg-emerald-500" />
             </div>
             <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
               <p className="text-[13px] font-semibold text-foreground truncate leading-tight">

@@ -195,12 +195,12 @@ export default function SuperAdminDashboard() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border/60">
-                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Ecole</th>
-                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Forfait</th>
-                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Statut</th>
-                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Tarif</th>
-                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Limites</th>
-                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                <th className="py-3 px-3 text-start text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Ecole</th>
+                <th className="py-3 px-3 text-start text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Forfait</th>
+                <th className="py-3 px-3 text-start text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Statut</th>
+                <th className="py-3 px-3 text-start text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Tarif</th>
+                <th className="py-3 px-3 text-start text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Limites</th>
+                <th className="py-3 px-3 text-start text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>

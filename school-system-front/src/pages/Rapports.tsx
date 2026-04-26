@@ -174,12 +174,12 @@ export default function Rapports() {
       <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible" className="rounded-xl border border-border/50 bg-card p-4 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center gap-3">
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} placeholder="Rechercher par titre, auteur..." className="pl-9" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} placeholder="Rechercher par titre, auteur..." className="ps-9" />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Select value={filterType} onValueChange={(v) => { setFilterType(v); setCurrentPage(1); }}>
-              <SelectTrigger className="w-[180px]"><Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" /><SelectValue placeholder="Type" /></SelectTrigger>
+              <SelectTrigger className="w-[180px]"><Filter className="h-3.5 w-3.5 me-1.5 text-muted-foreground" /><SelectValue placeholder="Type" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les types</SelectItem>
                 {TYPES_RAPPORT.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
@@ -258,7 +258,7 @@ export default function Rapports() {
                 <Button variant="ghost" size="sm" className="gap-1 text-xs" onClick={() => notify.success("Impression simulée")}>
                   <Printer className="h-3.5 w-3.5" />Imprimer
                 </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7 ml-auto text-muted-foreground hover:text-red-600" onClick={() => setDeleteTarget(r)}>
+                <Button variant="ghost" size="icon" className="h-7 w-7 ms-auto text-muted-foreground hover:text-red-600" onClick={() => setDeleteTarget(r)}>
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>

@@ -231,7 +231,7 @@ export default function ReunionsPage() {
           </div>
           <Select value={statutFilter} onValueChange={setStatutFilter}>
             <SelectTrigger className="w-[160px]">
-              <Filter className="mr-2 h-4 w-4" />
+              <Filter className="me-2 h-4 w-4" />
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>
@@ -242,7 +242,7 @@ export default function ReunionsPage() {
             </SelectContent>
           </Select>
           <Button onClick={handleOpenCreate}>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="me-2 h-4 w-4" />
             {t("meetings.newMeeting")}
           </Button>
         </div>
@@ -374,7 +374,7 @@ export default function ReunionsPage() {
                       size="sm"
                       onClick={() => handleOpenEdit(meeting)}
                     >
-                      <Edit className="mr-1 h-3 w-3" />
+                      <Edit className="me-1 h-3 w-3" />
                       Modifier
                     </Button>
                     <Button
@@ -383,7 +383,7 @@ export default function ReunionsPage() {
                       className="text-destructive hover:text-destructive"
                       onClick={() => handleDelete(meeting.id)}
                     >
-                      <Trash2 className="mr-1 h-3 w-3" />
+                      <Trash2 className="me-1 h-3 w-3" />
                       Supprimer
                     </Button>
                   </div>
@@ -510,7 +510,7 @@ export default function ReunionsPage() {
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">
-                <X className="mr-2 h-4 w-4" />
+                <X className="me-2 h-4 w-4" />
                 {t("common.cancel")}
               </Button>
             </DialogClose>
@@ -519,7 +519,7 @@ export default function ReunionsPage() {
               disabled={createMeeting.isPending || updateMeeting.isPending}
             >
               {(createMeeting.isPending || updateMeeting.isPending) && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
               )}
               {editId ? t("common.update") : t("meetings.plan")}
             </Button>

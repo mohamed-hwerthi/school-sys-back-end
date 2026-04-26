@@ -308,7 +308,7 @@ export default function PointagePage() {
       >
         <div className="flex flex-col lg:flex-row lg:items-center gap-3">
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => {
@@ -316,7 +316,7 @@ export default function PointagePage() {
                 setCurrentPage(0);
               }}
               placeholder={t("attendance.searchPlaceholder")}
-              className="pl-9"
+              className="ps-9"
             />
           </div>
           <Select
@@ -363,25 +363,25 @@ export default function PointagePage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                   {t("attendance.employeeType")} ID
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                   {t("common.type")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">
                   {t("attendance.arrivalTime")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">
                   {t("attendance.departureTime")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">
                   {t("training.hours")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                   {t("common.status")}
                 </th>
-                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">
                   {t("common.actions")}
                 </th>
               </tr>
@@ -429,7 +429,7 @@ export default function PointagePage() {
                         {STATUT_LABELS[p.statut]}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-end">
                       <div className="hidden sm:flex items-center justify-end gap-1">
                         <Button
                           variant="ghost"
@@ -460,13 +460,13 @@ export default function PointagePage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEdit(p)}>
-                            <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
+                            <Edit className="h-4 w-4 me-2" /> {t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDeleteTarget(p)}
                             className="text-red-600"
                           >
-                            <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
+                            <Trash2 className="h-4 w-4 me-2" /> {t("common.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

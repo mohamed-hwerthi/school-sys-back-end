@@ -539,7 +539,7 @@ export default function FinancePaiement() {
           >
             <div className="flex flex-col lg:flex-row lg:items-center gap-3">
               <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   value={search}
                   onChange={(e) => {
@@ -547,7 +547,7 @@ export default function FinancePaiement() {
                     setCurrentPage(1);
                   }}
                   placeholder="Rechercher par élève, type ou référence..."
-                  className="pl-9"
+                  className="ps-9"
                 />
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -556,7 +556,7 @@ export default function FinancePaiement() {
                   onValueChange={(v) => { setFilterTypeFrais(v); setCurrentPage(1); }}
                 >
                   <SelectTrigger className="w-[160px]">
-                    <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                    <Filter className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                     <SelectValue placeholder="Type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -625,12 +625,12 @@ export default function FinancePaiement() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Élève</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Type</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Mois</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Montant</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Élève</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">Type</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Mois</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">Montant</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Statut</th>
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -689,7 +689,7 @@ export default function FinancePaiement() {
                               {p.statut}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-right">
+                          <td className="py-3 px-4 text-end">
                             <div className="flex items-center justify-end gap-1">
                               <Button
                                 variant="ghost"
@@ -732,33 +732,33 @@ export default function FinancePaiement() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem onClick={() => setViewPaiement(p)}>
-                                    <Eye className="h-4 w-4 mr-2" /> Voir
+                                    <Eye className="h-4 w-4 me-2" /> Voir
                                   </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => setEditPaiement(p)}>
-                                    <Edit className="h-4 w-4 mr-2" /> Modifier
+                                    <Edit className="h-4 w-4 me-2" /> Modifier
                                   </DropdownMenuItem>
                                   {student && (
                                     <>
                                       <DropdownMenuItem
                                         onClick={() => openSMS(student, p.montantDu - p.montantPaye)}
                                       >
-                                        <MessageSquare className="h-4 w-4 mr-2" /> Relance SMS
+                                        <MessageSquare className="h-4 w-4 me-2" /> Relance SMS
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
                                         onClick={() => openEmail(student, p.montantDu - p.montantPaye)}
                                       >
-                                        <Mail className="h-4 w-4 mr-2" /> Relance Email
+                                        <Mail className="h-4 w-4 me-2" /> Relance Email
                                       </DropdownMenuItem>
                                     </>
                                   )}
                                   <DropdownMenuItem onClick={() => handleDownloadRecu(p)}>
-                                    <FileDown className="h-4 w-4 mr-2" /> Recu PDF
+                                    <FileDown className="h-4 w-4 me-2" /> Recu PDF
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() => setDeletePaiementTarget(p)}
                                     className="text-red-600"
                                   >
-                                    <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                                    <Trash2 className="h-4 w-4 me-2" /> Supprimer
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -840,7 +840,7 @@ export default function FinancePaiement() {
             <div className="flex items-center gap-3">
               <Select value={selectedEleveId} onValueChange={setSelectedEleveId}>
                 <SelectTrigger className="w-[300px]">
-                  <Users className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                  <Users className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                   <SelectValue placeholder="Sélectionner un élève..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -922,18 +922,18 @@ export default function FinancePaiement() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left">
+                    <th className="py-3 px-4 text-start">
                       <Checkbox
                         checked={selectedRelanceIds.length === elevesAvecSolde.length && elevesAvecSolde.length > 0}
                         onCheckedChange={toggleAllRelances}
                       />
                     </th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Élève</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Classe</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Total dû</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Payé</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Solde</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Élève</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">Classe</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Total dû</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Payé</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Solde</th>
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -985,7 +985,7 @@ export default function FinancePaiement() {
                             {entry.solde.toLocaleString()} {CURRENCY}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3 px-4 text-end">
                           <div className="flex items-center justify-end gap-1">
                             <Button
                               variant="ghost"

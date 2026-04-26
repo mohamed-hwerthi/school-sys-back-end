@@ -367,7 +367,7 @@ export default function PaiePage() {
             </SelectContent>
           </Select>
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => {
@@ -375,7 +375,7 @@ export default function PaiePage() {
                 setCurrentPage(0);
               }}
               placeholder={t("payroll.searchPlaceholder")}
-              className="pl-9"
+              className="ps-9"
             />
           </div>
           <Select
@@ -419,28 +419,28 @@ export default function PaiePage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                   {t("common.teacher")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">
                   {t("common.trimester")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">
                   {t("payroll.baseSalary")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">
                   {t("payroll.bonuses")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">
                   {t("payroll.deductions")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                   Net
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                   {t("common.status")}
                 </th>
-                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">
                   {t("common.actions")}
                 </th>
               </tr>
@@ -467,7 +467,7 @@ export default function PaiePage() {
                         <span className="font-medium text-foreground">
                           #{f.employeId}
                         </span>
-                        <Badge variant="outline" className="ml-2 text-[10px]">
+                        <Badge variant="outline" className="ms-2 text-[10px]">
                           {f.employeType}
                         </Badge>
                       </div>
@@ -498,7 +498,7 @@ export default function PaiePage() {
                         {f.paye ? t("payroll.statuses.paid") : t("payroll.statuses.pending")}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-end">
                       <div className="hidden sm:flex items-center justify-end gap-1">
                         <Button
                           variant="ghost"
@@ -529,13 +529,13 @@ export default function PaiePage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEdit(f)}>
-                            <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
+                            <Edit className="h-4 w-4 me-2" /> {t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDeleteTarget(f)}
                             className="text-red-600"
                           >
-                            <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
+                            <Trash2 className="h-4 w-4 me-2" /> {t("common.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

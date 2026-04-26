@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { VitrineGalleryItem } from "@/types/vitrine";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { resolveFileUrl } from "@/api/storage.api";
 
 interface Props {
   gallery: VitrineGalleryItem[];
@@ -59,7 +60,7 @@ export default function VitrineGallery({ gallery, title }: Props) {
               className="group relative aspect-[4/3] overflow-hidden rounded-lg"
             >
               <img
-                src={item.imageUrl}
+                src={resolveFileUrl(item.imageUrl)}
                 alt={item.caption || ""}
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 loading="lazy"
@@ -78,7 +79,7 @@ export default function VitrineGallery({ gallery, title }: Props) {
           <DialogContent className="max-w-4xl p-0">
             {selected && (
               <img
-                src={selected.imageUrl}
+                src={resolveFileUrl(selected.imageUrl)}
                 alt={selected.caption || ""}
                 className="h-auto w-full rounded-lg"
               />

@@ -109,7 +109,7 @@ export function SuiviEleveCard({ student, onAppel, onSMS, onEmail }: SuiviEleveC
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
-                  <th className="py-2.5 px-3 text-left font-semibold text-muted-foreground sticky left-0 bg-muted/30 z-10 min-w-[120px]">
+                  <th className="py-2.5 px-3 text-start font-semibold text-muted-foreground sticky start-0 bg-muted/30 z-10 min-w-[120px]">
                     Type de frais
                   </th>
                   {MOIS_SCOLAIRES.map((m) => (
@@ -122,7 +122,7 @@ export function SuiviEleveCard({ student, onAppel, onSMS, onEmail }: SuiviEleveC
               <tbody>
                 {grid.map((row) => (
                   <tr key={row.typeFrais.id} className="border-b border-border/50 last:border-0">
-                    <td className="py-2 px-3 font-medium text-foreground sticky left-0 bg-card z-10">
+                    <td className="py-2 px-3 font-medium text-foreground sticky start-0 bg-card z-10">
                       {row.typeFrais.nom}
                     </td>
                     {MOIS_SCOLAIRES.map((mois) => {
@@ -191,7 +191,7 @@ export function SuiviEleveCard({ student, onAppel, onSMS, onEmail }: SuiviEleveC
           Email
         </Button>
         {paiements.length > 0 && (
-          <Button size="sm" className="gap-1.5 bg-gradient-primary shadow-btn ml-auto" onClick={handleDownloadFacture}>
+          <Button size="sm" className="gap-1.5 bg-gradient-primary shadow-btn ms-auto" onClick={handleDownloadFacture}>
             <FileDown className="h-3.5 w-3.5" />
             Facture PDF
           </Button>

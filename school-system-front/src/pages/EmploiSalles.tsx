@@ -172,12 +172,12 @@ export default function EmploiSalles() {
   const totalCreneaux = timeSlots.length;
 
   const stats = [
-    { label: t("rooms.totalRooms"), value: totalRooms, icon: Building2, color: "bg-blue-500", bgLight: "bg-blue-50", textColor: "text-blue-700" },
-    { label: t("rooms.availablePlural"), value: disponibles, icon: CheckCircle2, color: "bg-emerald-500", bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
-    { label: t("common.active"), value: occupees, icon: Users, color: "bg-purple-500", bgLight: "bg-purple-50", textColor: "text-purple-700" },
-    { label: t("schedule.maintenance"), value: enMaintenance, icon: Wrench, color: "bg-amber-500", bgLight: "bg-amber-50", textColor: "text-amber-700" },
-    { label: t("common.total"), value: totalCapacite, icon: Users, color: "bg-pink-500", bgLight: "bg-pink-50", textColor: "text-pink-700" },
-    { label: t("common.total"), value: totalCreneaux, icon: Clock, color: "bg-cyan-500", bgLight: "bg-cyan-50", textColor: "text-cyan-700" },
+    { id: "totalRooms", label: t("rooms.totalRooms"), value: totalRooms, icon: Building2, color: "bg-blue-500", bgLight: "bg-blue-50", textColor: "text-blue-700" },
+    { id: "available", label: t("rooms.availablePlural"), value: disponibles, icon: CheckCircle2, color: "bg-emerald-500", bgLight: "bg-emerald-50", textColor: "text-emerald-700" },
+    { id: "active", label: t("common.active"), value: occupees, icon: Users, color: "bg-purple-500", bgLight: "bg-purple-50", textColor: "text-purple-700" },
+    { id: "maintenance", label: t("schedule.maintenance"), value: enMaintenance, icon: Wrench, color: "bg-amber-500", bgLight: "bg-amber-50", textColor: "text-amber-700" },
+    { id: "totalCapacity", label: t("rooms.totalCapacity"), value: totalCapacite, icon: Users, color: "bg-pink-500", bgLight: "bg-pink-50", textColor: "text-pink-700" },
+    { id: "totalSlots", label: t("rooms.totalSlots"), value: totalCreneaux, icon: Clock, color: "bg-cyan-500", bgLight: "bg-cyan-50", textColor: "text-cyan-700" },
   ];
 
   // ─── Handlers ─────────────────────────────────────────
@@ -278,7 +278,7 @@ export default function EmploiSalles() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {stats.map((stat, i) => (
           <motion.div
-            key={stat.label}
+            key={stat.id}
             custom={i}
             variants={fadeUp}
             initial="hidden"
@@ -307,7 +307,7 @@ export default function EmploiSalles() {
           >
             <div className="flex flex-col lg:flex-row lg:items-center gap-3">
               <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   value={search}
                   onChange={(e) => {
@@ -315,7 +315,7 @@ export default function EmploiSalles() {
                     setCurrentPage(1);
                   }}
                   placeholder={t("rooms.searchPlaceholder")}
-                  className="pl-9"
+                  className="ps-9"
                 />
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -327,7 +327,7 @@ export default function EmploiSalles() {
                   }}
                 >
                   <SelectTrigger className="w-[170px]">
-                    <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                    <Filter className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                     <SelectValue placeholder="Type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -407,22 +407,22 @@ export default function EmploiSalles() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                       {t("schedule.room")}
                     </th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">
                       {t("common.type")}
                     </th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">
                       {t("transport.capacity")}
                     </th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">
                       {t("common.level")}
                     </th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                       {t("common.status")}
                     </th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">
                       {t("common.actions")}
                     </th>
                   </tr>
@@ -482,7 +482,7 @@ export default function EmploiSalles() {
                             {room.statut}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3 px-4 text-end">
                           <div className="flex items-center justify-end gap-1">
                             <Button
                               variant="ghost"
@@ -523,20 +523,20 @@ export default function EmploiSalles() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => setViewRoom(room)}>
-                                  <Eye className="h-4 w-4 mr-2" /> Voir
+                                  <Eye className="h-4 w-4 me-2" /> Voir
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() =>
                                     navigate(`/dashboard/emploi-salles/modifier/${room.id}`)
                                   }
                                 >
-                                  <Edit className="h-4 w-4 mr-2" /> Modifier
+                                  <Edit className="h-4 w-4 me-2" /> Modifier
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => setDeleteRoomTarget(room)}
                                   className="text-red-600"
                                 >
-                                  <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                                  <Trash2 className="h-4 w-4 me-2" /> Supprimer
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -606,7 +606,7 @@ export default function EmploiSalles() {
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <Select value={selectedRoom} onValueChange={setSelectedRoom}>
                 <SelectTrigger className="w-[200px]">
-                  <DoorOpen className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                  <DoorOpen className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                   <SelectValue placeholder="Salle" />
                 </SelectTrigger>
                 <SelectContent>
@@ -623,7 +623,7 @@ export default function EmploiSalles() {
                 onValueChange={(v) => setSelectedJour(v as Jour | "all")}
               >
                 <SelectTrigger className="w-[160px]">
-                  <CalendarDays className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                  <CalendarDays className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                   <SelectValue placeholder="Jour" />
                 </SelectTrigger>
                 <SelectContent>
@@ -649,7 +649,7 @@ export default function EmploiSalles() {
                   {t("common.reset")}
                 </Button>
               )}
-              <div className="sm:ml-auto text-xs text-muted-foreground">
+              <div className="sm:ms-auto text-xs text-muted-foreground">
                 {filteredSlots.length} créneau{filteredSlots.length !== 1 ? "x" : ""}
               </div>
             </div>
@@ -667,7 +667,7 @@ export default function EmploiSalles() {
               <table className="w-full text-sm border-collapse">
                 <thead>
                   <tr className="bg-muted/30">
-                    <th className="py-3 px-3 text-left text-xs font-semibold text-muted-foreground border-b border-r border-border sticky left-0 bg-muted/30 z-10 min-w-[80px]">
+                    <th className="py-3 px-3 text-start text-xs font-semibold text-muted-foreground border-b border-r border-border sticky start-0 bg-muted/30 z-10 min-w-[80px]">
                       Heure
                     </th>
                     {(selectedJour === "all" ? JOURS : [selectedJour]).map((jour) => (
@@ -685,7 +685,7 @@ export default function EmploiSalles() {
                     const displayJours = selectedJour === "all" ? JOURS : [selectedJour];
                     return (
                       <tr key={heure} className="border-b border-border/50 last:border-0">
-                        <td className="py-2 px-3 text-xs font-medium text-muted-foreground border-r border-border sticky left-0 bg-card z-10">
+                        <td className="py-2 px-3 text-xs font-medium text-muted-foreground border-r border-border sticky start-0 bg-card z-10">
                           {heure}
                         </td>
                         {displayJours.map((jour) => {
@@ -703,7 +703,7 @@ export default function EmploiSalles() {
                                     <button
                                       key={slot.id}
                                       onClick={() => setViewSlot(slot)}
-                                      className={`w-full rounded-lg border p-2 text-left transition-all hover:shadow-md hover:scale-[1.02] cursor-pointer ${
+                                      className={`w-full rounded-lg border p-2 text-start transition-all hover:shadow-md hover:scale-[1.02] cursor-pointer ${
                                         subjectColorMap[slot.matiere] ?? slotColors[0]
                                       }`}
                                     >

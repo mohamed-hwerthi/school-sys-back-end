@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
+import { useCarnetSelection } from "./CarnetSelectionContext";
 import { Save, MessageSquare, GraduationCap, Users } from "lucide-react";
 import { notify } from "@/lib/toast";
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ import {
 import { useNiveaux } from "@/hooks/useNiveaux";
 import { useClasses } from "@/hooks/useClasses";
 import { useDomaines } from "@/hooks/useDomaines";
+import { useBulletins } from "@/hooks/useBulletins";
 import {
   useRecommandations,
   useUpsertRecommandations,
@@ -31,20 +33,20 @@ const TRIMESTRES = [
   { value: 3, label: "Trimestre 3" },
 ];
 
-const CERTIFICAT_OPTIONS = [
-  { value: "", label: "— Aucun —" },
-  { value: "شهادة شرف الدرجة الأولى", label: "شهادة شرف الدرجة الأولى (≥18)" },
-  { value: "شهادة شرف", label: "شهادة شرف (≥16)" },
-  { value: "شهادة شكر", label: "شهادة شكر (≥14)" },
-  { value: "شهادة تشجيع", label: "شهادة تشجيع (≥12)" },
-];
-
 const RECO_SUGGESTIONS = [
   "نتائج ممتازة واصل يا بطل",
   "نتائج جيدة",
   "نتائج مقبولة يمكن بذل مجهود أكبر",
   "نتائج ضعيفة يجب بذل مجهود أكبر",
 ];
+
+function recoFromMoyenne(moyenne: number | null | undefined): string {
+  if (moyenne == null) return "";
+  if (moyenne >= 16) return RECO_SUGGESTIONS[0];
+  if (moyenne >= 12) return RECO_SUGGESTIONS[1];
+  if (moyenne >= 10) return RECO_SUGGESTIONS[2];
+  return RECO_SUGGESTIONS[3];
+}
 
 type ViewMode = "recommandations" | "observations";
 
@@ -63,9 +65,7 @@ interface LocalObs {
 
 export default function AppreciationsTab() {
   const { niveaux } = useNiveaux();
-  const [niveauId, setNiveauId] = useState<number>(0);
-  const [classeId, setClasseId] = useState<number>(0);
-  const [trimestre, setTrimestre] = useState<number>(0);
+  const { niveauId, classeId, trimestre, setNiveauId, setClasseId, setTrimestre } = useCarnetSelection();
   const [domaineId, setDomaineId] = useState<number>(0);
   const [viewMode, setViewMode] = useState<ViewMode>("recommandations");
 
@@ -88,6 +88,21 @@ export default function AppreciationsTab() {
   const { data: existingObs = [] } = useObservations(studentIds, trimestre);
   const upsertRecos = useUpsertRecommandations();
   const upsertObs = useUpsertObservations();
+
+  // Bulletins to derive moyennes (used for auto-fill)
+  const { data: bulletins = [] } = useBulletins(classeId, trimestre, "etatique");
+
+  // Map studentId -> moyenne du domaine sélectionné
+  const moyenneDomaineByStudent = useMemo(() => {
+    const map = new Map<number, number>();
+    if (!domaineId) return map;
+    bulletins.forEach((b) => {
+      const d = b.domaines.find((dd) => dd.domaineId === domaineId);
+      if (d) map.set(b.studentId, d.moyenneDomaine);
+    });
+    return map;
+  }, [bulletins, domaineId]);
+
 
   // Local state for editing
   const [localRecos, setLocalRecos] = useState<LocalReco[]>([]);
@@ -141,6 +156,17 @@ export default function AppreciationsTab() {
   const applyRecoSuggestion = (suggestion: string) => {
     setLocalRecos((prev) =>
       prev.map((r) => (r.texte ? r : { ...r, texte: suggestion }))
+    );
+  };
+
+  const applyAutoRecoFromMoyenne = () => {
+    setLocalRecos((prev) =>
+      prev.map((r) => {
+        if (r.texte) return r;
+        const moy = moyenneDomaineByStudent.get(r.studentId);
+        const auto = recoFromMoyenne(moy);
+        return auto ? { ...r, texte: auto } : r;
+      })
     );
   };
 
@@ -231,7 +257,7 @@ export default function AppreciationsTab() {
             }}
           >
             <SelectTrigger className="w-[180px]">
-              <GraduationCap className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+              <GraduationCap className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
               <SelectValue placeholder="Niveau" />
             </SelectTrigger>
             <SelectContent>
@@ -323,9 +349,18 @@ export default function AppreciationsTab() {
             </div>
             {domaineId > 0 && (
               <>
-                <div className="sm:ml-auto flex items-center gap-2 flex-wrap">
+                <div className="sm:ms-auto flex items-center gap-2 flex-wrap">
+                  <Button
+                    size="sm"
+                    className="text-xs h-7 gap-1.5"
+                    onClick={applyAutoRecoFromMoyenne}
+                    title="Remplir automatiquement les vides selon la moyenne de chaque élève dans ce domaine"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    Auto selon moyenne
+                  </Button>
                   <span className="text-xs text-muted-foreground">
-                    Remplir les vides :
+                    Remplir tous les vides :
                   </span>
                   {RECO_SUGGESTIONS.map((s) => (
                     <Button
@@ -350,13 +385,13 @@ export default function AppreciationsTab() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground w-8">
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground w-8">
                         #
                       </th>
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground w-48">
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground w-48">
                         Élève
                       </th>
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                         Recommandation (توصيات المدرس)
                       </th>
                     </tr>
@@ -432,17 +467,14 @@ export default function AppreciationsTab() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground w-8">
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground w-8">
                       #
                     </th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground w-44">
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground w-44">
                       Élève
                     </th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                       Comportement (ملاحظات السلوك)
-                    </th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground w-56">
-                      Certificat (الشهادة)
                     </th>
                   </tr>
                 </thead>
@@ -450,7 +482,7 @@ export default function AppreciationsTab() {
                   {localObs.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={4}
+                        colSpan={3}
                         className="py-16 text-center text-muted-foreground"
                       >
                         <Users className="h-10 w-10 mx-auto mb-3 opacity-30" />
@@ -483,25 +515,6 @@ export default function AppreciationsTab() {
                             }
                             placeholder="Observation sur le comportement..."
                           />
-                        </td>
-                        <td className="py-2 px-4">
-                          <Select
-                            value={o.certificatType || ""}
-                            onValueChange={(v) =>
-                              handleObsChange(o.studentId, "certificatType", v)
-                            }
-                          >
-                            <SelectTrigger className="text-xs">
-                              <SelectValue placeholder="— Aucun —" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {CERTIFICAT_OPTIONS.map((c) => (
-                                <SelectItem key={c.value} value={c.value}>
-                                  {c.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
                         </td>
                       </tr>
                     ))

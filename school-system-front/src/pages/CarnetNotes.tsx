@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
 import {
@@ -19,12 +20,25 @@ import MoyennesTab from "@/components/carnet/MoyennesTab";
 import AppreciationsTab from "@/components/carnet/AppreciationsTab";
 import CarnetsTab from "@/components/carnet/CarnetsTab";
 import CertificatsTab from "@/components/carnet/CertificatsTab";
+import { CarnetSelectionProvider } from "@/components/carnet/CarnetSelectionContext";
 
-type TabKey = "domaines" | "modules" | "examens" | "notes" | "moyennes" | "appreciations" | "carnets" | "certificats";
+const TAB_KEYS = ["domaines", "modules", "examens", "notes", "moyennes", "appreciations", "carnets", "certificats"] as const;
+type TabKey = typeof TAB_KEYS[number];
 
 export default function CarnetNotes() {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<TabKey>("domaines");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<TabKey>(
+    (TAB_KEYS as readonly string[]).includes(initialTab ?? "")
+      ? (initialTab as TabKey)
+      : "domaines"
+  );
+
+  const selectTab = (key: TabKey) => {
+    setActiveTab(key);
+    setSearchParams({ tab: key }, { replace: true });
+  };
 
   const tabs: { key: TabKey; label: string; icon: React.ElementType }[] = useMemo(() => [
     { key: "domaines", label: t("grades.domains"), icon: Layers },
@@ -63,7 +77,7 @@ export default function CarnetNotes() {
         {tabs.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => selectTab(tab.key)}
             className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
               activeTab === tab.key
                 ? "bg-white text-foreground shadow-sm"
@@ -77,14 +91,16 @@ export default function CarnetNotes() {
       </motion.div>
 
       {/* Tab Content */}
-      {activeTab === "domaines" && <DomainesTab />}
-      {activeTab === "modules" && <ModulesTab />}
-      {activeTab === "examens" && <ExamensTab />}
-      {activeTab === "notes" && <NotesTab />}
-      {activeTab === "moyennes" && <MoyennesTab />}
-      {activeTab === "appreciations" && <AppreciationsTab />}
-      {activeTab === "carnets" && <CarnetsTab />}
-      {activeTab === "certificats" && <CertificatsTab />}
+      <CarnetSelectionProvider goToTab={(t) => selectTab(t as TabKey)}>
+        {activeTab === "domaines" && <DomainesTab />}
+        {activeTab === "modules" && <ModulesTab />}
+        {activeTab === "examens" && <ExamensTab />}
+        {activeTab === "notes" && <NotesTab />}
+        {activeTab === "moyennes" && <MoyennesTab />}
+        {activeTab === "appreciations" && <AppreciationsTab />}
+        {activeTab === "carnets" && <CarnetsTab />}
+        {activeTab === "certificats" && <CertificatsTab />}
+      </CarnetSelectionProvider>
     </div>
   );
 }

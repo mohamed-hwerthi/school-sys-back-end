@@ -246,7 +246,7 @@ export default function InscriptionPubliquePage() {
             </div>
           </div>
 
-          <div className="text-left space-y-2 bg-muted/20 rounded-lg p-4 mb-6">
+          <div className="text-start space-y-2 bg-muted/20 rounded-lg p-4 mb-6">
             <p className="text-sm">
               <span className="text-muted-foreground">Eleve :</span>{" "}
               <span className="font-medium">
@@ -308,7 +308,7 @@ export default function InscriptionPubliquePage() {
               className="text-sm"
               onClick={() => setCheckMode(!checkMode)}
             >
-              <Search className="h-3.5 w-3.5 mr-1" />
+              <Search className="h-3.5 w-3.5 me-1" />
               {checkMode
                 ? "Revenir au formulaire"
                 : "Verifier l'etat de mon inscription"}
@@ -566,7 +566,7 @@ export default function InscriptionPubliquePage() {
                     <div className="flex justify-end mt-8">
                       <Button onClick={handleNextStep1}>
                         Suivant
-                        <ChevronRight className="h-4 w-4 ml-1" />
+                        <ChevronRight className="h-4 w-4 ms-1" />
                       </Button>
                     </div>
                   </motion.div>
@@ -637,12 +637,12 @@ export default function InscriptionPubliquePage() {
 
                     <div className="flex justify-between mt-8">
                       <Button variant="outline" onClick={handlePrev}>
-                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        <ChevronLeft className="h-4 w-4 me-1" />
                         Precedent
                       </Button>
                       <Button onClick={handleNextStep2}>
                         Suivant
-                        <ChevronRight className="h-4 w-4 ml-1" />
+                        <ChevronRight className="h-4 w-4 ms-1" />
                       </Button>
                     </div>
                   </motion.div>
@@ -719,12 +719,12 @@ export default function InscriptionPubliquePage() {
 
                     <div className="flex justify-between mt-8">
                       <Button variant="outline" onClick={handlePrev}>
-                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        <ChevronLeft className="h-4 w-4 me-1" />
                         Precedent
                       </Button>
                       <Button onClick={handleNextStep3}>
                         Suivant
-                        <ChevronRight className="h-4 w-4 ml-1" />
+                        <ChevronRight className="h-4 w-4 ms-1" />
                       </Button>
                     </div>
                   </motion.div>
@@ -865,7 +865,7 @@ export default function InscriptionPubliquePage() {
 
                     <div className="flex justify-between mt-8">
                       <Button variant="outline" onClick={handlePrev}>
-                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        <ChevronLeft className="h-4 w-4 me-1" />
                         Precedent
                       </Button>
                       <Button
@@ -874,13 +874,13 @@ export default function InscriptionPubliquePage() {
                       >
                         {createMutation.isPending ? (
                           <>
-                            <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                            <Loader2 className="h-4 w-4 animate-spin me-1" />
                             Soumission en cours...
                           </>
                         ) : (
                           <>
                             Soumettre l'inscription
-                            <CheckCircle className="h-4 w-4 ml-1" />
+                            <CheckCircle className="h-4 w-4 ms-1" />
                           </>
                         )}
                       </Button>

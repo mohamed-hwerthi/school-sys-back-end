@@ -1,5 +1,4 @@
 import api from "./axios";
-import type { Evaluation } from "@/types/evaluation";
 
 export interface ExamenDTO {
   id: number;
@@ -9,6 +8,7 @@ export interface ExamenDTO {
   coeffPrive: number;
   ordreEtatique: number;
   ordrePrive: number;
+  trimestre: number;
   classeId: number;
   classeName: string;
   teacherId: number | null;
@@ -17,6 +17,8 @@ export interface ExamenDTO {
   moduleName: string;
   versionEtatique: boolean;
   versionPrivee: boolean;
+  nbNotes: number;
+  nbEleves: number;
 }
 
 export interface ExamenRequest {
@@ -26,6 +28,7 @@ export interface ExamenRequest {
   coeffPrive: number;
   ordreEtatique: number;
   ordrePrive: number;
+  trimestre: number;
   classeId: number;
   teacherId?: number;
   moduleId: number;
@@ -33,34 +36,14 @@ export interface ExamenRequest {
   versionPrivee: boolean;
 }
 
-/** Map an ExamenResponseDTO to the frontend Evaluation type. */
-export function mapExamenToEvaluation(dto: ExamenDTO): Evaluation {
-  return {
-    id: dto.id,
-    titre: dto.name,
-    type: "Contrôle continu",
-    matiere: dto.moduleName ?? "",
-    niveau: "",
-    classe: dto.classeName ?? "",
-    date: "",
-    heureDebut: "",
-    heureFin: "",
-    coefficient: dto.coeffEtatique,
-    bareme: 20,
-    statut: "Planifiée",
-    enseignant: dto.teacherName ?? "",
-    salle: "",
-    notes: "",
-  };
-}
-
 const BASE = "/examens";
 
 export const examensApi = {
-  getAll: async (moduleId?: number, classeId?: number): Promise<ExamenDTO[]> => {
+  getAll: async (moduleId?: number, classeId?: number, trimestre?: number): Promise<ExamenDTO[]> => {
     const params = new URLSearchParams();
     if (moduleId) params.set("moduleId", String(moduleId));
     if (classeId) params.set("classeId", String(classeId));
+    if (trimestre) params.set("trimestre", String(trimestre));
     const qs = params.toString();
     const res = await api.get<ExamenDTO[]>(`${BASE}${qs ? `?${qs}` : ""}`);
     return res.data;

@@ -30,4 +30,6 @@ public class NoteRequestDTO {
     private Double valeur;
 
     private String observation;
+
+    private String statut;
 }

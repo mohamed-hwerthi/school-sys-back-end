@@ -263,18 +263,18 @@ export default function UsersPage() {
       <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible" className="rounded-xl border border-border/50 bg-card p-4 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center gap-3">
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }}
               placeholder={t("users.searchPlaceholder")}
-              className="pl-9"
+              className="ps-9"
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Select value={filterRole} onValueChange={(v) => { setFilterRole(v); setCurrentPage(0); }}>
               <SelectTrigger className="w-[170px]">
-                <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                <Filter className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                 <SelectValue placeholder="Role" />
               </SelectTrigger>
               <SelectContent>
@@ -304,11 +304,11 @@ export default function UsersPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Utilisateur</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Email</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Role</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
-                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Utilisateur</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">Email</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Role</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Statut</th>
+                <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -346,7 +346,7 @@ export default function UsersPage() {
                         {user.isActive ? t("common.active") : t("common.inactive")}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-end">
                       <div className="hidden sm:flex items-center justify-end gap-1">
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-amber-600" onClick={() => openEdit(user)}>
                           <Edit className="h-4 w-4" />
@@ -371,14 +371,14 @@ export default function UsersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEdit(user)}>
-                            <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
+                            <Edit className="h-4 w-4 me-2" /> {t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => toggleMutation.mutate(user.id)}>
-                            {user.isActive ? <ShieldOff className="h-4 w-4 mr-2" /> : <ShieldCheck className="h-4 w-4 mr-2" />}
+                            {user.isActive ? <ShieldOff className="h-4 w-4 me-2" /> : <ShieldCheck className="h-4 w-4 me-2" />}
                             {user.isActive ? t("common.deactivate") : t("common.activate")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setDeleteTarget(user)} className="text-red-600">
-                            <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
+                            <Trash2 className="h-4 w-4 me-2" /> {t("common.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

@@ -7,6 +7,8 @@ import com.schoolSys.schooolSys.module.Module;
 import com.schoolSys.schooolSys.module.ModuleRepository;
 import com.schoolSys.schooolSys.niveau.Classe;
 import com.schoolSys.schooolSys.niveau.ClasseRepository;
+import com.schoolSys.schooolSys.note.NoteRepository;
+import com.schoolSys.schooolSys.student.StudentRepository;
 import com.schoolSys.schooolSys.teacher.Teacher;
 import com.schoolSys.schooolSys.teacher.TeacherRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,19 +26,14 @@ public class ExamenService {
     private final ModuleRepository moduleRepository;
     private final ClasseRepository classeRepository;
     private final TeacherRepository teacherRepository;
+    private final NoteRepository noteRepository;
+    private final StudentRepository studentRepository;
 
-    public List<ExamenResponseDTO> findAll(Long moduleId, Long classeId) {
-        List<Examen> examens;
-        if (moduleId != null && classeId != null) {
-            examens = examenRepository.findByModuleIdAndClasseIdOrderByOrdreEtatiqueAsc(moduleId, classeId);
-        } else if (moduleId != null) {
-            examens = examenRepository.findByModuleIdOrderByOrdreEtatiqueAsc(moduleId);
-        } else if (classeId != null) {
-            examens = examenRepository.findByClasseIdOrderByOrdreEtatiqueAsc(classeId);
-        } else {
-            examens = examenRepository.findAllByOrderByModuleNiveauNameAscModuleNameAscOrdreEtatiqueAsc();
-        }
-        return examens.stream().map(this::toResponse).toList();
+    public List<ExamenResponseDTO> findAll(Long moduleId, Long classeId, Integer trimestre) {
+        return examenRepository.findFiltered(moduleId, classeId, trimestre)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     public ExamenResponseDTO findById(Long id) {
@@ -65,6 +62,7 @@ public class ExamenService {
                 .coeffPrive(dto.getCoeffPrive())
                 .ordreEtatique(dto.getOrdreEtatique())
                 .ordrePrive(dto.getOrdrePrive())
+                .trimestre(dto.getTrimestre())
                 .classe(classe)
                 .teacher(teacher)
                 .module(module)
@@ -97,6 +95,7 @@ public class ExamenService {
         examen.setCoeffPrive(dto.getCoeffPrive());
         examen.setOrdreEtatique(dto.getOrdreEtatique());
         examen.setOrdrePrive(dto.getOrdrePrive());
+        examen.setTrimestre(dto.getTrimestre());
         examen.setClasse(classe);
         examen.setTeacher(teacher);
         examen.setModule(module);
@@ -131,6 +130,9 @@ public class ExamenService {
             teacherName = examen.getTeacher().getFirstName() + " " + examen.getTeacher().getLastName();
         }
 
+        long nbNotes = noteRepository.countByExamenIdAndTrimestre(examen.getId(), examen.getTrimestre());
+        long nbEleves = classeName.isEmpty() ? 0 : studentRepository.countByClasse(classeName);
+
         return ExamenResponseDTO.builder()
                 .id(examen.getId())
                 .name(examen.getName())
@@ -139,6 +141,7 @@ public class ExamenService {
                 .coeffPrive(examen.getCoeffPrive())
                 .ordreEtatique(examen.getOrdreEtatique())
                 .ordrePrive(examen.getOrdrePrive())
+                .trimestre(examen.getTrimestre())
                 .classeId(examen.getClasse().getId())
                 .classeName(classeName)
                 .teacherId(examen.getTeacher() != null ? examen.getTeacher().getId() : null)
@@ -147,6 +150,8 @@ public class ExamenService {
                 .moduleName(examen.getModule().getName())
                 .versionEtatique(examen.getVersionEtatique())
                 .versionPrivee(examen.getVersionPrivee())
+                .nbNotes(nbNotes)
+                .nbEleves(nbEleves)
                 .build();
     }
 }

@@ -12,6 +12,9 @@ const env = {
   ENABLE_MOCK: import.meta.env.VITE_ENABLE_MOCK === "true",
   LOG_LEVEL: import.meta.env.VITE_LOG_LEVEL as string,
 
+  // Localization
+  DEFAULT_COUNTRY_CODE: (import.meta.env.VITE_DEFAULT_COUNTRY_CODE as string) || "216",
+
   // Helpers
   isDev: import.meta.env.VITE_APP_ENV === "development",
   isProd: import.meta.env.VITE_APP_ENV === "production",

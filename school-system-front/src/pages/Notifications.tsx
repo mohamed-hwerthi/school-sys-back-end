@@ -165,7 +165,7 @@ export default function NotificationsPage() {
           </div>
           {unreadCount > 0 && (
             <Button variant="outline" size="sm" onClick={handleMarkAllAsRead}>
-              <CheckCheck className="mr-2 h-4 w-4" />
+              <CheckCheck className="me-2 h-4 w-4" />
               {t("notifications.markAllRead")}
             </Button>
           )}

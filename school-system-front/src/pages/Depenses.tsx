@@ -389,12 +389,12 @@ export default function Depenses() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Rechercher..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }}
-            className="pl-9"
+            className="ps-9"
           />
         </div>
         <Select value={filterCategorie} onValueChange={(v) => { setFilterCategorie(v); setCurrentPage(0); }}>
@@ -411,7 +411,7 @@ export default function Depenses() {
             <X className="h-3.5 w-3.5" /> Reinitialiser
           </Button>
         )}
-        <span className="ml-auto text-xs text-muted-foreground">
+        <span className="ms-auto text-xs text-muted-foreground">
           {totalElements} depense{totalElements > 1 ? "s" : ""}
         </span>
       </div>
@@ -422,12 +422,12 @@ export default function Depenses() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Date</th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Libelle</th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Categorie</th>
-                <th className="py-3 px-4 text-right font-semibold text-muted-foreground">Montant</th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Fournisseur</th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Mode</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">Date</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">Libelle</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">Categorie</th>
+                <th className="py-3 px-4 text-end font-semibold text-muted-foreground">Montant</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">Fournisseur</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">Mode</th>
                 <th className="py-3 px-4 text-center font-semibold text-muted-foreground">Actions</th>
               </tr>
             </thead>
@@ -447,13 +447,13 @@ export default function Depenses() {
                     <td className="py-3 px-4 font-medium text-foreground">
                       {d.libelle}
                       {d.recurrente && (
-                        <Badge variant="outline" className="ml-2 text-[10px]">Recurrente</Badge>
+                        <Badge variant="outline" className="ms-2 text-[10px]">Recurrente</Badge>
                       )}
                     </td>
                     <td className="py-3 px-4">
                       <Badge variant="secondary" className="text-xs">{d.categorieNom}</Badge>
                     </td>
-                    <td className="py-3 px-4 text-right font-semibold text-red-600 whitespace-nowrap">
+                    <td className="py-3 px-4 text-end font-semibold text-red-600 whitespace-nowrap">
                       -{d.montant.toLocaleString()} {CURRENCY}
                     </td>
                     <td className="py-3 px-4 text-xs text-muted-foreground">
@@ -471,13 +471,13 @@ export default function Depenses() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => setViewDepense(d)}>
-                            <Eye className="h-3.5 w-3.5 mr-2" /> Voir
+                            <Eye className="h-3.5 w-3.5 me-2" /> Voir
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => openEdit(d)}>
-                            <Edit className="h-3.5 w-3.5 mr-2" /> Modifier
+                            <Edit className="h-3.5 w-3.5 me-2" /> Modifier
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setDeleteTarget(d)} className="text-destructive">
-                            <Trash2 className="h-3.5 w-3.5 mr-2" /> Supprimer
+                            <Trash2 className="h-3.5 w-3.5 me-2" /> Supprimer
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

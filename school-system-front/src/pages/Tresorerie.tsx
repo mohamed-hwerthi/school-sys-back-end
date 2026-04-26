@@ -64,7 +64,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
       <p className="text-xs font-semibold text-foreground mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.name} className="text-xs text-muted-foreground">
-          <span className="inline-block h-2 w-2 rounded-full mr-1.5" style={{ backgroundColor: p.color }} />
+          <span className="inline-block h-2 w-2 rounded-full me-1.5" style={{ backgroundColor: p.color }} />
           {p.name}: <span className="font-medium text-foreground">{typeof p.value === "number" ? p.value.toLocaleString() + ` ${CURRENCY}` : p.value}</span>
         </p>
       ))}
@@ -203,7 +203,7 @@ export default function Tresorerie() {
             custom={i}
             className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card p-5 shadow-sm hover:shadow-md transition-shadow"
           >
-            <div className={`absolute -right-6 -top-6 h-24 w-24 rounded-full ${kpi.bg} opacity-60 transition-transform group-hover:scale-125`} />
+            <div className={`absolute -end-6 -top-6 h-24 w-24 rounded-full ${kpi.bg} opacity-60 transition-transform group-hover:scale-125`} />
             <div className="relative">
               <div className="flex items-center justify-between mb-3">
                 <div className={`flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${kpi.gradient} text-white shadow-sm ring-4 ${kpi.ring}`}>
@@ -383,11 +383,11 @@ export default function Tresorerie() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border/60">
-                  <th className="py-2.5 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Eleve</th>
-                  <th className="py-2.5 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Classe</th>
-                  <th className="py-2.5 px-3 text-right text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Total du</th>
-                  <th className="py-2.5 px-3 text-right text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Paye</th>
-                  <th className="py-2.5 px-3 text-right text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Impaye</th>
+                  <th className="py-2.5 px-3 text-start text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Eleve</th>
+                  <th className="py-2.5 px-3 text-start text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Classe</th>
+                  <th className="py-2.5 px-3 text-end text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Total du</th>
+                  <th className="py-2.5 px-3 text-end text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Paye</th>
+                  <th className="py-2.5 px-3 text-end text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Impaye</th>
                 </tr>
               </thead>
               <tbody>
@@ -399,9 +399,9 @@ export default function Tresorerie() {
                         {d.classe || "—"}
                       </span>
                     </td>
-                    <td className="py-3 px-3 text-right text-muted-foreground">{d.montantDu.toLocaleString()} {CURRENCY}</td>
-                    <td className="py-3 px-3 text-right text-emerald-600">{d.montantPaye.toLocaleString()} {CURRENCY}</td>
-                    <td className="py-3 px-3 text-right font-semibold text-red-600">{d.solde.toLocaleString()} {CURRENCY}</td>
+                    <td className="py-3 px-3 text-end text-muted-foreground">{d.montantDu.toLocaleString()} {CURRENCY}</td>
+                    <td className="py-3 px-3 text-end text-emerald-600">{d.montantPaye.toLocaleString()} {CURRENCY}</td>
+                    <td className="py-3 px-3 text-end font-semibold text-red-600">{d.solde.toLocaleString()} {CURRENCY}</td>
                   </tr>
                 ))}
               </tbody>

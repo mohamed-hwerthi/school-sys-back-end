@@ -279,7 +279,7 @@ export default function AbsencesPage() {
                 }}
               >
                 <SelectTrigger>
-                  <CalendarDays className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                  <CalendarDays className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                   <SelectValue placeholder="Selectionner une classe" />
                 </SelectTrigger>
                 <SelectContent>
@@ -304,17 +304,17 @@ export default function AbsencesPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }}
                 placeholder="Rechercher un eleve..."
-                className="pl-9"
+                className="ps-9"
               />
             </div>
             <Select value={filterType} onValueChange={(v) => { setFilterType(v); setCurrentPage(0); }}>
               <SelectTrigger className="w-[130px]">
-                <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                <Filter className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
@@ -354,13 +354,13 @@ export default function AbsencesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
-                  <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Eleve</th>
-                  <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Type</th>
-                  <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Seance</th>
-                  <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Heure arrivee</th>
-                  <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Justifie</th>
-                  <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Motif</th>
-                  <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Eleve</th>
+                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Type</th>
+                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">Seance</th>
+                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Heure arrivee</th>
+                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Justifie</th>
+                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">Motif</th>
+                  <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -401,7 +401,7 @@ export default function AbsencesPage() {
                       <td className="py-3 px-4 hidden lg:table-cell text-muted-foreground max-w-[200px] truncate">
                         {absence.motif ?? "-"}
                       </td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-4 text-end">
                         <div className="hidden sm:flex items-center justify-end gap-1">
                           {!absence.justifie && (
                             <Button
@@ -434,11 +434,11 @@ export default function AbsencesPage() {
                                   setJustifyMotif("");
                                 }}
                               >
-                                <FileCheck className="h-4 w-4 mr-2" /> Justifier
+                                <FileCheck className="h-4 w-4 me-2" /> Justifier
                               </DropdownMenuItem>
                             )}
                             <DropdownMenuItem onClick={() => setDeleteTarget(absence)} className="text-red-600">
-                              <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                              <Trash2 className="h-4 w-4 me-2" /> Supprimer
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

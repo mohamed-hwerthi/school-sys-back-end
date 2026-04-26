@@ -387,7 +387,7 @@ export default function InscriptionsPage() {
               }}
             >
               <SelectTrigger className="w-[180px]">
-                <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                <Filter className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                 <SelectValue placeholder="Statut" />
               </SelectTrigger>
               <SelectContent>
@@ -439,22 +439,22 @@ export default function InscriptionsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                   {t("inscriptions.fileNumber")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                   {t("inscriptions.fullName")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">
                   {t("common.level")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">
                   {t("inscriptions.submissionDate")}
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                   {t("common.status")}
                 </th>
-                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">
                   {t("common.actions")}
                 </th>
               </tr>
@@ -513,7 +513,7 @@ export default function InscriptionsPage() {
                     <td className="py-3 px-4">
                       {getStatutBadge(inscription.statut)}
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-end">
                       <div className="flex items-center justify-end gap-1">
                         <Button
                           variant="ghost"
@@ -827,7 +827,7 @@ export default function InscriptionsPage() {
               Crée un dossier avec statut <b>Soumise</b>. Il apparaîtra dans la liste pour être accepté / refusé.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto pr-1">
+          <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto pe-1">
             {createErrors._root && (
               <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{createErrors._root}</div>
             )}

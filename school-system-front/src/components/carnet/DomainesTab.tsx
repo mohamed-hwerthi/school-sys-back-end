@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useCarnetSelection } from "./CarnetSelectionContext";
 import {
   Plus,
   Edit,
@@ -47,7 +48,7 @@ import type {
 
 export default function DomainesTab() {
   const { niveaux } = useNiveaux();
-  const [selectedNiveauId, setSelectedNiveauId] = useState<number>(0);
+  const { niveauId: selectedNiveauId, setNiveauId: setSelectedNiveauId } = useCarnetSelection();
   const { data: domaines = [], isLoading } = useDomaines(
     selectedNiveauId || undefined
   );
@@ -225,7 +226,7 @@ export default function DomainesTab() {
             onValueChange={(v) => setSelectedNiveauId(Number(v))}
           >
             <SelectTrigger className="w-[220px]">
-              <GraduationCap className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+              <GraduationCap className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
               <SelectValue placeholder="Sélectionner un niveau" />
             </SelectTrigger>
             <SelectContent>
@@ -236,7 +237,7 @@ export default function DomainesTab() {
               ))}
             </SelectContent>
           </Select>
-          <div className="sm:ml-auto">
+          <div className="sm:ms-auto">
             <Button
               size="sm"
               className="gap-1.5 bg-gradient-primary shadow-btn"
@@ -337,7 +338,7 @@ export default function DomainesTab() {
                       d.sousDomaines.map((sd) => (
                         <div
                           key={sd.id}
-                          className="flex items-center gap-3 px-4 py-3 pl-16 border-b border-border/30 last:border-0 hover:bg-muted/10"
+                          className="flex items-center gap-3 px-4 py-3 ps-16 border-b border-border/30 last:border-0 hover:bg-muted/10"
                         >
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-foreground">

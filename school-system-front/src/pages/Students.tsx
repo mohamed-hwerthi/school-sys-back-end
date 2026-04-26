@@ -55,6 +55,7 @@ import { STATUTS } from "@/types/student";
 import type { Student } from "@/types/student";
 import { useNiveaux } from "@/hooks/useNiveaux";
 import ExportButton from "@/components/ExportButton";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -245,18 +246,18 @@ export default function Students() {
       >
         <div className="flex flex-col lg:flex-row lg:items-center gap-3">
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }}
               placeholder={t("students.searchPlaceholder")}
-              className="pl-9"
+              className="ps-9"
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Select value={filterNiveau} onValueChange={(v) => { setFilterNiveau(v); setCurrentPage(0); }}>
               <SelectTrigger className="w-[150px]">
-                <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                <Filter className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                 <SelectValue placeholder="Niveau" />
               </SelectTrigger>
               <SelectContent>
@@ -308,13 +309,13 @@ export default function Students() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.student")}</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("students.matricule")}</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("students.class")}</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("students.level")}</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">{t("students.parentPhone")}</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.status")}</th>
-                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">{t("common.student")}</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("students.matricule")}</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("students.class")}</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("students.level")}</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">{t("students.parentPhone")}</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">{t("common.status")}</th>
+                <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -342,7 +343,7 @@ export default function Students() {
                         <div>
                           <p className="font-medium text-foreground">
                             {student.prenom} {student.nom}
-                            {student.estBloque && <ShieldAlert className="inline h-3.5 w-3.5 text-red-500 ml-1.5" />}
+                            {student.estBloque && <ShieldAlert className="inline h-3.5 w-3.5 text-red-500 ms-1.5" />}
                           </p>
                           {(student.prenomAr || student.nomAr) && (
                             <p className="text-xs text-muted-foreground" dir="rtl">{student.prenomAr} {student.nomAr}</p>
@@ -357,13 +358,18 @@ export default function Students() {
                       <Badge variant="outline" className="font-medium">{student.classe}</Badge>
                     </td>
                     <td className="py-3 px-4 hidden md:table-cell text-muted-foreground">{student.niveau}</td>
-                    <td className="py-3 px-4 hidden lg:table-cell text-muted-foreground">{student.telephoneParent}</td>
+                    <td className="py-3 px-4 hidden lg:table-cell text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <span>{student.telephoneParent}</span>
+                        <WhatsAppButton phone={student.telephoneParent} className="h-7 w-7" size={16} />
+                      </div>
+                    </td>
                     <td className="py-3 px-4">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusConfig[student.statut]?.bg} ${statusConfig[student.statut]?.text}`}>
                         {student.statut}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-end">
                       <div className="hidden sm:flex items-center justify-end gap-1">
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-blue-600" onClick={() => navigate(`/dashboard/eleves/${student.id}`)}>
                           <Eye className="h-4 w-4" />
@@ -388,13 +394,13 @@ export default function Students() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => navigate(`/dashboard/eleves/${student.id}`)}>
-                            <Eye className="h-4 w-4 mr-2" /> {t("common.profile")}
+                            <Eye className="h-4 w-4 me-2" /> {t("common.profile")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => navigate(`/dashboard/eleves/modifier/${student.id}`)}>
-                            <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
+                            <Edit className="h-4 w-4 me-2" /> {t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setDeleteStudentTarget(student)} className="text-red-600">
-                            <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
+                            <Trash2 className="h-4 w-4 me-2" /> {t("common.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

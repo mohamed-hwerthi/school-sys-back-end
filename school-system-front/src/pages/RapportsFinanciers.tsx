@@ -271,7 +271,7 @@ export default function RapportsFinanciers() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={exportPDF}>
-            <FileText className="mr-2 h-4 w-4" /> Export PDF
+            <FileText className="me-2 h-4 w-4" /> Export PDF
           </Button>
           <Button variant="outline" onClick={() => {
             exportRecapCSV();
@@ -279,7 +279,7 @@ export default function RapportsFinanciers() {
             exportClasseCSV();
             exportEleveCSV();
           }}>
-            <FileSpreadsheet className="mr-2 h-4 w-4" /> Export CSV
+            <FileSpreadsheet className="me-2 h-4 w-4" /> Export CSV
           </Button>
         </div>
       </div>
@@ -366,7 +366,7 @@ export default function RapportsFinanciers() {
           <div className="space-y-6">
             <div className="flex justify-end">
               <Button variant="outline" size="sm" onClick={exportMoisCSV}>
-                <Download className="mr-1 h-3.5 w-3.5" /> CSV
+                <Download className="me-1 h-3.5 w-3.5" /> CSV
               </Button>
             </div>
 
@@ -392,37 +392,37 @@ export default function RapportsFinanciers() {
             {/* Table */}
             <div className="rounded-xl border bg-white shadow-sm overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+                <thead className="bg-gray-50 text-start text-xs font-semibold uppercase text-gray-500">
                   <tr>
                     <th className="px-4 py-3">Mois</th>
-                    <th className="px-4 py-3 text-right">Du ({CURRENCY})</th>
-                    <th className="px-4 py-3 text-right">Paye ({CURRENCY})</th>
-                    <th className="px-4 py-3 text-right">Solde ({CURRENCY})</th>
-                    <th className="px-4 py-3 text-right">Depenses ({CURRENCY})</th>
-                    <th className="px-4 py-3 text-right">Nb Paiements</th>
+                    <th className="px-4 py-3 text-end">Du ({CURRENCY})</th>
+                    <th className="px-4 py-3 text-end">Paye ({CURRENCY})</th>
+                    <th className="px-4 py-3 text-end">Solde ({CURRENCY})</th>
+                    <th className="px-4 py-3 text-end">Depenses ({CURRENCY})</th>
+                    <th className="px-4 py-3 text-end">Nb Paiements</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {rapport.parMois.map((m) => (
                     <tr key={m.mois} className="hover:bg-gray-50">
                       <td className="px-4 py-3 font-medium">{MOIS_FR[m.mois] || m.mois}</td>
-                      <td className="px-4 py-3 text-right">{fmt(m.montantDu)}</td>
-                      <td className="px-4 py-3 text-right text-green-600 font-medium">{fmt(m.montantPaye)}</td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-end">{fmt(m.montantDu)}</td>
+                      <td className="px-4 py-3 text-end text-green-600 font-medium">{fmt(m.montantPaye)}</td>
+                      <td className="px-4 py-3 text-end">
                         <span className={m.solde > 0 ? "text-red-600" : "text-green-600"}>{fmt(m.solde)}</span>
                       </td>
-                      <td className="px-4 py-3 text-right text-red-500">{fmt(m.depenses)}</td>
-                      <td className="px-4 py-3 text-right">{m.nbPaiements}</td>
+                      <td className="px-4 py-3 text-end text-red-500">{fmt(m.depenses)}</td>
+                      <td className="px-4 py-3 text-end">{m.nbPaiements}</td>
                     </tr>
                   ))}
                   {/* Totals */}
                   <tr className="bg-gray-100 font-semibold">
                     <td className="px-4 py-3">Total</td>
-                    <td className="px-4 py-3 text-right">{fmt(rapport.parMois.reduce((s, m) => s + m.montantDu, 0))}</td>
-                    <td className="px-4 py-3 text-right text-green-600">{fmt(rapport.parMois.reduce((s, m) => s + m.montantPaye, 0))}</td>
-                    <td className="px-4 py-3 text-right">{fmt(rapport.parMois.reduce((s, m) => s + m.solde, 0))}</td>
-                    <td className="px-4 py-3 text-right text-red-500">{fmt(rapport.parMois.reduce((s, m) => s + m.depenses, 0))}</td>
-                    <td className="px-4 py-3 text-right">{rapport.parMois.reduce((s, m) => s + m.nbPaiements, 0)}</td>
+                    <td className="px-4 py-3 text-end">{fmt(rapport.parMois.reduce((s, m) => s + m.montantDu, 0))}</td>
+                    <td className="px-4 py-3 text-end text-green-600">{fmt(rapport.parMois.reduce((s, m) => s + m.montantPaye, 0))}</td>
+                    <td className="px-4 py-3 text-end">{fmt(rapport.parMois.reduce((s, m) => s + m.solde, 0))}</td>
+                    <td className="px-4 py-3 text-end text-red-500">{fmt(rapport.parMois.reduce((s, m) => s + m.depenses, 0))}</td>
+                    <td className="px-4 py-3 text-end">{rapport.parMois.reduce((s, m) => s + m.nbPaiements, 0)}</td>
                   </tr>
                 </tbody>
               </table>
@@ -435,7 +435,7 @@ export default function RapportsFinanciers() {
           <div className="space-y-6">
             <div className="flex justify-end">
               <Button variant="outline" size="sm" onClick={exportClasseCSV}>
-                <Download className="mr-1 h-3.5 w-3.5" /> CSV
+                <Download className="me-1 h-3.5 w-3.5" /> CSV
               </Button>
             </div>
 
@@ -460,14 +460,14 @@ export default function RapportsFinanciers() {
             {/* Table */}
             <div className="rounded-xl border bg-white shadow-sm overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+                <thead className="bg-gray-50 text-start text-xs font-semibold uppercase text-gray-500">
                   <tr>
                     <th className="px-4 py-3">Classe</th>
-                    <th className="px-4 py-3 text-right">Eleves</th>
-                    <th className="px-4 py-3 text-right">Du ({CURRENCY})</th>
-                    <th className="px-4 py-3 text-right">Paye ({CURRENCY})</th>
-                    <th className="px-4 py-3 text-right">Solde ({CURRENCY})</th>
-                    <th className="px-4 py-3 text-right">Taux (%)</th>
+                    <th className="px-4 py-3 text-end">Eleves</th>
+                    <th className="px-4 py-3 text-end">Du ({CURRENCY})</th>
+                    <th className="px-4 py-3 text-end">Paye ({CURRENCY})</th>
+                    <th className="px-4 py-3 text-end">Solde ({CURRENCY})</th>
+                    <th className="px-4 py-3 text-end">Taux (%)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -479,13 +479,13 @@ export default function RapportsFinanciers() {
                           {c.classe}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right">{c.nbEleves}</td>
-                      <td className="px-4 py-3 text-right">{fmt(c.montantDu)}</td>
-                      <td className="px-4 py-3 text-right text-green-600 font-medium">{fmt(c.montantPaye)}</td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-end">{c.nbEleves}</td>
+                      <td className="px-4 py-3 text-end">{fmt(c.montantDu)}</td>
+                      <td className="px-4 py-3 text-end text-green-600 font-medium">{fmt(c.montantPaye)}</td>
+                      <td className="px-4 py-3 text-end">
                         <span className={c.solde > 0 ? "text-red-600" : "text-green-600"}>{fmt(c.solde)}</span>
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-end">
                         <Badge className={`border-0 ${c.tauxRecouvrement >= 80 ? "bg-green-100 text-green-700" : c.tauxRecouvrement >= 50 ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>
                           {fmt(c.tauxRecouvrement)}%
                         </Badge>
@@ -509,19 +509,19 @@ export default function RapportsFinanciers() {
                 className="sm:w-72"
               />
               <Button variant="outline" size="sm" onClick={exportEleveCSV}>
-                <Download className="mr-1 h-3.5 w-3.5" /> CSV
+                <Download className="me-1 h-3.5 w-3.5" /> CSV
               </Button>
             </div>
 
             <div className="rounded-xl border bg-white shadow-sm overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+                <thead className="bg-gray-50 text-start text-xs font-semibold uppercase text-gray-500">
                   <tr>
                     <th className="px-4 py-3">Eleve</th>
                     <th className="px-4 py-3">Classe</th>
-                    <th className="px-4 py-3 text-right">Du ({CURRENCY})</th>
-                    <th className="px-4 py-3 text-right">Paye ({CURRENCY})</th>
-                    <th className="px-4 py-3 text-right">Solde ({CURRENCY})</th>
+                    <th className="px-4 py-3 text-end">Du ({CURRENCY})</th>
+                    <th className="px-4 py-3 text-end">Paye ({CURRENCY})</th>
+                    <th className="px-4 py-3 text-end">Solde ({CURRENCY})</th>
                     <th className="px-4 py-3">Statut</th>
                   </tr>
                 </thead>
@@ -542,9 +542,9 @@ export default function RapportsFinanciers() {
                           </div>
                         </td>
                         <td className="px-4 py-3 text-gray-600">{e.classe || "-"}</td>
-                        <td className="px-4 py-3 text-right">{fmt(e.montantDu)}</td>
-                        <td className="px-4 py-3 text-right text-green-600 font-medium">{fmt(e.montantPaye)}</td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-4 py-3 text-end">{fmt(e.montantDu)}</td>
+                        <td className="px-4 py-3 text-end text-green-600 font-medium">{fmt(e.montantPaye)}</td>
+                        <td className="px-4 py-3 text-end">
                           <span className={e.solde > 0 ? "text-red-600 font-semibold" : "text-green-600"}>{fmt(e.solde)}</span>
                         </td>
                         <td className="px-4 py-3">

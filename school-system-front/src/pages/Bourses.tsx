@@ -443,12 +443,12 @@ export default function Bourses() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t("scholarships.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="ps-9"
           />
         </div>
         <Select
@@ -484,7 +484,7 @@ export default function Bourses() {
             <X className="h-3.5 w-3.5" /> Reinitialiser
           </Button>
         )}
-        <span className="ml-auto text-xs text-muted-foreground">
+        <span className="ms-auto text-xs text-muted-foreground">
           {filteredBourses.length} bourse{filteredBourses.length > 1 ? "s" : ""}
         </span>
       </div>
@@ -495,22 +495,22 @@ export default function Bourses() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">
                   Eleve
                 </th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">
                   Libelle
                 </th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">
                   Type
                 </th>
-                <th className="py-3 px-4 text-right font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-end font-semibold text-muted-foreground">
                   Montant
                 </th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">
                   Statut
                 </th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">
                   Periode
                 </th>
                 <th className="py-3 px-4 text-center font-semibold text-muted-foreground">
@@ -543,10 +543,10 @@ export default function Bourses() {
                         {TYPE_LABELS[b.type] || b.type}
                       </Badge>
                     </td>
-                    <td className="py-3 px-4 text-right font-semibold text-green-600 whitespace-nowrap">
+                    <td className="py-3 px-4 text-end font-semibold text-green-600 whitespace-nowrap">
                       {b.montant.toLocaleString()} {CURRENCY}
                       {b.pourcentage != null && (
-                        <span className="text-xs text-muted-foreground ml-1">
+                        <span className="text-xs text-muted-foreground ms-1">
                           ({b.pourcentage}%)
                         </span>
                       )}
@@ -577,16 +577,16 @@ export default function Bourses() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => setViewBourse(b)}>
-                            <Eye className="h-3.5 w-3.5 mr-2" /> Voir
+                            <Eye className="h-3.5 w-3.5 me-2" /> Voir
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => openEdit(b)}>
-                            <Edit className="h-3.5 w-3.5 mr-2" /> Modifier
+                            <Edit className="h-3.5 w-3.5 me-2" /> Modifier
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDeleteTarget(b)}
                             className="text-destructive"
                           >
-                            <Trash2 className="h-3.5 w-3.5 mr-2" /> Supprimer
+                            <Trash2 className="h-3.5 w-3.5 me-2" /> Supprimer
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -634,7 +634,7 @@ export default function Bourses() {
                 )}
                 <div>
                   <span className="text-muted-foreground">Statut :</span>{" "}
-                  <Badge variant={STATUT_VARIANT[viewBourse.statut]} className="text-xs ml-1">
+                  <Badge variant={STATUT_VARIANT[viewBourse.statut]} className="text-xs ms-1">
                     {STATUT_LABELS[viewBourse.statut]}
                   </Badge>
                 </div>

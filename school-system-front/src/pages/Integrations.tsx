@@ -264,7 +264,7 @@ export default function Integrations() {
               >
                 {updateConfigMutation.isPending ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    <Loader2 className="h-4 w-4 me-1.5 animate-spin" />
                     {t("common.saving")}
                   </>
                 ) : (
@@ -316,7 +316,7 @@ export default function Integrations() {
               >
                 {updateConfigMutation.isPending ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    <Loader2 className="h-4 w-4 me-1.5 animate-spin" />
                     {t("common.saving")}
                   </>
                 ) : (
@@ -357,16 +357,16 @@ export default function Integrations() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                         URL
                       </th>
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">
                         Evenements
                       </th>
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                         Statut
                       </th>
-                      <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">
+                      <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">
                         Actions
                       </th>
                     </tr>
@@ -420,7 +420,7 @@ export default function Integrations() {
                               {wh.active ? t("common.active") : t("common.inactive")}
                             </Badge>
                           </td>
-                          <td className="py-3 px-4 text-right">
+                          <td className="py-3 px-4 text-end">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -628,7 +628,7 @@ export default function Integrations() {
             >
               {createWebhookMutation.isPending ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                  <Loader2 className="h-4 w-4 me-1.5 animate-spin" />
                   Ajout...
                 </>
               ) : (

@@ -47,6 +47,10 @@ public class Examen {
     @Builder.Default
     private Integer ordrePrive = 1;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer trimestre = 1;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "classe_id", nullable = false)
     @ToString.Exclude

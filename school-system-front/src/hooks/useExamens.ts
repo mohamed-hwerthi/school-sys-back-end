@@ -1,25 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { examensApi, mapExamenToEvaluation, type ExamenDTO, type ExamenRequest } from "@/api/examens.api";
-import type { Evaluation } from "@/types/evaluation";
+import { examensApi, type ExamenDTO, type ExamenRequest } from "@/api/examens.api";
 
 const EXAMENS_KEY = "examens";
 
 /** Fetch raw ExamenDTO list. */
-export function useExamensRaw(moduleId?: number, classeId?: number) {
+export function useExamensRaw(moduleId?: number, classeId?: number, trimestre?: number) {
   return useQuery<ExamenDTO[]>({
-    queryKey: [EXAMENS_KEY, moduleId, classeId],
-    queryFn: () => examensApi.getAll(moduleId, classeId),
-  });
-}
-
-/** Fetch examens mapped to the frontend Evaluation type. */
-export function useExamens(moduleId?: number, classeId?: number) {
-  return useQuery<Evaluation[]>({
-    queryKey: [EXAMENS_KEY, "mapped", moduleId, classeId],
-    queryFn: async () => {
-      const dtos = await examensApi.getAll(moduleId, classeId);
-      return dtos.map(mapExamenToEvaluation);
-    },
+    queryKey: [EXAMENS_KEY, moduleId, classeId, trimestre],
+    queryFn: () => examensApi.getAll(moduleId, classeId, trimestre),
   });
 }
 

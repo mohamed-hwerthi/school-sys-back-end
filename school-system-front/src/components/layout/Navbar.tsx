@@ -21,12 +21,14 @@ import {
   Minimize,
   Settings,
   ChevronRight,
+  Globe,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { buildVitrineUrl } from "@/lib/vitrine-routing";
 
 const ROUTE_I18N_KEYS: Record<string, string> = {
   dashboard: "nav.dashboard",
@@ -55,7 +57,7 @@ const ROUTE_I18N_KEYS: Record<string, string> = {
   contrats: "nav.contractsLeaves",
   evaluations: "nav.evaluations",
   devoirs: "nav.homework",
-  quiz: "nav.exams",
+  quiz: "nav.quiz",
   carnets: "nav.gradeBooks",
   bulletins: "nav.bulletins",
   utilisateurs: "nav.users",
@@ -135,7 +137,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/40 backdrop-blur-xl bg-background/60 px-4">
-      <SidebarTrigger className="-ml-1" />
+      <SidebarTrigger className="-ms-1" />
       <Separator orientation="vertical" className="h-5" />
 
       <Breadcrumb />
@@ -151,7 +153,7 @@ export function Navbar() {
         </div>
       </div>
 
-      <div className="ml-auto flex items-center gap-1.5">
+      <div className="ms-auto flex items-center gap-1.5">
         {/* Language Toggle */}
         <LanguageSwitcher />
 
@@ -171,10 +173,26 @@ export function Navbar() {
           className="relative h-8 w-8 rounded-full hover:bg-muted/60 transition-all"
         >
           <Bell className="h-4 w-4 text-muted-foreground" />
-          <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-2 ring-background">
+          <span className="absolute -top-0.5 -end-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-2 ring-background">
             3
           </span>
         </Button>
+
+        {/* Public school website */}
+        {(user?.tenantSlug || user?.tenantId) && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full hover:bg-muted/60 transition-all"
+            title={t("nav.publicSite") || "Voir le site public"}
+            onClick={() => {
+              const slug = user.tenantSlug || user.tenantId.replaceAll("_", "-");
+              window.open(buildVitrineUrl(slug, { preview: true }), "_blank", "noopener,noreferrer");
+            }}
+          >
+            <Globe className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        )}
 
         {/* Fullscreen Toggle */}
         <Button
@@ -199,7 +217,7 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="sm"
-              className="gap-2.5 pl-1.5 pr-3 rounded-full hover:bg-muted/60 transition-all"
+              className="gap-2.5 ps-1.5 pe-3 rounded-full hover:bg-muted/60 transition-all"
             >
               <div className="relative">
                 <Avatar className="h-7 w-7">
@@ -207,7 +225,7 @@ export function Navbar() {
                     {initials}
                   </AvatarFallback>
                 </Avatar>
-                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background" />
+                <span className="absolute -bottom-0.5 -end-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background" />
               </div>
               <div className="hidden sm:flex flex-col items-start">
                 <span className="text-xs font-medium leading-none">{displayName}</span>
@@ -226,11 +244,11 @@ export function Navbar() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
+              <User className="me-2 h-4 w-4" />
               {t("common.profile")}
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
+              <Settings className="me-2 h-4 w-4" />
               {t("common.settings")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -238,7 +256,7 @@ export function Navbar() {
               className="text-destructive focus:text-destructive"
               onClick={handleLogout}
             >
-              <LogOut className="mr-2 h-4 w-4" />
+              <LogOut className="me-2 h-4 w-4" />
               {t("common.logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>

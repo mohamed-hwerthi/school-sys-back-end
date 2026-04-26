@@ -147,12 +147,12 @@ function NiveauCard({ niveauId, nom, sections, studentCount, index }: {
           <Badge
             key={letter}
             variant="outline"
-            className="gap-1 pl-2.5 pr-1 py-1 text-xs font-medium"
+            className="gap-1 ps-2.5 pe-1 py-1 text-xs font-medium"
           >
             {prefix}{letter}
             <button
               onClick={() => handleRemove(letter)}
-              className="ml-0.5 rounded-full p-0.5 hover:bg-destructive/10 hover:text-destructive transition-colors"
+              className="ms-0.5 rounded-full p-0.5 hover:bg-destructive/10 hover:text-destructive transition-colors"
             >
               <X className="h-3 w-3" />
             </button>

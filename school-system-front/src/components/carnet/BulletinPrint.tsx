@@ -1,30 +1,42 @@
-import type { BulletinDTO } from "@/api/bulletins.api";
+import type { BulletinDTO, BulletinDomaineDTO, BulletinModuleDTO } from "@/api/bulletins.api";
 
 interface Props {
   bulletin: BulletinDTO;
   schoolName?: string;
   schoolNameAr?: string;
   anneeScolaire?: string;
+  schoolLogoUrl?: string | null;
+  directorStampUrl?: string | null;
+  numeroIdentifiant?: string | null;
+  delegationRegionale?: string;
 }
+
+const TRIMESTRE_AR = ["الثلاثي الأول", "الثلاثي الثاني", "الثلاثي الثالث"];
+
+// Tunisian primary "Étatique" colors (sampled from the official template)
+const TEAL = "#1ca0c1";
+const TEAL_DARK = "#157d9b";
+const TEAL_LIGHT = "#e8f4f8";
+const BORDER = "#9bd2e2";
 
 export default function BulletinPrint({
   bulletin,
   schoolName = "المدرسة الابتدائية",
   schoolNameAr,
   anneeScolaire = "2025 / 2026",
+  directorStampUrl,
+  numeroIdentifiant,
+  delegationRegionale = "باجة",
 }: Props) {
   const b = bulletin;
-  const isPrive = b.version === "prive";
-  const trimestreAr = ["الثلاثي الأول", "الثلاثي الثاني", "الثلاثي الثالث"][
-    b.trimestre - 1
-  ];
+  const trimestreAr = TRIMESTRE_AR[b.trimestre - 1] ?? TRIMESTRE_AR[0];
+  const ecoleAr = schoolNameAr || schoolName;
+  const studentDisplayName = b.studentNameAr || b.studentName;
 
-  // Count max exams across all modules for colspan
-  const maxExams = Math.max(
-    ...b.domaines.flatMap((d) => d.modules.map((m) => m.examens.length)),
-    ...b.modulesHorsDomaine.map((m) => m.examens.length),
-    1
-  );
+  // year split into 2-digit segments for the dotted-fields display
+  const yrParts = anneeScolaire.split(" / ");
+  const y1 = (yrParts[0] || "2025").slice(-2);
+  const y2 = (yrParts[1] || "2026").slice(-2);
 
   return (
     <div
@@ -33,440 +45,220 @@ export default function BulletinPrint({
       style={{
         width: "210mm",
         minHeight: "297mm",
-        padding: "8mm 10mm",
-        fontFamily: "'Amiri', 'Traditional Arabic', 'Arial', serif",
+        padding: "6mm 6mm",
+        fontFamily: "'Amiri', 'Noto Naskh Arabic', 'Traditional Arabic', 'Arial', serif",
         fontSize: "11px",
-        lineHeight: 1.6,
+        lineHeight: 1.5,
+        color: "#0a0a0a",
       }}
     >
-      {/* Header */}
-      {isPrive ? (
-        /* ── Private School Header ── */
+      <div
+        style={{
+          border: `1.5px solid ${TEAL}`,
+          borderRadius: "4mm",
+          padding: "3mm 4mm",
+          background: "#fff",
+        }}
+      >
+        {/* ─── HEADER ROW ─── */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "flex-start",
-            marginBottom: "4mm",
-            borderBottom: "3px double #1a5276",
-            paddingBottom: "3mm",
+            paddingBottom: "2mm",
+            borderBottom: `1px solid ${BORDER}`,
           }}
         >
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: "14px", fontWeight: "bold", color: "#1a5276" }}>
-              {schoolNameAr || schoolName}
+          {/* Right block (RTL start) */}
+          <div style={{ width: "55%" }}>
+            <div style={{ fontSize: "16px", fontWeight: "bold", color: TEAL_DARK }}>
+              المندوبية الجهوية للتربية
             </div>
-            <div style={{ fontSize: "9px", color: "#555", marginTop: "1mm" }}>
-              مدرسة خاصة
-            </div>
-          </div>
-          <div style={{ textAlign: "center", flex: 1 }}>
-            <div
-              style={{
-                fontSize: "16px",
-                fontWeight: "bold",
-                border: "2px solid #1a5276",
-                color: "#1a5276",
-                display: "inline-block",
-                padding: "2mm 6mm",
-                borderRadius: "4px",
-              }}
-            >
-              بطاقة أعداد ـ {trimestreAr}
-            </div>
-            <div style={{ fontSize: "10px", marginTop: "2mm", color: "#555" }}>
-              السنة الدراسية: {anneeScolaire}
+            <div style={{ marginTop: "2mm", fontSize: "11px" }}>
+              ب{" "}
+              <span
+                style={{
+                  display: "inline-block",
+                  borderBottom: "1px dotted #555",
+                  padding: "0 8mm",
+                  minWidth: "30mm",
+                }}
+              >
+                {delegationRegionale}
+              </span>
             </div>
           </div>
-          <div style={{ textAlign: "left" }}>
-            <div style={{ fontSize: "12px", fontWeight: "bold", color: "#1a5276" }}>
-              {schoolName}
+          {/* Left block (school + year) */}
+          <div style={{ width: "45%", textAlign: "end", fontSize: "11px" }}>
+            <div>
+              المدرسة الابتدائية :{" "}
+              <span
+                style={{
+                  display: "inline-block",
+                  borderBottom: "1px dotted #555",
+                  padding: "0 4mm",
+                  fontWeight: "bold",
+                  minWidth: "32mm",
+                }}
+              >
+                {ecoleAr}
+              </span>
             </div>
-            <div style={{ fontSize: "9px", color: "#555", marginTop: "1mm" }}>
-              École Privée
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* ── Government (Étatique) Header ── */
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: "4mm",
-            borderBottom: "2px solid #333",
-            paddingBottom: "3mm",
-          }}
-        >
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: "9px", color: "#555" }}>
-              الجمهورية التونسية
-            </div>
-            <div style={{ fontSize: "9px", color: "#555" }}>
-              وزارة التربية
-            </div>
-            <div style={{ fontSize: "13px", fontWeight: "bold", marginTop: "2mm" }}>
-              {schoolNameAr || schoolName}
-            </div>
-          </div>
-          <div style={{ textAlign: "center", flex: 1 }}>
-            <div
-              style={{
-                fontSize: "16px",
-                fontWeight: "bold",
-                border: "2px solid #333",
-                display: "inline-block",
-                padding: "2mm 6mm",
-                borderRadius: "4px",
-              }}
-            >
-              بطاقة أعداد ـ {trimestreAr}
-            </div>
-            <div style={{ fontSize: "10px", marginTop: "2mm", color: "#555" }}>
-              السنة الدراسية: {anneeScolaire}
-            </div>
-          </div>
-          <div style={{ textAlign: "left", fontSize: "9px", color: "#555" }}>
-            <div>République Tunisienne</div>
-            <div>Ministère de l'Éducation</div>
-            <div style={{ fontSize: "11px", fontWeight: "bold", marginTop: "2mm" }}>
-              {schoolName}
+            <div style={{ marginTop: "2mm" }}>
+              السنة الدراسية :{" "}
+              <span style={{ display: "inline-block", borderBottom: "1px dotted #555", padding: "0 1mm" }}>
+                20....{y2}
+              </span>{" "}
+              /{" "}
+              <span style={{ display: "inline-block", borderBottom: "1px dotted #555", padding: "0 1mm" }}>
+                20....{y1}
+              </span>
             </div>
           </div>
         </div>
-      )}
 
-      {/* Student Info */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "4mm",
-          fontSize: "11px",
-          backgroundColor: "#f5f5f5",
-          padding: "2mm 4mm",
-          borderRadius: "3px",
-        }}
-      >
-        <div>
-          <strong>التلميذ(ة): </strong>
-          {b.studentNameAr || b.studentName}
-        </div>
-        <div>
-          <strong>القسم: </strong>
-          {b.classe}
-        </div>
-        <div>
-          <strong>الثلاثي: </strong>
-          {trimestreAr}
-        </div>
-      </div>
-
-      {/* Grades Table */}
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          marginBottom: "4mm",
-          fontSize: "10px",
-        }}
-      >
-        <thead>
-          <tr style={{ backgroundColor: "#e8e8e8" }}>
-            <th style={thStyle}>المجال</th>
-            <th style={thStyle}>المادة</th>
-            {Array.from({ length: maxExams }, (_, i) => (
-              <th key={i} style={thStyle}>
-                اختبار {i + 1}
-              </th>
-            ))}
-            <th style={thStyle}>معدل المادة</th>
-            <th style={thStyle}>معدل المجال</th>
-            <th style={{ ...thStyle, minWidth: "30mm" }}>توصيات المعلم</th>
-          </tr>
-        </thead>
-        <tbody>
-          {b.domaines.map((domaine) => {
-            const moduleCount = domaine.modules.length;
-            return domaine.modules.map((mod, modIdx) => (
-              <tr key={`${domaine.domaineId}-${mod.moduleId}`}>
-                {modIdx === 0 && (
-                  <td
-                    rowSpan={moduleCount}
-                    style={{
-                      ...tdStyle,
-                      fontWeight: "bold",
-                      backgroundColor: "#f9f9f9",
-                      textAlign: "center",
-                      verticalAlign: "middle",
-                      writingMode: moduleCount > 2 ? "vertical-rl" : undefined,
-                      maxWidth: moduleCount > 2 ? "20px" : undefined,
-                      fontSize: moduleCount > 2 ? "10px" : "10px",
-                    }}
-                  >
-                    {domaine.domaineNameAr || domaine.domaineName}
-                  </td>
-                )}
-                <td style={{ ...tdStyle, fontWeight: "500" }}>{mod.moduleName}</td>
-                {Array.from({ length: maxExams }, (_, i) => {
-                  const ex = mod.examens[i];
-                  return (
-                    <td key={i} style={{ ...tdStyle, textAlign: "center" }}>
-                      {ex?.note != null ? formatNote(ex.note) : "—"}
-                    </td>
-                  );
-                })}
-                <td
-                  style={{
-                    ...tdStyle,
-                    textAlign: "center",
-                    fontWeight: "bold",
-                    backgroundColor:
-                      mod.moyenneModule >= 10 ? "#e8f5e9" : "#ffebee",
-                  }}
-                >
-                  {formatNote(mod.moyenneModule)}
-                </td>
-                {modIdx === 0 && (
-                  <td
-                    rowSpan={moduleCount}
-                    style={{
-                      ...tdStyle,
-                      textAlign: "center",
-                      fontWeight: "bold",
-                      fontSize: "12px",
-                      verticalAlign: "middle",
-                      backgroundColor:
-                        domaine.moyenneDomaine >= 10 ? "#e8f5e9" : "#ffebee",
-                    }}
-                  >
-                    {formatNote(domaine.moyenneDomaine)}
-                  </td>
-                )}
-                {modIdx === 0 && (
-                  <td
-                    rowSpan={moduleCount}
-                    style={{
-                      ...tdStyle,
-                      fontSize: "9px",
-                      verticalAlign: "top",
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {domaine.recommandation || ""}
-                  </td>
-                )}
-              </tr>
-            ));
-          })}
-          {/* Modules without domaine */}
-          {b.modulesHorsDomaine.length > 0 && (
-            <>
-              {b.modulesHorsDomaine.map((mod, modIdx) => (
-                <tr key={`hd-${mod.moduleId}`}>
-                  {modIdx === 0 && (
-                    <td
-                      rowSpan={b.modulesHorsDomaine.length}
-                      style={{
-                        ...tdStyle,
-                        fontWeight: "bold",
-                        backgroundColor: "#f9f9f9",
-                        textAlign: "center",
-                        verticalAlign: "middle",
-                      }}
-                    >
-                      مواد أخرى
-                    </td>
-                  )}
-                  <td style={{ ...tdStyle, fontWeight: "500" }}>
-                    {mod.moduleName}
-                  </td>
-                  {Array.from({ length: maxExams }, (_, i) => {
-                    const ex = mod.examens[i];
-                    return (
-                      <td key={i} style={{ ...tdStyle, textAlign: "center" }}>
-                        {ex?.note != null ? formatNote(ex.note) : "—"}
-                      </td>
-                    );
-                  })}
-                  <td
-                    style={{
-                      ...tdStyle,
-                      textAlign: "center",
-                      fontWeight: "bold",
-                      backgroundColor:
-                        mod.moyenneModule >= 10 ? "#e8f5e9" : "#ffebee",
-                    }}
-                  >
-                    {formatNote(mod.moyenneModule)}
-                  </td>
-                  {modIdx === 0 && (
-                    <>
-                      <td
-                        rowSpan={b.modulesHorsDomaine.length}
-                        style={{ ...tdStyle, textAlign: "center" }}
-                      >
-                        —
-                      </td>
-                      <td
-                        rowSpan={b.modulesHorsDomaine.length}
-                        style={tdStyle}
-                      />
-                    </>
-                  )}
-                </tr>
-              ))}
-            </>
-          )}
-        </tbody>
-      </table>
-
-      {/* Bottom Section: Stats + General Average */}
-      <div
-        style={{
-          display: "flex",
-          gap: "4mm",
-          marginBottom: "4mm",
-        }}
-      >
-        {/* General Average Box */}
-        <div
-          style={{
-            flex: 1,
-            border: "2px solid #333",
-            borderRadius: "4px",
-            padding: "3mm",
-            textAlign: "center",
-          }}
-        >
-          <div style={{ fontSize: "11px", fontWeight: "bold", marginBottom: "2mm" }}>
-            المعدل العام
-          </div>
+        {/* ─── TRIMESTRE PILL (centered) ─── */}
+        <div style={{ display: "flex", justifyContent: "center", margin: "3mm 0 2mm 0" }}>
           <div
             style={{
-              fontSize: "22px",
+              background: TEAL_LIGHT,
+              border: `1.5px solid ${TEAL}`,
+              color: TEAL_DARK,
               fontWeight: "bold",
-              color: b.moyenneGenerale >= 10 ? "#2e7d32" : "#c62828",
+              fontSize: "15px",
+              padding: "1.5mm 12mm",
+              borderRadius: "5mm",
             }}
           >
-            {formatNote(b.moyenneGenerale)}
-          </div>
-          <div style={{ fontSize: "9px", color: "#555", marginTop: "1mm" }}>
-            / 20
+            {trimestreAr}
           </div>
         </div>
 
-        {/* Stats Box */}
+        {/* ─── STUDENT INFO ROW ─── */}
         <div
           style={{
-            flex: 2,
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-            padding: "3mm",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            fontSize: "11px",
+            margin: "1mm 1mm 3mm 1mm",
           }}
         >
-          <table style={{ width: "100%", fontSize: "10px" }}>
-            <tbody>
-              <tr>
-                <td style={statLabelStyle}>ترتيب التلميذ</td>
-                <td style={statValueStyle}>
-                  <strong>{b.rang}</strong> / {b.totalEleves}
-                </td>
-                <td style={statLabelStyle}>معدل القسم</td>
-                <td style={statValueStyle}>{formatNote(b.moyenneClasse)}</td>
-              </tr>
-              <tr>
-                <td style={statLabelStyle}>أعلى معدل</td>
-                <td style={{ ...statValueStyle, color: "#2e7d32" }}>
-                  {formatNote(b.moyenneMax)}
-                </td>
-                <td style={statLabelStyle}>أدنى معدل</td>
-                <td style={{ ...statValueStyle, color: "#c62828" }}>
-                  {formatNote(b.moyenneMin)}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Observation & Certificate Row */}
-      <div
-        style={{
-          display: "flex",
-          gap: "4mm",
-          marginBottom: "4mm",
-        }}
-      >
-        {/* Comportement */}
-        <div
-          style={{
-            flex: 2,
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-            padding: "3mm",
-          }}
-        >
-          <div style={{ fontSize: "10px", fontWeight: "bold", marginBottom: "1mm" }}>
-            ملاحظات السلوك
+          <div>
+            <div>
+              <strong>التلميذ(ة)</strong> : {studentDisplayName}
+            </div>
+            {numeroIdentifiant && (
+              <div style={{ marginTop: "1mm" }}>
+                <strong>المعرّف الوحيد</strong> : {numeroIdentifiant}
+              </div>
+            )}
           </div>
-          <div style={{ fontSize: "10px", minHeight: "8mm" }}>
-            {b.comportement || ""}
+          <div>
+            <strong>القسم</strong> : {b.classe}
+          </div>
+          <div>
+            <strong>عدد التلاميذ المرسمين</strong> :{b.totalEleves}
           </div>
         </div>
 
-        {/* Certificate */}
-        <div
-          style={{
-            flex: 1,
-            border: "2px solid #b8860b",
-            borderRadius: "4px",
-            padding: "3mm",
-            textAlign: "center",
-            backgroundColor: b.certificatType ? "#fffde7" : "transparent",
-          }}
-        >
-          <div style={{ fontSize: "10px", fontWeight: "bold", marginBottom: "1mm" }}>
-            الشهادة
+        {/* ─── BODY: 2 columns (side panel + main) ─── */}
+        <div style={{ display: "flex", gap: "3mm", alignItems: "stretch" }}>
+          {/* MAIN (right visually) */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "3mm" }}>
+            {b.domaines.map((d) => (
+              <DomaineBlock key={d.domaineId} domaine={d} />
+            ))}
+            {b.modulesHorsDomaine.some((m) => (m.moyenneModule ?? 0) > 0) && (
+              <DomaineBlock
+                domaine={{
+                  domaineId: -1,
+                  domaineName: "Autres",
+                  domaineNameAr: "مواد أخرى",
+                  modules: b.modulesHorsDomaine,
+                  moyenneDomaine: avg(b.modulesHorsDomaine.map((m) => m.moyenneModule)),
+                  recommandation: null,
+                }}
+              />
+            )}
           </div>
-          <div style={{ fontSize: "12px", fontWeight: "bold", color: "#b8860b" }}>
-            {b.certificatType || "—"}
-          </div>
-        </div>
-      </div>
 
-      {/* Signatures */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: "6mm",
-          fontSize: "10px",
-        }}
-      >
-        <div style={{ textAlign: "center", width: "30%" }}>
-          <div style={{ fontWeight: "bold", marginBottom: "10mm" }}>
-            إمضاء المعلم(ة)
-          </div>
-          <div style={{ borderTop: "1px dotted #999", paddingTop: "1mm" }}>
-            ............................
-          </div>
-        </div>
-        <div style={{ textAlign: "center", width: "30%" }}>
-          <div style={{ fontWeight: "bold", marginBottom: "10mm" }}>
-            إمضاء مدير(ة) المدرسة
-          </div>
-          <div style={{ borderTop: "1px dotted #999", paddingTop: "1mm" }}>
-            ............................
-          </div>
-        </div>
-        <div style={{ textAlign: "center", width: "30%" }}>
-          <div style={{ fontWeight: "bold", marginBottom: "10mm" }}>
-            إمضاء الولي
-          </div>
-          <div style={{ borderTop: "1px dotted #999", paddingTop: "1mm" }}>
-            ............................
+          {/* SIDE PANEL (left visually) */}
+          <div style={{ width: "55mm", display: "flex", flexDirection: "column", gap: "2.5mm" }}>
+            {/* Three stat boxes side-by-side */}
+            <div style={{ display: "flex", gap: "1.5mm" }}>
+              <MiniStatCard label="أدنى معدل بالقسم" value={formatNote(b.moyenneMin)} tone="bad" />
+              <MiniStatCard label="أعلى معدل بالقسم" value={formatNote(b.moyenneMax)} tone="good" />
+              <MiniStatCard label="معدل الثلاثي" value={formatNote(b.moyenneGenerale)} tone="primary" />
+            </div>
+
+            {/* Observation comportement */}
+            <BadgePanel title="ملاحظات المدرس(ة) حول السلوك و المواطنة" minHeight="22mm">
+              <div style={{ fontSize: "10px", padding: "2mm" }}>{b.comportement || ""}</div>
+            </BadgePanel>
+
+            {/* Certificat */}
+            <BadgePanel title="الشهادة" minHeight="18mm">
+              <div
+                style={{
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  fontSize: "13px",
+                  padding: "5mm 1mm",
+                }}
+              >
+                {b.certificatType || ""}
+              </div>
+            </BadgePanel>
+
+            {/* Director + stamp */}
+            <BadgePanel title="مدير(ة) المدرسة" minHeight="32mm">
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  padding: "2mm 1mm",
+                }}
+              >
+                {directorStampUrl ? (
+                  <img
+                    src={directorStampUrl}
+                    alt="ختم"
+                    style={{ maxHeight: "18mm", maxWidth: "30mm", marginBottom: "1mm" }}
+                  />
+                ) : (
+                  <div style={{ height: "16mm" }} />
+                )}
+                <div
+                  style={{
+                    fontSize: "10px",
+                    width: "100%",
+                    textAlign: "start",
+                  }}
+                >
+                  التاريخ :{" "}
+                  <span
+                    style={{
+                      display: "inline-block",
+                      borderBottom: "1px dotted #777",
+                      minWidth: "25mm",
+                    }}
+                  />
+                </div>
+                <div
+                  style={{ fontSize: "9px", color: "#666", marginTop: "0.5mm", alignSelf: "start" }}
+                >
+                  (الختم و الإمضاء)
+                </div>
+              </div>
+            </BadgePanel>
+
+            {/* Parent signature */}
+            <BadgePanel title="إمضاء الولي" minHeight="18mm">
+              <div />
+            </BadgePanel>
           </div>
         </div>
       </div>
@@ -474,34 +266,380 @@ export default function BulletinPrint({
   );
 }
 
-function formatNote(val: number): string {
+// ───────────────── Domaine block ─────────────────
+
+interface DomaineBlockProps {
+  domaine: Pick<
+    BulletinDomaineDTO,
+    "domaineId" | "domaineName" | "domaineNameAr" | "modules" | "moyenneDomaine" | "recommandation"
+  >;
+}
+
+function DomaineBlock({ domaine }: DomaineBlockProps) {
+  const recommandation = domaine.recommandation || "";
+  const modules = domaine.modules;
+
+  // Group modules by sous-domaine. Modules with no sous-domaine fall into a single bucket key=null.
+  const groups: { key: number | null; nameAr: string | null; nameFr: string | null; ordre: number; modules: BulletinModuleDTO[] }[] = [];
+  for (const m of modules) {
+    const k = m.sousDomaineId ?? null;
+    let g = groups.find((x) => x.key === k);
+    if (!g) {
+      g = {
+        key: k,
+        nameAr: m.sousDomaineNameAr ?? null,
+        nameFr: m.sousDomaineName ?? null,
+        ordre: m.sousDomaineOrdre ?? 999,
+        modules: [],
+      };
+      groups.push(g);
+    }
+    g.modules.push(m);
+  }
+  groups.sort((a, b) => a.ordre - b.ordre);
+
+  const hasSousDomaines = groups.some((g) => g.key !== null);
+
+  // Total visual rows in the body: module rows + sub-domain header rows (only for non-null groups)
+  const totalRows =
+    modules.length + (hasSousDomaines ? groups.filter((g) => g.key !== null).length : 0);
+
+  return (
+    <div style={{ borderRadius: "2mm", overflow: "hidden", border: `1px solid ${TEAL}` }}>
+      {/* Domain header bar */}
+      <div
+        style={{
+          background: TEAL,
+          color: "white",
+          textAlign: "center",
+          fontWeight: "bold",
+          fontSize: "12.5px",
+          padding: "1.2mm 2mm",
+        }}
+      >
+        {formatDomaineTitle(domaine.domaineNameAr, domaine.domaineName)}
+      </div>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          fontSize: "10px",
+          tableLayout: "fixed",
+          background: "#fff",
+        }}
+      >
+        <colgroup>
+          <col style={{ width: "22%" }} />
+          <col style={{ width: "10%" }} />
+          <col style={{ width: "10%" }} />
+          <col />
+          <col style={{ width: "11%" }} />
+          <col style={{ width: "11%" }} />
+        </colgroup>
+        <thead>
+          <tr style={{ background: TEAL_LIGHT, color: TEAL_DARK }}>
+            <th style={thStyle}>المادة</th>
+            <th style={thStyle}>العدد /20</th>
+            <th style={thStyle}>معدل المجال</th>
+            <th style={thStyle}>توصيات المدرس(ة)</th>
+            <th style={thStyle}>أدنى معدل في القسم</th>
+            <th style={thStyle}>أعلى معدل في القسم</th>
+          </tr>
+        </thead>
+        <tbody>
+          {modules.length === 0 ? (
+            <tr>
+              <td colSpan={6} style={{ ...tdStyle, textAlign: "center", color: "#888", padding: "4mm" }}>
+                —
+              </td>
+            </tr>
+          ) : (
+            (() => {
+              const rows: React.ReactNode[] = [];
+              let visualRowIdx = 0; // counts every <tr> rendered (incl. sub-domain headers)
+              groups.forEach((g) => {
+                // Sub-domain header row (only when sub-domains are meaningful)
+                if (hasSousDomaines && g.key !== null) {
+                  const isFirstVisualRow = visualRowIdx === 0;
+                  rows.push(
+                    <tr key={`sd-${g.key}`}>
+                      <td
+                        colSpan={2}
+                        style={{
+                          ...tdStyle,
+                          fontWeight: "bold",
+                          color: TEAL_DARK,
+                          fontSize: "10.5px",
+                          padding: "1mm 1.5mm",
+                          background: "#f4fafc",
+                        }}
+                      >
+                        • {g.nameAr || g.nameFr}
+                      </td>
+                      {isFirstVisualRow && (
+                        <>
+                          <td
+                            rowSpan={totalRows}
+                            style={{
+                              ...tdStyle,
+                              textAlign: "center",
+                              fontWeight: "bold",
+                              fontSize: "13px",
+                              verticalAlign: "middle",
+                              color: domaine.moyenneDomaine >= 10 ? "#1b5e20" : "#b71c1c",
+                              background: "#fafafa",
+                            }}
+                          >
+                            {formatNote(domaine.moyenneDomaine)}
+                          </td>
+                          <td
+                            rowSpan={totalRows}
+                            style={{ ...tdStyle, fontSize: "10.5px", verticalAlign: "middle", lineHeight: 1.5 }}
+                          >
+                            {recommandation}
+                          </td>
+                        </>
+                      )}
+                      <td style={{ ...tdStyle, background: "#f4fafc" }} />
+                      <td style={{ ...tdStyle, background: "#f4fafc" }} />
+                    </tr>
+                  );
+                  visualRowIdx++;
+                }
+                g.modules.forEach((mod) => {
+                  const isFirstVisualRow = visualRowIdx === 0;
+                  rows.push(
+                    <ModuleRow
+                      key={`m-${mod.moduleId}`}
+                      mod={mod}
+                      isFirst={isFirstVisualRow}
+                      rowSpan={totalRows}
+                      moyenneDomaine={domaine.moyenneDomaine}
+                      recommandation={recommandation}
+                    />
+                  );
+                  visualRowIdx++;
+                });
+              });
+              return rows;
+            })()
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ModuleRow({
+  mod,
+  isFirst,
+  rowSpan,
+  moyenneDomaine,
+  recommandation,
+}: {
+  mod: BulletinModuleDTO;
+  isFirst: boolean;
+  rowSpan: number;
+  moyenneDomaine: number;
+  recommandation: string;
+}) {
+  const note = mod.moyenneModule;
+  const hasNote = note != null && note > 0;
+  return (
+    <tr>
+      <td style={{ ...tdStyle, fontWeight: 600, color: TEAL_DARK, fontSize: "10.5px" }}>
+        {mod.moduleNameAr || mod.moduleName}
+      </td>
+      <td
+        style={{
+          ...tdStyle,
+          textAlign: "center",
+          fontWeight: "bold",
+          color: hasNote ? (note >= 10 ? "#1b5e20" : "#b71c1c") : "#888",
+        }}
+      >
+        {hasNote ? formatNote(note) : "—"}
+      </td>
+      {isFirst && (
+        <td
+          rowSpan={rowSpan}
+          style={{
+            ...tdStyle,
+            textAlign: "center",
+            fontWeight: "bold",
+            fontSize: "13px",
+            verticalAlign: "middle",
+            color: moyenneDomaine >= 10 ? "#1b5e20" : "#b71c1c",
+            background: "#fafafa",
+          }}
+        >
+          {formatNote(moyenneDomaine)}
+        </td>
+      )}
+      {isFirst && (
+        <td
+          rowSpan={rowSpan}
+          style={{
+            ...tdStyle,
+            fontSize: "10.5px",
+            verticalAlign: "middle",
+            lineHeight: 1.5,
+          }}
+        >
+          {recommandation}
+        </td>
+      )}
+      <td style={{ ...tdStyle, textAlign: "center" }}>{formatNote(mod.moduleMin)}</td>
+      <td style={{ ...tdStyle, textAlign: "center" }}>{formatNote(mod.moduleMax)}</td>
+    </tr>
+  );
+}
+
+// ───────────────── Side panel cards ─────────────────
+
+function MiniStatCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: "good" | "bad" | "primary";
+}) {
+  const valColor = tone === "good" ? "#1b5e20" : tone === "bad" ? "#b71c1c" : TEAL_DARK;
+  return (
+    <div
+      style={{
+        flex: 1,
+        border: `1px solid ${TEAL}`,
+        borderRadius: "1.5mm",
+        background: TEAL_LIGHT,
+        textAlign: "center",
+        overflow: "hidden",
+        minHeight: "16mm",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        style={{
+          fontSize: "8.5px",
+          color: TEAL_DARK,
+          padding: "0.8mm 0.5mm",
+          fontWeight: 600,
+          lineHeight: 1.2,
+          minHeight: "8mm",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontSize: "15px",
+          fontWeight: "bold",
+          color: valColor,
+          background: "#fff",
+          padding: "1.5mm 0.5mm",
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function BadgePanel({
+  title,
+  children,
+  minHeight,
+}: {
+  title: string;
+  children: React.ReactNode;
+  minHeight?: string;
+}) {
+  return (
+    <div
+      style={{
+        border: `1px solid ${TEAL}`,
+        borderRadius: "1.5mm",
+        background: "#fff",
+        position: "relative",
+        paddingTop: "5mm",
+        minHeight,
+      }}
+    >
+      {/* Floating pill label at top center */}
+      <div
+        style={{
+          position: "absolute",
+          top: "-3mm",
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "center",
+          pointerEvents: "none",
+        }}
+      >
+        <span
+          style={{
+            background: TEAL_LIGHT,
+            border: `1px solid ${TEAL}`,
+            borderRadius: "3mm",
+            padding: "0.6mm 4mm",
+            fontSize: "9px",
+            color: TEAL_DARK,
+            fontWeight: 600,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {title}
+        </span>
+      </div>
+      <div style={{ padding: "1mm" }}>{children}</div>
+    </div>
+  );
+}
+
+// ───────────────── Helpers ─────────────────
+
+function formatNote(val: number | null | undefined): string {
+  if (val == null || Number.isNaN(val)) return "—";
   return val.toFixed(2);
 }
 
+/** Build "مجال X" without doubling the prefix when the data already includes it. */
+function formatDomaineTitle(nameAr: string | null, nameFr: string): string {
+  const raw = (nameAr || nameFr || "").trim();
+  if (!raw) return "مجال";
+  // Avoid "مجال مجال X" if the stored value already starts with "مجال"
+  return raw.startsWith("مجال") ? raw : `مجال ${raw}`;
+}
+
+function avg(values: number[]): number {
+  const filtered = values.filter((v) => !Number.isNaN(v));
+  if (filtered.length === 0) return 0;
+  return filtered.reduce((a, b) => a + b, 0) / filtered.length;
+}
+
 const thStyle: React.CSSProperties = {
-  border: "1px solid #999",
-  padding: "2mm 2mm",
-  textAlign: "center",
+  border: `1px solid ${BORDER}`,
+  padding: "1.2mm 1.5mm",
+  fontSize: "9.5px",
   fontWeight: "bold",
-  fontSize: "9px",
-  whiteSpace: "nowrap",
+  textAlign: "center",
+  whiteSpace: "normal",
 };
 
 const tdStyle: React.CSSProperties = {
-  border: "1px solid #ccc",
-  padding: "1.5mm 2mm",
-  fontSize: "10px",
-};
-
-const statLabelStyle: React.CSSProperties = {
-  padding: "1mm 2mm",
-  fontWeight: "bold",
-  color: "#555",
-  whiteSpace: "nowrap",
-};
-
-const statValueStyle: React.CSSProperties = {
-  padding: "1mm 2mm",
-  fontWeight: "bold",
-  textAlign: "center",
+  border: `1px solid ${BORDER}`,
+  padding: "1.2mm 1.5mm",
+  fontSize: "10.5px",
+  verticalAlign: "middle",
 };

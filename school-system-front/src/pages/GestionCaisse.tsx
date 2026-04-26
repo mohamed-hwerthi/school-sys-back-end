@@ -190,7 +190,7 @@ export default function GestionCaisse() {
         <div className="flex gap-2">
           {!caisseOuverte ? (
             <Button onClick={() => setShowOuvrir(true)} className="bg-gradient-to-r from-green-600 to-green-700">
-              <Unlock className="mr-2 h-4 w-4" /> Ouvrir la caisse
+              <Unlock className="me-2 h-4 w-4" /> Ouvrir la caisse
             </Button>
           ) : (
             <>
@@ -198,10 +198,10 @@ export default function GestionCaisse() {
                 onClick={() => setShowMouvement(true)}
                 className="bg-gradient-to-r from-blue-600 to-blue-700"
               >
-                <Plus className="mr-2 h-4 w-4" /> Mouvement
+                <Plus className="me-2 h-4 w-4" /> Mouvement
               </Button>
               <Button variant="destructive" onClick={() => setShowFermer(true)}>
-                <Lock className="mr-2 h-4 w-4" /> Fermer la caisse
+                <Lock className="me-2 h-4 w-4" /> Fermer la caisse
               </Button>
             </>
           )}
@@ -246,21 +246,21 @@ export default function GestionCaisse() {
               <p className="mt-4 text-lg font-medium text-gray-500">Aucune session de caisse ouverte</p>
               <p className="text-sm text-gray-400">Ouvrez une nouvelle session pour commencer</p>
               <Button className="mt-4" onClick={() => setShowOuvrir(true)}>
-                <Unlock className="mr-2 h-4 w-4" /> Ouvrir la caisse
+                <Unlock className="me-2 h-4 w-4" /> Ouvrir la caisse
               </Button>
             </div>
           ) : (
             <div className="rounded-xl border bg-white shadow-sm overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+                <thead className="bg-gray-50 text-start text-xs font-semibold uppercase text-gray-500">
                   <tr>
                     <th className="px-4 py-3">Type</th>
                     <th className="px-4 py-3">Categorie</th>
                     <th className="px-4 py-3">Libelle</th>
-                    <th className="px-4 py-3 text-right">Montant ({CURRENCY})</th>
+                    <th className="px-4 py-3 text-end">Montant ({CURRENCY})</th>
                     <th className="px-4 py-3">Reference</th>
                     <th className="px-4 py-3">Date/Heure</th>
-                    <th className="px-4 py-3 text-right">Actions</th>
+                    <th className="px-4 py-3 text-end">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -274,11 +274,11 @@ export default function GestionCaisse() {
                         <td className="px-4 py-3">
                           {m.type === "ENTREE" ? (
                             <Badge className="bg-green-100 text-green-700 border-0">
-                              <ArrowUpCircle className="mr-1 h-3 w-3" /> Entree
+                              <ArrowUpCircle className="me-1 h-3 w-3" /> Entree
                             </Badge>
                           ) : (
                             <Badge className="bg-red-100 text-red-700 border-0">
-                              <ArrowDownCircle className="mr-1 h-3 w-3" /> Sortie
+                              <ArrowDownCircle className="me-1 h-3 w-3" /> Sortie
                             </Badge>
                           )}
                         </td>
@@ -286,7 +286,7 @@ export default function GestionCaisse() {
                           {CATEGORIE_LABELS[m.categorie] || m.categorie}
                         </td>
                         <td className="px-4 py-3 font-medium">{m.libelle}</td>
-                        <td className="px-4 py-3 text-right font-semibold">
+                        <td className="px-4 py-3 text-end font-semibold">
                           <span className={m.type === "ENTREE" ? "text-green-600" : "text-red-600"}>
                             {m.type === "ENTREE" ? "+" : "-"}{fmt(m.montant)}
                           </span>
@@ -295,7 +295,7 @@ export default function GestionCaisse() {
                         <td className="px-4 py-3 text-xs text-gray-500">
                           {new Date(m.createdAt).toLocaleString("fr-FR")}
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-4 py-3 text-end">
                           {activeCaisse.statut === "OUVERTE" && (
                             <Button
                               variant="ghost"
@@ -320,16 +320,16 @@ export default function GestionCaisse() {
         <TabsContent value="historique">
           <div className="rounded-xl border bg-white shadow-sm overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+              <thead className="bg-gray-50 text-start text-xs font-semibold uppercase text-gray-500">
                 <tr>
                   <th className="px-4 py-3">Date ouverture</th>
                   <th className="px-4 py-3">Date fermeture</th>
                   <th className="px-4 py-3">Statut</th>
-                  <th className="px-4 py-3 text-right">Solde ouverture</th>
-                  <th className="px-4 py-3 text-right">Entrees</th>
-                  <th className="px-4 py-3 text-right">Sorties</th>
-                  <th className="px-4 py-3 text-right">Solde final</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                  <th className="px-4 py-3 text-end">Solde ouverture</th>
+                  <th className="px-4 py-3 text-end">Entrees</th>
+                  <th className="px-4 py-3 text-end">Sorties</th>
+                  <th className="px-4 py-3 text-end">Solde final</th>
+                  <th className="px-4 py-3 text-end">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -345,27 +345,27 @@ export default function GestionCaisse() {
                       <td className="px-4 py-3">
                         {c.statut === "OUVERTE" ? (
                           <Badge className="bg-green-100 text-green-700 border-0">
-                            <Unlock className="mr-1 h-3 w-3" /> Ouverte
+                            <Unlock className="me-1 h-3 w-3" /> Ouverte
                           </Badge>
                         ) : (
                           <Badge className="bg-gray-100 text-gray-600 border-0">
-                            <Lock className="mr-1 h-3 w-3" /> Fermee
+                            <Lock className="me-1 h-3 w-3" /> Fermee
                           </Badge>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right">{fmt(c.soldeOuverture)}</td>
-                      <td className="px-4 py-3 text-right text-green-600">+{fmt(c.totalEntrees)}</td>
-                      <td className="px-4 py-3 text-right text-red-600">-{fmt(c.totalSorties)}</td>
-                      <td className="px-4 py-3 text-right font-semibold">
+                      <td className="px-4 py-3 text-end">{fmt(c.soldeOuverture)}</td>
+                      <td className="px-4 py-3 text-end text-green-600">+{fmt(c.totalEntrees)}</td>
+                      <td className="px-4 py-3 text-end text-red-600">-{fmt(c.totalSorties)}</td>
+                      <td className="px-4 py-3 text-end font-semibold">
                         {fmt(c.soldeActuel)} {CURRENCY}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-end">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => { setSelectedCaisse(c); setTab("session"); }}
                         >
-                          <Eye className="mr-1 h-3.5 w-3.5" /> Voir
+                          <Eye className="me-1 h-3.5 w-3.5" /> Voir
                         </Button>
                       </td>
                     </tr>
@@ -412,7 +412,7 @@ export default function GestionCaisse() {
           <DialogFooter>
             <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
             <Button onClick={handleOuvrir} disabled={ouvrirCaisse.isPending} className="bg-green-600 hover:bg-green-700">
-              <Unlock className="mr-2 h-4 w-4" /> Ouvrir
+              <Unlock className="me-2 h-4 w-4" /> Ouvrir
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -451,7 +451,7 @@ export default function GestionCaisse() {
           <DialogFooter>
             <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
             <Button variant="destructive" onClick={handleFermer} disabled={fermerCaisse.isPending}>
-              <Lock className="mr-2 h-4 w-4" /> Confirmer la fermeture
+              <Lock className="me-2 h-4 w-4" /> Confirmer la fermeture
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -528,9 +528,9 @@ export default function GestionCaisse() {
               className={mvtForm.type === "ENTREE" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
             >
               {mvtForm.type === "ENTREE" ? (
-                <><ArrowUpCircle className="mr-2 h-4 w-4" /> Entree</>
+                <><ArrowUpCircle className="me-2 h-4 w-4" /> Entree</>
               ) : (
-                <><ArrowDownCircle className="mr-2 h-4 w-4" /> Sortie</>
+                <><ArrowDownCircle className="me-2 h-4 w-4" /> Sortie</>
               )}
             </Button>
           </DialogFooter>

@@ -7,6 +7,7 @@ export interface AuthUser {
   lastName: string;
   role: UserRole;
   tenantId: string;
+  tenantSlug?: string;
   isActive: boolean;
 }
 

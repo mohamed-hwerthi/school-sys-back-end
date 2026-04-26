@@ -1,8 +1,11 @@
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useVitrine } from "@/hooks/useVitrine";
+import { getSubdomainSlug } from "@/lib/vitrine-routing";
 import VitrineNavbar from "@/components/vitrine/VitrineNavbar";
 import VitrineFooter from "@/components/vitrine/VitrineFooter";
 import VitrineSectionRenderer from "@/components/vitrine/VitrineSectionRenderer";
+import VitrineModernLanding from "@/components/vitrine/VitrineModernLanding";
+import VitrineContactForm from "@/components/vitrine/VitrineContactForm";
 import VitrineSEO from "@/components/vitrine/VitrineSEO";
 import VitrinePreviewBanner from "@/components/vitrine/VitrinePreviewBanner";
 import VitrineWhatsAppButton from "@/components/vitrine/VitrineWhatsAppButton";
@@ -15,7 +18,10 @@ import { useLanguage } from "@/hooks/useLanguage";
  */
 export default function VitrineSite() {
   const { t } = useLanguage();
-  const { slug, pageSlug } = useParams<{ slug: string; pageSlug?: string }>();
+  const params = useParams<{ slug?: string; pageSlug?: string }>();
+  const subdomainSlug = getSubdomainSlug();
+  const slug = subdomainSlug ?? params.slug;
+  const pageSlug = params.pageSlug;
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const isPreview = searchParams.get("preview") === "true";
@@ -74,15 +80,29 @@ export default function VitrineSite() {
       <VitrineNavbar config={config} pages={pages} />
 
       <main className={`flex-1 ${isPreview ? "mt-10" : ""}`}>
-        {activePage.sections.map((section) => (
-          <VitrineSectionRenderer
-            key={section.id}
-            section={section}
+        {!pageSlug ? (
+          <VitrineModernLanding
             config={config}
             announcements={announcements}
             gallery={gallery}
           />
-        ))}
+        ) : (
+          <>
+            {activePage.sections.map((section) => (
+              <VitrineSectionRenderer
+                key={section.id}
+                section={section}
+                config={config}
+                announcements={announcements}
+                gallery={gallery}
+              />
+            ))}
+            {pageSlug === "contact" &&
+              !activePage.sections.some((s) => s.sectionType === "contact" as string) && (
+                <VitrineContactForm config={config} slug={slug ?? ""} />
+              )}
+          </>
+        )}
       </main>
 
       <VitrineFooter config={config} />

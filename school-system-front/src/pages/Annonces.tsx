@@ -238,11 +238,11 @@ export default function AnnoncesPage() {
             </SelectContent>
           </Select>
           <Button variant="outline" onClick={() => setShowSmsDialog(true)}>
-            <MessageSquare className="mr-2 h-4 w-4" />
+            <MessageSquare className="me-2 h-4 w-4" />
             {t("announcements.sendSms")}
           </Button>
           <Button onClick={handleOpenCreate}>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="me-2 h-4 w-4" />
             {t("announcements.newAnnouncement")}
           </Button>
         </div>
@@ -265,9 +265,9 @@ export default function AnnoncesPage() {
               }`}
             >
               {annonce.type === "URGENT" && (
-                <div className="absolute -top-2 -right-2">
+                <div className="absolute -top-2 -end-2">
                   <Badge className="bg-red-500 text-white animate-pulse">
-                    <AlertTriangle className="mr-1 h-3 w-3" />
+                    <AlertTriangle className="me-1 h-3 w-3" />
                     URGENT
                   </Badge>
                 </div>
@@ -296,12 +296,12 @@ export default function AnnoncesPage() {
                     {TYPE_LABELS[annonce.type]}
                   </Badge>
                   <Badge variant="outline" className="text-xs">
-                    <Users className="mr-1 h-3 w-3" />
+                    <Users className="me-1 h-3 w-3" />
                     {DEST_LABELS[annonce.destinataires]}
                   </Badge>
                   {annonce.dateExpiration && (
                     <Badge variant="outline" className="text-xs">
-                      <Calendar className="mr-1 h-3 w-3" />
+                      <Calendar className="me-1 h-3 w-3" />
                       {t("announcements.expires")}:{" "}
                       {new Date(annonce.dateExpiration).toLocaleDateString("fr-FR")}
                     </Badge>
@@ -314,7 +314,7 @@ export default function AnnoncesPage() {
                   size="sm"
                   onClick={() => handleOpenEdit(annonce)}
                 >
-                  <Edit className="mr-1 h-3 w-3" />
+                  <Edit className="me-1 h-3 w-3" />
                   {t("common.edit")}
                 </Button>
                 <Button
@@ -323,7 +323,7 @@ export default function AnnoncesPage() {
                   className="text-destructive hover:text-destructive"
                   onClick={() => handleDelete(annonce.id)}
                 >
-                  <Trash2 className="mr-1 h-3 w-3" />
+                  <Trash2 className="me-1 h-3 w-3" />
                   {t("common.delete")}
                 </Button>
               </CardFooter>
@@ -375,15 +375,15 @@ export default function AnnoncesPage() {
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">
-                <X className="mr-2 h-4 w-4" />
+                <X className="me-2 h-4 w-4" />
                 {t("common.cancel")}
               </Button>
             </DialogClose>
             <Button onClick={handleSendBulkSms} disabled={smsSending}>
               {smsSending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
               ) : (
-                <Send className="mr-2 h-4 w-4" />
+                <Send className="me-2 h-4 w-4" />
               )}
               {t("common.send")}
             </Button>
@@ -498,7 +498,7 @@ export default function AnnoncesPage() {
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">
-                <X className="mr-2 h-4 w-4" />
+                <X className="me-2 h-4 w-4" />
                 {t("common.cancel")}
               </Button>
             </DialogClose>
@@ -507,7 +507,7 @@ export default function AnnoncesPage() {
               disabled={createAnnonce.isPending || updateAnnonce.isPending}
             >
               {(createAnnonce.isPending || updateAnnonce.isPending) && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
               )}
               {editId ? t("common.update") : t("common.create")}
             </Button>

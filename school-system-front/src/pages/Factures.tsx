@@ -283,13 +283,13 @@ export default function FacturesPage() {
           {activeTab === "factures" && (
             <div className="flex flex-col lg:flex-row lg:items-center gap-3">
               <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder={t("invoices.searchPlaceholder")} className="pl-9" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder={t("invoices.searchPlaceholder")} className="ps-9" />
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Select value={filterStatut} onValueChange={(v) => { setFilterStatut(v); setCurrentPage(0); }}>
                   <SelectTrigger className="w-[180px]">
-                    <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                    <Filter className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                     <SelectValue placeholder="Statut" />
                   </SelectTrigger>
                   <SelectContent>
@@ -322,14 +322,14 @@ export default function FacturesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("invoices.number")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.student")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("invoices.issueDate")}</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("common.amount")}</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("invoices.discountAmount")}</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("invoices.net")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.status")}</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">{t("invoices.number")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">{t("common.student")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("invoices.issueDate")}</th>
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("common.amount")}</th>
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("invoices.discountAmount")}</th>
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">{t("invoices.net")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">{t("common.status")}</th>
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -349,15 +349,15 @@ export default function FacturesPage() {
                         </td>
                         <td className="py-3 px-4 font-medium text-foreground">{facture.eleveNom ?? `Eleve #${facture.eleveId}`}</td>
                         <td className="py-3 px-4 hidden sm:table-cell text-muted-foreground">{new Date(facture.dateEmission).toLocaleDateString("fr-FR")}</td>
-                        <td className="py-3 px-4 hidden md:table-cell text-right text-muted-foreground">{facture.montantTotal.toLocaleString()} MAD</td>
-                        <td className="py-3 px-4 hidden md:table-cell text-right text-muted-foreground">{facture.montantRemise > 0 ? `-${facture.montantRemise.toLocaleString()}` : "-"}</td>
-                        <td className="py-3 px-4 text-right font-semibold text-foreground">{facture.montantNet.toLocaleString()} MAD</td>
+                        <td className="py-3 px-4 hidden md:table-cell text-end text-muted-foreground">{facture.montantTotal.toLocaleString()} MAD</td>
+                        <td className="py-3 px-4 hidden md:table-cell text-end text-muted-foreground">{facture.montantRemise > 0 ? `-${facture.montantRemise.toLocaleString()}` : "-"}</td>
+                        <td className="py-3 px-4 text-end font-semibold text-foreground">{facture.montantNet.toLocaleString()} MAD</td>
                         <td className="py-3 px-4">
                           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUT_COLORS[facture.statut]}`}>
                             {STATUT_LABELS[facture.statut]}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3 px-4 text-end">
                           <div className="hidden sm:flex items-center justify-end gap-1">
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-blue-600" onClick={() => setDetailTarget(facture)}>
                               <Eye className="h-4 w-4" />
@@ -377,15 +377,15 @@ export default function FacturesPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => setDetailTarget(facture)}>
-                                <Eye className="h-4 w-4 mr-2" /> {t("common.details")}
+                                <Eye className="h-4 w-4 me-2" /> {t("common.details")}
                               </DropdownMenuItem>
                               {facture.statut !== "ANNULEE" && facture.statut !== "PAYEE" && (
                                 <DropdownMenuItem onClick={() => cancelMutation.mutate(facture.id)}>
-                                  <Ban className="h-4 w-4 mr-2" /> {t("common.cancel")}
+                                  <Ban className="h-4 w-4 me-2" /> {t("common.cancel")}
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem onClick={() => setDeleteTarget(facture)} className="text-red-600">
-                                <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
+                                <Trash2 className="h-4 w-4 me-2" /> {t("common.delete")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -432,13 +432,13 @@ export default function FacturesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">ID</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.student")}</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("invoices.totalAmount")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("invoices.installments")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("common.startDate")}</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">{t("invoices.schedules")}</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">ID</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">{t("common.student")}</th>
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">{t("invoices.totalAmount")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("invoices.installments")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("common.startDate")}</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">{t("invoices.schedules")}</th>
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -457,7 +457,7 @@ export default function FacturesPage() {
                         <tr key={ech.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
                           <td className="py-3 px-4 font-mono text-xs text-muted-foreground">#{ech.id}</td>
                           <td className="py-3 px-4 font-medium text-foreground">Eleve #{ech.eleveId}</td>
-                          <td className="py-3 px-4 text-right font-semibold text-foreground">{ech.montantTotal.toLocaleString()} MAD</td>
+                          <td className="py-3 px-4 text-end font-semibold text-foreground">{ech.montantTotal.toLocaleString()} MAD</td>
                           <td className="py-3 px-4 hidden sm:table-cell text-muted-foreground">{ech.nbMensualites}</td>
                           <td className="py-3 px-4 hidden md:table-cell text-muted-foreground">{new Date(ech.dateDebut).toLocaleDateString("fr-FR")}</td>
                           <td className="py-3 px-4 hidden lg:table-cell">
@@ -466,7 +466,7 @@ export default function FacturesPage() {
                               {lateCount > 0 && <Badge variant="outline" className="bg-red-100 text-red-700 text-[10px]">{lateCount} en retard</Badge>}
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-right">
+                          <td className="py-3 px-4 text-end">
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-600" onClick={() => setDeleteEcheancierTarget(ech)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>

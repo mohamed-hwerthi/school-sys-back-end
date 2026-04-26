@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useCarnetSelection } from "./CarnetSelectionContext";
 import { Plus, Edit, Trash2, BookOpen, GraduationCap } from "lucide-react";
 import { notify } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
@@ -48,7 +49,7 @@ const emptyForm: ModuleRequest = {
 
 export default function ModulesTab() {
   const { niveaux } = useNiveaux();
-  const [selectedNiveauId, setSelectedNiveauId] = useState<number>(0);
+  const { niveauId: selectedNiveauId, setNiveauId: setSelectedNiveauId } = useCarnetSelection();
   const { data: modules = [], isLoading } = useModules(
     selectedNiveauId || undefined
   );
@@ -148,7 +149,7 @@ export default function ModulesTab() {
             onValueChange={(v) => setSelectedNiveauId(Number(v))}
           >
             <SelectTrigger className="w-[220px]">
-              <GraduationCap className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+              <GraduationCap className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
               <SelectValue placeholder="Sélectionner un niveau" />
             </SelectTrigger>
             <SelectContent>
@@ -160,7 +161,7 @@ export default function ModulesTab() {
             </SelectContent>
           </Select>
 
-          <div className="sm:ml-auto">
+          <div className="sm:ms-auto">
             <Button
               size="sm"
               className="gap-1.5 bg-gradient-primary shadow-btn"
@@ -190,13 +191,13 @@ export default function ModulesTab() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
-                  <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                     Nom du module
                   </th>
-                  <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">
+                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">
                     Domaine
                   </th>
-                  <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">
+                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">
                     Nom VP
                   </th>
                   <th className="py-3 px-4 text-center text-xs font-semibold text-muted-foreground">
@@ -217,7 +218,7 @@ export default function ModulesTab() {
                   <th className="py-3 px-4 text-center text-xs font-semibold text-muted-foreground">
                     VP
                   </th>
-                  <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">
+                  <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">
                     Actions
                   </th>
                 </tr>
@@ -284,7 +285,7 @@ export default function ModulesTab() {
                       <td className="py-3 px-4 text-center">
                         {m.versionPrivee ? "✓" : "—"}
                       </td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-4 text-end">
                         <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"

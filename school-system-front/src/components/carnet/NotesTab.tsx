@@ -1,7 +1,9 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Save, PenLine, GraduationCap, Users, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { useCarnetSelection } from "./CarnetSelectionContext";
+import { Save, PenLine, GraduationCap, Users, CheckCircle2, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { notify } from "@/lib/toast";
+import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,13 +21,22 @@ import { useExamensRaw } from "@/hooks/useExamens";
 import { useNotesByExamen, useUpsertNotes } from "@/hooks/useNotes";
 import { studentsApi } from "@/api/students.api";
 import ExportButton from "@/components/ExportButton";
-import type { NoteRequest } from "@/api/notes.api";
+import type { NoteRequest, NoteStatut } from "@/api/notes.api";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface LocalNote {
   studentId: number;
   studentName: string;
   valeur: string;
   observation: string;
+  statut: NoteStatut;
 }
 
 const TRIMESTRES = [
@@ -34,27 +45,49 @@ const TRIMESTRES = [
   { value: 3, label: "Trimestre 3", color: "bg-purple-50 text-purple-700 border-purple-200" },
 ];
 
+const AUTO_OBSERVATIONS_FR = ["Excellent", "Très bien", "Bien", "Assez bien", "Passable", "Insuffisant", "Très insuffisant"];
+const AUTO_OBSERVATIONS_AR = ["ممتاز", "جيد جدا", "جيد", "حسن", "مقبول", "ضعيف", "ضعيف جدا"];
+const AUTO_OBSERVATIONS_ALL = [...AUTO_OBSERVATIONS_FR, ...AUTO_OBSERVATIONS_AR];
+
+const ARABIC_REGEX = /[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]/;
+
+const getDefaultObservation = (valeur: string, isArabic: boolean): string => {
+  if (valeur === "") return "";
+  const n = Number(valeur.replace(",", "."));
+  if (Number.isNaN(n)) return "";
+  const scale = isArabic ? AUTO_OBSERVATIONS_AR : AUTO_OBSERVATIONS_FR;
+  if (n >= 18) return scale[0];
+  if (n >= 16) return scale[1];
+  if (n >= 14) return scale[2];
+  if (n >= 12) return scale[3];
+  if (n >= 10) return scale[4];
+  if (n >= 8) return scale[5];
+  return scale[6];
+};
+
 export default function NotesTab() {
   const { niveaux } = useNiveaux();
 
   // Selection state
-  const [trimestre, setTrimestre] = useState<number>(0);
-  const [niveauId, setNiveauId] = useState<number>(0);
-  const [classeId, setClasseId] = useState<number>(0);
-  const [moduleId, setModuleId] = useState<number>(0);
-  const [examenId, setExamenId] = useState<number>(0);
+  const {
+    niveauId, classeId, trimestre, moduleId, examenId,
+    setNiveauId, setClasseId, setTrimestre, setModuleId, setExamenId,
+    goToTab,
+  } = useCarnetSelection();
 
   // Data queries
   const { data: classes = [] } = useClasses(niveauId || undefined);
   const { data: modules = [] } = useModules(niveauId || undefined);
   const { data: examens = [] } = useExamensRaw(
     moduleId || undefined,
-    classeId || undefined
+    classeId || undefined,
+    trimestre || undefined
   );
-  const { data: existingNotes = [] } = useNotesByExamen(
+  const { data: existingNotesData } = useNotesByExamen(
     examenId,
     trimestre
   );
+  const existingNotes = useMemo(() => existingNotesData ?? [], [existingNotesData]);
 
   // Get students for selected classe
   const selectedClasse = classes.find((c) => c.id === classeId);
@@ -64,7 +97,7 @@ export default function NotesTab() {
     queryFn: () => studentsApi.getAll({ classe: classeName, size: 200 }),
     enabled: !!classeName,
   });
-  const students = studentsPage?.content ?? [];
+  const students = useMemo(() => studentsPage?.content ?? [], [studentsPage]);
 
   // Local notes state for editing
   const [localNotes, setLocalNotes] = useState<LocalNote[]>([]);
@@ -73,12 +106,19 @@ export default function NotesTab() {
   const localNotesRef = useRef(localNotes);
   localNotesRef.current = localNotes;
 
+  // Missing-notes confirmation modal
+  const [missingDialogOpen, setMissingDialogOpen] = useState(false);
+  const missingStudents = useMemo(
+    () => localNotes.filter((n) => n.valeur === "" && n.statut === "PRESENT"),
+    [localNotes]
+  );
+
   // Merge students with existing notes
   useEffect(() => {
     if (!examenId || !trimestre || students.length === 0) {
-      setLocalNotes([]);
-      setDirtyIds(new Set());
-      setLastSavedAt(null);
+      setLocalNotes((prev) => (prev.length === 0 ? prev : []));
+      setDirtyIds((prev) => (prev.size === 0 ? prev : new Set()));
+      setLastSavedAt((prev) => (prev === null ? prev : null));
       return;
     }
 
@@ -93,6 +133,7 @@ export default function NotesTab() {
         studentName: `${s.prenom} ${s.nom}`,
         valeur: existing?.valeur != null ? String(existing.valeur) : "",
         observation: existing?.observation ?? "",
+        statut: existing?.statut ?? "PRESENT",
       };
     });
 
@@ -108,11 +149,30 @@ export default function NotesTab() {
     return !Number.isNaN(n) && n >= 0 && n <= 20;
   };
 
+  const selectedModule = modules.find((m) => m.id === moduleId);
+  const isArabicModule = selectedModule ? ARABIC_REGEX.test(selectedModule.name) : false;
+
   const handleNoteChange = (studentId: number, field: "valeur" | "observation", value: string) => {
+    let newValue = value;
+    if (field === "valeur" && value !== "") {
+      const n = Number(value.replace(",", "."));
+      if (!Number.isNaN(n)) {
+        if (n > 20) newValue = "20";
+        else if (n < 0) newValue = "0";
+      }
+    }
     setLocalNotes((prev) =>
-      prev.map((n) =>
-        n.studentId === studentId ? { ...n, [field]: value } : n
-      )
+      prev.map((n) => {
+        if (n.studentId !== studentId) return n;
+        const updated = { ...n, [field]: newValue };
+        if (field === "valeur") {
+          const isAutoObs = n.observation === "" || AUTO_OBSERVATIONS_ALL.includes(n.observation);
+          if (isAutoObs) {
+            updated.observation = getDefaultObservation(newValue, isArabicModule);
+          }
+        }
+        return updated;
+      })
     );
     setDirtyIds((prev) => {
       const next = new Set(prev);
@@ -182,38 +242,87 @@ export default function NotesTab() {
     }
   };
 
-  const handleSave = () => {
-    const invalid = localNotes.find((n) => !isValidValeur(n.valeur));
-    if (invalid) {
-      notify.error("Les notes doivent etre entre 0 et 20");
-      return;
-    }
-    const notesToSave: NoteRequest[] = localNotes
-      .filter((n) => n.valeur !== "")
-      .map((n) => ({
-        studentId: n.studentId,
-        examenId,
-        trimestre,
-        valeur: Number(n.valeur.replace(",", ".")),
-        observation: n.observation || undefined,
-      }));
+  const buildPayload = (notes: LocalNote[]): NoteRequest[] =>
+    notes.map((n) => ({
+      studentId: n.studentId,
+      examenId,
+      trimestre,
+      valeur: n.statut === "ABSENT"
+        ? 0
+        : n.statut === "PRESENT" && n.valeur !== ""
+          ? Number(n.valeur.replace(",", "."))
+          : null,
+      observation: n.observation || undefined,
+      statut: n.statut,
+    }));
 
+  const performSave = (notesToSave: NoteRequest[]) => {
     if (notesToSave.length === 0) {
-      notify.error("Aucune note a sauvegarder");
+      notify.error("Aucune note à sauvegarder");
       return;
     }
-
     upsertNotes.mutate(notesToSave, {
       onSuccess: () => {
         setLastSavedAt(Date.now());
         setDirtyIds(new Set());
-        notify.success("Notes sauvegardees");
+        toast.success("Notes sauvegardées", {
+          description: `${notesToSave.length} note(s) enregistrée(s)`,
+          action: {
+            label: "Voir les moyennes",
+            onClick: () => goToTab("moyennes"),
+          },
+        });
+        setExamenId(0);
       },
       onError: () => notify.error("Erreur lors de la sauvegarde"),
     });
   };
 
-  const filledCount = localNotes.filter((n) => n.valeur !== "").length;
+  const handleSave = () => {
+    const invalid = localNotes.find((n) => n.statut === "PRESENT" && !isValidValeur(n.valeur));
+    if (invalid) {
+      notify.error("Les notes doivent être entre 0 et 20");
+      return;
+    }
+    if (missingStudents.length > 0) {
+      setMissingDialogOpen(true);
+      return;
+    }
+    const toSave = localNotes.filter((n) => n.valeur !== "" || n.statut !== "PRESENT");
+    performSave(buildPayload(toSave));
+  };
+
+  const handleMarkAbsentAndSave = () => {
+    const updated = localNotes.map((n) =>
+      n.valeur === "" && n.statut === "PRESENT" ? { ...n, statut: "ABSENT" as NoteStatut } : n
+    );
+    setLocalNotes(updated);
+    setMissingDialogOpen(false);
+    performSave(buildPayload(updated));
+  };
+
+  const handleSaveOnly = () => {
+    setMissingDialogOpen(false);
+    const toSave = localNotes.filter((n) => n.valeur !== "" || n.statut !== "PRESENT");
+    performSave(buildPayload(toSave));
+  };
+
+  const handleStatutChange = (studentId: number, statut: NoteStatut) => {
+    setLocalNotes((prev) =>
+      prev.map((n) =>
+        n.studentId === studentId
+          ? { ...n, statut, valeur: statut === "PRESENT" ? n.valeur : "" }
+          : n
+      )
+    );
+    setDirtyIds((prev) => {
+      const next = new Set(prev);
+      next.add(studentId);
+      return next;
+    });
+  };
+
+  const filledCount = localNotes.filter((n) => n.valeur !== "" || n.statut !== "PRESENT").length;
   const selectedExamen = examens.find((e) => e.id === examenId);
   const saveStatus: "idle" | "dirty" | "saving" | "saved" =
     upsertNotes.isPending ? "saving"
@@ -237,10 +346,7 @@ export default function NotesTab() {
           {TRIMESTRES.map((t) => (
             <button
               key={t.value}
-              onClick={() => {
-                setTrimestre(t.value);
-                setExamenId(0);
-              }}
+              onClick={() => setTrimestre(t.value)}
               className={`flex-1 rounded-xl border-2 p-4 text-center font-semibold transition-all ${
                 trimestre === t.value
                   ? `${t.color} border-current shadow-sm`
@@ -264,15 +370,10 @@ export default function NotesTab() {
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <Select
               value={niveauId ? String(niveauId) : ""}
-              onValueChange={(v) => {
-                setNiveauId(Number(v));
-                setClasseId(0);
-                setModuleId(0);
-                setExamenId(0);
-              }}
+              onValueChange={(v) => setNiveauId(Number(v))}
             >
               <SelectTrigger className="w-[180px]">
-                <GraduationCap className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                <GraduationCap className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                 <SelectValue placeholder="Niveau" />
               </SelectTrigger>
               <SelectContent>
@@ -286,10 +387,7 @@ export default function NotesTab() {
 
             <Select
               value={classeId ? String(classeId) : ""}
-              onValueChange={(v) => {
-                setClasseId(Number(v));
-                setExamenId(0);
-              }}
+              onValueChange={(v) => setClasseId(Number(v))}
               disabled={!niveauId}
             >
               <SelectTrigger className="w-[140px]">
@@ -306,10 +404,7 @@ export default function NotesTab() {
 
             <Select
               value={moduleId ? String(moduleId) : ""}
-              onValueChange={(v) => {
-                setModuleId(Number(v));
-                setExamenId(0);
-              }}
+              onValueChange={(v) => setModuleId(Number(v))}
               disabled={!niveauId}
             >
               <SelectTrigger className="w-[180px]">
@@ -359,9 +454,17 @@ export default function NotesTab() {
                 <PenLine className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="font-semibold text-sm text-foreground">
-                  {selectedExamen?.name}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-sm text-foreground">
+                    {selectedExamen?.name}
+                  </p>
+                  {existingNotes.length > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 border border-amber-200">
+                      <RefreshCw className="h-3 w-3" />
+                      Mise à jour
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {selectedExamen?.moduleName} · {selectedExamen?.classeName} · Trimestre {trimestre}
                 </p>
@@ -404,7 +507,7 @@ export default function NotesTab() {
                 disabled={upsertNotes.isPending || filledCount === 0}
               >
                 <Save className="h-4 w-4" />
-                Sauvegarder
+                {existingNotes.length > 0 ? `Mettre à jour (${existingNotes.length})` : "Sauvegarder"}
               </Button>
             </div>
           </div>
@@ -415,16 +518,16 @@ export default function NotesTab() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground w-8">
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground w-8">
                       #
                     </th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                       Élève
                     </th>
                     <th className="py-3 px-4 text-center text-xs font-semibold text-muted-foreground w-32">
                       Note /20
                     </th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                       Observation
                     </th>
                   </tr>
@@ -459,27 +562,38 @@ export default function NotesTab() {
                           {note.studentName}
                         </td>
                         <td className="py-2 px-4">
-                          <Input
-                            type="number"
-                            min={0}
-                            max={20}
-                            step={0.25}
-                            value={note.valeur}
-                            data-row={idx}
-                            data-col="valeur"
-                            onKeyDown={(e) => handleCellKey(e, idx, "valeur")}
-                            onFocus={(e) => e.target.select()}
-                            onChange={(e) =>
-                              handleNoteChange(
-                                note.studentId,
-                                "valeur",
-                                e.target.value
-                              )
-                            }
-                            aria-invalid={!isValidValeur(note.valeur)}
-                            className={`w-24 mx-auto text-center ${!isValidValeur(note.valeur) ? "border-red-500 focus-visible:ring-red-500" : ""}`}
-                            placeholder="—"
-                          />
+                          {note.statut === "ABSENT" ? (
+                            <button
+                              type="button"
+                              onClick={() => handleStatutChange(note.studentId, "PRESENT")}
+                              className="w-24 mx-auto block rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 transition-colors"
+                              title="Cliquer pour rétablir la saisie"
+                            >
+                              ABS
+                            </button>
+                          ) : (
+                            <Input
+                              type="number"
+                              min={0}
+                              max={20}
+                              step={0.25}
+                              value={note.valeur}
+                              data-row={idx}
+                              data-col="valeur"
+                              onKeyDown={(e) => handleCellKey(e, idx, "valeur")}
+                              onFocus={(e) => e.target.select()}
+                              onChange={(e) =>
+                                handleNoteChange(
+                                  note.studentId,
+                                  "valeur",
+                                  e.target.value
+                                )
+                              }
+                              aria-invalid={!isValidValeur(note.valeur)}
+                              className={`w-24 mx-auto text-center ${!isValidValeur(note.valeur) ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                              placeholder="—"
+                            />
+                          )}
                         </td>
                         <td className="py-2 px-4">
                           <Input
@@ -508,6 +622,54 @@ export default function NotesTab() {
           </div>
         </motion.div>
       )}
+
+      {/* Missing notes confirmation dialog */}
+      <Dialog open={missingDialogOpen} onOpenChange={setMissingDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-amber-500" />
+              Notes manquantes
+            </DialogTitle>
+            <DialogDescription>
+              {missingStudents.length} élève(s) n'ont pas de note pour cet examen.
+              Que voulez-vous faire ?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-40 overflow-y-auto rounded-md border border-border/50 bg-muted/30 p-3 text-sm">
+            <ul className="space-y-1">
+              {missingStudents.map((s) => (
+                <li key={s.studentId} className="text-muted-foreground">• {s.studentName}</li>
+              ))}
+            </ul>
+          </div>
+          <DialogFooter className="flex-col-reverse sm:flex-col-reverse gap-2 sm:gap-2">
+            <Button
+              variant="outline"
+              onClick={handleSaveOnly}
+              disabled={upsertNotes.isPending}
+              className="w-full"
+            >
+              Sauvegarder uniquement les notes saisies
+            </Button>
+            <Button
+              onClick={handleMarkAbsentAndSave}
+              disabled={upsertNotes.isPending}
+              className="w-full"
+            >
+              Marquer absents (note = 0) et sauvegarder
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setMissingDialogOpen(false)}
+              disabled={upsertNotes.isPending}
+              className="w-full"
+            >
+              Annuler
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

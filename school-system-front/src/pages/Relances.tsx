@@ -184,11 +184,11 @@ export default function Relances() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowGenerate(true)}>
-            <Zap className="mr-2 h-4 w-4" />
+            <Zap className="me-2 h-4 w-4" />
             {t("reminders.generateAuto")}
           </Button>
           <Button onClick={() => setShowCreate(true)} className="bg-gradient-to-r from-blue-600 to-blue-700">
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="me-2 h-4 w-4" />
             {t("reminders.newReminder")}
           </Button>
         </div>
@@ -262,7 +262,7 @@ export default function Relances() {
           <TabsContent key={t} value={t}>
             <div className="rounded-xl border bg-white shadow-sm overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+                <thead className="bg-gray-50 text-start text-xs font-semibold uppercase text-gray-500">
                   <tr>
                     <th className="px-4 py-3">{t("common.student")}</th>
                     <th className="px-4 py-3">{t("common.type")}</th>
@@ -271,7 +271,7 @@ export default function Relances() {
                     <th className="px-4 py-3">N°</th>
                     <th className="px-4 py-3">{t("reminders.plannedDate")}</th>
                     <th className="px-4 py-3">{t("common.status")}</th>
-                    <th className="px-4 py-3 text-right">{t("common.actions")}</th>
+                    <th className="px-4 py-3 text-end">{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -296,7 +296,7 @@ export default function Relances() {
                           <td className="px-4 py-3 font-medium">
                             {r.studentFirstName} {r.studentLastName}
                             {r.studentClasse && (
-                              <span className="ml-2 text-xs text-gray-400">({r.studentClasse})</span>
+                              <span className="ms-2 text-xs text-gray-400">({r.studentClasse})</span>
                             )}
                           </td>
                           <td className="px-4 py-3">
@@ -317,11 +317,11 @@ export default function Relances() {
                           <td className="px-4 py-3 text-gray-600">{r.datePrevue}</td>
                           <td className="px-4 py-3">
                             <Badge className={`${cfg.color} border-0`}>
-                              <cfg.icon className="mr-1 h-3 w-3" />
+                              <cfg.icon className="me-1 h-3 w-3" />
                               {cfg.label}
                             </Badge>
                           </td>
-                          <td className="px-4 py-3 text-right">
+                          <td className="px-4 py-3 text-end">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -330,15 +330,15 @@ export default function Relances() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => setShowView(r)}>
-                                  <Eye className="mr-2 h-4 w-4" /> {t("common.view")}
+                                  <Eye className="me-2 h-4 w-4" /> {t("common.view")}
                                 </DropdownMenuItem>
                                 {r.statut === "EN_ATTENTE" && (
                                   <>
                                     <DropdownMenuItem onClick={() => markEnvoyee.mutate(r.id)}>
-                                      <Send className="mr-2 h-4 w-4" /> {t("reminders.statuses.sent")}
+                                      <Send className="me-2 h-4 w-4" /> {t("reminders.statuses.sent")}
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => markEchouee.mutate(r.id)}>
-                                      <XCircle className="mr-2 h-4 w-4" /> {t("reminders.statuses.failed")}
+                                      <XCircle className="me-2 h-4 w-4" /> {t("reminders.statuses.failed")}
                                     </DropdownMenuItem>
                                   </>
                                 )}
@@ -346,7 +346,7 @@ export default function Relances() {
                                   className="text-red-600"
                                   onClick={() => setShowDelete(r)}
                                 >
-                                  <Trash2 className="mr-2 h-4 w-4" /> {t("common.delete")}
+                                  <Trash2 className="me-2 h-4 w-4" /> {t("common.delete")}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -480,7 +480,7 @@ export default function Relances() {
               </Select>
             </div>
             <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
-              <AlertTriangle className="inline h-4 w-4 mr-1" />
+              <AlertTriangle className="inline h-4 w-4 me-1" />
               Les relances seront creees avec le statut "En attente". Vous pourrez ensuite les marquer comme envoyees.
             </div>
           </div>
@@ -493,7 +493,7 @@ export default function Relances() {
               disabled={generateRelances.isPending}
               className="bg-gradient-to-r from-amber-500 to-amber-600"
             >
-              <Zap className="mr-2 h-4 w-4" />
+              <Zap className="me-2 h-4 w-4" />
               {t("common.generate")}
             </Button>
           </DialogFooter>
@@ -572,14 +572,14 @@ export default function Relances() {
                     onClick={() => { markEnvoyee.mutate(showView.id); setShowView(null); }}
                     className="bg-green-600 hover:bg-green-700"
                   >
-                    <Send className="mr-1 h-3.5 w-3.5" /> {t("reminders.statuses.sent")}
+                    <Send className="me-1 h-3.5 w-3.5" /> {t("reminders.statuses.sent")}
                   </Button>
                   <Button
                     size="sm"
                     variant="destructive"
                     onClick={() => { markEchouee.mutate(showView.id); setShowView(null); }}
                   >
-                    <XCircle className="mr-1 h-3.5 w-3.5" /> {t("reminders.statuses.failed")}
+                    <XCircle className="me-1 h-3.5 w-3.5" /> {t("reminders.statuses.failed")}
                   </Button>
                 </div>
               )}

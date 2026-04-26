@@ -220,8 +220,8 @@ function CircuitsTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher un circuit..." className="pl-9" />
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher un circuit..." className="ps-9" />
         </div>
         <Button onClick={openCreate} className="gap-1.5">
           <Plus className="h-4 w-4" /> Nouveau circuit
@@ -233,13 +233,13 @@ function CircuitsTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Nom</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Vehicule</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Horaires</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Distance</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Eleves</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
-                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Nom</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Vehicule</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Horaires</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">Distance</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Eleves</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Statut</th>
+                <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -271,7 +271,7 @@ function CircuitsTab() {
                         {circuit.actif ? "Actif" : "Inactif"}
                       </Badge>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-end">
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(circuit)}>
                           <Pencil className="h-4 w-4" />
@@ -475,8 +475,8 @@ function VehiculesTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher un vehicule..." className="pl-9" />
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher un vehicule..." className="ps-9" />
         </div>
         <Button onClick={openCreate} className="gap-1.5">
           <Plus className="h-4 w-4" /> Nouveau vehicule
@@ -488,13 +488,13 @@ function VehiculesTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Immatriculation</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Marque / Modele</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Capacite</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Chauffeur</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Assurance</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
-                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Immatriculation</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Marque / Modele</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Capacite</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">Chauffeur</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">Assurance</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Statut</th>
+                <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -523,7 +523,7 @@ function VehiculesTab() {
                         {v.statut === "ACTIF" ? "Actif" : v.statut === "EN_PANNE" ? "En panne" : "Maintenance"}
                       </Badge>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-end">
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(v)}>
                           <Pencil className="h-4 w-4" />
@@ -715,8 +715,8 @@ function AffectationsTab() {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3 flex-1">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher..." className="pl-9" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher..." className="ps-9" />
           </div>
           <Select value={filterCircuit} onValueChange={(v) => { setFilterCircuit(v); setCurrentPage(0); }}>
             <SelectTrigger className="w-[200px]">
@@ -740,12 +740,12 @@ function AffectationsTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Eleve ID</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Circuit</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Arret</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Annee scolaire</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
-                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Eleve ID</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Circuit</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Arret</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">Annee scolaire</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Statut</th>
+                <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -768,7 +768,7 @@ function AffectationsTab() {
                         {a.actif ? "Actif" : "Inactif"}
                       </Badge>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-end">
                       <div className="flex items-center justify-end gap-1">
                         {a.actif && (
                           <Button

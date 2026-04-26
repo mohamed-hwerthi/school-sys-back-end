@@ -350,14 +350,14 @@ export default function DisciplinePage() {
           </TabsList>
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
             <div className="relative flex-1 min-w-0">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher..." className="pl-9" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher..." className="ps-9" />
             </div>
             {activeTab === "incidents" && (
               <div className="flex flex-wrap items-center gap-2">
                 <Select value={filterType} onValueChange={(v) => { setFilterType(v); setCurrentPage(0); }}>
                   <SelectTrigger className="w-[160px]">
-                    <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                    <Filter className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                     <SelectValue placeholder="Type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -396,12 +396,12 @@ export default function DisciplinePage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Date</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Type</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Gravite</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Description</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Eleves impliques</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Date</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Type</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">Gravite</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Description</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">Eleves impliques</th>
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -430,7 +430,7 @@ export default function DisciplinePage() {
                         <td className="py-3 px-4 hidden lg:table-cell text-muted-foreground">
                           {inc.elevesImpliques?.length ?? 0} eleve{(inc.elevesImpliques?.length ?? 0) !== 1 ? "s" : ""}
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3 px-4 text-end">
                           <div className="hidden sm:flex items-center justify-end gap-1">
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-600" onClick={() => setDeleteIncidentTarget(inc)}>
                               <Trash2 className="h-4 w-4" />
@@ -444,7 +444,7 @@ export default function DisciplinePage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => setDeleteIncidentTarget(inc)} className="text-red-600">
-                                <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                                <Trash2 className="h-4 w-4 me-2" /> Supprimer
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -478,13 +478,13 @@ export default function DisciplinePage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Eleve</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Type</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Date debut</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Date fin</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Description</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Parent notifie</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Eleve</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Type</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">Date debut</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Date fin</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">Description</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">Parent notifie</th>
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -510,7 +510,7 @@ export default function DisciplinePage() {
                             {sanction.notifieParent ? "Oui" : "Non"}
                           </Badge>
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3 px-4 text-end">
                           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-600" onClick={() => setDeleteSanctionTarget(sanction)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>

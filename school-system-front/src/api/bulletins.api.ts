@@ -10,6 +10,11 @@ export interface BulletinExamenDTO {
 export interface BulletinModuleDTO {
   moduleId: number;
   moduleName: string;
+  moduleNameAr: string | null;
+  sousDomaineId: number | null;
+  sousDomaineName: string | null;
+  sousDomaineNameAr: string | null;
+  sousDomaineOrdre: number | null;
   coeff: number;
   ordre: number;
   examens: BulletinExamenDTO[];

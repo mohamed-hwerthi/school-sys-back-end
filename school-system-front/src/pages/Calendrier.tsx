@@ -338,7 +338,7 @@ export default function Calendrier() {
             {t("common.today")}
           </Button>
           <Button size="sm" onClick={() => handleOpenCreate(selectedDate ?? undefined)}>
-            <Plus className="mr-1.5 h-4 w-4" />
+            <Plus className="me-1.5 h-4 w-4" />
             Nouvel événement
           </Button>
         </div>
@@ -408,7 +408,7 @@ export default function Calendrier() {
                   key={dateStr}
                   onClick={() => setSelectedDate(dateStr === selectedDate ? null : dateStr)}
                   onDoubleClick={() => handleOpenCreate(dateStr)}
-                  className={`min-h-[80px] border-b border-r border-border/20 p-1.5 text-left transition-colors relative group
+                  className={`min-h-[80px] border-b border-r border-border/20 p-1.5 text-start transition-colors relative group
                     ${isToday ? "bg-primary/5" : ""}
                     ${isSelected ? "bg-primary/10 ring-2 ring-primary/30 ring-inset" : ""}
                     ${hasHoliday && !isSelected ? "bg-amber-50/50" : ""}
@@ -531,7 +531,7 @@ export default function Calendrier() {
                     <button
                       key={`${ev.date}-${ev.label}-${i}`}
                       onClick={() => setSelectedDate(ev.date)}
-                      className={`w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-muted/40
+                      className={`w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-start transition-colors hover:bg-muted/40
                         ${ev.date === selectedDate ? "ring-1 ring-primary/30" : ""}
                       `}
                     >

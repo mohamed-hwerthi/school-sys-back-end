@@ -228,7 +228,7 @@ export default function Onboarding() {
                       }`}
                     >
                       {plan.popular && (
-                        <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
+                        <div className="absolute -top-2.5 start-1/2 -translate-x-1/2">
                           <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-3 py-0.5 text-[10px] font-bold text-white">
                             <Sparkles className="h-3 w-3" />
                             Populaire

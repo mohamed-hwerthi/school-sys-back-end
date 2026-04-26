@@ -290,12 +290,12 @@ function CatalogueTab() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Rechercher par titre ou auteur..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-            className="pl-9"
+            className="ps-9"
           />
         </div>
         <Select value={filterCategorie} onValueChange={(v) => { setFilterCategorie(v); setPage(0); }}>
@@ -314,7 +314,7 @@ function CatalogueTab() {
             <X className="h-3.5 w-3.5" /> Reinitialiser
           </Button>
         )}
-        <Button className="bg-gradient-primary shadow-btn gap-2 ml-auto" onClick={openAdd}>
+        <Button className="bg-gradient-primary shadow-btn gap-2 ms-auto" onClick={openAdd}>
           <Plus className="h-4 w-4" /> Ajouter un livre
         </Button>
       </div>
@@ -325,13 +325,13 @@ function CatalogueTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Titre</th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Auteur</th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Categorie</th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">ISBN</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">Titre</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">Auteur</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">Categorie</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">ISBN</th>
                 <th className="py-3 px-4 text-center font-semibold text-muted-foreground">Exemplaires</th>
                 <th className="py-3 px-4 text-center font-semibold text-muted-foreground">Disponibles</th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Emplacement</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">Emplacement</th>
                 <th className="py-3 px-4 text-center font-semibold text-muted-foreground">Actions</th>
               </tr>
             </thead>
@@ -369,10 +369,10 @@ function CatalogueTab() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEdit(l)}>
-                            <Edit className="h-3.5 w-3.5 mr-2" /> Modifier
+                            <Edit className="h-3.5 w-3.5 me-2" /> Modifier
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setDeleteTarget(l)} className="text-destructive">
-                            <Trash2 className="h-3.5 w-3.5 mr-2" /> Supprimer
+                            <Trash2 className="h-3.5 w-3.5 me-2" /> Supprimer
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -522,12 +522,12 @@ function EmpruntsTab() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Rechercher par livre ou eleve..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="ps-9"
           />
         </div>
         <Select value={filterStatut} onValueChange={setFilterStatut}>
@@ -547,7 +547,7 @@ function EmpruntsTab() {
             <X className="h-3.5 w-3.5" /> Reinitialiser
           </Button>
         )}
-        <Button className="bg-gradient-primary shadow-btn gap-2 ml-auto" onClick={() => { setForm(emptyForm); setAddDialogOpen(true); }}>
+        <Button className="bg-gradient-primary shadow-btn gap-2 ms-auto" onClick={() => { setForm(emptyForm); setAddDialogOpen(true); }}>
           <Plus className="h-4 w-4" /> Nouvel emprunt
         </Button>
       </div>
@@ -558,11 +558,11 @@ function EmpruntsTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Livre</th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Eleve</th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Date emprunt</th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Retour prevu</th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">Retour effectif</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">Livre</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">Eleve</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">Date emprunt</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">Retour prevu</th>
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">Retour effectif</th>
                 <th className="py-3 px-4 text-center font-semibold text-muted-foreground">Statut</th>
                 <th className="py-3 px-4 text-center font-semibold text-muted-foreground">Actions</th>
               </tr>
@@ -853,7 +853,7 @@ function StatistiquesTab() {
               const pct = Math.round((item.count / maxCount) * 100);
               return (
                 <div key={item.livreId} className="flex items-center gap-3">
-                  <span className="text-sm font-mono text-muted-foreground w-6 text-right">
+                  <span className="text-sm font-mono text-muted-foreground w-6 text-end">
                     {index + 1}.
                   </span>
                   <div className="flex-1 min-w-0">
@@ -861,7 +861,7 @@ function StatistiquesTab() {
                       <span className="text-sm font-medium text-foreground truncate">
                         {item.titre}
                       </span>
-                      <span className="text-sm font-semibold text-primary ml-2">
+                      <span className="text-sm font-semibold text-primary ms-2">
                         {item.count} emprunt{item.count > 1 ? "s" : ""}
                       </span>
                     </div>

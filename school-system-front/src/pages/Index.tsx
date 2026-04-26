@@ -138,7 +138,7 @@ const Index = () => {
       <motion.div
         animate={{ x: [0, 20, 0], y: [0, -20, 0] }}
         transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-        className="pointer-events-none fixed top-1/4 right-1/3 h-72 w-72 rounded-full opacity-20"
+        className="pointer-events-none fixed top-1/4 end-1/3 h-72 w-72 rounded-full opacity-20"
         style={{ background: "radial-gradient(circle, hsl(160 70% 42% / 0.15), transparent 70%)" }}
       />
 
@@ -214,7 +214,7 @@ const Index = () => {
           <motion.div variants={item} className="mb-10 flex items-center gap-3">
             <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-primary shadow-btn">
               <GraduationCap className="h-6 w-6 text-primary-foreground" />
-              <div className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent">
+              <div className="absolute -end-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent">
                 <Sparkles className="h-2.5 w-2.5 text-accent-foreground" />
               </div>
             </div>
@@ -260,7 +260,7 @@ const Index = () => {
                     Code à 6 chiffres
                   </label>
                   <div className="relative">
-                    <ShieldCheck className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "totp" ? "text-primary" : "text-muted-foreground"}`} />
+                    <ShieldCheck className={`absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "totp" ? "text-primary" : "text-muted-foreground"}`} />
                     <input
                       ref={totpInputRef}
                       type="text"
@@ -272,7 +272,7 @@ const Index = () => {
                       onBlur={() => setFocused(null)}
                       onChange={handleTotpChange}
                       maxLength={6}
-                      className="w-full rounded-xl border border-border bg-muted/50 py-3 pl-10 pr-4 text-center text-lg font-mono font-bold tracking-[0.3em] text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:shadow-input-focus"
+                      className="w-full rounded-xl border border-border bg-muted/50 py-3 ps-10 pe-4 text-center text-lg font-mono font-bold tracking-[0.3em] text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:shadow-input-focus"
                     />
                   </div>
                 </motion.div>
@@ -341,7 +341,7 @@ const Index = () => {
                     {t("auth.email")}
                   </label>
                   <div className="relative">
-                    <Mail className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "email" ? "text-primary" : "text-muted-foreground"}`} />
+                    <Mail className={`absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "email" ? "text-primary" : "text-muted-foreground"}`} />
                     <input
                       type="email"
                       placeholder="nom@ecole.fr"
@@ -349,7 +349,7 @@ const Index = () => {
                       onFocus={() => setFocused("email")}
                       onBlur={() => setFocused(null)}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-muted/50 py-3 pl-10 pr-4 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:shadow-input-focus"
+                      className="w-full rounded-xl border border-border bg-muted/50 py-3 ps-10 pe-4 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:shadow-input-focus"
                     />
                   </div>
                 </motion.div>
@@ -360,7 +360,7 @@ const Index = () => {
                     {t("auth.password")}
                   </label>
                   <div className="relative">
-                    <Lock className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "pass" ? "text-primary" : "text-muted-foreground"}`} />
+                    <Lock className={`absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "pass" ? "text-primary" : "text-muted-foreground"}`} />
                     <input
                       type="password"
                       placeholder="••••••••"
@@ -368,13 +368,13 @@ const Index = () => {
                       onFocus={() => setFocused("pass")}
                       onBlur={() => setFocused(null)}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-muted/50 py-3 pl-10 pr-4 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:shadow-input-focus"
+                      className="w-full rounded-xl border border-border bg-muted/50 py-3 ps-10 pe-4 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:shadow-input-focus"
                     />
                   </div>
                 </motion.div>
 
                 {/* Forgot password */}
-                <motion.div variants={item} className="text-right">
+                <motion.div variants={item} className="text-end">
                   <Link to="/forgot-password" className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
                     {t("auth.forgotPassword")}
                   </Link>

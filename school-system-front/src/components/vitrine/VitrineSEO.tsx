@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import type { VitrineConfig } from "@/types/vitrine";
+import { resolveFileUrl } from "@/api/storage.api";
 
 interface Props {
   config: VitrineConfig;
@@ -23,7 +24,7 @@ export default function VitrineSEO({ config, pageTitle, slug }: Props) {
     setMeta("og:description", config.metaDescription || config.slogan || "");
     setMeta("og:type", "website");
     if (config.logoUrl) {
-      setMeta("og:image", config.logoUrl);
+      setMeta("og:image", resolveFileUrl(config.logoUrl));
     }
     setMeta("og:url", window.location.href);
     setMeta("theme-color", config.primaryColor);

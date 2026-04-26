@@ -3,7 +3,6 @@ import {
   Users,
   UserCog,
   Calendar,
-  ClipboardCheck,
   FileText,
   Newspaper,
   BookOpen,
@@ -97,13 +96,23 @@ export const sidebarSections: NavSection[] = [
     icon: BookOpen,
     color: "text-purple-500",
     items: [
+      { title: "Année scolaire", titleKey: "nav.schoolYear", icon: CalendarClock, url: "/dashboard/annee-scolaire", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Emploi du temps", titleKey: "nav.schedule", icon: Clock, url: "/dashboard/emploi-du-temps", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT", "PARENT"] },
       { title: "Salles", titleKey: "nav.rooms", icon: Calendar, url: "/dashboard/emploi-salles", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
-      { title: "Évaluations", titleKey: "nav.evaluations", icon: ClipboardCheck, url: "/dashboard/evaluations", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT"] },
       { title: "Devoirs", titleKey: "nav.homework", icon: PenTool, url: "/dashboard/devoirs", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT"] },
-      { title: "Examens", titleKey: "nav.exams", icon: FileQuestion, url: "/dashboard/quiz", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT"] },
       { title: "Carnets de notes", titleKey: "nav.gradeBooks", icon: BookOpen, url: "/dashboard/carnets", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT", "PARENT"] },
-      { title: "Année scolaire", titleKey: "nav.schoolYear", icon: CalendarClock, url: "/dashboard/annee-scolaire", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
+    ],
+  },
+  {
+    label: "Quiz",
+    labelKey: "nav.quiz",
+    icon: FileQuestion,
+    color: "text-fuchsia-500",
+    roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT"],
+    items: [
+      { title: "Tous les Quiz", titleKey: "nav.allQuizzes", icon: ClipboardList, url: "/dashboard/quiz?tab=quizzes" },
+      { title: "Constructeur", titleKey: "nav.quizBuilder", icon: PenTool, url: "/dashboard/quiz?tab=builder" },
+      { title: "Résultats", titleKey: "nav.quizResults", icon: BarChart3, url: "/dashboard/quiz?tab=results" },
     ],
   },
   {
@@ -113,7 +122,6 @@ export const sidebarSections: NavSection[] = [
     color: "text-indigo-500",
     roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"],
     items: [
-      { title: "Templates", titleKey: "nav.templates", icon: Palette, url: "/dashboard/bulletin-templates" },
       { title: "Impression masse", titleKey: "nav.bulkPrint", icon: Printer, url: "/dashboard/bulletins-masse" },
       { title: "Stats réussite", titleKey: "nav.successStats", icon: TrendingUp, url: "/dashboard/stats-reussite" },
       { title: "Comparatif", titleKey: "nav.comparative", icon: Activity, url: "/dashboard/comparatif" },

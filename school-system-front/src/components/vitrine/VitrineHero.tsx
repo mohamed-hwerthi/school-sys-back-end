@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import type { VitrineConfig, VitrineSection } from "@/types/vitrine";
+import { resolveFileUrl } from "@/api/storage.api";
 
 interface Props {
   section: VitrineSection;
@@ -18,7 +19,7 @@ export default function VitrineHero({ section, config }: Props) {
     buttonLink?: string;
   };
 
-  const bgImage = config.heroImageUrl;
+  const bgImage = resolveFileUrl(config.heroImageUrl);
   const hasImage = !!bgImage;
   const sectionRef = useRef<HTMLElement>(null);
 

@@ -344,7 +344,7 @@ export default function EmploiDuTempsPage() {
             }}
           >
             <SelectTrigger className="w-[250px]">
-              <Calendar className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+              <Calendar className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
               <SelectValue placeholder={t("schedule.selectClass")} />
             </SelectTrigger>
             <SelectContent>
@@ -369,7 +369,7 @@ export default function EmploiDuTempsPage() {
             <AlertTriangle className="h-4 w-4" />
             {t("schedule.unresolvedConflicts")}
           </div>
-          <ul className="text-sm text-orange-600 list-disc pl-5 space-y-1">
+          <ul className="text-sm text-orange-600 list-disc ps-5 space-y-1">
             {conflits.map((c, i) => (
               <li key={i}>{c.message}</li>
             ))}
@@ -408,7 +408,7 @@ export default function EmploiDuTempsPage() {
               <table className="w-full text-sm border-collapse">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-3 text-left text-xs font-semibold text-muted-foreground w-[100px]">
+                    <th className="py-3 px-3 text-start text-xs font-semibold text-muted-foreground w-[100px]">
                       {t("common.type")}
                     </th>
                     {JOURS.map((j) => (
@@ -455,7 +455,7 @@ export default function EmploiDuTempsPage() {
                         return (
                           <td key={jour.value} className="py-2 px-2">
                             <button
-                              className={`w-full rounded-lg border p-2 text-left text-xs transition-all hover:shadow-md cursor-pointer ${
+                              className={`w-full rounded-lg border p-2 text-start text-xs transition-all hover:shadow-md cursor-pointer ${
                                 entry
                                   ? getModuleColor(entry.moduleId)
                                   : "border-dashed border-border hover:border-primary/40 hover:bg-muted/30"
@@ -580,7 +580,7 @@ export default function EmploiDuTempsPage() {
               <Button
                 variant="destructive"
                 onClick={handleRemoveSlot}
-                className="mr-auto"
+                className="me-auto"
               >
                 {t("common.delete")}
               </Button>
@@ -721,7 +721,7 @@ export default function EmploiDuTempsPage() {
               {generateResult.unresolvedConflicts.length > 0 && (
                 <div className="rounded-lg border border-orange-200 bg-orange-50 p-3">
                   <p className="text-sm font-medium text-orange-700 mb-1">{t("schedule.unresolvedConflicts")}:</p>
-                  <ul className="text-xs text-orange-600 list-disc pl-4 space-y-0.5">
+                  <ul className="text-xs text-orange-600 list-disc ps-4 space-y-0.5">
                     {generateResult.unresolvedConflicts.map((c, i) => (
                       <li key={i}>{c}</li>
                     ))}
@@ -853,7 +853,7 @@ export default function EmploiDuTempsPage() {
                     <button
                       key={room.id}
                       onClick={() => handleToggleRoom(room.nom)}
-                      className={`rounded-md border px-2 py-1.5 text-xs text-left transition-colors ${
+                      className={`rounded-md border px-2 py-1.5 text-xs text-start transition-colors ${
                         selectedRooms.includes(room.nom)
                           ? "border-primary bg-primary/10 text-primary font-medium"
                           : "border-border/50 hover:border-primary/40"

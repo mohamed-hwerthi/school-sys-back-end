@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
 import { validate, type FormErrors } from "@/lib/validate";
@@ -116,11 +117,23 @@ const fadeUp = {
   }),
 };
 
+const QUIZ_TABS = ["quizzes", "builder", "results"] as const;
+
 export default function QuizManagementPage() {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState("quizzes");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<string>(
+    (QUIZ_TABS as readonly string[]).includes(initialTab ?? "") ? (initialTab as string) : "quizzes"
+  );
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
+
+  useEffect(() => {
+    if (!searchParams.get("tab")) {
+      setSearchParams({ tab: "quizzes" }, { replace: true });
+    }
+  }, []);
 
   // Quiz form
   const [quizFormOpen, setQuizFormOpen] = useState(false);
@@ -403,7 +416,7 @@ export default function QuizManagementPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setCurrentPage(0); }}>
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setCurrentPage(0); setSearchParams({ tab: v }, { replace: true }); }}>
         <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible" className="rounded-xl border border-border/50 bg-card p-4 shadow-sm space-y-3">
           <TabsList>
             <TabsTrigger value="quizzes">Quiz</TabsTrigger>
@@ -413,8 +426,8 @@ export default function QuizManagementPage() {
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
             {activeTab === "quizzes" && (
               <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher..." className="pl-9" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher..." className="ps-9" />
               </div>
             )}
             {activeTab === "builder" && (
@@ -457,12 +470,12 @@ export default function QuizManagementPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Titre</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Duree</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Questions</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Tentatives</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Titre</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">Duree</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Questions</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Tentatives</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Statut</th>
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -485,7 +498,7 @@ export default function QuizManagementPage() {
                             {STATUT_LABELS[quiz.statut]}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3 px-4 text-end">
                           <div className="hidden sm:flex items-center justify-end gap-1">
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => openEditQuiz(quiz)}>
                               <Edit className="h-4 w-4" />
@@ -495,7 +508,7 @@ export default function QuizManagementPage() {
                                 <Send className="h-4 w-4" />
                               </Button>
                             )}
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-blue-600" onClick={() => { setSelectedResultQuizId(quiz.id); setActiveTab("results"); }}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-blue-600" onClick={() => { setSelectedResultQuizId(quiz.id); setActiveTab("results"); setSearchParams({ tab: "results" }, { replace: true }); }}>
                               <BarChart3 className="h-4 w-4" />
                             </Button>
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-600" onClick={() => setDeleteTarget(quiz)}>
@@ -510,18 +523,18 @@ export default function QuizManagementPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => openEditQuiz(quiz)}>
-                                <Edit className="h-4 w-4 mr-2" /> Modifier
+                                <Edit className="h-4 w-4 me-2" /> Modifier
                               </DropdownMenuItem>
                               {quiz.statut === "BROUILLON" && (
                                 <DropdownMenuItem onClick={() => publishQuiz.mutate(quiz.id)}>
-                                  <Send className="h-4 w-4 mr-2" /> Publier
+                                  <Send className="h-4 w-4 me-2" /> Publier
                                 </DropdownMenuItem>
                               )}
-                              <DropdownMenuItem onClick={() => { setSelectedResultQuizId(quiz.id); setActiveTab("results"); }}>
-                                <BarChart3 className="h-4 w-4 mr-2" /> Resultats
+                              <DropdownMenuItem onClick={() => { setSelectedResultQuizId(quiz.id); setActiveTab("results"); setSearchParams({ tab: "results" }, { replace: true }); }}>
+                                <BarChart3 className="h-4 w-4 me-2" /> Resultats
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => setDeleteTarget(quiz)} className="text-red-600">
-                                <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                                <Trash2 className="h-4 w-4 me-2" /> Supprimer
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -675,12 +688,12 @@ export default function QuizManagementPage() {
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-border bg-muted/30">
-                            <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Élève</th>
-                            <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Date</th>
-                            <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Score</th>
-                            <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Pourcentage</th>
-                            <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Temps</th>
-                            <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
+                            <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Élève</th>
+                            <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">Date</th>
+                            <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Score</th>
+                            <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Pourcentage</th>
+                            <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Temps</th>
+                            <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Statut</th>
                           </tr>
                         </thead>
                         <tbody>

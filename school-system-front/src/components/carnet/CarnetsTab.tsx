@@ -1,12 +1,32 @@
-import { useState, useRef } from "react";
+import { useState, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
+import { useCarnetSelection } from "./CarnetSelectionContext";
 import {
   GraduationCap,
   Printer,
   Eye,
   FileText,
   Award,
+  Search,
+  X,
+  Users,
+  Target,
+  Sigma,
+  Minimize,
+  Maximize,
+  TrendingUp,
+  XCircle,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  computeStats,
+  KpiCard,
+  DistributionChart,
+  PassFailPie,
+  MentionsBar,
+  TopBottomLists,
+  CertificatPie,
+} from "./statsCharts";
 import {
   Select,
   SelectContent,
@@ -49,10 +69,9 @@ function gradeColor(val: number) {
 
 export default function CarnetsTab() {
   const { niveaux } = useNiveaux();
-  const [niveauId, setNiveauId] = useState<number>(0);
-  const [classeId, setClasseId] = useState<number>(0);
-  const [trimestre, setTrimestre] = useState<number>(0);
+  const { niveauId, classeId, trimestre, setNiveauId, setClasseId, setTrimestre } = useCarnetSelection();
   const [version, setVersion] = useState("etatique");
+  const [search, setSearch] = useState("");
   const [previewBulletin, setPreviewBulletin] = useState<BulletinDTO | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
@@ -60,6 +79,37 @@ export default function CarnetsTab() {
   const { data: classes = [] } = useClasses(niveauId || undefined);
   const { data: bulletins = [], isLoading } = useBulletins(classeId, trimestre, version);
   const { data: settings } = useSchoolSettings();
+
+  const filteredBulletins = useMemo(() => {
+    if (!search.trim()) return bulletins;
+    const q = search.toLowerCase().trim();
+    return bulletins.filter(
+      (b) =>
+        b.studentName.toLowerCase().includes(q) ||
+        (b.studentNameAr && b.studentNameAr.includes(search.trim()))
+    );
+  }, [bulletins, search]);
+
+  // Class-wide moyennes générales for stats
+  const moyenneValues = useMemo(() => bulletins.map((b) => b.moyenneGenerale), [bulletins]);
+  const stats = useMemo(() => computeStats(moyenneValues), [moyenneValues]);
+  const passCount = useMemo(() => moyenneValues.filter((v) => v >= 10).length, [moyenneValues]);
+  const failCount = useMemo(() => moyenneValues.filter((v) => v < 10).length, [moyenneValues]);
+  const studentsForRanking = useMemo(
+    () => bulletins.map((b) => ({ name: b.studentName, value: b.moyenneGenerale })),
+    [bulletins]
+  );
+  const certificatsCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    let aucun = 0;
+    bulletins.forEach((b) => {
+      if (b.certificatType) counts.set(b.certificatType, (counts.get(b.certificatType) ?? 0) + 1);
+      else aucun++;
+    });
+    const arr = Array.from(counts.entries()).map(([type, count]) => ({ type, count }));
+    if (aucun > 0) arr.push({ type: "Sans certificat", count: aucun });
+    return arr;
+  }, [bulletins]);
 
   const handlePrintOne = (bulletin: BulletinDTO) => {
     setPreviewBulletin(bulletin);
@@ -143,7 +193,7 @@ export default function CarnetsTab() {
             }}
           >
             <SelectTrigger className="w-[180px]">
-              <GraduationCap className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+              <GraduationCap className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
               <SelectValue placeholder="Niveau" />
             </SelectTrigger>
             <SelectContent>
@@ -202,14 +252,33 @@ export default function CarnetsTab() {
           </Select>
 
           {bulletins.length > 0 && (
-            <Button
-              onClick={handlePrintAll}
-              size="sm"
-              className="ml-auto gap-2"
-            >
-              <Printer className="h-4 w-4" />
-              Imprimer tout ({bulletins.length})
-            </Button>
+            <>
+              <div className="relative flex-1 sm:max-w-xs sm:ms-auto">
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Rechercher un élève..."
+                  className="ps-9 pe-9"
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="absolute end-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+              <Button
+                onClick={handlePrintAll}
+                size="sm"
+                className="gap-2"
+              >
+                <Printer className="h-4 w-4" />
+                Imprimer tout ({bulletins.length})
+              </Button>
+            </>
           )}
         </div>
       </motion.div>
@@ -234,12 +303,70 @@ export default function CarnetsTab() {
               </p>
             </motion.div>
           ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: 0.05 }}
-              className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden"
-            >
+            <>
+              {/* Class-wide stats panel */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.05 }}
+                className="rounded-xl border border-border/50 bg-card p-4 shadow-sm space-y-3"
+              >
+                <p className="text-sm font-semibold text-foreground">Vue d'ensemble — moyennes générales de la classe</p>
+
+                {/* KPI Row 1 */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2">
+                  <KpiCard label="Effectif" value={stats.count} icon={Users} />
+                  <KpiCard
+                    label="Moy. classe"
+                    value={stats.mean.toFixed(2)}
+                    icon={Target}
+                    color={stats.mean >= 10 ? "text-emerald-600" : "text-red-600"}
+                  />
+                  <KpiCard label="Médiane classe" value={stats.median.toFixed(2)} icon={Sigma} />
+                  <KpiCard label="Note min" value={stats.min.toFixed(2)} icon={Minimize} color="text-red-600" />
+                  <KpiCard label="Note max" value={stats.max.toFixed(2)} icon={Maximize} color="text-emerald-600" />
+                </div>
+
+                {/* KPI Row 2 */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2">
+                  <KpiCard label="Quartiles Q1 / Q3" value={`${stats.q1.toFixed(1)} / ${stats.q3.toFixed(1)}`} icon={Sigma} />
+                  <KpiCard label="Écart-type classe" value={stats.stddev.toFixed(2)} icon={Sigma} />
+                  <KpiCard
+                    label="% Réussite (≥10)"
+                    value={`${stats.passRate}%`}
+                    icon={TrendingUp}
+                    color={stats.passRate >= 50 ? "text-emerald-600" : "text-red-600"}
+                  />
+                  <KpiCard
+                    label="% Mention (≥14)"
+                    value={`${stats.mentionRate}%`}
+                    icon={Award}
+                    color="text-blue-600"
+                  />
+                  <KpiCard label="% Échec" value={`${stats.failRate}%`} icon={XCircle} color="text-red-600" />
+                </div>
+
+                {/* Charts row 1 */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                  <DistributionChart values={moyenneValues} title="Distribution des moyennes" />
+                  <PassFailPie pass={passCount} fail={failCount} />
+                  <CertificatPie certificats={certificatsCounts} />
+                </div>
+
+                {/* Mentions */}
+                <MentionsBar values={moyenneValues} />
+
+                {/* Top / Bottom */}
+                <TopBottomLists top={studentsForRanking} topCount={10} bottomCount={5} />
+              </motion.div>
+
+              {/* Student list */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.1 }}
+                className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden"
+              >
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -247,7 +374,7 @@ export default function CarnetsTab() {
                       <th className="py-3 px-4 text-center text-xs font-semibold text-muted-foreground w-12">
                         Rang
                       </th>
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                         Élève
                       </th>
                       <th className="py-3 px-4 text-center text-xs font-semibold text-foreground">
@@ -262,7 +389,14 @@ export default function CarnetsTab() {
                     </tr>
                   </thead>
                   <tbody>
-                    {[...bulletins]
+                    {filteredBulletins.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="py-12 text-center text-sm text-muted-foreground">
+                          Aucun élève ne correspond à "{search}"
+                        </td>
+                      </tr>
+                    )}
+                    {[...filteredBulletins]
                       .sort((a, b) => a.rang - b.rang)
                       .map((b) => (
                         <tr
@@ -328,7 +462,8 @@ export default function CarnetsTab() {
                   </tbody>
                 </table>
               </div>
-            </motion.div>
+              </motion.div>
+            </>
           )}
         </>
       )}

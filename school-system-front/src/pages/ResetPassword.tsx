@@ -92,7 +92,7 @@ const ResetPassword = () => {
           <motion.div variants={item} className="mb-10 flex items-center gap-3">
             <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-primary shadow-btn">
               <GraduationCap className="h-6 w-6 text-primary-foreground" />
-              <div className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent">
+              <div className="absolute -end-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent">
                 <Sparkles className="h-2.5 w-2.5 text-accent-foreground" />
               </div>
             </div>
@@ -165,7 +165,7 @@ const ResetPassword = () => {
                     {t("auth.newPassword")}
                   </label>
                   <div className="relative">
-                    <Lock className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "new" ? "text-primary" : "text-muted-foreground"}`} />
+                    <Lock className={`absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "new" ? "text-primary" : "text-muted-foreground"}`} />
                     <input
                       type="password"
                       placeholder="Minimum 8 caractères"
@@ -175,7 +175,7 @@ const ResetPassword = () => {
                       onChange={(e) => setNewPassword(e.target.value)}
                       required
                       minLength={8}
-                      className="w-full rounded-xl border border-border bg-muted/50 py-3 pl-10 pr-4 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:shadow-input-focus"
+                      className="w-full rounded-xl border border-border bg-muted/50 py-3 ps-10 pe-4 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:shadow-input-focus"
                     />
                   </div>
                 </motion.div>
@@ -185,7 +185,7 @@ const ResetPassword = () => {
                     {t("auth.confirmPassword")}
                   </label>
                   <div className="relative">
-                    <Lock className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "confirm" ? "text-primary" : "text-muted-foreground"}`} />
+                    <Lock className={`absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "confirm" ? "text-primary" : "text-muted-foreground"}`} />
                     <input
                       type="password"
                       placeholder={t("auth.retypePassword")}
@@ -195,7 +195,7 @@ const ResetPassword = () => {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                       minLength={8}
-                      className="w-full rounded-xl border border-border bg-muted/50 py-3 pl-10 pr-4 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:shadow-input-focus"
+                      className="w-full rounded-xl border border-border bg-muted/50 py-3 ps-10 pe-4 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:shadow-input-focus"
                     />
                   </div>
                 </motion.div>

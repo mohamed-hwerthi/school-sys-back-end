@@ -125,14 +125,14 @@ export default function FeuilleDetailsPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/30 border-b border-border/50 print:bg-white">
               <tr>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground w-12">#</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Élève</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Matricule</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Séance</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Heure</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Justifié</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Motif</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground w-12">#</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Élève</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Matricule</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Statut</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Séance</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Heure</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Justifié</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Motif</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">

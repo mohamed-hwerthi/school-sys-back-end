@@ -1,5 +1,7 @@
 import api from "./axios";
 
+export type NoteStatut = "PRESENT" | "ABSENT" | "EXEMPT";
+
 export interface NoteDTO {
   id: number;
   studentId: number;
@@ -9,6 +11,7 @@ export interface NoteDTO {
   trimestre: number;
   valeur: number | null;
   observation: string | null;
+  statut: NoteStatut;
 }
 
 export interface NoteRequest {
@@ -17,6 +20,7 @@ export interface NoteRequest {
   trimestre: number;
   valeur: number | null;
   observation?: string;
+  statut?: NoteStatut;
 }
 
 export interface MoyenneDTO {

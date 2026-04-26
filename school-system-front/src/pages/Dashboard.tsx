@@ -122,7 +122,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
       <p className="text-xs font-semibold text-foreground mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.name} className="text-xs text-muted-foreground">
-          <span className="inline-block h-2 w-2 rounded-full mr-1.5" style={{ backgroundColor: p.color }} />
+          <span className="inline-block h-2 w-2 rounded-full me-1.5" style={{ backgroundColor: p.color }} />
           {p.name}: <span className="font-medium text-foreground">{p.value}</span>
         </p>
       ))}
@@ -246,7 +246,7 @@ export default function Dashboard() {
             variants={fadeUp}
             className={`group relative overflow-hidden rounded-2xl border border-border/40 bg-card p-5 shadow-sm hover:shadow-md transition-shadow`}
           >
-            <div className={`absolute -right-6 -top-6 h-24 w-24 rounded-full ${stat.bg} opacity-60 transition-transform group-hover:scale-125`} />
+            <div className={`absolute -end-6 -top-6 h-24 w-24 rounded-full ${stat.bg} opacity-60 transition-transform group-hover:scale-125`} />
             <div className="relative">
               <div className="flex items-center justify-between mb-3">
                 <div className={`flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${stat.gradient} text-white shadow-sm ring-4 ${stat.ring}`}>
@@ -368,7 +368,7 @@ export default function Dashboard() {
             {moyenneGenerale > 0 && (
               <div className="rounded-lg bg-primary/10 px-3 py-1.5">
                 <span className="font-heading text-lg font-bold text-primary">{moyenneGenerale.toFixed(1)}</span>
-                <span className="text-xs text-primary/70 ml-1">/20</span>
+                <span className="text-xs text-primary/70 ms-1">/20</span>
               </div>
             )}
           </div>
@@ -466,10 +466,10 @@ export default function Dashboard() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border/60">
-                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t("dashboard.student")}</th>
-                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t("dashboard.class")}</th>
-                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t("common.date")}</th>
-                <th className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t("common.status")}</th>
+                <th className="py-3 px-3 text-start text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t("dashboard.student")}</th>
+                <th className="py-3 px-3 text-start text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t("dashboard.class")}</th>
+                <th className="py-3 px-3 text-start text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t("common.date")}</th>
+                <th className="py-3 px-3 text-start text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t("common.status")}</th>
               </tr>
             </thead>
             <tbody>

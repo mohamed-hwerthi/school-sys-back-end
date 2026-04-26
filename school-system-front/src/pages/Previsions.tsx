@@ -457,7 +457,7 @@ export default function Previsions() {
             <SelectItem value="DEPENSE">Depenses</SelectItem>
           </SelectContent>
         </Select>
-        <span className="ml-auto text-xs text-muted-foreground">
+        <span className="ms-auto text-xs text-muted-foreground">
           {budgets.length} ligne{budgets.length > 1 ? "s" : ""}
         </span>
       </div>
@@ -468,25 +468,25 @@ export default function Previsions() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">
                   Libelle
                 </th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">
                   Type
                 </th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">
                   Categorie
                 </th>
-                <th className="py-3 px-4 text-left font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start font-semibold text-muted-foreground">
                   Mois
                 </th>
-                <th className="py-3 px-4 text-right font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-end font-semibold text-muted-foreground">
                   Prevu
                 </th>
-                <th className="py-3 px-4 text-right font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-end font-semibold text-muted-foreground">
                   Realise
                 </th>
-                <th className="py-3 px-4 text-right font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-end font-semibold text-muted-foreground">
                   Ecart
                 </th>
                 <th className="py-3 px-4 text-center font-semibold text-muted-foreground">
@@ -522,14 +522,14 @@ export default function Previsions() {
                     <td className="py-3 px-4 text-muted-foreground text-xs">
                       {b.mois ? MOIS_LABELS[b.mois] : "Annuel"}
                     </td>
-                    <td className="py-3 px-4 text-right font-medium whitespace-nowrap">
+                    <td className="py-3 px-4 text-end font-medium whitespace-nowrap">
                       {b.montantPrevu.toLocaleString()} {CURRENCY}
                     </td>
-                    <td className="py-3 px-4 text-right font-medium whitespace-nowrap">
+                    <td className="py-3 px-4 text-end font-medium whitespace-nowrap">
                       {b.montantRealise.toLocaleString()} {CURRENCY}
                     </td>
                     <td
-                      className={`py-3 px-4 text-right font-semibold whitespace-nowrap ${
+                      className={`py-3 px-4 text-end font-semibold whitespace-nowrap ${
                         b.variance >= 0 ? "text-green-600" : "text-red-600"
                       }`}
                     >
@@ -545,13 +545,13 @@ export default function Previsions() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEdit(b)}>
-                            <Edit className="h-3.5 w-3.5 mr-2" /> Modifier
+                            <Edit className="h-3.5 w-3.5 me-2" /> Modifier
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDeleteTarget(b)}
                             className="text-destructive"
                           >
-                            <Trash2 className="h-3.5 w-3.5 mr-2" /> Supprimer
+                            <Trash2 className="h-3.5 w-3.5 me-2" /> Supprimer
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

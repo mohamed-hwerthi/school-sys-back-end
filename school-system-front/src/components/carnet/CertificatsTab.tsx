@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { useCarnetSelection } from "./CarnetSelectionContext";
 import {
   GraduationCap,
   Printer,
   Award,
   Eye,
+  TrendingUp,
+  Target,
+  UserX,
+  Crown,
 } from "lucide-react";
 import {
   Select,
@@ -26,6 +31,7 @@ import { useBulletins } from "@/hooks/useBulletins";
 import type { BulletinDTO } from "@/api/bulletins.api";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import CertificatPrint from "./CertificatPrint";
+import { KpiCard, CertificatPie } from "./statsCharts";
 
 const TRIMESTRES = [
   { value: 1, label: "Trimestre 1" },
@@ -48,11 +54,48 @@ function certBadgeColor(cert: string) {
   return "bg-green-100 text-green-800 border-green-300";
 }
 
+// Tone palette per certificat type — used for borders, hex (charts), text
+function certTone(cert: string) {
+  if (cert.includes("الأولى"))
+    return {
+      hex: "#eab308",
+      border: "border-yellow-300/70",
+      bg: "bg-yellow-50/60 dark:bg-yellow-950/15",
+      ring: "ring-yellow-200/60",
+      bar: "bg-yellow-400",
+      text: "text-yellow-700 dark:text-yellow-400",
+    };
+  if (cert.includes("شرف"))
+    return {
+      hex: "#f59e0b",
+      border: "border-amber-300/70",
+      bg: "bg-amber-50/60 dark:bg-amber-950/15",
+      ring: "ring-amber-200/60",
+      bar: "bg-amber-400",
+      text: "text-amber-700 dark:text-amber-400",
+    };
+  if (cert.includes("شكر"))
+    return {
+      hex: "#3b82f6",
+      border: "border-blue-300/70",
+      bg: "bg-blue-50/60 dark:bg-blue-950/15",
+      ring: "ring-blue-200/60",
+      bar: "bg-blue-400",
+      text: "text-blue-700 dark:text-blue-400",
+    };
+  return {
+    hex: "#10b981",
+    border: "border-emerald-300/70",
+    bg: "bg-emerald-50/60 dark:bg-emerald-950/15",
+    ring: "ring-emerald-200/60",
+    bar: "bg-emerald-400",
+    text: "text-emerald-700 dark:text-emerald-400",
+  };
+}
+
 export default function CertificatsTab() {
   const { niveaux } = useNiveaux();
-  const [niveauId, setNiveauId] = useState<number>(0);
-  const [classeId, setClasseId] = useState<number>(0);
-  const [trimestre, setTrimestre] = useState<number>(0);
+  const { niveauId, classeId, trimestre, setNiveauId, setClasseId, setTrimestre } = useCarnetSelection();
   const [certFilter, setCertFilter] = useState("all");
   const [previewStudent, setPreviewStudent] = useState<BulletinDTO | null>(null);
 
@@ -66,6 +109,46 @@ export default function CertificatsTab() {
     certFilter === "all"
       ? studentsWithCert
       : studentsWithCert.filter((b) => b.certificatType === certFilter);
+
+  // Aggregate stats
+  const totalEleves = bulletins.length;
+  const totalCertifies = studentsWithCert.length;
+  const sansCert = totalEleves - totalCertifies;
+  const tauxCertification = totalEleves > 0 ? (totalCertifies / totalEleves) * 100 : 0;
+  const moyenneCertifies = useMemo(() => {
+    if (studentsWithCert.length === 0) return 0;
+    const sum = studentsWithCert.reduce((s, b) => s + b.moyenneGenerale, 0);
+    return sum / studentsWithCert.length;
+  }, [studentsWithCert]);
+
+  // Per-type aggregations: count + average + top student
+  const perType = useMemo(() => {
+    return CERT_TYPES.filter((ct) => ct.value !== "all").map((ct) => {
+      const list = studentsWithCert.filter((b) => b.certificatType === ct.value);
+      const avg =
+        list.length > 0
+          ? list.reduce((s, b) => s + b.moyenneGenerale, 0) / list.length
+          : 0;
+      const top = [...list].sort((a, b) => b.moyenneGenerale - a.moyenneGenerale)[0];
+      return { type: ct.value, count: list.length, avg, top };
+    });
+  }, [studentsWithCert]);
+
+  // Donut data
+  const certificatsCounts = useMemo(
+    () =>
+      perType
+        .filter((p) => p.count > 0)
+        .map((p) => ({ type: p.type, count: p.count })),
+    [perType]
+  );
+
+  const dominantType = useMemo(
+    () =>
+      [...perType].sort((a, b) => b.count - a.count).find((p) => p.count > 0)
+        ?.type ?? "—",
+    [perType]
+  );
 
   const handlePrintOne = (b: BulletinDTO) => {
     const printWindow = window.open("", "_blank");
@@ -140,7 +223,7 @@ export default function CertificatsTab() {
             }}
           >
             <SelectTrigger className="w-[180px]">
-              <GraduationCap className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+              <GraduationCap className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
               <SelectValue placeholder="Niveau" />
             </SelectTrigger>
             <SelectContent>
@@ -187,7 +270,7 @@ export default function CertificatsTab() {
 
           <Select value={certFilter} onValueChange={setCertFilter}>
             <SelectTrigger className="w-[260px]">
-              <Award className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+              <Award className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -203,7 +286,7 @@ export default function CertificatsTab() {
             <Button
               onClick={handlePrintAll}
               size="sm"
-              className="ml-auto gap-2"
+              className="ms-auto gap-2"
             >
               <Printer className="h-4 w-4" />
               Imprimer tout ({filtered.length})
@@ -235,31 +318,125 @@ export default function CertificatsTab() {
             </motion.div>
           ) : (
             <>
-              {/* Stats summary */}
+              {/* KPI summary */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: 0.03 }}
-                className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                className="grid grid-cols-2 lg:grid-cols-4 gap-3"
               >
-                {CERT_TYPES.filter((ct) => ct.value !== "all").map((ct) => {
-                  const count = studentsWithCert.filter(
-                    (b) => b.certificatType === ct.value
-                  ).length;
-                  return (
-                    <div
-                      key={ct.value}
-                      className="rounded-lg border border-border/50 bg-card p-3 shadow-sm text-center"
-                    >
-                      <div className="text-2xl font-bold text-foreground">
-                        {count}
+                <KpiCard
+                  label="Total certifiés"
+                  value={`${totalCertifies}/${totalEleves}`}
+                  icon={Award}
+                  color="text-amber-600"
+                />
+                <KpiCard
+                  label="Taux de certification"
+                  value={`${tauxCertification.toFixed(0)}%`}
+                  icon={TrendingUp}
+                  color={
+                    tauxCertification >= 50
+                      ? "text-emerald-600"
+                      : "text-amber-600"
+                  }
+                />
+                <KpiCard
+                  label="Moyenne des certifiés"
+                  value={moyenneCertifies.toFixed(2)}
+                  icon={Target}
+                  color="text-blue-600"
+                />
+                <KpiCard
+                  label="Sans certificat"
+                  value={sansCert}
+                  icon={UserX}
+                  color="text-red-600"
+                />
+              </motion.div>
+
+              {/* Charts row: donut + per-type breakdown */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.05 }}
+                className="grid grid-cols-1 lg:grid-cols-3 gap-3"
+              >
+                <div className="lg:col-span-1">
+                  <CertificatPie certificats={certificatsCounts} />
+                </div>
+
+                <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {perType.map((p) => {
+                    const tone = certTone(p.type);
+                    const pct =
+                      totalEleves > 0 ? (p.count / totalEleves) * 100 : 0;
+                    const isDominant =
+                      p.type === dominantType && p.count > 0;
+                    return (
+                      <div
+                        key={p.type}
+                        className={`relative overflow-hidden rounded-xl border ${tone.border} ${tone.bg} p-4 shadow-sm transition-all hover:shadow-md`}
+                      >
+                        {isDominant && (
+                          <span className="absolute top-2 end-2 inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-950/40 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                            <Crown className="h-2.5 w-2.5" />
+                            Top
+                          </span>
+                        )}
+                        <div
+                          className={`text-xs font-semibold ${tone.text} mb-1`}
+                          dir="rtl"
+                        >
+                          {p.type}
+                        </div>
+                        <div className="flex items-end justify-between gap-2 mb-2">
+                          <p className="font-heading text-3xl font-bold text-foreground tabular-nums leading-none">
+                            {p.count}
+                          </p>
+                          <div className="text-end text-[11px] text-muted-foreground leading-tight">
+                            <p>
+                              <span className="font-semibold text-foreground tabular-nums">
+                                {pct.toFixed(0)}%
+                              </span>{" "}
+                              de la classe
+                            </p>
+                            {p.count > 0 && (
+                              <p className="mt-0.5">
+                                Moy.{" "}
+                                <span className="font-semibold text-foreground tabular-nums">
+                                  {p.avg.toFixed(2)}
+                                </span>
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
+                          <div
+                            className={`h-full ${tone.bar} transition-all duration-500 ease-out`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        {p.top && (
+                          <div className="mt-2 flex items-center justify-between text-[11px]">
+                            <span className="text-muted-foreground">
+                              1ᵉʳ
+                            </span>
+                            <span
+                              className="font-medium text-foreground truncate"
+                              title={p.top.studentName}
+                            >
+                              {p.top.studentName}
+                            </span>
+                            <span className="font-semibold text-emerald-600 tabular-nums">
+                              {p.top.moyenneGenerale.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <div className="text-xs text-muted-foreground mt-0.5" dir="rtl">
-                        {ct.value}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </motion.div>
 
               {/* Student list */}
@@ -275,7 +452,7 @@ export default function CertificatsTab() {
                       <th className="py-3 px-4 text-center text-xs font-semibold text-muted-foreground w-12">
                         Rang
                       </th>
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                         Élève
                       </th>
                       <th className="py-3 px-4 text-center text-xs font-semibold text-foreground">

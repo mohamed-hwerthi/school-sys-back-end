@@ -6,9 +6,12 @@ import {
   Mail,
   MapPin,
   MessageCircle,
+  ArrowUpRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import type { VitrineConfig, VitrinePage } from "@/types/vitrine";
+import { getSubdomainSlug, vitrinePageUrl } from "@/lib/vitrine-routing";
+import { resolveFileUrl } from "@/api/storage.api";
 
 interface Props {
   config: VitrineConfig;
@@ -16,7 +19,8 @@ interface Props {
 }
 
 export default function VitrineFooter({ config, pages = [] }: Props) {
-  const { slug } = useParams<{ slug: string }>();
+  const params = useParams<{ slug?: string }>();
+  const slug = getSubdomainSlug() ?? params.slug ?? "";
 
   const socialLinks = [
     {
@@ -43,24 +47,8 @@ export default function VitrineFooter({ config, pages = [] }: Props) {
 
   return (
     <footer className="relative overflow-hidden">
-      {/* Top wave separator */}
-      <div className="relative w-full overflow-hidden leading-[0]">
-        <svg
-          className="relative block h-[50px] w-full sm:h-[70px]"
-          viewBox="0 0 1200 120"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z"
-            className="fill-gray-900"
-          />
-        </svg>
-      </div>
-
-      {/* Footer content with dark gradient */}
-      <div
-        className="bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950"
-      >
+      {/* Footer content — modern dark slate */}
+      <div className="border-t border-white/5 bg-[#0B1220]">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
             {/* Column 1: School Info */}
@@ -68,7 +56,7 @@ export default function VitrineFooter({ config, pages = [] }: Props) {
               <div className="flex items-center gap-3">
                 {config.logoUrl && (
                   <img
-                    src={config.logoUrl}
+                    src={resolveFileUrl(config.logoUrl)}
                     alt={config.schoolDisplayName}
                     className="h-12 w-12 rounded-full border-2 border-white/20 object-cover"
                   />
@@ -103,10 +91,11 @@ export default function VitrineFooter({ config, pages = [] }: Props) {
                   .map((page) => (
                     <li key={page.id}>
                       <Link
-                        to={`/vitrine/${slug}/${page.slug}`}
-                        className="text-sm text-gray-400 transition-colors duration-200 hover:text-white"
+                        to={vitrinePageUrl(slug, page.slug)}
+                        className="group flex items-center gap-1.5 text-sm text-gray-400 transition-colors duration-200 hover:text-white"
                       >
                         {page.title}
+                        <ArrowUpRight className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
                       </Link>
                     </li>
                   ))}

@@ -64,7 +64,7 @@ export default function VitrineAdmin() {
           )}
           <Button variant="outline" size="sm" asChild>
             <a href={`/vitrine/${config?.schoolDisplayName ? encodeURIComponent(config.schoolDisplayName.toLowerCase().replace(/\s+/g, "-")) : "preview"}`} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="mr-2 h-4 w-4" /> Pr&eacute;visualiser
+              <ExternalLink className="me-2 h-4 w-4" /> Pr&eacute;visualiser
             </a>
           </Button>
         </div>
@@ -72,15 +72,15 @@ export default function VitrineAdmin() {
 
       <Tabs defaultValue="config">
         <TabsList>
-          <TabsTrigger value="config"><Globe className="mr-2 h-4 w-4" /> Configuration</TabsTrigger>
-          <TabsTrigger value="pages"><FileText className="mr-2 h-4 w-4" /> Pages</TabsTrigger>
-          <TabsTrigger value="gallery"><Image className="mr-2 h-4 w-4" /> Galerie</TabsTrigger>
-          <TabsTrigger value="announcements"><Megaphone className="mr-2 h-4 w-4" /> Annonces</TabsTrigger>
-          <TabsTrigger value="analytics"><BarChart3 className="mr-2 h-4 w-4" /> Statistiques</TabsTrigger>
+          <TabsTrigger value="config"><Globe className="me-2 h-4 w-4" /> Configuration</TabsTrigger>
+          <TabsTrigger value="pages"><FileText className="me-2 h-4 w-4" /> Pages</TabsTrigger>
+          <TabsTrigger value="gallery"><Image className="me-2 h-4 w-4" /> Galerie</TabsTrigger>
+          <TabsTrigger value="announcements"><Megaphone className="me-2 h-4 w-4" /> Annonces</TabsTrigger>
+          <TabsTrigger value="analytics"><BarChart3 className="me-2 h-4 w-4" /> Statistiques</TabsTrigger>
           <TabsTrigger value="messages" className="relative">
-            <MessageSquare className="mr-2 h-4 w-4" /> Messages
+            <MessageSquare className="me-2 h-4 w-4" /> Messages
             {(unreadCount ?? 0) > 0 && (
-              <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+              <span className="ms-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
                 {unreadCount}
               </span>
             )}
@@ -305,7 +305,7 @@ function ConfigTab({ config }: { config: VitrineConfig }) {
       {/* Save Button */}
       <div className="lg:col-span-2">
         <Button onClick={handleSave} disabled={updateConfig.isPending} className="w-full sm:w-auto">
-          {updateConfig.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {updateConfig.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
           Enregistrer la configuration
         </Button>
       </div>
@@ -357,7 +357,7 @@ function PagesTab({ pages }: { pages: VitrinePage[] }) {
         <h3 className="text-lg font-semibold">Pages ({pages.length})</h3>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm"><Plus className="mr-2 h-4 w-4" /> Ajouter une page</Button>
+            <Button size="sm"><Plus className="me-2 h-4 w-4" /> Ajouter une page</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -371,7 +371,7 @@ function PagesTab({ pages }: { pages: VitrinePage[] }) {
             </div>
             <DialogFooter>
               <Button onClick={handleCreate} disabled={createPage.isPending}>
-                {createPage.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {createPage.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 Cr&eacute;er
               </Button>
             </DialogFooter>
@@ -395,7 +395,7 @@ function PagesTab({ pages }: { pages: VitrinePage[] }) {
                   size="sm"
                   onClick={() => setEditingPageId(page.id)}
                 >
-                  <Edit2 className="mr-2 h-4 w-4" /> Sections
+                  <Edit2 className="me-2 h-4 w-4" /> Sections
                 </Button>
                 <Button
                   variant="ghost"
@@ -448,7 +448,7 @@ function AnnouncementsTab({ announcements }: { announcements: VitrineAnnouncemen
         <h3 className="text-lg font-semibold">Annonces ({announcements.length})</h3>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm"><Plus className="mr-2 h-4 w-4" /> Nouvelle annonce</Button>
+            <Button size="sm"><Plus className="me-2 h-4 w-4" /> Nouvelle annonce</Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
@@ -473,7 +473,7 @@ function AnnouncementsTab({ announcements }: { announcements: VitrineAnnouncemen
             </div>
             <DialogFooter>
               <Button onClick={handleCreate} disabled={createAnn.isPending}>
-                {createAnn.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {createAnn.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 Publier
               </Button>
             </DialogFooter>
@@ -573,7 +573,7 @@ function EditAnnouncementDialog({ announcement, onClose }: { announcement: Vitri
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Annuler</Button>
           <Button onClick={handleSave} disabled={updateAnn.isPending}>
-            {updateAnn.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {updateAnn.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
             Enregistrer
           </Button>
         </DialogFooter>
@@ -639,7 +639,7 @@ function ContactsTab() {
 
       <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
         {/* Message List */}
-        <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-1">
+        <div className="space-y-2 max-h-[70vh] overflow-y-auto pe-1">
           {filtered.map((contact) => (
             <Card
               key={contact.id}
@@ -671,7 +671,7 @@ function ContactsTab() {
                     </span>
                     {contact.replied && (
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                        <CheckCircle2 className="mr-1 h-3 w-3 text-green-600" /> Repondu
+                        <CheckCircle2 className="me-1 h-3 w-3 text-green-600" /> Repondu
                       </Badge>
                     )}
                   </div>
@@ -705,7 +705,7 @@ function ContactsTab() {
                       <p className="mt-0.5 text-sm text-muted-foreground">{selectedContact.phone}</p>
                     )}
                   </div>
-                  <div className="text-right text-xs text-muted-foreground">
+                  <div className="text-end text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
                       {new Date(selectedContact.createdAt).toLocaleDateString("fr-FR", {
@@ -736,7 +736,7 @@ function ContactsTab() {
 
                 {!selectedContact.replied && (
                   <Button onClick={() => setReplyContact(selectedContact)} className="w-full">
-                    <Send className="mr-2 h-4 w-4" /> Repondre
+                    <Send className="me-2 h-4 w-4" /> Repondre
                   </Button>
                 )}
               </CardContent>
@@ -804,8 +804,8 @@ function ReplyDialog({ contact, onClose }: { contact: VitrineContact; onClose: (
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Annuler</Button>
           <Button onClick={handleSend} disabled={reply.isPending || !text.trim()}>
-            {reply.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            <Send className="mr-2 h-4 w-4" /> Envoyer
+            {reply.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+            <Send className="me-2 h-4 w-4" /> Envoyer
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -219,18 +219,18 @@ export default function Teachers() {
       >
         <div className="flex flex-col lg:flex-row lg:items-center gap-3">
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
               placeholder={t("common.searchByNameEmailEtc")}
-              className="pl-9"
+              className="ps-9"
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Select value={filterSpecialite} onValueChange={(v) => { setFilterSpecialite(v); setCurrentPage(1); }}>
               <SelectTrigger className="w-[180px]">
-                <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                <Filter className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                 <SelectValue placeholder="Spécialité" />
               </SelectTrigger>
               <SelectContent>
@@ -272,11 +272,11 @@ export default function Teachers() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.teacher")}</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("teachers.speciality")}</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("common.phone")}</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">{t("common.status")}</th>
-                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">{t("common.teacher")}</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">{t("teachers.speciality")}</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">{t("common.phone")}</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">{t("common.status")}</th>
+                <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -316,7 +316,7 @@ export default function Teachers() {
                         {teacher.statut}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-end">
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-blue-600" onClick={() => setViewTeacher(teacher)}>
                           <Eye className="h-4 w-4" />
@@ -341,13 +341,13 @@ export default function Teachers() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => setViewTeacher(teacher)}>
-                              <Eye className="h-4 w-4 mr-2" /> {t("common.view")}
+                              <Eye className="h-4 w-4 me-2" /> {t("common.view")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => navigate(`/dashboard/enseignants/modifier/${teacher.id}`)}>
-                              <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
+                              <Edit className="h-4 w-4 me-2" /> {t("common.edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setDeleteTeacherTarget(teacher)} className="text-red-600">
-                              <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
+                              <Trash2 className="h-4 w-4 me-2" /> {t("common.delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

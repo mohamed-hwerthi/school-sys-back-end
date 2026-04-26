@@ -351,7 +351,7 @@ export default function RemisesPenalites() {
           >
             <tab.icon className="h-4 w-4" />
             {tab.label}
-            <Badge variant="secondary" className="text-[10px] ml-1">{tab.count}</Badge>
+            <Badge variant="secondary" className="text-[10px] ms-1">{tab.count}</Badge>
           </button>
         ))}
       </div>
@@ -363,11 +363,11 @@ export default function RemisesPenalites() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("common.student")}</th>
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("common.type")}</th>
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("discountsPage.relatedFee")}</th>
-                  <th className="py-3 px-4 text-right font-semibold text-muted-foreground">{t("common.amount")}</th>
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("discountsPage.reason")}</th>
+                  <th className="py-3 px-4 text-start font-semibold text-muted-foreground">{t("common.student")}</th>
+                  <th className="py-3 px-4 text-start font-semibold text-muted-foreground">{t("common.type")}</th>
+                  <th className="py-3 px-4 text-start font-semibold text-muted-foreground">{t("discountsPage.relatedFee")}</th>
+                  <th className="py-3 px-4 text-end font-semibold text-muted-foreground">{t("common.amount")}</th>
+                  <th className="py-3 px-4 text-start font-semibold text-muted-foreground">{t("discountsPage.reason")}</th>
                   <th className="py-3 px-4 text-center font-semibold text-muted-foreground">{t("common.status")}</th>
                   <th className="py-3 px-4 text-center font-semibold text-muted-foreground">{t("common.actions")}</th>
                 </tr>
@@ -387,7 +387,7 @@ export default function RemisesPenalites() {
                       <td className="py-3 px-4 text-muted-foreground text-xs">
                         {r.typeFraisNom ?? t("discountsPage.allFees")}
                       </td>
-                      <td className="py-3 px-4 text-right font-semibold text-emerald-600 whitespace-nowrap">
+                      <td className="py-3 px-4 text-end font-semibold text-emerald-600 whitespace-nowrap">
                         -{r.valeur.toLocaleString()}{r.estPourcentage ? "%" : ` ${CURRENCY}`}
                       </td>
                       <td className="py-3 px-4 text-xs text-muted-foreground">{r.motif || "—"}</td>
@@ -403,10 +403,10 @@ export default function RemisesPenalites() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => openEditRemise(r)}>
-                              <Edit className="h-3.5 w-3.5 mr-2" /> {t("common.edit")}
+                              <Edit className="h-3.5 w-3.5 me-2" /> {t("common.edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setDeleteRemiseTarget(r)} className="text-destructive">
-                              <Trash2 className="h-3.5 w-3.5 mr-2" /> {t("common.delete")}
+                              <Trash2 className="h-3.5 w-3.5 me-2" /> {t("common.delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -427,11 +427,11 @@ export default function RemisesPenalites() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("common.student")}</th>
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("discountsPage.reason")}</th>
-                  <th className="py-3 px-4 text-right font-semibold text-muted-foreground">{t("common.amount")}</th>
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("common.date")}</th>
-                  <th className="py-3 px-4 text-left font-semibold text-muted-foreground">{t("discountsPage.linkedPayment")}</th>
+                  <th className="py-3 px-4 text-start font-semibold text-muted-foreground">{t("common.student")}</th>
+                  <th className="py-3 px-4 text-start font-semibold text-muted-foreground">{t("discountsPage.reason")}</th>
+                  <th className="py-3 px-4 text-end font-semibold text-muted-foreground">{t("common.amount")}</th>
+                  <th className="py-3 px-4 text-start font-semibold text-muted-foreground">{t("common.date")}</th>
+                  <th className="py-3 px-4 text-start font-semibold text-muted-foreground">{t("discountsPage.linkedPayment")}</th>
                   <th className="py-3 px-4 text-center font-semibold text-muted-foreground">{t("finance.paid")}</th>
                   <th className="py-3 px-4 text-center font-semibold text-muted-foreground">{t("common.actions")}</th>
                 </tr>
@@ -444,7 +444,7 @@ export default function RemisesPenalites() {
                     <tr key={p.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
                       <td className="py-3 px-4 font-medium">{p.studentFirstName} {p.studentLastName}</td>
                       <td className="py-3 px-4 text-xs text-muted-foreground">{p.motif}</td>
-                      <td className="py-3 px-4 text-right font-semibold text-red-600 whitespace-nowrap">
+                      <td className="py-3 px-4 text-end font-semibold text-red-600 whitespace-nowrap">
                         +{p.montant.toLocaleString()} {CURRENCY}
                       </td>
                       <td className="py-3 px-4 text-xs text-muted-foreground">
@@ -475,10 +475,10 @@ export default function RemisesPenalites() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => openEditPenalite(p)}>
-                              <Edit className="h-3.5 w-3.5 mr-2" /> {t("common.edit")}
+                              <Edit className="h-3.5 w-3.5 me-2" /> {t("common.edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setDeletePenaliteTarget(p)} className="text-destructive">
-                              <Trash2 className="h-3.5 w-3.5 mr-2" /> {t("common.delete")}
+                              <Trash2 className="h-3.5 w-3.5 me-2" /> {t("common.delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

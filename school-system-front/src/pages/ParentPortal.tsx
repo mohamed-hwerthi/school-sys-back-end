@@ -494,19 +494,19 @@ export default function ParentPortalPage() {
                 <Tabs defaultValue="notes" className="w-full">
                   <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="notes" className="text-xs sm:text-sm">
-                      <BookOpen className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+                      <BookOpen className="me-1 h-3 w-3 sm:h-4 sm:w-4" />
                       Notes
                     </TabsTrigger>
                     <TabsTrigger value="absences" className="text-xs sm:text-sm">
-                      <UserX className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+                      <UserX className="me-1 h-3 w-3 sm:h-4 sm:w-4" />
                       Absences
                     </TabsTrigger>
                     <TabsTrigger value="bulletin" className="text-xs sm:text-sm">
-                      <FileText className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+                      <FileText className="me-1 h-3 w-3 sm:h-4 sm:w-4" />
                       Bulletin
                     </TabsTrigger>
                     <TabsTrigger value="emploi" className="text-xs sm:text-sm">
-                      <Clock className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+                      <Clock className="me-1 h-3 w-3 sm:h-4 sm:w-4" />
                       Emploi
                     </TabsTrigger>
                   </TabsList>

@@ -182,12 +182,12 @@ export default function Tracabilite() {
       <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible" className="rounded-xl border border-border/50 bg-card p-4 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center gap-3">
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} placeholder="Rechercher par description, utilisateur..." className="pl-9" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} placeholder="Rechercher par description, utilisateur..." className="ps-9" />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Select value={filterType} onValueChange={(v) => { setFilterType(v); setCurrentPage(1); }}>
-              <SelectTrigger className="w-[150px]"><Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" /><SelectValue placeholder="Type" /></SelectTrigger>
+              <SelectTrigger className="w-[150px]"><Filter className="h-3.5 w-3.5 me-1.5 text-muted-foreground" /><SelectValue placeholder="Type" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous</SelectItem>
                 {TYPES_ACTION.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}

@@ -295,16 +295,16 @@ export default function GenerationDocuments() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border bg-muted/30">
-                        <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                        <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                           Type
                         </th>
-                        <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                        <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                           Eleve
                         </th>
-                        <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">
+                        <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">
                           Fichier
                         </th>
-                        <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">
+                        <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">
                           Date
                         </th>
                       </tr>
@@ -520,12 +520,12 @@ export default function GenerationDocuments() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={studentSearch}
                 onChange={(e) => setStudentSearch(e.target.value)}
                 placeholder="Rechercher un eleve..."
-                className="pl-9"
+                className="ps-9"
               />
             </div>
             <div className="max-h-[300px] overflow-y-auto border rounded-lg">
@@ -590,12 +590,12 @@ export default function GenerationDocuments() {
             >
               {isGenerating ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                  <Loader2 className="h-4 w-4 me-1.5 animate-spin" />
                   Generation...
                 </>
               ) : (
                 <>
-                  <Download className="h-4 w-4 mr-1.5" />
+                  <Download className="h-4 w-4 me-1.5" />
                   Generer
                 </>
               )}
@@ -640,12 +640,12 @@ export default function GenerationDocuments() {
             >
               {isGenerating ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                  <Loader2 className="h-4 w-4 me-1.5 animate-spin" />
                   Generation...
                 </>
               ) : (
                 <>
-                  <Download className="h-4 w-4 mr-1.5" />
+                  <Download className="h-4 w-4 me-1.5" />
                   Generer
                 </>
               )}

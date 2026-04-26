@@ -138,6 +138,8 @@ export default function DevoirsPage() {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("devoirs");
   const [search, setSearch] = useState("");
+  const [filterNiveauId, setFilterNiveauId] = useState<string>("all");
+  const [filterClasseId, setFilterClasseId] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(0);
 
   // Devoir form
@@ -215,16 +217,35 @@ export default function DevoirsPage() {
   const createRessource = useCreateRessource();
   const deleteRessource = useDeleteRessource();
 
+  // Build a quick lookup classeId -> fullName for the table column
+  const classeNameById = useMemo(() => {
+    const map = new Map<number, string>();
+    allClasses.forEach((c) => map.set(c.id, c.fullName));
+    return map;
+  }, [allClasses]);
+
+  // Classes available in the filter dropdown (depends on selected niveau)
+  const filterClasses = useMemo(
+    () => (filterNiveauId === "all" ? allClasses : allClasses.filter((c) => String(c.niveauId) === filterNiveauId)),
+    [allClasses, filterNiveauId]
+  );
+
   // Filtered devoirs
   const filteredDevoirs = useMemo(() => {
-    if (!search) return devoirs;
     const q = search.toLowerCase();
-    return devoirs.filter(
-      (d) =>
+    return devoirs.filter((d) => {
+      if (filterClasseId !== "all" && String(d.classeId ?? "") !== filterClasseId) return false;
+      if (filterNiveauId !== "all" && filterClasseId === "all") {
+        const niveauOfClasse = d.classeId ? allClasses.find((c) => c.id === d.classeId)?.niveauId : undefined;
+        if (String(niveauOfClasse ?? "") !== filterNiveauId) return false;
+      }
+      if (!q) return true;
+      return (
         d.titre.toLowerCase().includes(q) ||
         d.type.toLowerCase().includes(q)
-    );
-  }, [devoirs, search]);
+      );
+    });
+  }, [devoirs, search, filterClasseId, filterNiveauId, allClasses]);
 
   // Filtered soumissions
   const filteredSoumissions = useMemo(() => {
@@ -395,9 +416,35 @@ export default function DevoirsPage() {
           </TabsList>
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
             <div className="relative flex-1 min-w-0">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher..." className="pl-9" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher..." className="ps-9" />
             </div>
+            {activeTab === "devoirs" && (
+              <>
+                <Select value={filterNiveauId} onValueChange={(v) => { setFilterNiveauId(v); setFilterClasseId("all"); setCurrentPage(0); }}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Niveau" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les niveaux</SelectItem>
+                    {niveaux.map((n) => (
+                      <SelectItem key={n.id} value={String(n.id)}>{n.nom}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={filterClasseId} onValueChange={(v) => { setFilterClasseId(v); setCurrentPage(0); }} disabled={filterNiveauId === "all"}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder={filterNiveauId === "all" ? "Choisissez un niveau" : "Classe"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.allClasses")}</SelectItem>
+                    {filterClasses.map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}>{c.fullName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </>
+            )}
             {activeTab === "soumissions" && (
               <Select value={selectedDevoirId ? String(selectedDevoirId) : "all"} onValueChange={(v) => setSelectedDevoirId(v === "all" ? undefined : Number(v))}>
                 <SelectTrigger className="w-[200px]">
@@ -411,8 +458,8 @@ export default function DevoirsPage() {
                 </SelectContent>
               </Select>
             )}
-            {search && (
-              <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setCurrentPage(0); }} className="gap-1 text-muted-foreground hover:text-foreground">
+            {(search || (activeTab === "devoirs" && (filterClasseId !== "all" || filterNiveauId !== "all"))) && (
+              <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setFilterNiveauId("all"); setFilterClasseId("all"); setCurrentPage(0); }} className="gap-1 text-muted-foreground hover:text-foreground">
                 <X className="h-3.5 w-3.5" />
                 {t("common.reset")}
               </Button>
@@ -427,20 +474,21 @@ export default function DevoirsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Titre</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Type</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Date limite</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Points</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Fichier</th>
-                    <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Soumissions</th>
-                    <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Titre</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">Type</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Classe</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Date limite</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Points</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Statut</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">Fichier</th>
+                    <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">Soumissions</th>
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedDevoirs.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-16 text-center text-muted-foreground">
+                      <td colSpan={9} className="py-16 text-center text-muted-foreground">
                         <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-30" />
                         <p className="font-medium">{t("homework.noHomework")}</p>
                       </td>
@@ -451,6 +499,9 @@ export default function DevoirsPage() {
                         <td className="py-3 px-4 font-medium text-foreground">{devoir.titre}</td>
                         <td className="py-3 px-4 hidden sm:table-cell">
                           <Badge variant="outline">{TYPE_LABELS[devoir.type]}</Badge>
+                        </td>
+                        <td className="py-3 px-4 hidden md:table-cell text-muted-foreground">
+                          {devoir.classeId ? (classeNameById.get(devoir.classeId) ?? `#${devoir.classeId}`) : "-"}
                         </td>
                         <td className="py-3 px-4 hidden md:table-cell text-muted-foreground">
                           {new Date(devoir.dateLimite).toLocaleDateString("fr-FR")}
@@ -477,7 +528,7 @@ export default function DevoirsPage() {
                           )}
                         </td>
                         <td className="py-3 px-4 hidden lg:table-cell text-muted-foreground">{devoir.totalSoumissions}</td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3 px-4 text-end">
                           <div className="hidden sm:flex items-center justify-end gap-1">
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => openEditDevoir(devoir)}>
                               <Edit className="h-4 w-4" />
@@ -499,15 +550,15 @@ export default function DevoirsPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => openEditDevoir(devoir)}>
-                                <Edit className="h-4 w-4 mr-2" /> Modifier
+                                <Edit className="h-4 w-4 me-2" /> Modifier
                               </DropdownMenuItem>
                               {devoir.statut === "PUBLIE" && (
                                 <DropdownMenuItem onClick={() => closeDevoir.mutate(devoir.id)}>
-                                  <Lock className="h-4 w-4 mr-2" /> Fermer
+                                  <Lock className="h-4 w-4 me-2" /> Fermer
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem onClick={() => setDeleteTarget(devoir)} className="text-red-600">
-                                <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                                <Trash2 className="h-4 w-4 me-2" /> Supprimer
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -546,14 +597,14 @@ export default function DevoirsPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Devoir</th>
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Eleve ID</th>
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden sm:table-cell">Date</th>
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Corrige</th>
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Note</th>
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Fichier</th>
-                      <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">En retard</th>
-                      <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Devoir</th>
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Eleve ID</th>
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">Date</th>
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Corrige</th>
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Note</th>
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Fichier</th>
+                      <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">En retard</th>
+                      <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -602,7 +653,7 @@ export default function DevoirsPage() {
                               <Badge variant="outline" className="bg-gray-100 text-gray-600">Non</Badge>
                             )}
                           </td>
-                          <td className="py-3 px-4 text-right">
+                          <td className="py-3 px-4 text-end">
                             {!soumission.corrige && (
                               <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground hover:text-foreground" onClick={() => {
                                 setCorrectionTarget(soumission);
@@ -671,11 +722,11 @@ export default function DevoirsPage() {
                           <DropdownMenuContent align="end">
                             {(res.fichierUrl || res.lienExterne) && (
                               <DropdownMenuItem onClick={() => window.open(res.fichierUrl ? resolveFileUrl(res.fichierUrl) : res.lienExterne || "", "_blank")}>
-                                <Download className="h-4 w-4 mr-2" /> Ouvrir
+                                <Download className="h-4 w-4 me-2" /> Ouvrir
                               </DropdownMenuItem>
                             )}
                             <DropdownMenuItem onClick={() => setDeleteRessourceTarget(res)} className="text-red-600">
-                              <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                              <Trash2 className="h-4 w-4 me-2" /> Supprimer
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -687,7 +738,7 @@ export default function DevoirsPage() {
                         <Clock className="h-3 w-3" />
                         {new Date(res.createdAt).toLocaleDateString("fr-FR")}
                         {res.tailleFichier && (
-                          <span className="ml-auto">{(res.tailleFichier / 1024 / 1024).toFixed(1)} Mo</span>
+                          <span className="ms-auto">{(res.tailleFichier / 1024 / 1024).toFixed(1)} Mo</span>
                         )}
                       </div>
                     </div>

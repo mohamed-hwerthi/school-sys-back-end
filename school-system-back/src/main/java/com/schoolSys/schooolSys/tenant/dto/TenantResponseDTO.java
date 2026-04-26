@@ -21,8 +21,6 @@ public class TenantResponseDTO {
     private String contactEmail;
     private boolean active;
     private LocalDateTime createdAt;
-
-    // SaaS fields
     private String plan;
     private Integer maxStudents;
     private Integer maxTeachers;

@@ -529,7 +529,7 @@ export default function AnneeScolairePage() {
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
                           {p.ancienneClasse || p.ancienNiveau} &rarr; {p.nouvelleClasse || p.nouveauNiveau}
-                          {p.motif && <span className="ml-2 italic">- {p.motif}</span>}
+                          {p.motif && <span className="ms-2 italic">- {p.motif}</span>}
                         </p>
                       </div>
                       <span className="text-xs text-muted-foreground">

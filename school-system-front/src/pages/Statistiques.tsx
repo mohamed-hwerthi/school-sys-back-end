@@ -62,7 +62,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
       <p className="text-xs font-semibold text-foreground mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.name} className="text-xs text-muted-foreground">
-          <span className="inline-block h-2 w-2 rounded-full mr-1.5" style={{ backgroundColor: p.color }} />
+          <span className="inline-block h-2 w-2 rounded-full me-1.5" style={{ backgroundColor: p.color }} />
           {p.name}: <span className="font-medium text-foreground">{typeof p.value === "number" ? p.value.toLocaleString() : p.value}</span>
         </p>
       ))}
@@ -185,7 +185,7 @@ export default function Statistiques() {
             animate="visible"
             className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
           >
-            <div className={`absolute -right-4 -top-4 h-16 w-16 rounded-full ${stat.bg} opacity-60 transition-transform group-hover:scale-125`} />
+            <div className={`absolute -end-4 -top-4 h-16 w-16 rounded-full ${stat.bg} opacity-60 transition-transform group-hover:scale-125`} />
             <div className="relative">
               <div className="flex items-center justify-between mb-2">
                 <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${stat.gradient} text-white shadow-sm ring-4 ${stat.ring}`}>

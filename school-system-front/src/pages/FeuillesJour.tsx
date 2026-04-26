@@ -48,7 +48,7 @@ export default function FeuillesJourPage() {
           <Label>Date</Label>
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
-        <p className="text-xs text-muted-foreground md:text-right">
+        <p className="text-xs text-muted-foreground md:text-end">
           {isLoading ? "Chargement…" : `${totalClasses} classe${totalClasses !== 1 ? "s" : ""} avec des élèves`}
         </p>
       </div>

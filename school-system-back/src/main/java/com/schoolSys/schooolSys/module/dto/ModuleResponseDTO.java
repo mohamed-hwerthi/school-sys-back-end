@@ -14,6 +14,7 @@ public class ModuleResponseDTO {
     private Long id;
     private String name;
     private String nameVp;
+    private String nameAr;
     private Double coeffEtatique;
     private Double coeffPrive;
     private Integer ordreEtatique;

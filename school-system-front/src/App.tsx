@@ -6,7 +6,8 @@ import { RoleGuard } from "@/components/RoleGuard";
 import type { UserRole } from "@/types/auth";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/config/queryClient";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { getSubdomainSlug } from "./lib/vitrine-routing";
 import { AuthProvider } from "./hooks/useAuth";
 import PrivateRoute from "./components/PrivateRoute";
 import Index from "./pages/Index";
@@ -34,7 +35,6 @@ const EditRoom = lazy(() => import("./pages/EditRoom"));
 const Niveaux = lazy(() => import("./pages/Niveaux"));
 const SchoolInfo = lazy(() => import("./pages/SchoolInfo"));
 const FinancePaiement = lazy(() => import("./pages/FinancePaiement"));
-const Evaluations = lazy(() => import("./pages/Evaluations"));
 const CarnetNotes = lazy(() => import("./pages/CarnetNotes"));
 const Rapports = lazy(() => import("./pages/Rapports"));
 const Circulaires = lazy(() => import("./pages/Circulaires"));
@@ -65,7 +65,6 @@ const VitrineSite = lazy(() => import("./pages/VitrineSite"));
 const VitrineAdminPage = lazy(() => import("./pages/VitrineAdmin"));
 
 // Bulletin pages
-const BulletinTemplatesPage = lazy(() => import("./pages/BulletinTemplates"));
 const BulletinsMassePage = lazy(() => import("./pages/BulletinsMasse"));
 const StatsReussitePage = lazy(() => import("./pages/StatsReussite"));
 const ComparatifPerformancesPage = lazy(() => import("./pages/ComparatifPerformances"));
@@ -143,6 +142,8 @@ const G = ({ roles, children }: { roles: UserRole[]; children: React.ReactNode }
   <RoleGuard roles={roles}><S>{children}</S></RoleGuard>
 );
 
+const subdomainVitrineSlug = getSubdomainSlug();
+
 const App = () => (
   <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
@@ -150,6 +151,13 @@ const App = () => (
       <Toaster />
       <BrowserRouter>
         <AuthProvider>
+          {subdomainVitrineSlug ? (
+            <Routes>
+              <Route path="/" element={<Suspense fallback={<PageLoader />}><VitrineSite /></Suspense>} />
+              <Route path="/:pageSlug" element={<Suspense fallback={<PageLoader />}><VitrineSite /></Suspense>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          ) : (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/forgot-password" element={<Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense>} />
@@ -221,7 +229,7 @@ const App = () => (
               <Route path="factures" element={<G roles={FINANCE_ROLES}><FacturesPage /></G>} />
 
               {/* Pédagogie */}
-              <Route path="evaluations" element={<G roles={STAFF_ROLES}><Evaluations /></G>} />
+              <Route path="evaluations" element={<Navigate to="/dashboard/carnets?tab=examens" replace />} />
               <Route path="carnets" element={<G roles={[...STAFF_ROLES, "PARENT"]}><CarnetNotes /></G>} />
               <Route path="annee-scolaire" element={<G roles={MANAGEMENT_ROLES}><AnneeScolairePage /></G>} />
               <Route path="devoirs" element={<G roles={STAFF_ROLES}><DevoirsPage /></G>} />
@@ -229,7 +237,6 @@ const App = () => (
               <Route path="calendrier" element={<S><CalendrierPage /></S>} />
 
               {/* Bulletins */}
-              <Route path="bulletin-templates" element={<G roles={MANAGEMENT_ROLES}><BulletinTemplatesPage /></G>} />
               <Route path="bulletins-masse" element={<G roles={MANAGEMENT_ROLES}><BulletinsMassePage /></G>} />
               <Route path="stats-reussite" element={<G roles={MANAGEMENT_ROLES}><StatsReussitePage /></G>} />
               <Route path="comparatif" element={<G roles={MANAGEMENT_ROLES}><ComparatifPerformancesPage /></G>} />
@@ -283,6 +290,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
+          )}
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

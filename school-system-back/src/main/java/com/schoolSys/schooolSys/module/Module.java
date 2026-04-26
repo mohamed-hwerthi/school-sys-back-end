@@ -30,6 +30,9 @@ public class Module {
     @Column(name = "name_vp")
     private String nameVp;
 
+    @Column(name = "name_ar")
+    private String nameAr;
+
     @Column(name = "coeff_etatique", nullable = false)
     @Builder.Default
     private Double coeffEtatique = 1.0;

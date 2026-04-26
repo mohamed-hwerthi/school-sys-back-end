@@ -215,7 +215,7 @@ export default function QuizPassationPage() {
 
           {/* Show answers if afficherResultats */}
           {tentativeResult.reponses && tentativeResult.reponses.length > 0 && (
-            <div className="mt-6 text-left space-y-3">
+            <div className="mt-6 text-start space-y-3">
               <h3 className="font-semibold text-foreground">Detail des reponses</h3>
               {tentativeResult.reponses.map((r, idx) => (
                 <div key={r.id} className="flex items-start gap-3 rounded-lg border border-border/50 p-3">
@@ -317,7 +317,7 @@ export default function QuizPassationPage() {
                   <button
                     key={choix.id}
                     onClick={() => handleAnswerChange(currentQuestion.id, { choixId: choix.id })}
-                    className={`w-full flex items-center gap-3 rounded-lg border p-4 text-left transition-colors ${
+                    className={`w-full flex items-center gap-3 rounded-lg border p-4 text-start transition-colors ${
                       isSelected
                         ? "border-primary bg-primary/5 text-foreground"
                         : "border-border hover:border-primary/50 hover:bg-muted/30 text-muted-foreground"

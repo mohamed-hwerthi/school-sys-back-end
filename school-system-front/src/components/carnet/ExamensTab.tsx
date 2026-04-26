@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { useCarnetSelection } from "./CarnetSelectionContext";
 import {
   Plus,
   Edit,
@@ -7,7 +8,11 @@ import {
   ClipboardCheck,
   GraduationCap,
   Search,
+  Eye,
+  CheckCircle2,
+  Clock,
 } from "lucide-react";
+import ExamenDetailsSheet from "./ExamenDetailsSheet";
 import { notify } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +53,7 @@ const emptyForm: ExamenRequest = {
   coeffPrive: 1,
   ordreEtatique: 1,
   ordrePrive: 1,
+  trimestre: 1,
   classeId: 0,
   teacherId: undefined,
   moduleId: 0,
@@ -55,21 +61,28 @@ const emptyForm: ExamenRequest = {
   versionPrivee: true,
 };
 
+const TRIMESTRE_OPTIONS = [1, 2, 3] as const;
+
 export default function ExamensTab() {
   const { niveaux } = useNiveaux();
   const { teachers } = useTeachers();
 
   // Filters
-  const [filterNiveauId, setFilterNiveauId] = useState<number>(0);
-  const [filterClasseId, setFilterClasseId] = useState<number>(0);
+  const { niveauId: filterNiveauId, classeId: filterClasseId, setNiveauId: setFilterNiveauId, setClasseId: setFilterClasseId, goToTab } = useCarnetSelection();
   const [filterModuleId, setFilterModuleId] = useState<number>(0);
+  const [filterTrimestre, setFilterTrimestre] = useState<number>(0);
+  const [filterStatut, setFilterStatut] = useState<"all" | "complete" | "partial" | "empty">("all");
   const [search, setSearch] = useState("");
+
+  // Details drawer
+  const [detailsExamen, setDetailsExamen] = useState<ExamenDTO | null>(null);
 
   const { data: classes = [] } = useClasses(filterNiveauId || undefined);
   const { data: modules = [] } = useModules(filterNiveauId || undefined);
   const { data: examens = [], isLoading } = useExamensRaw(
     filterModuleId || undefined,
-    filterClasseId || undefined
+    filterClasseId || undefined,
+    filterTrimestre || undefined
   );
 
   // Mutations
@@ -92,16 +105,26 @@ export default function ExamensTab() {
 
   // Filtered examens
   const filtered = useMemo(() => {
-    if (!search) return examens;
     const q = search.toLowerCase();
-    return examens.filter(
-      (e) =>
+    return examens.filter((e) => {
+      // Status filter
+      if (filterStatut !== "all") {
+        const total = e.nbEleves ?? 0;
+        const filled = e.nbNotes ?? 0;
+        if (filterStatut === "complete" && (total === 0 || filled < total)) return false;
+        if (filterStatut === "empty" && filled > 0) return false;
+        if (filterStatut === "partial" && (filled === 0 || filled >= total)) return false;
+      }
+      // Search filter
+      if (!q) return true;
+      return (
         e.name.toLowerCase().includes(q) ||
         e.moduleName.toLowerCase().includes(q) ||
         e.classeName.toLowerCase().includes(q) ||
-        e.teacherName?.toLowerCase().includes(q)
-    );
-  }, [examens, search]);
+        (e.teacherName?.toLowerCase().includes(q) ?? false)
+      );
+    });
+  }, [examens, search, filterStatut]);
 
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => {
@@ -143,6 +166,7 @@ export default function ExamensTab() {
       coeffPrive: e.coeffPrive,
       ordreEtatique: e.ordreEtatique,
       ordrePrive: e.ordrePrive,
+      trimestre: e.trimestre,
       classeId: e.classeId,
       teacherId: e.teacherId || undefined,
       moduleId: e.moduleId,
@@ -163,6 +187,10 @@ export default function ExamensTab() {
     }
     if (!form.moduleId) {
       notify.error("Le module est obligatoire");
+      return;
+    }
+    if (!form.trimestre || form.trimestre < 1 || form.trimestre > 3) {
+      notify.error("Le trimestre est obligatoire (1, 2 ou 3)");
       return;
     }
     if (editId) {
@@ -213,6 +241,7 @@ export default function ExamensTab() {
     setFilterNiveauId(Number(v));
     setFilterClasseId(0);
     setFilterModuleId(0);
+    setFilterTrimestre(0);
     setSelectedIds(new Set());
   };
 
@@ -231,7 +260,7 @@ export default function ExamensTab() {
             onValueChange={handleNiveauChange}
           >
             <SelectTrigger className="w-[180px]">
-              <GraduationCap className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+              <GraduationCap className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
               <SelectValue placeholder="Niveau" />
             </SelectTrigger>
             <SelectContent>
@@ -285,13 +314,57 @@ export default function ExamensTab() {
             </SelectContent>
           </Select>
 
+          <Select
+            value={filterTrimestre ? String(filterTrimestre) : "0"}
+            onValueChange={(v) => {
+              setFilterTrimestre(Number(v));
+              setSelectedIds(new Set());
+            }}
+          >
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Trimestre" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">Tous trimestres</SelectItem>
+              {TRIMESTRE_OPTIONS.map((t) => (
+                <SelectItem key={t} value={String(t)}>
+                  Trimestre {t}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Status segmented filter */}
+          <div className="inline-flex items-center rounded-md border border-border bg-muted/30 p-0.5 text-xs">
+            {(
+              [
+                { v: "all", l: "Tous" },
+                { v: "empty", l: "À saisir" },
+                { v: "partial", l: "Partiel" },
+                { v: "complete", l: "Saisis" },
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.v}
+                onClick={() => setFilterStatut(opt.v)}
+                className={`px-2.5 py-1 rounded transition-colors ${
+                  filterStatut === opt.v
+                    ? "bg-background text-foreground shadow-sm font-medium"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {opt.l}
+              </button>
+            ))}
+          </div>
+
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Rechercher..."
-              className="pl-9"
+              className="ps-9"
             />
           </div>
 
@@ -334,7 +407,7 @@ export default function ExamensTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left">
+                <th className="py-3 px-4 text-start">
                   <Checkbox
                     checked={
                       filtered.length > 0 &&
@@ -343,14 +416,20 @@ export default function ExamensTab() {
                     onCheckedChange={toggleAll}
                   />
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                   Nom
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">
                   Module
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">
                   Classe
+                </th>
+                <th className="py-3 px-4 text-center text-xs font-semibold text-muted-foreground">
+                  Trim.
+                </th>
+                <th className="py-3 px-4 text-center text-xs font-semibold text-muted-foreground">
+                  Saisies
                 </th>
                 <th className="py-3 px-4 text-center text-xs font-semibold text-muted-foreground">
                   Coeff. É
@@ -358,10 +437,10 @@ export default function ExamensTab() {
                 <th className="py-3 px-4 text-center text-xs font-semibold text-muted-foreground">
                   Coeff. P
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden xl:table-cell">
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden xl:table-cell">
                   Enseignant
                 </th>
-                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">
+                <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">
                   Actions
                 </th>
               </tr>
@@ -370,7 +449,7 @@ export default function ExamensTab() {
               {isLoading ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={10}
                     className="py-16 text-center text-muted-foreground"
                   >
                     Chargement...
@@ -379,7 +458,7 @@ export default function ExamensTab() {
               ) : filtered.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={10}
                     className="py-16 text-center text-muted-foreground"
                   >
                     <ClipboardCheck className="h-10 w-10 mx-auto mb-3 opacity-30" />
@@ -412,18 +491,60 @@ export default function ExamensTab() {
                     <td className="py-3 px-4 text-muted-foreground hidden lg:table-cell">
                       {e.classeName}
                     </td>
+                    <td className="py-3 px-4 text-center text-muted-foreground">T{e.trimestre}</td>
+                    <td className="py-3 px-4 text-center">
+                      {(() => {
+                        const total = e.nbEleves ?? 0;
+                        const filled = e.nbNotes ?? 0;
+                        const isComplete = total > 0 && filled >= total;
+                        const isEmpty = filled === 0;
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => setDetailsExamen(e)}
+                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
+                              isComplete
+                                ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                                : isEmpty
+                                ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                : "bg-orange-50 text-orange-700 hover:bg-orange-100"
+                            }`}
+                            title="Voir détails et statistiques"
+                          >
+                            {isComplete ? (
+                              <CheckCircle2 className="h-3 w-3" />
+                            ) : isEmpty ? (
+                              <Clock className="h-3 w-3" />
+                            ) : (
+                              <Clock className="h-3 w-3" />
+                            )}
+                            {filled}/{total}
+                          </button>
+                        );
+                      })()}
+                    </td>
                     <td className="py-3 px-4 text-center">{e.coeffEtatique}</td>
                     <td className="py-3 px-4 text-center">{e.coeffPrive}</td>
                     <td className="py-3 px-4 text-muted-foreground hidden xl:table-cell">
                       {e.teacherName || "—"}
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-end">
                       <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-primary"
+                          onClick={() => setDetailsExamen(e)}
+                          title="Voir détails et statistiques"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-muted-foreground hover:text-amber-600"
                           onClick={() => openEdit(e)}
+                          title="Modifier l'examen"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -432,6 +553,7 @@ export default function ExamensTab() {
                           size="icon"
                           className="h-8 w-8 text-muted-foreground hover:text-red-600"
                           onClick={() => setDeleteTarget(e)}
+                          title="Supprimer"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -567,6 +689,25 @@ export default function ExamensTab() {
               </Select>
             </div>
 
+            <div>
+              <Label>Trimestre *</Label>
+              <Select
+                value={form.trimestre ? String(form.trimestre) : ""}
+                onValueChange={(v) => setForm({ ...form, trimestre: Number(v) })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un trimestre" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TRIMESTRE_OPTIONS.map((t) => (
+                    <SelectItem key={t} value={String(t)}>
+                      Trimestre {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Coefficient étatique</Label>
@@ -696,6 +837,19 @@ export default function ExamensTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Details drawer */}
+      <ExamenDetailsSheet
+        examen={detailsExamen}
+        open={!!detailsExamen}
+        onOpenChange={(open) => !open && setDetailsExamen(null)}
+        onEditNotes={(ex) => {
+          setFilterClasseId(ex.classeId);
+          setDetailsExamen(null);
+          goToTab("notes");
+          notify.success(`Saisissez les notes pour : ${ex.name} (T${ex.trimestre})`);
+        }}
+      />
     </div>
   );
 }

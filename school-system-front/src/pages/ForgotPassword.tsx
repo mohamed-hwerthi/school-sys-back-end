@@ -68,7 +68,7 @@ const ForgotPassword = () => {
           <motion.div variants={item} className="mb-10 flex items-center gap-3">
             <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-primary shadow-btn">
               <GraduationCap className="h-6 w-6 text-primary-foreground" />
-              <div className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent">
+              <div className="absolute -end-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent">
                 <Sparkles className="h-2.5 w-2.5 text-accent-foreground" />
               </div>
             </div>
@@ -130,7 +130,7 @@ const ForgotPassword = () => {
                     E-mail
                   </label>
                   <div className="relative">
-                    <Mail className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused ? "text-primary" : "text-muted-foreground"}`} />
+                    <Mail className={`absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused ? "text-primary" : "text-muted-foreground"}`} />
                     <input
                       type="email"
                       placeholder="nom@ecole.fr"
@@ -139,7 +139,7 @@ const ForgotPassword = () => {
                       onBlur={() => setFocused(false)}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="w-full rounded-xl border border-border bg-muted/50 py-3 pl-10 pr-4 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:shadow-input-focus"
+                      className="w-full rounded-xl border border-border bg-muted/50 py-3 ps-10 pe-4 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:shadow-input-focus"
                     />
                   </div>
                 </motion.div>

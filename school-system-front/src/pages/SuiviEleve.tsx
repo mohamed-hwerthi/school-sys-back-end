@@ -189,13 +189,13 @@ export default function SuiviEleve() {
       >
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               placeholder="ID de l'eleve..."
-              className="pl-9"
+              className="ps-9"
             />
           </div>
           <Button onClick={handleSearch} size="sm" className="gap-1.5">

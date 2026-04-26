@@ -221,7 +221,7 @@ export default function BulletinsMasse() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border/40 text-left">
+                  <tr className="border-b border-border/40 text-start">
                     <th className="pb-2 font-medium text-muted-foreground">
                       #
                     </th>

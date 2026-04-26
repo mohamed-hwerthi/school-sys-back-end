@@ -168,7 +168,7 @@ export default function Configuration() {
             <button
               key={section.key}
               onClick={() => setActiveSection(section.key)}
-              className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all text-left ${
+              className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all text-start ${
                 activeSection === section.key
                   ? "bg-primary/10 text-primary font-medium"
                   : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
@@ -227,7 +227,7 @@ export default function Configuration() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">{t("configuration.language")}</label>
                   <Select value={langue} onValueChange={setLangue}>
-                    <SelectTrigger><Globe className="h-4 w-4 mr-2 text-muted-foreground" /><SelectValue /></SelectTrigger>
+                    <SelectTrigger><Globe className="h-4 w-4 me-2 text-muted-foreground" /><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="fr">{t("language.french")}</SelectItem>
                       <SelectItem value="ar">{t("language.arabic")}</SelectItem>

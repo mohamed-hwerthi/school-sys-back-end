@@ -62,6 +62,7 @@ import {
   usePointerRepas,
   useCantineStats,
 } from "@/hooks/useCantine";
+import { useAllStudents } from "@/hooks/useStudents";
 import type {
   Menu,
   CreateMenuRequest,
@@ -439,6 +440,14 @@ function MenusTab() {
 
 function AbonnementsTab() {
   const { data: abonnements = [], isLoading } = useAbonnementsCantine();
+  const { data: students = [] } = useAllStudents();
+  const studentNameById = useMemo(() => {
+    const m = new Map<number, string>();
+    students.forEach((s) => m.set(s.id, `${s.prenom} ${s.nom}`.trim()));
+    return m;
+  }, [students]);
+  const studentLabel = (id: number) => studentNameById.get(id) || `#${id}`;
+
   const createMutation = useCreateAbonnement();
   const updateMutation = useUpdateAbonnement();
   const deactivateMutation = useDeactivateAbonnement();
@@ -470,7 +479,11 @@ function AbonnementsTab() {
     }
     if (search) {
       const q = search.toLowerCase();
-      list = list.filter((a) => String(a.eleveId).includes(q) || a.typeAbonnement.toLowerCase().includes(q));
+      list = list.filter(
+        (a) =>
+          studentLabel(a.eleveId).toLowerCase().includes(q) ||
+          a.typeAbonnement.toLowerCase().includes(q)
+      );
     }
     return list;
   }, [abonnements, search, filterType, filterStatus]);
@@ -524,8 +537,8 @@ function AbonnementsTab() {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3 flex-1">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher..." className="pl-9" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(0); }} placeholder="Rechercher..." className="ps-9" />
           </div>
           <Select value={filterType} onValueChange={(v) => { setFilterType(v); setCurrentPage(0); }}>
             <SelectTrigger className="w-[160px]">
@@ -560,13 +573,13 @@ function AbonnementsTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Eleve ID</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Type</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Dates</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Montant</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Regime</th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Statut</th>
-                <th className="py-3 px-4 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Élève</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Type</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Dates</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Montant</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">Regime</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Statut</th>
+                <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -580,7 +593,7 @@ function AbonnementsTab() {
               ) : (
                 paginated.map((a) => (
                   <tr key={a.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
-                    <td className="py-3 px-4 font-medium text-foreground">#{a.eleveId}</td>
+                    <td className="py-3 px-4 font-medium text-foreground">{studentLabel(a.eleveId)}</td>
                     <td className="py-3 px-4">
                       <Badge variant="outline" className={ABONNEMENT_COLORS[a.typeAbonnement] || ""}>
                         {a.typeAbonnement}
@@ -589,7 +602,7 @@ function AbonnementsTab() {
                     <td className="py-3 px-4 hidden md:table-cell text-muted-foreground">
                       {a.dateDebut}{a.dateFin ? ` - ${a.dateFin}` : ""}
                     </td>
-                    <td className="py-3 px-4 text-foreground font-medium">{a.montant} DH</td>
+                    <td className="py-3 px-4 text-foreground font-medium">{a.montant} TND</td>
                     <td className="py-3 px-4 hidden lg:table-cell">
                       <Badge variant="outline" className={REGIME_COLORS[a.regime] || ""}>
                         {a.regime}
@@ -600,7 +613,7 @@ function AbonnementsTab() {
                         {a.actif ? "Actif" : "Inactif"}
                       </Badge>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-end">
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(a)}>
                           <Pencil className="h-4 w-4" />
@@ -653,8 +666,24 @@ function AbonnementsTab() {
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
-              <Label>ID Eleve</Label>
-              <Input type="number" value={form.eleveId || ""} onChange={(e) => setForm({ ...form, eleveId: Number(e.target.value) })} placeholder="ID de l'eleve" />
+              <Label>Élève</Label>
+              <Select
+                value={form.eleveId ? String(form.eleveId) : ""}
+                onValueChange={(v) => setForm({ ...form, eleveId: Number(v) })}
+                disabled={!!editingAbonnement}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un élève" />
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {students.map((s) => (
+                    <SelectItem key={s.id} value={String(s.id)}>
+                      {s.prenom} {s.nom}
+                      {s.classe ? ` — ${s.classe}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -672,7 +701,7 @@ function AbonnementsTab() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Montant (DH)</Label>
+                <Label>Montant (TND)</Label>
                 <Input type="number" value={form.montant || ""} onChange={(e) => setForm({ ...form, montant: Number(e.target.value) })} />
               </div>
             </div>
@@ -724,7 +753,7 @@ function AbonnementsTab() {
           <DialogHeader>
             <DialogTitle>Confirmer la suppression</DialogTitle>
             <DialogDescription>
-              Supprimer l'abonnement de l'eleve <span className="font-semibold text-foreground">#{deleteTarget?.eleveId}</span> ?
+              Supprimer l'abonnement de l'élève <span className="font-semibold text-foreground">{deleteTarget ? studentLabel(deleteTarget.eleveId) : ""}</span> ?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -750,6 +779,13 @@ function PointageTab() {
 
   const { data: pointages = [], isLoading } = usePointagesRepas(selectedDate, selectedType);
   const { data: abonnementsActifs = [] } = useAbonnementsCantine();
+  const { data: students = [] } = useAllStudents();
+  const studentNameById = useMemo(() => {
+    const m = new Map<number, string>();
+    students.forEach((s) => m.set(s.id, `${s.prenom} ${s.nom}`.trim()));
+    return m;
+  }, [students]);
+  const studentLabel = (id: number) => studentNameById.get(id) || `#${id}`;
   const pointerMutation = usePointerRepas();
 
   const [localPointages, setLocalPointages] = useState<Record<number, boolean>>({});
@@ -835,16 +871,16 @@ function PointageTab() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
-                  <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Eleve ID</th>
-                  <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground">Type abonnement</th>
-                  <th className="py-3 px-4 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Regime</th>
+                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Élève</th>
+                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Type abonnement</th>
+                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Regime</th>
                   <th className="py-3 px-4 text-center text-xs font-semibold text-muted-foreground">Present</th>
                 </tr>
               </thead>
               <tbody>
                 {subscribedStudents.map((a) => (
                   <tr key={a.eleveId} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
-                    <td className="py-3 px-4 font-medium text-foreground">#{a.eleveId}</td>
+                    <td className="py-3 px-4 font-medium text-foreground">{studentLabel(a.eleveId)}</td>
                     <td className="py-3 px-4">
                       <Badge variant="outline" className={ABONNEMENT_COLORS[a.typeAbonnement] || ""}>
                         {a.typeAbonnement}
@@ -914,7 +950,7 @@ function CantineStatsTab() {
     },
     {
       label: "Revenus Mensuels",
-      value: `${(stats?.revenuesMensuel ?? 0).toLocaleString()} DH`,
+      value: `${(stats?.revenuesMensuel ?? 0).toLocaleString()} TND`,
       icon: DollarSign,
       color: "bg-orange-50",
       textColor: "text-orange-700",
