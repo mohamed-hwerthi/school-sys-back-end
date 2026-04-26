@@ -2,6 +2,7 @@ package com.schoolSys.schooolSys;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
  * Entry point for the School Management System.
@@ -12,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * </p>
  */
 @SpringBootApplication
+@EnableAsync
 public class SchooolSysApplication {
 
 	public static void main(String[] args) {

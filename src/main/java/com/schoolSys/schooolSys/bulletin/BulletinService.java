@@ -10,6 +10,7 @@ import com.schoolSys.schooolSys.domaine.Domaine;
 import com.schoolSys.schooolSys.domaine.DomaineRepository;
 import com.schoolSys.schooolSys.examen.Examen;
 import com.schoolSys.schooolSys.module.Module;
+import com.schoolSys.schooolSys.module.ModuleRepository;
 import com.schoolSys.schooolSys.niveau.Classe;
 import com.schoolSys.schooolSys.niveau.ClasseRepository;
 import com.schoolSys.schooolSys.niveau.NiveauRepository;
@@ -40,6 +41,7 @@ public class BulletinService {
     private final BulletinTemplateRepository bulletinTemplateRepository;
     private final SchoolSettingsRepository schoolSettingsRepository;
     private final NiveauRepository niveauRepository;
+    private final ModuleRepository moduleRepository;
 
     private static final String VERSION_PRIVE = "prive";
 
@@ -63,6 +65,10 @@ public class BulletinService {
         List<Domaine> domaines = domaineRepository.findByNiveauIdOrderByOrdreAsc(niveauId);
         Map<Long, Domaine> domaineMap = domaines.stream()
                 .collect(Collectors.toMap(Domaine::getId, d -> d));
+
+        // 2bis. Fetch ALL modules of the niveau (so the bulletin shows them
+        // even when the student has no notes for some of them).
+        List<Module> niveauModules = moduleRepository.findByNiveauIdOrderByOrdreEtatiqueAsc(niveauId);
 
         // 3. Group notes by student
         Map<Long, List<Note>> notesByStudent = allNotes.stream()
@@ -178,12 +184,13 @@ public class BulletinService {
             Map<Long, List<Note>> byModule = studentNotes.stream()
                     .collect(Collectors.groupingBy(n -> n.getExamen().getModule().getId()));
 
-            // Build module DTOs
+            // Build module DTOs — start from ALL modules of the niveau so the
+            // bulletin always lists them, even when the student has no notes
+            // for some modules (cells will display "—" / 0.0 on the front).
             Map<Long, BulletinModuleDTO> moduleDTOs = new LinkedHashMap<>();
-            for (Map.Entry<Long, List<Note>> moduleEntry : byModule.entrySet()) {
-                Long moduleId = moduleEntry.getKey();
-                List<Note> moduleNotes = moduleEntry.getValue();
-                Module module = moduleNotes.get(0).getExamen().getModule();
+            for (Module module : niveauModules) {
+                Long moduleId = module.getId();
+                List<Note> moduleNotes = byModule.getOrDefault(moduleId, Collections.emptyList());
 
                 List<BulletinExamenDTO> examenDTOs = moduleNotes.stream()
                         .sorted(Comparator.comparingInt(n ->
@@ -202,6 +209,11 @@ public class BulletinService {
                 moduleDTOs.put(moduleId, BulletinModuleDTO.builder()
                         .moduleId(moduleId)
                         .moduleName(prive && module.getNameVp() != null ? module.getNameVp() : module.getName())
+                        .moduleNameAr(module.getNameAr())
+                        .sousDomaineId(module.getSousDomaine() != null ? module.getSousDomaine().getId() : null)
+                        .sousDomaineName(module.getSousDomaine() != null ? module.getSousDomaine().getName() : null)
+                        .sousDomaineNameAr(module.getSousDomaine() != null ? module.getSousDomaine().getNameAr() : null)
+                        .sousDomaineOrdre(module.getSousDomaine() != null ? module.getSousDomaine().getOrdre() : null)
                         .coeff(prive ? module.getCoeffPrive() : module.getCoeffEtatique())
                         .ordre(prive ? module.getOrdrePrive() : module.getOrdreEtatique())
                         .examens(examenDTOs)
@@ -223,13 +235,14 @@ public class BulletinService {
                 recoTexts.put(r.getDomaine().getId(), r.getTexte());
             }
 
+            // Build a quick lookup moduleId -> Module for domaine filtering
+            Map<Long, Module> niveauModuleMap = niveauModules.stream()
+                    .collect(Collectors.toMap(Module::getId, m -> m, (a, b) -> a));
+
             for (Domaine domaine : domaines) {
                 List<BulletinModuleDTO> domaineModules = moduleDTOs.entrySet().stream()
                         .filter(e -> {
-                            // Find the module entity from any note
-                            Module mod = byModule.containsKey(e.getKey())
-                                    ? byModule.get(e.getKey()).get(0).getExamen().getModule()
-                                    : null;
+                            Module mod = niveauModuleMap.get(e.getKey());
                             return mod != null && mod.getDomaine() != null
                                     && mod.getDomaine().getId().equals(domaine.getId());
                         })
@@ -276,10 +289,10 @@ public class BulletinService {
             // Observation
             ObservationTrimestre obs = obsByStudent.get(studentId);
             String comportement = obs != null ? obs.getComportement() : null;
-            String certificatObs = obs != null ? obs.getCertificatType() : null;
 
-            // Auto-determine certificate if not manually set
-            String certificat = certificatObs != null ? certificatObs : determineCertificat(moyenneGenerale);
+            // Certificate is always derived from moyenneGenerale — manual override removed
+            // (the teacher only enters moyenne + observation/recommandation, certificat is global)
+            String certificat = determineCertificat(moyenneGenerale);
 
             // Arabic name
             String nameAr = null;

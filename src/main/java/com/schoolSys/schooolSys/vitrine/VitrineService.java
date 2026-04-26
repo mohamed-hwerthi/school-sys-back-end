@@ -45,14 +45,17 @@ public class VitrineService {
 
     // ======================== PAGES ========================
 
+    @Transactional(readOnly = true)
     public List<VitrinePageDTO> getAllPages() {
         return mapper.toPageDTOList(pageRepository.findAllByOrderByDisplayOrderAsc());
     }
 
+    @Transactional(readOnly = true)
     public List<VitrinePageDTO> getVisiblePages() {
         return mapper.toPageDTOList(pageRepository.findByVisibleTrueOrderByDisplayOrderAsc());
     }
 
+    @Transactional(readOnly = true)
     public VitrinePageDTO getPageBySlug(String slug) {
         VitrinePage page = pageRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Vitrine page not found: " + slug));
@@ -256,6 +259,7 @@ public class VitrineService {
     /**
      * Returns all public vitrine data in a single DTO for fast initial load.
      */
+    @Transactional(readOnly = true)
     public VitrinePublicDataDTO getPublicData(String slug) {
         VitrineConfigDTO config = getConfig();
         List<VitrinePageDTO> pages = getVisiblePages();

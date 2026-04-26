@@ -18,6 +18,8 @@ public class ModuleRequestDTO {
 
     private String nameVp;
 
+    private String nameAr;
+
     @NotNull
     @Builder.Default
     private Double coeffEtatique = 1.0;

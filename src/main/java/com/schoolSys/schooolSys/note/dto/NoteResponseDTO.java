@@ -19,4 +19,5 @@ public class NoteResponseDTO {
     private Integer trimestre;
     private Double valeur;
     private String observation;
+    private String statut;
 }

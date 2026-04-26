@@ -115,7 +115,8 @@ public class TenantService {
     /**
      * Converts a string into a URL-friendly slug.
      */
-    private String slugify(String input) {
+    public static String slugify(String input) {
+        if (input == null) return "";
         String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
         String slug = normalized
                 .replaceAll("[\\p{InCombiningDiacriticalMarks}]", "")

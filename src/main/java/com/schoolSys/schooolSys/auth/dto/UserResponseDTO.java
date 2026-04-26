@@ -18,5 +18,6 @@ public class UserResponseDTO {
     private String lastName;
     private UserRole role;
     private String tenantId;
+    private String tenantSlug;
     private Boolean isActive;
 }

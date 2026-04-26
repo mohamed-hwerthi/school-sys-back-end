@@ -11,6 +11,11 @@ import java.util.List;
 public class BulletinModuleDTO {
     private Long moduleId;
     private String moduleName;
+    private String moduleNameAr;
+    private Long sousDomaineId;
+    private String sousDomaineName;
+    private String sousDomaineNameAr;
+    private Integer sousDomaineOrdre;
     private Double coeff;
     private Integer ordre;
     private List<BulletinExamenDTO> examens;

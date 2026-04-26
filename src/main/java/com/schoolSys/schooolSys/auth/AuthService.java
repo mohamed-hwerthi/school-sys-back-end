@@ -1,6 +1,7 @@
 package com.schoolSys.schooolSys.auth;
 
 import com.schoolSys.schooolSys.auth.dto.*;
+import com.schoolSys.schooolSys.tenant.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +22,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final TwoFactorService twoFactorService;
+    private final TenantRepository tenantRepository;
 
     @Value("${app.jwt.refresh-expiration-ms:604800000}")
     private long refreshTokenExpirationMs;
@@ -260,6 +262,12 @@ public class AuthService {
     }
 
     private UserResponseDTO toUserResponse(User user) {
+        String tenantSlug = null;
+        if (user.getTenantId() != null) {
+            tenantSlug = tenantRepository.findBySchemaName(user.getTenantId())
+                    .map(t -> t.getSlug())
+                    .orElse(null);
+        }
         return UserResponseDTO.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -267,6 +275,7 @@ public class AuthService {
                 .lastName(user.getLastName())
                 .role(user.getRole())
                 .tenantId(user.getTenantId())
+                .tenantSlug(tenantSlug)
                 .isActive(user.getIsActive())
                 .build();
     }

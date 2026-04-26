@@ -14,4 +14,6 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
     Optional<Note> findByStudentIdAndExamenIdAndTrimestre(Long studentId, Long examenId, Integer trimestre);
 
     List<Note> findByExamenClasseIdAndTrimestre(Long classeId, Integer trimestre);
+
+    long countByExamenIdAndTrimestre(Long examenId, Integer trimestre);
 }

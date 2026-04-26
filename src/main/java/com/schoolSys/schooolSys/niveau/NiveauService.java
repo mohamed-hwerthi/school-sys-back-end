@@ -85,7 +85,7 @@ public class NiveauService {
 
         String fullName = buildFullName(niveau.getName(), upper);
         long studentCount = studentRepository.countByClasse(fullName);
-        long examenCount = examenRepository.findByClasseIdOrderByOrdreEtatiqueAsc(target.getId()).size();
+        long examenCount = examenRepository.findFiltered(null, target.getId(), null).size();
         long emploiCount = emploiDuTempsRepository.findByClasseId(target.getId()).size();
 
         if (studentCount + examenCount + emploiCount > 0) {

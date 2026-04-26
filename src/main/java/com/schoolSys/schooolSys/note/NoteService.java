@@ -4,6 +4,7 @@ import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.examen.Examen;
 import com.schoolSys.schooolSys.examen.ExamenRepository;
 import com.schoolSys.schooolSys.note.dto.*;
+import com.schoolSys.schooolSys.parentnotif.ParentNotificationService;
 import com.schoolSys.schooolSys.student.Student;
 import com.schoolSys.schooolSys.student.StudentRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class NoteService {
     private final BaremeRepository baremeRepository;
     private final CompetenceRepository competenceRepository;
     private final EvaluationCompetenceRepository evaluationCompetenceRepository;
+    private final ParentNotificationService parentNotificationService;
 
     public List<NoteResponseDTO> findByExamen(Long examenId, Integer trimestre) {
         return noteRepository.findByExamenIdAndTrimestre(examenId, trimestre).stream()
@@ -62,10 +64,15 @@ public class NoteService {
             Optional<Note> existing = noteRepository.findByStudentIdAndExamenIdAndTrimestre(
                     dto.getStudentId(), dto.getExamenId(), dto.getTrimestre());
 
+            String statut = dto.getStatut() != null ? dto.getStatut() : "PRESENT";
+            // ABSENT => note forcée à 0 (compte dans la moyenne comme 0)
+            Double valeur = "ABSENT".equals(statut) ? 0.0 : dto.getValeur();
+
             if (existing.isPresent()) {
                 Note note = existing.get();
-                note.setValeur(dto.getValeur());
+                note.setValeur(valeur);
                 note.setObservation(dto.getObservation());
+                note.setStatut(statut);
                 note.setUpdatedAt(LocalDateTime.now());
                 saved.add(noteRepository.save(note));
             } else {
@@ -73,8 +80,17 @@ public class NoteService {
                         .orElseThrow(() -> new ResourceNotFoundException("Student", dto.getStudentId()));
                 Note note = Note.builder()
                         .student(student).examen(examen).trimestre(dto.getTrimestre())
-                        .valeur(dto.getValeur()).observation(dto.getObservation()).build();
+                        .valeur(valeur).observation(dto.getObservation())
+                        .statut(statut).build();
                 saved.add(noteRepository.save(note));
+            }
+        }
+        // Trigger async notification parent — best effort, n'interrompt pas la sauvegarde si échec
+        for (Note n : saved) {
+            try {
+                parentNotificationService.notifyNoteSaved(n.getId());
+            } catch (Exception ignored) {
+                // déjà loggé côté ParentNotificationService
             }
         }
         return saved.stream().map(this::toResponse).toList();
@@ -206,6 +222,7 @@ public class NoteService {
                 .id(note.getId()).studentId(note.getStudent().getId())
                 .studentName(note.getStudent().getFirstName() + " " + note.getStudent().getLastName())
                 .examenId(note.getExamen().getId()).examenName(note.getExamen().getName())
-                .trimestre(note.getTrimestre()).valeur(note.getValeur()).observation(note.getObservation()).build();
+                .trimestre(note.getTrimestre()).valeur(note.getValeur()).observation(note.getObservation())
+                .statut(note.getStatut()).build();
     }
 }

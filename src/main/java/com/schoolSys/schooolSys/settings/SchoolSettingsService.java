@@ -1,18 +1,26 @@
 package com.schoolSys.schooolSys.settings;
 
+import com.schoolSys.schooolSys.common.multitenancy.TenantContext;
 import com.schoolSys.schooolSys.settings.dto.SchoolSettingsDTO;
+import com.schoolSys.schooolSys.tenant.Tenant;
+import com.schoolSys.schooolSys.tenant.TenantRepository;
+import com.schoolSys.schooolSys.tenant.TenantService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SchoolSettingsService {
 
     private final SchoolSettingsRepository repository;
+    private final TenantRepository tenantRepository;
 
     public SchoolSettingsDTO getSettings() {
         SchoolSettings s = getOrCreate();
@@ -22,6 +30,7 @@ public class SchoolSettingsService {
     @Transactional
     public SchoolSettingsDTO updateSettings(SchoolSettingsDTO dto) {
         SchoolSettings s = getOrCreate();
+        String oldName = s.getSchoolName();
         s.setSchoolName(dto.getSchoolName());
         s.setSchoolNameAr(dto.getSchoolNameAr());
         s.setAnneeScolaire(dto.getAnneeScolaire());
@@ -37,7 +46,42 @@ public class SchoolSettingsService {
         s.setAnneeCreation(dto.getAnneeCreation());
         s.setDescription(dto.getDescription());
         s.setUpdatedAt(LocalDateTime.now());
-        return toDTO(repository.save(s));
+        SchoolSettingsDTO saved = toDTO(repository.save(s));
+
+        // If the school name changed, regenerate the tenant slug from it.
+        if (dto.getSchoolName() != null && !dto.getSchoolName().equals(oldName)) {
+            syncTenantSlug(dto.getSchoolName());
+        }
+
+        return saved;
+    }
+
+    /**
+     * Regenerates the current tenant's URL slug from the school name.
+     * Falls back to a numbered suffix if the desired slug is already taken.
+     */
+    private void syncTenantSlug(String schoolName) {
+        String schemaName = TenantContext.getCurrentTenant();
+        if (schemaName == null || schemaName.isBlank() || "public".equals(schemaName)) return;
+
+        Optional<Tenant> tenantOpt = tenantRepository.findBySchemaName(schemaName);
+        if (tenantOpt.isEmpty()) return;
+        Tenant tenant = tenantOpt.get();
+
+        String base = TenantService.slugify(schoolName);
+        if (base.isBlank()) return;
+        if (base.equals(tenant.getSlug())) return;
+
+        String candidate = base;
+        int suffix = 2;
+        while (tenantRepository.findBySlugAndActiveTrue(candidate)
+                .map(t -> !t.getId().equals(tenant.getId()))
+                .orElse(false)) {
+            candidate = base + "-" + suffix++;
+        }
+        tenant.setSlug(candidate);
+        tenantRepository.save(tenant);
+        log.info("Tenant {} slug updated: {} -> {}", schemaName, tenant.getSlug(), candidate);
     }
 
     private SchoolSettings getOrCreate() {

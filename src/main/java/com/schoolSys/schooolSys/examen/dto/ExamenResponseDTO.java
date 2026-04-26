@@ -18,6 +18,7 @@ public class ExamenResponseDTO {
     private Double coeffPrive;
     private Integer ordreEtatique;
     private Integer ordrePrive;
+    private Integer trimestre;
     private Long classeId;
     private String classeName;
     private Long teacherId;
@@ -26,4 +27,6 @@ public class ExamenResponseDTO {
     private String moduleName;
     private Boolean versionEtatique;
     private Boolean versionPrivee;
+    private Long nbNotes;
+    private Long nbEleves;
 }

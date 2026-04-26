@@ -49,6 +49,7 @@ public class ModuleService {
         Module module = Module.builder()
                 .name(dto.getName())
                 .nameVp(dto.getNameVp())
+                .nameAr(dto.getNameAr())
                 .coeffEtatique(dto.getCoeffEtatique())
                 .coeffPrive(dto.getCoeffPrive())
                 .ordreEtatique(dto.getOrdreEtatique())
@@ -76,6 +77,7 @@ public class ModuleService {
 
         module.setName(dto.getName());
         module.setNameVp(dto.getNameVp());
+        module.setNameAr(dto.getNameAr());
         module.setCoeffEtatique(dto.getCoeffEtatique());
         module.setCoeffPrive(dto.getCoeffPrive());
         module.setOrdreEtatique(dto.getOrdreEtatique());
@@ -113,6 +115,7 @@ public class ModuleService {
                 .id(module.getId())
                 .name(module.getName())
                 .nameVp(module.getNameVp())
+                .nameAr(module.getNameAr())
                 .coeffEtatique(module.getCoeffEtatique())
                 .coeffPrive(module.getCoeffPrive())
                 .ordreEtatique(module.getOrdreEtatique())

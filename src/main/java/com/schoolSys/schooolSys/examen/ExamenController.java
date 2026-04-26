@@ -23,8 +23,9 @@ public class ExamenController {
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<ExamenResponseDTO>>> getAll(
             @RequestParam(required = false) Long moduleId,
-            @RequestParam(required = false) Long classeId) {
-        return ResponseEntity.ok(ApiResponse.ok(examenService.findAll(moduleId, classeId)));
+            @RequestParam(required = false) Long classeId,
+            @RequestParam(required = false) Integer trimestre) {
+        return ResponseEntity.ok(ApiResponse.ok(examenService.findAll(moduleId, classeId, trimestre)));
     }
 
     @GetMapping("/{id}")
