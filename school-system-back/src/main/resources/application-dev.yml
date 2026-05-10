@@ -1,4 +1,11 @@
 spring:
+  # DevTools : on désactive l'auto-restart qui corrompt le ClassLoader
+  # lors d'éditions multi-fichiers (NoClassDefFoundError observé sur
+  # TenantContext / ModuleClasseVolume après modifications en cascade).
+  devtools:
+    restart:
+      enabled: false
+
   datasource:
     url: jdbc:postgresql://localhost:5432/school_dev_db
     driver-class-name: org.postgresql.Driver
@@ -56,6 +63,7 @@ logging:
     org.flywaydb: DEBUG
 
 server:
+  port: ${SERVER_PORT:8080}
   error:
     include-stacktrace: always
 
