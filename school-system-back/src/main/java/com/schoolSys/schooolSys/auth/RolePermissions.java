@@ -73,6 +73,9 @@ public final class RolePermissions {
         ));
 
         // ── PARENT ─────────────────────────────────────────────
+        // Note: row-level scoping (un parent ne voit que SES enfants) doit être
+        // assuré par chaque service via ParentStudentRepository — la permission
+        // READ_FINANCE seule ne suffit pas à autoriser un accès global.
         m.put(UserRole.PARENT, EnumSet.of(
                 READ_STUDENTS,
                 READ_NOTES,
@@ -80,6 +83,7 @@ public final class RolePermissions {
                 READ_EMPLOI_DU_TEMPS,
                 READ_MESSAGES, WRITE_MESSAGES,
                 READ_BULLETINS,
+                READ_FINANCE,
                 PARENT_ACCESS
         ));
 
