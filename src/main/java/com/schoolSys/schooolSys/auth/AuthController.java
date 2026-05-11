@@ -2,6 +2,7 @@ package com.schoolSys.schooolSys.auth;
 
 import com.schoolSys.schooolSys.auth.dto.*;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
+    private final CurrentUserContext currentUserContext;
 
     // ─── Login / Token ──────────────────────────────────────────
 
@@ -48,10 +50,32 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> getCurrentUser(Authentication authentication) {
+    public ResponseEntity<ApiResponse<com.schoolSys.schooolSys.auth.dto.MeResponseDTO>> getCurrentUser(Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
         UserResponseDTO user = authService.getCurrentUser(userId);
-        return ResponseEntity.ok(ApiResponse.ok(user));
+
+        java.util.List<String> perms = com.schoolSys.schooolSys.auth.RolePermissions
+                .getPermissions(user.getRole()).stream()
+                .map(Enum::name).toList();
+
+        java.util.Set<Long> scopedClasses = currentUserContext.hasRole(
+                com.schoolSys.schooolSys.auth.UserRole.ENSEIGNANT)
+                ? currentUserContext.getScopedClasseIdsForTeacher()
+                : java.util.Set.of();
+
+        java.util.Set<Long> scopedStudents = currentUserContext.hasRole(
+                com.schoolSys.schooolSys.auth.UserRole.PARENT)
+                ? currentUserContext.getScopedStudentIdsForParent()
+                : java.util.Set.of();
+
+        com.schoolSys.schooolSys.auth.dto.MeResponseDTO me = com.schoolSys.schooolSys.auth.dto.MeResponseDTO.builder()
+                .user(user)
+                .permissions(perms)
+                .scopedClasseIds(scopedClasses)
+                .scopedStudentIds(scopedStudents)
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.ok(me));
     }
 
     @PostMapping("/forgot-password")

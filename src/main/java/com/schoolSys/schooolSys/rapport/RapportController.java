@@ -27,7 +27,9 @@ public class RapportController {
         return ResponseEntity.ok(ApiResponse.ok(rapportService.findAll(type, statut)));
     }
 
-    @GetMapping("/{id}")
+    // Regex {id:\\d+} : empêche ce mapping de capturer les sous-chemins
+    // non-numériques (ex: /rapports/dashboard) qui doivent donner 404, pas 500.
+    @GetMapping("/{id:\\d+}")
     @PreAuthorize("hasAuthority('READ_RAPPORTS')")
     public ResponseEntity<ApiResponse<RapportResponseDTO>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(rapportService.findById(id)));

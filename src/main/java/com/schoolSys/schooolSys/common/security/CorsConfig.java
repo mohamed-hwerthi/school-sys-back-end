@@ -31,7 +31,7 @@ public class CorsConfig {
         } else {
             config.setAllowedOrigins(Arrays.asList(allowedOrigins));
         }
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "X-Tenant-ID"));
         config.setAllowCredentials(true);

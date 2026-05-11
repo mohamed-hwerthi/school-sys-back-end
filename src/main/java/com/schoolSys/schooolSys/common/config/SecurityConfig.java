@@ -1,10 +1,11 @@
 package com.schoolSys.schooolSys.common.config;
 
 import com.schoolSys.schooolSys.auth.JwtAuthenticationFilter;
+import com.schoolSys.schooolSys.common.security.AuditingAccessDeniedHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,13 +19,39 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
-// TODO: re-enable @EnableMethodSecurity(prePostEnabled = true) once the role/permission matrix is finalized.
-// All @PreAuthorize annotations on controllers are currently no-ops; any authenticated user can call any endpoint.
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CorsConfigurationSource corsConfigurationSource;
+    private final AuditingAccessDeniedHandler accessDeniedHandler;
+
+    /**
+     * Endpoints accessible without authentication.
+     * Everything else requires a valid JWT — and the per-endpoint @PreAuthorize
+     * annotations on controllers then enforce role/permission access.
+     */
+    private static final String[] PUBLIC_PATHS = {
+            // Login flow
+            "/api/auth/login",
+            "/api/auth/refresh-token",
+            "/api/auth/forgot-password",
+            "/api/auth/reset-password",
+            "/api/auth/2fa/verify",
+            // Public registration / vitrine
+            "/api/public/**",
+            "/api/onboarding/**",
+            // OpenAPI / Swagger
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            // Health probes
+            "/actuator/health",
+            "/actuator/info",
+            // WebSocket handshake (auth handled by STOMP interceptor)
+            "/ws/**",
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -41,8 +68,10 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
+                        .requestMatchers(PUBLIC_PATHS).permitAll()
+                        .anyRequest().authenticated()
                 )
+                .exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

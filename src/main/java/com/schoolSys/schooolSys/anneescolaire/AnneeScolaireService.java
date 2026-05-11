@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AnneeScolaireService {
 
     private final AnneeScolaireRepository anneeScolaireRepository;

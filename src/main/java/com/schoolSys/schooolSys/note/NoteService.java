@@ -1,6 +1,7 @@
 package com.schoolSys.schooolSys.note;
 
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.examen.Examen;
 import com.schoolSys.schooolSys.examen.ExamenRepository;
 import com.schoolSys.schooolSys.note.dto.*;
@@ -28,19 +29,36 @@ public class NoteService {
     private final CompetenceRepository competenceRepository;
     private final EvaluationCompetenceRepository evaluationCompetenceRepository;
     private final ParentNotificationService parentNotificationService;
+    private final CurrentUserContext currentUser;
 
     public List<NoteResponseDTO> findByExamen(Long examenId, Integer trimestre) {
         return noteRepository.findByExamenIdAndTrimestre(examenId, trimestre).stream()
+                .filter(n -> isInScope(n.getStudent().getId()))
                 .map(this::toResponse).toList();
     }
 
     public List<NoteResponseDTO> findByStudent(Long studentId, Integer trimestre) {
+        currentUser.assertCanAccessStudent(studentId);
         return noteRepository.findByStudentIdAndTrimestre(studentId, trimestre).stream()
                 .map(this::toResponse).toList();
     }
 
+    /** Silent filter for list endpoints — filtered out rows are simply not returned. */
+    private boolean isInScope(Long studentId) {
+        try {
+            currentUser.assertCanAccessStudent(studentId);
+            return true;
+        } catch (org.springframework.security.access.AccessDeniedException e) {
+            return false;
+        }
+    }
+
     @Transactional
     public List<NoteResponseDTO> upsertBulk(List<NoteRequestDTO> dtos) {
+        // Block writes on students outside the current user's scope.
+        for (NoteRequestDTO dto : dtos) {
+            currentUser.assertCanAccessStudent(dto.getStudentId());
+        }
         List<Note> saved = new ArrayList<>();
         for (NoteRequestDTO dto : dtos) {
             // NOT-008: Check deadline

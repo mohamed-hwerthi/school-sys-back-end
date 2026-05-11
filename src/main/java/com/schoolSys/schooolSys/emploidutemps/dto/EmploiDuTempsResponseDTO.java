@@ -19,6 +19,7 @@ public class EmploiDuTempsResponseDTO {
     private Long moduleId;
     private Long enseignantId;
     private String salle;
+    private Long classroomId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

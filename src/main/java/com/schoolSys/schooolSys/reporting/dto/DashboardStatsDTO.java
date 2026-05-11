@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -26,4 +27,12 @@ public class DashboardStatsDTO {
     private double moyenneGenerale;
 
     private Map<String, Long> studentsByNiveau;
+
+    private long absencesToday;
+    private long newEnrollmentsThisMonth;
+    private long eventsThisMonth;
+
+    private List<DayAttendanceDTO> weeklyAttendance;
+    private List<UpcomingEventDTO> upcomingEvents;
+    private List<RecentStudentDTO> recentStudents;
 }

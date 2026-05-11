@@ -1,6 +1,7 @@
 package com.schoolSys.schooolSys.facture;
 
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.facture.dto.*;
 import com.schoolSys.schooolSys.student.Student;
 import com.schoolSys.schooolSys.student.StudentRepository;
@@ -25,10 +26,19 @@ public class FactureService {
     private final EcheancierRepository echeancierRepository;
     private final EcheanceRepository echeanceRepository;
     private final StudentRepository studentRepository;
+    private final CurrentUserContext currentUser;
 
     // ── Factures ──────────────────────────────────────────────
 
     public List<FactureResponseDTO> getAllFactures() {
+        // Parents only see their own children's invoices.
+        if (currentUser.hasRole(com.schoolSys.schooolSys.auth.UserRole.PARENT)) {
+            var ownIds = currentUser.getScopedStudentIdsForParent();
+            return factureRepository.findAll().stream()
+                    .filter(f -> f.getStudent() != null && ownIds.contains(f.getStudent().getId()))
+                    .map(this::toFactureDto)
+                    .collect(Collectors.toList());
+        }
         return factureRepository.findAll().stream()
                 .map(this::toFactureDto)
                 .collect(Collectors.toList());
@@ -37,10 +47,14 @@ public class FactureService {
     public FactureResponseDTO getFactureById(Long id) {
         Facture facture = factureRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Facture", id));
+        if (facture.getStudent() != null) {
+            currentUser.assertCanAccessStudent(facture.getStudent().getId());
+        }
         return toFactureDto(facture);
     }
 
     public List<FactureResponseDTO> getFacturesByStudent(Long studentId) {
+        currentUser.assertCanAccessStudent(studentId);
         return factureRepository.findByStudentId(studentId).stream()
                 .map(this::toFactureDto)
                 .collect(Collectors.toList());

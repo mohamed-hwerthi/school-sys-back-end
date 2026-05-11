@@ -151,6 +151,7 @@ public class EmploiDuTempsService {
             .moduleId(e.getModuleId())
             .enseignantId(e.getEnseignantId())
             .salle(e.getSalle())
+            .classroomId(e.getClassroomId())
             .createdAt(e.getCreatedAt())
             .updatedAt(e.getUpdatedAt())
             .build();

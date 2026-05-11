@@ -4,8 +4,10 @@ import com.schoolSys.schooolSys.appreciation.ObservationRepository;
 import com.schoolSys.schooolSys.appreciation.ObservationTrimestre;
 import com.schoolSys.schooolSys.appreciation.Recommandation;
 import com.schoolSys.schooolSys.appreciation.RecommandationRepository;
+import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.bulletin.dto.*;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.domaine.Domaine;
 import com.schoolSys.schooolSys.domaine.DomaineRepository;
 import com.schoolSys.schooolSys.examen.Examen;
@@ -42,6 +44,7 @@ public class BulletinService {
     private final SchoolSettingsRepository schoolSettingsRepository;
     private final NiveauRepository niveauRepository;
     private final ModuleRepository moduleRepository;
+    private final CurrentUserContext currentUser;
 
     private static final String VERSION_PRIVE = "prive";
 
@@ -322,6 +325,14 @@ public class BulletinService {
         }
 
         bulletins.sort(Comparator.comparing(BulletinDTO::getStudentName));
+
+        // Row-level scoping for non-staff roles.
+        if (currentUser.hasRole(UserRole.PARENT)) {
+            var ownIds = currentUser.getScopedStudentIdsForParent();
+            bulletins = bulletins.stream()
+                    .filter(b -> ownIds.contains(b.getStudentId()))
+                    .collect(Collectors.toList());
+        }
         return bulletins;
     }
 
@@ -329,6 +340,7 @@ public class BulletinService {
      * Get a single student's bulletin.
      */
     public BulletinDTO getBulletin(Long classeId, Long studentId, Integer trimestre, String version) {
+        currentUser.assertCanAccessStudent(studentId);
         List<BulletinDTO> all = getBulletins(classeId, trimestre, version);
         return all.stream()
                 .filter(b -> b.getStudentId().equals(studentId))

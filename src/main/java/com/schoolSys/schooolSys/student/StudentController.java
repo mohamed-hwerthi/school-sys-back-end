@@ -3,6 +3,7 @@ package com.schoolSys.schooolSys.student;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.common.dto.PagedResponse;
 import com.schoolSys.schooolSys.student.dto.ReinscriptionRequestDTO;
+import com.schoolSys.schooolSys.student.dto.StudentBulkImportResultDTO;
 import com.schoolSys.schooolSys.student.dto.StudentRequestDTO;
 import com.schoolSys.schooolSys.student.dto.StudentResponseDTO;
 import jakarta.validation.Valid;
@@ -96,6 +97,18 @@ public class StudentController {
             @Valid @RequestBody List<StudentRequestDTO> dtos) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(studentService.importBulk(dtos)));
+    }
+
+    /**
+     * Robust bulk import — returns a per-row result instead of all-or-nothing.
+     * Conflicts (e.g. duplicate email) are reported as skipped rows; the rest
+     * of the batch still goes through.
+     */
+    @PostMapping("/import/robust")
+    @PreAuthorize("hasAuthority('WRITE_STUDENTS')")
+    public ResponseEntity<ApiResponse<StudentBulkImportResultDTO>> importBulkRobust(
+            @RequestBody List<StudentRequestDTO> dtos) {
+        return ResponseEntity.ok(ApiResponse.ok(studentService.importBulkRobust(dtos)));
     }
 
     // ===================== ELV-007: Document upload endpoints =====================

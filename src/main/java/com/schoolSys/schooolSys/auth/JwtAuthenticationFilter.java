@@ -36,8 +36,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String role = jwtTokenProvider.getRoleFromToken(token);
             String tenantId = jwtTokenProvider.getTenantIdFromToken(token);
 
+            String contextTenant = TenantContext.getCurrentTenant();
+            boolean contextIsDefault = TenantContext.DEFAULT_SCHEMA.equals(contextTenant);
+
+            // Reject if X-Tenant-ID header was set and disagrees with the JWT claim
+            if (tenantId != null && !contextIsDefault && !tenantId.equals(contextTenant)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                        "X-Tenant-ID header does not match the authenticated tenant");
+                return;
+            }
+
             // Set tenant from JWT if not already set by header
-            if (tenantId != null && TenantContext.getCurrentTenant().equals(TenantContext.DEFAULT_SCHEMA)) {
+            if (tenantId != null && contextIsDefault) {
                 TenantContext.setCurrentTenant(tenantId);
             }
 

@@ -2,12 +2,14 @@ package com.schoolSys.schooolSys.absence;
 
 import com.schoolSys.schooolSys.absence.dto.*;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.niveau.Classe;
 import com.schoolSys.schooolSys.niveau.ClasseRepository;
 import com.schoolSys.schooolSys.niveau.Niveau;
 import com.schoolSys.schooolSys.student.Student;
 import com.schoolSys.schooolSys.student.StudentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +28,23 @@ public class AbsenceService {
     private final AbsenceSettingsRepository settingsRepository;
     private final AbsenceNotificationService notificationService;
     private final ClasseRepository classeRepository;
+    private final CurrentUserContext currentUser;
+
+    /** Silent filter for list endpoints. */
+    private boolean isInScope(Long studentId) {
+        try {
+            currentUser.assertCanAccessStudent(studentId);
+            return true;
+        } catch (AccessDeniedException e) {
+            return false;
+        }
+    }
 
     @Transactional
     public List<AbsenceResponseDTO> batchCreate(AbsenceBatchRequestDTO request) {
+        // Block writes on students outside the current user's scope.
+        request.getAbsences().forEach(dto ->
+                currentUser.assertCanAccessStudent(dto.getEleveId()));
         List<Absence> absences = request.getAbsences().stream()
             .map(dto -> Absence.builder()
                 .eleveId(dto.getEleveId())
@@ -55,6 +71,10 @@ public class AbsenceService {
 
     @Transactional(readOnly = true)
     public List<AbsenceResponseDTO> getByClasseAndDate(Long classeId, LocalDate date, String type) {
+        if (currentUser.hasRole(com.schoolSys.schooolSys.auth.UserRole.ENSEIGNANT)
+                && !currentUser.teacherTeachesClasse(classeId)) {
+            throw new AccessDeniedException("Vous n'enseignez pas dans cette classe.");
+        }
         List<Absence> absences;
         if (classeId == null) {
             absences = absenceRepository.findAll().stream()
@@ -107,6 +127,7 @@ public class AbsenceService {
     }
 
     public List<AbsenceResponseDTO> getByEleve(Long eleveId) {
+        currentUser.assertCanAccessStudent(eleveId);
         return absenceRepository.findByEleveId(eleveId).stream()
             .map(this::toDto)
             .collect(Collectors.toList());

@@ -48,4 +48,16 @@ public class ModuleRequestDTO {
 
     @Builder.Default
     private Boolean versionPrivee = true;
+
+    @Builder.Default
+    private String salleTypeRequise = "NORMAL";
+
+    @Builder.Default
+    private Integer dureeMinSeance = 1;
+
+    @Builder.Default
+    private Integer dureeMaxSeance = 2;
+
+    @Builder.Default
+    private String preferenceHoraire = "INDIFFERENT";
 }

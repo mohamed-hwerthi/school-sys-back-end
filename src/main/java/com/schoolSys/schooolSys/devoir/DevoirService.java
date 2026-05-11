@@ -1,9 +1,12 @@
 package com.schoolSys.schooolSys.devoir;
 
+import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.devoir.dto.CreateDevoirRequest;
 import com.schoolSys.schooolSys.devoir.dto.DevoirDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +21,7 @@ public class DevoirService {
 
     private final DevoirRepository devoirRepository;
     private final SoumissionRepository soumissionRepository;
+    private final CurrentUserContext currentUser;
 
     public List<DevoirDTO> findAll(Long classeId, Long moduleId) {
         List<Devoir> devoirs;
@@ -29,6 +33,13 @@ public class DevoirService {
             devoirs = devoirRepository.findByModuleIdOrderByDateLimiteDesc(moduleId);
         } else {
             devoirs = devoirRepository.findAllByOrderByDateLimiteDesc();
+        }
+        // Row-level scoping: a teacher only sees devoirs in his classes.
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
+            var scoped = currentUser.getScopedClasseIdsForTeacher();
+            devoirs = devoirs.stream()
+                    .filter(d -> d.getClasseId() == null || scoped.contains(d.getClasseId()))
+                    .toList();
         }
         return devoirs.stream().map(this::toDTO).toList();
     }
@@ -51,6 +62,12 @@ public class DevoirService {
 
     @Transactional
     public DevoirDTO create(CreateDevoirRequest request) {
+        // Block creating a devoir for a class the teacher doesn't teach.
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)
+                && request.getClasseId() != null
+                && !currentUser.teacherTeachesClasse(request.getClasseId())) {
+            throw new AccessDeniedException("Vous n'enseignez pas dans cette classe.");
+        }
         Devoir devoir = Devoir.builder()
                 .titre(request.getTitre())
                 .description(request.getDescription())

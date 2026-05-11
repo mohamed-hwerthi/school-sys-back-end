@@ -2,7 +2,12 @@ package com.schoolSys.schooolSys.student;
 
 import com.schoolSys.schooolSys.common.dto.PagedResponse;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
+import com.schoolSys.schooolSys.niveau.Classe;
+import com.schoolSys.schooolSys.niveau.ClasseRepository;
 import com.schoolSys.schooolSys.student.dto.ReinscriptionRequestDTO;
+import com.schoolSys.schooolSys.student.dto.StudentBulkImportResultDTO;
+import com.schoolSys.schooolSys.student.dto.StudentBulkImportResultDTO.RowError;
 import com.schoolSys.schooolSys.student.dto.StudentRequestDTO;
 import com.schoolSys.schooolSys.student.dto.StudentResponseDTO;
 import jakarta.persistence.EntityManager;
@@ -11,13 +16,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Year;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,12 +36,16 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final StudentMapper studentMapper;
+    private final StudentImportRowSaver rowSaver;
+    private final CurrentUserContext currentUser;
+    private final ClasseRepository classeRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
 
     public List<StudentResponseDTO> findAll() {
-        return studentRepository.findAll().stream()
+        Specification<Student> scope = currentUserScope();
+        return studentRepository.findAll(scope).stream()
                 .map(studentMapper::toResponseDTO)
                 .toList();
     }
@@ -52,7 +65,8 @@ public class StudentService {
                 .and(StudentSpecification.hasClasse(classe))
                 .and(StudentSpecification.hasStatus(status))
                 .and(StudentSpecification.hasSex(sex))
-                .and(StudentSpecification.isBlocked(blocked));
+                .and(StudentSpecification.isBlocked(blocked))
+                .and(currentUserScope());
 
         Page<Student> page = studentRepository.findAll(spec, pageable);
         List<StudentResponseDTO> content = page.getContent().stream()
@@ -65,7 +79,53 @@ public class StudentService {
     public StudentResponseDTO findById(Long id) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Student", id));
+        assertCurrentUserCanRead(student);
         return studentMapper.toResponseDTO(student);
+    }
+
+    /**
+     * Builds a Specification that restricts results to what the current user is
+     * allowed to see. SUPER_ADMIN/ADMIN/DIRECTEUR get an open scope.
+     * ENSEIGNANT is restricted to students of his affected classes.
+     * PARENT is restricted to his linked children.
+     */
+    private Specification<Student> currentUserScope() {
+        if (currentUser.hasUnrestrictedAccess()) {
+            return (r, q, cb) -> cb.conjunction();
+        }
+        if (currentUser.hasRole(com.schoolSys.schooolSys.auth.UserRole.ENSEIGNANT)) {
+            Set<Long> classeIds = currentUser.getScopedClasseIdsForTeacher();
+            List<StudentSpecification.NiveauClasse> tuples = classeRepository.findAllById(classeIds)
+                    .stream()
+                    .map(c -> new StudentSpecification.NiveauClasse(
+                            c.getNiveau().getName(), c.getLetter()))
+                    .toList();
+            return StudentSpecification.inAnyOf(tuples);
+        }
+        if (currentUser.hasRole(com.schoolSys.schooolSys.auth.UserRole.PARENT)) {
+            return StudentSpecification.hasIdIn(
+                    currentUser.getScopedStudentIdsForParent());
+        }
+        // COMPTABLE and other roles: read-only access (full scope, controller already restricts to READ_STUDENTS).
+        return (r, q, cb) -> cb.conjunction();
+    }
+
+    private void assertCurrentUserCanRead(Student student) {
+        if (currentUser.hasUnrestrictedAccess()) return;
+        if (currentUser.hasRole(com.schoolSys.schooolSys.auth.UserRole.PARENT)
+                && !currentUser.parentOwnsStudent(student.getId())) {
+            throw new AccessDeniedException("Cet enfant n'est pas dans votre périmètre.");
+        }
+        if (currentUser.hasRole(com.schoolSys.schooolSys.auth.UserRole.ENSEIGNANT)) {
+            Set<Long> classeIds = currentUser.getScopedClasseIdsForTeacher();
+            List<Classe> myClasses = classeRepository.findAllById(classeIds);
+            boolean inScope = myClasses.stream().anyMatch(c ->
+                    c.getNiveau().getName().equals(student.getNiveau())
+                            && c.getLetter().equals(student.getClasse()));
+            if (!inScope) {
+                throw new AccessDeniedException("Cet élève n'est pas dans une de vos classes.");
+            }
+        }
     }
 
     @Transactional
@@ -115,6 +175,92 @@ public class StudentService {
         return studentRepository.saveAll(students).stream()
                 .map(studentMapper::toResponseDTO)
                 .toList();
+    }
+
+    /**
+     * Robust bulk import: each row is persisted in its own implicit transaction
+     * (via Spring Data's per-method @Transactional on save) so a single bad row
+     * never aborts the whole batch. Returns a structured per-row report.
+     *
+     * Default strategy is SKIP via the no-arg overload.
+     */
+    public StudentBulkImportResultDTO importBulkRobust(List<StudentRequestDTO> dtos) {
+        return importBulkRobust(dtos, "SKIP");
+    }
+
+    /**
+     * @param strategy "SKIP" (default) — keep the existing record on email conflict.
+     *                 "UPDATE" — overwrite the existing record with the import data.
+     */
+    public StudentBulkImportResultDTO importBulkRobust(List<StudentRequestDTO> dtos, String strategy) {
+        boolean updateOnConflict = "UPDATE".equalsIgnoreCase(strategy);
+        int created = 0;
+        int skipped = 0;
+        int failed = 0;
+        List<RowError> errors = new ArrayList<>();
+
+        for (int i = 0; i < dtos.size(); i++) {
+            int rowNum = i + 1;
+            StudentRequestDTO dto = dtos.get(i);
+
+            try {
+                Long existingId = null;
+                if (dto.getEmail() != null && !dto.getEmail().isBlank()
+                        && studentRepository.existsByEmail(dto.getEmail())) {
+                    if (!updateOnConflict) {
+                        skipped++;
+                        errors.add(RowError.builder()
+                                .row(rowNum)
+                                .field("email")
+                                .message("Email déjà utilisé — ligne ignorée (stratégie SKIP)")
+                                .code("DUPLICATE")
+                                .build());
+                        continue;
+                    }
+                    // UPDATE strategy: locate the existing record by email
+                    existingId = studentRepository.findAll().stream()
+                            .filter(s -> dto.getEmail().equalsIgnoreCase(s.getEmail()))
+                            .map(Student::getId)
+                            .findFirst()
+                            .orElse(null);
+                }
+
+                if (existingId != null) {
+                    rowSaver.updateExisting(existingId, dto);
+                    created++; // upsert success
+                    continue;
+                }
+
+                rowSaver.saveNew(dto);
+                created++;
+
+            } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+                // Most likely a unique-constraint hit not caught by the pre-check above
+                failed++;
+                String msg = ex.getMostSpecificCause() != null
+                        ? ex.getMostSpecificCause().getMessage()
+                        : ex.getMessage();
+                errors.add(RowError.builder()
+                        .row(rowNum)
+                        .message("Violation de contrainte : " + msg)
+                        .code("DUPLICATE")
+                        .build());
+            } catch (Exception ex) {
+                failed++;
+                errors.add(RowError.builder()
+                        .row(rowNum)
+                        .message(ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName())
+                        .code("ERROR")
+                        .build());
+            }
+        }
+
+        return StudentBulkImportResultDTO.builder()
+                .created(created)
+                .skipped(skipped)
+                .failed(failed)
+                .errors(errors)
+                .build();
     }
 
     // ===================== ELV-009: Reinscription en masse =====================

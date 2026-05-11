@@ -1,0 +1,21 @@
+package com.schoolSys.schooolSys.reporting.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UpcomingEventDTO {
+    private Long id;
+    private String titre;
+    private LocalDate dateDebut;
+    private String couleur;
+    private String type;
+    private String lieu;
+}

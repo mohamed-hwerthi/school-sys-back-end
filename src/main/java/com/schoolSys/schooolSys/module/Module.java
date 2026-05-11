@@ -75,6 +75,22 @@ public class Module {
     @Builder.Default
     private Boolean versionPrivee = true;
 
+    @Column(name = "salle_type_requise", nullable = false, length = 30)
+    @Builder.Default
+    private String salleTypeRequise = "NORMAL";
+
+    @Column(name = "duree_min_seance", nullable = false)
+    @Builder.Default
+    private Integer dureeMinSeance = 1;
+
+    @Column(name = "duree_max_seance", nullable = false)
+    @Builder.Default
+    private Integer dureeMaxSeance = 2;
+
+    @Column(name = "preference_horaire", nullable = false, length = 20)
+    @Builder.Default
+    private String preferenceHoraire = "INDIFFERENT";
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

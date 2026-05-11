@@ -57,6 +57,15 @@ public class EmploiDuTempsController {
         return ResponseEntity.ok(ApiResponse.ok(timetableSolverService.generate(request)));
     }
 
+    @GetMapping("/api/emploi-du-temps/preview-check")
+    @PreAuthorize("hasAuthority('WRITE_EMPLOI_DU_TEMPS')")
+    public ResponseEntity<ApiResponse<TimetablePreviewCheckDTO>> previewCheck(
+            @RequestParam(required = false) Long niveauId,
+            @RequestParam(required = false) Long anneeScolaireId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+            timetableSolverService.previewCheck(niveauId, anneeScolaireId)));
+    }
+
     // --- Creneau endpoints ---
 
     @GetMapping("/api/creneaux")

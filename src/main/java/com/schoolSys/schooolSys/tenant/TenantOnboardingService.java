@@ -1,10 +1,14 @@
 package com.schoolSys.schooolSys.tenant;
 
+import com.schoolSys.schooolSys.auth.User;
+import com.schoolSys.schooolSys.auth.UserRepository;
+import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.multitenancy.TenantFlywayConfig;
 import com.schoolSys.schooolSys.tenant.dto.TenantOnboardingRequest;
 import com.schoolSys.schooolSys.tenant.dto.TenantResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +26,8 @@ public class TenantOnboardingService {
     private final TenantRepository tenantRepository;
     private final TenantMapper tenantMapper;
     private final TenantFlywayConfig tenantFlywayConfig;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     private static final Map<String, PlanDefaults> PLAN_DEFAULTS = Map.of(
             "FREE", new PlanDefaults(50, 10, 500, BigDecimal.ZERO),
@@ -40,6 +46,15 @@ public class TenantOnboardingService {
 
         if (tenantRepository.existsBySchemaName(schemaName)) {
             throw new IllegalArgumentException("A school with this name already exists");
+        }
+
+        if (request.getAdminEmail() == null || request.getAdminEmail().isBlank()
+                || request.getAdminPassword() == null || request.getAdminPassword().isBlank()) {
+            throw new IllegalArgumentException("Admin email and password are required");
+        }
+
+        if (userRepository.existsByEmail(request.getAdminEmail())) {
+            throw new IllegalArgumentException("A user with this email already exists");
         }
 
         // Determine plan
@@ -68,6 +83,18 @@ public class TenantOnboardingService {
 
         Tenant saved = tenantRepository.save(tenant);
         log.info("Onboarded new tenant: {} (schema: {}, plan: {})", saved.getName(), schemaName, plan);
+
+        User admin = User.builder()
+                .email(request.getAdminEmail())
+                .passwordHash(passwordEncoder.encode(request.getAdminPassword()))
+                .firstName(request.getAdminFirstName() != null ? request.getAdminFirstName() : "Admin")
+                .lastName(request.getAdminLastName() != null ? request.getAdminLastName() : request.getSchoolName())
+                .role(UserRole.ADMIN)
+                .tenantId(schemaName)
+                .isActive(true)
+                .build();
+        userRepository.save(admin);
+        log.info("Created admin user {} for tenant {}", admin.getEmail(), schemaName);
 
         return tenantMapper.toResponseDTO(saved);
     }

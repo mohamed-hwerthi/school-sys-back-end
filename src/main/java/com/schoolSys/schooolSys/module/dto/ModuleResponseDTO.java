@@ -27,4 +27,8 @@ public class ModuleResponseDTO {
     private String sousDomaineName;
     private Boolean versionEtatique;
     private Boolean versionPrivee;
+    private String salleTypeRequise;
+    private Integer dureeMinSeance;
+    private Integer dureeMaxSeance;
+    private String preferenceHoraire;
 }

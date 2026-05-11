@@ -39,6 +39,9 @@ public class EmploiDuTemps {
     @Column(length = 100)
     private String salle;
 
+    @Column(name = "classroom_id")
+    private Long classroomId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

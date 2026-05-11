@@ -2,6 +2,7 @@ package com.schoolSys.schooolSys.websocket;
 
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/online-users")
 @RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")
 public class OnlineUserController {
 
     private final OnlineUserTracker onlineUserTracker;

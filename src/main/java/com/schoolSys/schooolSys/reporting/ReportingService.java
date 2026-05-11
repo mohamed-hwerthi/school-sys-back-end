@@ -1,11 +1,17 @@
 package com.schoolSys.schooolSys.reporting;
 
+import com.schoolSys.schooolSys.absence.Absence;
 import com.schoolSys.schooolSys.absence.AbsenceRepository;
+import com.schoolSys.schooolSys.evenement.EvenementCalendrier;
+import com.schoolSys.schooolSys.evenement.EvenementCalendrierRepository;
 import com.schoolSys.schooolSys.finance.PaiementRepository;
 import com.schoolSys.schooolSys.niveau.ClasseRepository;
 import com.schoolSys.schooolSys.note.NoteRepository;
 import com.schoolSys.schooolSys.reporting.dto.DashboardStatsDTO;
+import com.schoolSys.schooolSys.reporting.dto.DayAttendanceDTO;
 import com.schoolSys.schooolSys.reporting.dto.MonthlyTrendDTO;
+import com.schoolSys.schooolSys.reporting.dto.RecentStudentDTO;
+import com.schoolSys.schooolSys.reporting.dto.UpcomingEventDTO;
 import com.schoolSys.schooolSys.student.Student;
 import com.schoolSys.schooolSys.student.StudentRepository;
 import com.schoolSys.schooolSys.teacher.TeacherRepository;
@@ -15,7 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.Month;
+import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,6 +40,7 @@ public class ReportingService {
     private final TeacherRepository teacherRepository;
     private final ClasseRepository classeRepository;
     private final AbsenceRepository absenceRepository;
+    private final EvenementCalendrierRepository evenementRepository;
 
     public DashboardStatsDTO getDashboardStats(String anneeScolaire) {
         long totalStudents = studentRepository.count();
@@ -60,9 +70,63 @@ public class ReportingService {
         moyenneGenerale = Math.round(moyenneGenerale * 10.0) / 10.0;
 
         // Students by niveau
-        Map<String, Long> studentsByNiveau = studentRepository.findAll().stream()
+        List<Student> allStudents = studentRepository.findAll();
+        Map<String, Long> studentsByNiveau = allStudents.stream()
                 .filter(s -> s.getNiveau() != null && !s.getNiveau().isBlank())
                 .collect(Collectors.groupingBy(Student::getNiveau, Collectors.counting()));
+
+        // ── Banner counters ─────────────────────────────────────────
+        LocalDate today = LocalDate.now();
+        YearMonth thisMonth = YearMonth.from(today);
+
+        List<Absence> allAbsences = absenceRepository.findAll();
+        long absencesToday = allAbsences.stream()
+                .filter(a -> "ABSENCE".equalsIgnoreCase(a.getType()))
+                .filter(a -> today.equals(a.getDate()))
+                .count();
+
+        long newEnrollmentsThisMonth = allStudents.stream()
+                .filter(s -> s.getEnrollmentDate() != null
+                        && YearMonth.from(s.getEnrollmentDate()).equals(thisMonth))
+                .count();
+
+        List<EvenementCalendrier> allEvents = evenementRepository.findAllByOrderByDateDebutAsc();
+        long eventsThisMonth = allEvents.stream()
+                .filter(e -> e.getDateDebut() != null
+                        && YearMonth.from(e.getDateDebut()).equals(thisMonth))
+                .count();
+
+        // ── Weekly attendance: last 5 weekdays (Mon-Fri) ────────────
+        List<DayAttendanceDTO> weeklyAttendance = buildWeeklyAttendance(today, allAbsences, totalStudents);
+
+        // ── Upcoming events (next 5 from today) ─────────────────────
+        List<UpcomingEventDTO> upcomingEvents = allEvents.stream()
+                .filter(e -> e.getDateDebut() != null && !e.getDateDebut().isBefore(today))
+                .limit(5)
+                .map(e -> UpcomingEventDTO.builder()
+                        .id(e.getId())
+                        .titre(e.getTitre())
+                        .dateDebut(e.getDateDebut())
+                        .couleur(e.getCouleur())
+                        .type(e.getType())
+                        .lieu(e.getLieu())
+                        .build())
+                .toList();
+
+        // ── Recent students (last 6 by enrollmentDate desc) ─────────
+        List<RecentStudentDTO> recentStudents = allStudents.stream()
+                .filter(s -> s.getEnrollmentDate() != null)
+                .sorted(Comparator.comparing(Student::getEnrollmentDate).reversed())
+                .limit(6)
+                .map(s -> RecentStudentDTO.builder()
+                        .id(s.getId())
+                        .fullName((s.getFirstName() == null ? "" : s.getFirstName())
+                                + " " + (s.getLastName() == null ? "" : s.getLastName()))
+                        .classe(s.getClasse())
+                        .enrollmentDate(s.getEnrollmentDate())
+                        .statut(s.getStatus())
+                        .build())
+                .toList();
 
         return DashboardStatsDTO.builder()
                 .totalStudents(totalStudents)
@@ -74,7 +138,35 @@ public class ReportingService {
                 .tauxAbsence(tauxAbsence)
                 .moyenneGenerale(moyenneGenerale)
                 .studentsByNiveau(studentsByNiveau)
+                .absencesToday(absencesToday)
+                .newEnrollmentsThisMonth(newEnrollmentsThisMonth)
+                .eventsThisMonth(eventsThisMonth)
+                .weeklyAttendance(weeklyAttendance)
+                .upcomingEvents(upcomingEvents)
+                .recentStudents(recentStudents)
                 .build();
+    }
+
+    private List<DayAttendanceDTO> buildWeeklyAttendance(LocalDate today, List<Absence> allAbsences, long totalStudents) {
+        // Find the most recent Monday-Friday window (the current week if today is a weekday,
+        // otherwise the previous week)
+        LocalDate friday = today;
+        if (today.getDayOfWeek() == DayOfWeek.SATURDAY) friday = today.minusDays(1);
+        else if (today.getDayOfWeek() == DayOfWeek.SUNDAY) friday = today.minusDays(2);
+        LocalDate monday = friday.minusDays(friday.getDayOfWeek().getValue() - 1);
+
+        String[] labels = {"Lun", "Mar", "Mer", "Jeu", "Ven"};
+        List<DayAttendanceDTO> out = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            LocalDate d = monday.plusDays(i);
+            long absents = allAbsences.stream()
+                    .filter(a -> "ABSENCE".equalsIgnoreCase(a.getType()))
+                    .filter(a -> d.equals(a.getDate()))
+                    .count();
+            long presents = Math.max(0L, totalStudents - absents);
+            out.add(DayAttendanceDTO.builder().jour(labels[i]).presents(presents).absents(absents).build());
+        }
+        return out;
     }
 
     public List<MonthlyTrendDTO> getMonthlyTrends(String anneeScolaire) {

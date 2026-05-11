@@ -59,6 +59,10 @@ public class ModuleService {
                 .sousDomaine(resolveSousDomaine(dto.getSousDomaineId()))
                 .versionEtatique(dto.getVersionEtatique())
                 .versionPrivee(dto.getVersionPrivee())
+                .salleTypeRequise(dto.getSalleTypeRequise())
+                .dureeMinSeance(dto.getDureeMinSeance())
+                .dureeMaxSeance(dto.getDureeMaxSeance())
+                .preferenceHoraire(dto.getPreferenceHoraire())
                 .build();
 
         return toResponse(moduleRepository.save(module));
@@ -86,6 +90,10 @@ public class ModuleService {
         module.setSousDomaine(resolveSousDomaine(dto.getSousDomaineId()));
         module.setVersionEtatique(dto.getVersionEtatique());
         module.setVersionPrivee(dto.getVersionPrivee());
+        module.setSalleTypeRequise(dto.getSalleTypeRequise());
+        module.setDureeMinSeance(dto.getDureeMinSeance());
+        module.setDureeMaxSeance(dto.getDureeMaxSeance());
+        module.setPreferenceHoraire(dto.getPreferenceHoraire());
 
         return toResponse(moduleRepository.save(module));
     }
@@ -123,7 +131,11 @@ public class ModuleService {
                 .niveauId(module.getNiveau().getId())
                 .niveauName(module.getNiveau().getName())
                 .versionEtatique(module.getVersionEtatique())
-                .versionPrivee(module.getVersionPrivee());
+                .versionPrivee(module.getVersionPrivee())
+                .salleTypeRequise(module.getSalleTypeRequise())
+                .dureeMinSeance(module.getDureeMinSeance())
+                .dureeMaxSeance(module.getDureeMaxSeance())
+                .preferenceHoraire(module.getPreferenceHoraire());
 
         if (module.getDomaine() != null) {
             builder.domaineId(module.getDomaine().getId())

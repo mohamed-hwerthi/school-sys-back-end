@@ -14,6 +14,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Map;
@@ -58,17 +59,27 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles database constraint violations (unique constraints, foreign keys, etc.).
-     *
-     * @param ex the exception
-     * @return 409 response
+     * Handles database constraint violations.
+     * <ul>
+     *   <li>Unique constraint / foreign key → 409 Conflict (collision avec l'état serveur)</li>
+     *   <li>NOT NULL constraint → 400 Bad Request (champ obligatoire manquant côté client)</li>
+     * </ul>
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleConflict(DataIntegrityViolationException ex) {
         String causeMessage = ex.getMostSpecificCause().getMessage();
         log.warn("Data integrity violation: {}", causeMessage);
-        return ResponseEntity.status(HttpStatus.CONFLICT)
+
+        HttpStatus status = isNotNullViolation(causeMessage)
+                ? HttpStatus.BAD_REQUEST
+                : HttpStatus.CONFLICT;
+        return ResponseEntity.status(status)
                 .body(ApiResponse.error(translateConstraintViolation(causeMessage)));
+    }
+
+    private boolean isNotNullViolation(String causeMessage) {
+        return causeMessage != null
+                && (causeMessage.contains("not-null") || causeMessage.contains("null value"));
     }
 
     private static final Pattern UNIQUE_CONSTRAINT_PATTERN =
@@ -245,6 +256,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleMissingParam(MissingServletRequestParameterException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error("Missing required parameter: " + ex.getParameterName()));
+    }
+
+    /**
+     * Handles path variable / query param type mismatch (ex: /students/abc où id attend un Long).
+     * Sans ce handler la NumberFormatException remonte au handler générique → 500.
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String requiredType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "valide";
+        String msg = "Paramètre '" + ex.getName() + "' invalide : type " + requiredType + " attendu";
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(msg));
     }
 
     /**

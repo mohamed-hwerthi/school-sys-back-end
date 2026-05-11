@@ -1,14 +1,18 @@
 package com.schoolSys.schooolSys.niveau;
 
+import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.niveau.dto.ClasseResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/classes")
@@ -16,14 +20,22 @@ import java.util.List;
 public class ClasseController {
 
     private final ClasseRepository classeRepository;
+    private final CurrentUserContext currentUser;
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<ClasseResponseDTO>>> getAll(
             @RequestParam(required = false) Long niveauId) {
         List<Classe> classes = niveauId != null
                 ? classeRepository.findByNiveauId(niveauId)
                 : classeRepository.findAll();
+
+        // Row-level scoping: an ENSEIGNANT only sees classes he is affected to.
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
+            Set<Long> scoped = currentUser.getScopedClasseIdsForTeacher();
+            classes = classes.stream().filter(c -> scoped.contains(c.getId())).toList();
+        }
 
         List<ClasseResponseDTO> dtos = classes.stream()
                 .map(this::toResponse)

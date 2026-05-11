@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
@@ -16,6 +17,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/parent-notifications")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN','DIRECTEUR','ENSEIGNANT')")
 public class ParentNotificationController {
 
     private final ParentNotificationService service;
