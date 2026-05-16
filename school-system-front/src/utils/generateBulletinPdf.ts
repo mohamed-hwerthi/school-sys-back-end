@@ -98,7 +98,7 @@ export function generateBulletinPdf(
 
   // Grades table
   const tableHead = [
-    ["Domaine", "Module", "Note", "Coeff.", "Moy. Module", "Min", "Max", "Moy. Classe"],
+    ["Domaine", "Matière", "Note", "Coeff.", "Moy. Matière", "Min", "Max", "Moy. Classe"],
   ];
 
   const tableBody = allModules.map(({ domaine, module: mod }) => [

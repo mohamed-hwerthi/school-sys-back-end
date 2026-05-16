@@ -3,11 +3,21 @@ import { examensApi, type ExamenDTO, type ExamenRequest } from "@/api/examens.ap
 
 const EXAMENS_KEY = "examens";
 
-/** Fetch raw ExamenDTO list. */
-export function useExamensRaw(moduleId?: number, classeId?: number, trimestre?: number) {
+/**
+ * Fetch raw ExamenDTO list.
+ * `enabled` lets callers defer the request until a scope (e.g. a class) is
+ * chosen — avoids loading every exam of every class/trimester at once.
+ */
+export function useExamensRaw(
+  moduleId?: number,
+  classeId?: number,
+  trimestre?: number,
+  enabled = true,
+) {
   return useQuery<ExamenDTO[]>({
     queryKey: [EXAMENS_KEY, moduleId, classeId, trimestre],
     queryFn: () => examensApi.getAll(moduleId, classeId, trimestre),
+    enabled,
   });
 }
 

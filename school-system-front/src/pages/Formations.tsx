@@ -68,7 +68,7 @@ const STATUT_COLORS: Record<StatutFormation, string> = {
   ANNULEE: "bg-red-100 text-red-700",
 };
 
-const ITEMS_PER_PAGE = 15;
+const ITEMS_PER_PAGE = 10;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },

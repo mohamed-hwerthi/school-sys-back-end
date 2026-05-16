@@ -2,11 +2,13 @@ package com.schoolSys.schooolSys.appreciation;
 
 import com.schoolSys.schooolSys.appreciation.dto.*;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.domaine.Domaine;
 import com.schoolSys.schooolSys.domaine.DomaineRepository;
 import com.schoolSys.schooolSys.student.Student;
 import com.schoolSys.schooolSys.student.StudentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,16 +26,33 @@ public class AppreciationService {
     private final ObservationRepository observationRepository;
     private final StudentRepository studentRepository;
     private final DomaineRepository domaineRepository;
+    private final CurrentUserContext currentUser;
+
+    /** Keeps only the student IDs the current user is allowed to read. */
+    private List<Long> scopeStudentIds(List<Long> studentIds) {
+        if (studentIds == null || studentIds.isEmpty()) return List.of();
+        return studentIds.stream().filter(id -> {
+            try {
+                currentUser.assertCanAccessStudent(id);
+                return true;
+            } catch (AccessDeniedException e) {
+                return false;
+            }
+        }).toList();
+    }
 
     // ── Recommandations ─────────────────────────────────────
 
     public List<RecommandationDTO> getRecommandations(List<Long> studentIds, Integer trimestre) {
-        return recommandationRepository.findByStudentIdInAndTrimestre(studentIds, trimestre)
+        List<Long> scoped = scopeStudentIds(studentIds);
+        if (scoped.isEmpty()) return List.of();
+        return recommandationRepository.findByStudentIdInAndTrimestre(scoped, trimestre)
                 .stream().map(this::toRecommandationDTO).toList();
     }
 
     @Transactional
     public List<RecommandationDTO> upsertRecommandations(List<RecommandationRequestDTO> dtos) {
+        dtos.forEach(d -> currentUser.assertCanAccessStudent(d.getStudentId()));
         List<Recommandation> saved = new ArrayList<>();
 
         for (RecommandationRequestDTO dto : dtos) {
@@ -68,12 +87,15 @@ public class AppreciationService {
     // ── Observations ────────────────────────────────────────
 
     public List<ObservationDTO> getObservations(List<Long> studentIds, Integer trimestre) {
-        return observationRepository.findByStudentIdInAndTrimestre(studentIds, trimestre)
+        List<Long> scoped = scopeStudentIds(studentIds);
+        if (scoped.isEmpty()) return List.of();
+        return observationRepository.findByStudentIdInAndTrimestre(scoped, trimestre)
                 .stream().map(this::toObservationDTO).toList();
     }
 
     @Transactional
     public List<ObservationDTO> upsertObservations(List<ObservationRequestDTO> dtos) {
+        dtos.forEach(d -> currentUser.assertCanAccessStudent(d.getStudentId()));
         List<ObservationTrimestre> saved = new ArrayList<>();
 
         for (ObservationRequestDTO dto : dtos) {

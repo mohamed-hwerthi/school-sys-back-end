@@ -1,8 +1,11 @@
 package com.schoolSys.schooolSys.examenonline;
 
+import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.examenonline.dto.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +20,7 @@ public class QuizService {
     private final QuizRepository quizRepository;
     private final QuestionRepository questionRepository;
     private final TentativeRepository tentativeRepository;
+    private final CurrentUserContext currentUser;
 
     public List<QuizDTO> findAll(Long classeId, String statut) {
         List<Quiz> quizzes;
@@ -27,18 +31,27 @@ public class QuizService {
         } else {
             quizzes = quizRepository.findAllByOrderByCreatedAtDesc();
         }
+        // Row-level scoping: a teacher only sees quizzes in his classes.
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
+            var scoped = currentUser.getScopedClasseIdsForTeacher();
+            quizzes = quizzes.stream()
+                    .filter(q -> q.getClasseId() != null && scoped.contains(q.getClasseId()))
+                    .toList();
+        }
         return quizzes.stream().map(this::toDTO).toList();
     }
 
     public QuizDTO findById(Long id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", id));
+        assertCanAccessQuiz(quiz);
         return toDTO(quiz);
     }
 
     public QuizDetailDTO findDetailById(Long id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", id));
+        assertCanAccessQuiz(quiz);
 
         List<Question> questions = questionRepository.findByQuizIdOrderByOrdreAsc(id);
         List<QuestionDTO> questionDTOs = questions.stream().map(this::toQuestionDTO).toList();
@@ -66,12 +79,21 @@ public class QuizService {
     }
 
     public List<QuizDTO> findByClasse(Long classeId) {
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)
+                && !currentUser.teacherTeachesClasse(classeId)) {
+            throw new AccessDeniedException("Vous n'enseignez pas dans cette classe.");
+        }
         return quizRepository.findByClasseIdOrderByCreatedAtDesc(classeId)
                 .stream().map(this::toDTO).toList();
     }
 
     @Transactional
     public QuizDTO create(CreateQuizRequest request) {
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)
+                && request.getClasseId() != null
+                && !currentUser.teacherTeachesClasse(request.getClasseId())) {
+            throw new AccessDeniedException("Vous n'enseignez pas dans cette classe.");
+        }
         Quiz quiz = Quiz.builder()
                 .titre(request.getTitre())
                 .description(request.getDescription())
@@ -95,6 +117,7 @@ public class QuizService {
     public QuizDTO update(Long id, CreateQuizRequest request) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", id));
+        assertCanAccessQuiz(quiz);
 
         quiz.setTitre(request.getTitre());
         quiz.setDescription(request.getDescription());
@@ -119,6 +142,7 @@ public class QuizService {
     public QuizDTO publish(Long id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", id));
+        assertCanAccessQuiz(quiz);
         quiz.setStatut("PUBLIE");
         quiz.setUpdatedAt(LocalDateTime.now());
         return toDTO(quizRepository.save(quiz));
@@ -126,10 +150,19 @@ public class QuizService {
 
     @Transactional
     public void delete(Long id) {
-        if (!quizRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Quiz", id);
-        }
+        Quiz quiz = quizRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Quiz", id));
+        assertCanAccessQuiz(quiz);
         quizRepository.deleteById(id);
+    }
+
+    /** A teacher may only read/manage quizzes that belong to one of his classes. */
+    private void assertCanAccessQuiz(Quiz quiz) {
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)
+                && (quiz.getClasseId() == null
+                    || !currentUser.teacherTeachesClasse(quiz.getClasseId()))) {
+            throw new AccessDeniedException("Ce quiz n'est pas dans votre périmètre.");
+        }
     }
 
     private QuizDTO toDTO(Quiz quiz) {

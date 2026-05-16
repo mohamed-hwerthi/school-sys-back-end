@@ -5,6 +5,7 @@ import com.schoolSys.schooolSys.tenant.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -29,7 +30,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TenantFlywayConfig {
 
-    private static final String TENANT_MIGRATION_LOCATION = "classpath:db/tenant-migration";
+    /**
+     * Flyway locations for tenant migrations. Production keeps schema
+     * migrations only ({@code classpath:db/tenant-migration}); dev also adds
+     * {@code classpath:db/tenant-seed} so new schemas come with demo data.
+     */
+    @Value("${app.tenant.flyway-locations:classpath:db/tenant-migration}")
+    private String[] tenantMigrationLocations;
 
     private final DataSource dataSource;
     private final TenantRepository tenantRepository;
@@ -63,7 +70,7 @@ public class TenantFlywayConfig {
         Flyway flyway = Flyway.configure()
                 .dataSource(dataSource)
                 .schemas(schemaName)
-                .locations(TENANT_MIGRATION_LOCATION)
+                .locations(tenantMigrationLocations)
                 .baselineOnMigrate(true)
                 .createSchemas(true)
                 .load();

@@ -1,6 +1,8 @@
 package com.schoolSys.schooolSys.niveau;
 
+import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.emploidutemps.EmploiDuTempsRepository;
 import com.schoolSys.schooolSys.examen.ExamenRepository;
 import com.schoolSys.schooolSys.niveau.dto.NiveauResponseDTO;
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -21,9 +24,16 @@ public class NiveauService {
     private final StudentRepository studentRepository;
     private final ExamenRepository examenRepository;
     private final EmploiDuTempsRepository emploiDuTempsRepository;
+    private final CurrentUserContext currentUser;
 
     public List<NiveauResponseDTO> findAll() {
-        return niveauRepository.findAll().stream()
+        List<Niveau> list = niveauRepository.findAll();
+        // Row-level scoping: an ENSEIGNANT only sees the niveaux of his own classes.
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
+            Set<Long> scoped = currentUser.getScopedNiveauIdsForTeacher();
+            list = list.stream().filter(n -> scoped.contains(n.getId())).toList();
+        }
+        return list.stream()
                 .map(this::toResponse)
                 .toList();
     }

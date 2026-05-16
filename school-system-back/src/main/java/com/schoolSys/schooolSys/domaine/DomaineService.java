@@ -1,6 +1,8 @@
 package com.schoolSys.schooolSys.domaine;
 
+import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.domaine.dto.*;
 import com.schoolSys.schooolSys.niveau.Niveau;
 import com.schoolSys.schooolSys.niveau.NiveauRepository;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +21,7 @@ public class DomaineService {
     private final DomaineRepository domaineRepository;
     private final SousDomaineRepository sousDomaineRepository;
     private final NiveauRepository niveauRepository;
+    private final CurrentUserContext currentUser;
 
     // ── Domaines ────────────────────────────────────────────
 
@@ -25,6 +29,11 @@ public class DomaineService {
         List<Domaine> list = niveauId != null
                 ? domaineRepository.findByNiveauIdOrderByOrdreAsc(niveauId)
                 : domaineRepository.findAllByOrderByNiveauNameAscOrdreAsc();
+        // Row-level scoping: an ENSEIGNANT only sees the domaines of his own subjects.
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
+            Set<Long> scoped = currentUser.getScopedDomaineIdsForTeacher();
+            list = list.stream().filter(d -> scoped.contains(d.getId())).toList();
+        }
         return list.stream().map(this::toResponse).toList();
     }
 

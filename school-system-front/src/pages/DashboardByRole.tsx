@@ -4,7 +4,6 @@ import { Loader2 } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useRbac";
 
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
-const SuperAdminDashboard = lazy(() => import("@/pages/SuperAdminDashboard"));
 const TeacherDashboard = lazy(() => import("@/pages/TeacherDashboard"));
 const ComptableDashboard = lazy(() => import("@/pages/ComptableDashboard"));
 
@@ -19,11 +18,13 @@ function PageLoader() {
 /**
  * Route entry for /dashboard. Picks the right dashboard based on the user's role.
  *
- * - SUPER_ADMIN → SuperAdminDashboard (multi-tenant cockpit)
  * - ADMIN, DIRECTEUR → Dashboard (existing school-wide KPIs)
  * - ENSEIGNANT → TeacherDashboard (his classes only)
  * - COMPTABLE → ComptableDashboard (finance focus)
  * - PARENT → redirect to /dashboard/portail-parent
+ *
+ * Note: SUPER_ADMIN never reaches this — DashboardLayout redirects him to
+ * his own independent /super-admin space before the outlet renders.
  */
 export default function DashboardByRole() {
   const { role, isLoading } = useCurrentUser();
@@ -31,12 +32,6 @@ export default function DashboardByRole() {
   if (isLoading) return <PageLoader />;
 
   switch (role) {
-    case "SUPER_ADMIN":
-      return (
-        <Suspense fallback={<PageLoader />}>
-          <SuperAdminDashboard />
-        </Suspense>
-      );
     case "ENSEIGNANT":
       return (
         <Suspense fallback={<PageLoader />}>

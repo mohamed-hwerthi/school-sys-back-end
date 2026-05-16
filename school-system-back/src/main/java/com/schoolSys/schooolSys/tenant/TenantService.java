@@ -1,11 +1,15 @@
 package com.schoolSys.schooolSys.tenant;
 
+import com.schoolSys.schooolSys.auth.User;
+import com.schoolSys.schooolSys.auth.UserRepository;
+import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.multitenancy.TenantFlywayConfig;
 import com.schoolSys.schooolSys.tenant.dto.TenantRequestDTO;
 import com.schoolSys.schooolSys.tenant.dto.TenantResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +39,8 @@ public class TenantService {
     private final TenantRepository tenantRepository;
     private final TenantMapper tenantMapper;
     private final TenantFlywayConfig tenantFlywayConfig;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Returns all registered tenants.
@@ -85,6 +91,14 @@ public class TenantService {
             throw new IllegalArgumentException("Schema '" + schemaName + "' already exists");
         }
 
+        // A school ADMIN account is auto-created when both email and password are provided.
+        String adminEmail = dto.getAdminEmail() != null ? dto.getAdminEmail().toLowerCase().trim() : null;
+        boolean createAdmin = adminEmail != null && !adminEmail.isBlank()
+                && dto.getAdminPassword() != null && !dto.getAdminPassword().isBlank();
+        if (createAdmin && userRepository.existsByEmail(adminEmail)) {
+            throw new IllegalArgumentException("A user already exists with email '" + adminEmail + "'");
+        }
+
         // Create schema and run Flyway migrations
         tenantFlywayConfig.migrateTenantSchema(schemaName);
 
@@ -97,7 +111,24 @@ public class TenantService {
                 : slugify(dto.getName());
         tenant.setSlug(slug);
 
-        return tenantMapper.toResponseDTO(tenantRepository.save(tenant));
+        Tenant saved = tenantRepository.save(tenant);
+
+        // Auto-create the school's first ADMIN so the school can be managed right away.
+        // That ADMIN then creates the DIRECTEUR / ENSEIGNANT / PARENT accounts.
+        if (createAdmin) {
+            userRepository.save(User.builder()
+                    .email(adminEmail)
+                    .passwordHash(passwordEncoder.encode(dto.getAdminPassword()))
+                    .firstName("Admin")
+                    .lastName("École")
+                    .role(UserRole.ADMIN)
+                    .tenantId(schemaName)
+                    .isActive(true)
+                    .build());
+            log.info("Auto-created ADMIN account '{}' for tenant '{}'", adminEmail, schemaName);
+        }
+
+        return tenantMapper.toResponseDTO(saved);
     }
 
     /**

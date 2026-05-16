@@ -22,4 +22,13 @@ public class TenantRequestDTO {
 
     /** URL-friendly slug for the public vitrine (optional — auto-generated from name if blank). */
     private String slug;
+
+    /**
+     * Email of the school's first ADMIN account, auto-created with the tenant.
+     * Optional — if blank, no admin account is created.
+     */
+    private String adminEmail;
+
+    /** Initial password for the auto-created school ADMIN (required if adminEmail is set). */
+    private String adminPassword;
 }

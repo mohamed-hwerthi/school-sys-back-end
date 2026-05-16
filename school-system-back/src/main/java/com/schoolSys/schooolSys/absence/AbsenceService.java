@@ -1,6 +1,7 @@
 package com.schoolSys.schooolSys.absence;
 
 import com.schoolSys.schooolSys.absence.dto.*;
+import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.niveau.Classe;
@@ -71,7 +72,11 @@ public class AbsenceService {
 
     @Transactional(readOnly = true)
     public List<AbsenceResponseDTO> getByClasseAndDate(Long classeId, LocalDate date, String type) {
-        if (currentUser.hasRole(com.schoolSys.schooolSys.auth.UserRole.ENSEIGNANT)
+        // A teacher may only read absences of a class he is affected to. When no
+        // classeId is given ("toutes les classes"), the result is row-level scoped
+        // to his students instead of being refused outright.
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)
+                && classeId != null
                 && !currentUser.teacherTeachesClasse(classeId)) {
             throw new AccessDeniedException("Vous n'enseignez pas dans cette classe.");
         }
@@ -80,6 +85,7 @@ public class AbsenceService {
             absences = absenceRepository.findAll().stream()
                 .filter(a -> date.equals(a.getDate()))
                 .filter(a -> type == null || type.isBlank() || type.equals(a.getType()))
+                .filter(a -> isInScope(a.getEleveId()))
                 .collect(Collectors.toList());
         } else {
             List<Long> eleveIds = getEleveIdsByClasse(classeId);
@@ -96,6 +102,13 @@ public class AbsenceService {
     @Transactional(readOnly = true)
     public List<FeuilleJourDTO> getFeuillesByDate(LocalDate date) {
         List<Classe> classes = classeRepository.findAll();
+        // A teacher only sees the daily sheets of his own classes.
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
+            Set<Long> scoped = currentUser.getScopedClasseIdsForTeacher();
+            classes = classes.stream()
+                .filter(c -> scoped.contains(c.getId()))
+                .collect(Collectors.toList());
+        }
         return classes.stream()
             .map(c -> {
                 String fullName = resolveClasseFullName(c.getId());
@@ -134,6 +147,9 @@ public class AbsenceService {
     }
 
     public AbsenceStatsDTO getStats(Long classeId, int mois, int annee) {
+        if (currentUser.hasRole(UserRole.ENSEIGNANT) && !currentUser.teacherTeachesClasse(classeId)) {
+            throw new AccessDeniedException("Vous n'enseignez pas dans cette classe.");
+        }
         List<Long> eleveIds = getEleveIdsByClasse(classeId);
         if (eleveIds.isEmpty()) {
             return AbsenceStatsDTO.builder()
@@ -204,6 +220,7 @@ public class AbsenceService {
     public AbsenceResponseDTO justifier(Long absenceId) {
         Absence absence = absenceRepository.findById(absenceId)
             .orElseThrow(() -> new ResourceNotFoundException("Absence", absenceId));
+        currentUser.assertCanAccessStudent(absence.getEleveId());
         absence.setJustifie(true);
         return toDto(absenceRepository.save(absence));
     }
@@ -215,6 +232,7 @@ public class AbsenceService {
     public AbsenceResponseDTO submitJustification(Long absenceId, JustificationRequestDTO request) {
         Absence absence = absenceRepository.findById(absenceId)
             .orElseThrow(() -> new ResourceNotFoundException("Absence", absenceId));
+        currentUser.assertCanAccessStudent(absence.getEleveId());
         absence.setJustifie(true);
         absence.setMotif(request.getMotif());
         Absence saved = absenceRepository.save(absence);
@@ -233,7 +251,9 @@ public class AbsenceService {
 
     @Transactional
     public void delete(Long id) {
-        if (!absenceRepository.existsById(id)) throw new ResourceNotFoundException("Absence", id);
+        Absence absence = absenceRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Absence", id));
+        currentUser.assertCanAccessStudent(absence.getEleveId());
         absenceRepository.deleteById(id);
     }
 
@@ -258,6 +278,9 @@ public class AbsenceService {
     // ---- ABS-007: Rapport mensuel ----
 
     public RapportPresenceDTO getRapportMensuel(Long classeId, int mois, int annee) {
+        if (currentUser.hasRole(UserRole.ENSEIGNANT) && !currentUser.teacherTeachesClasse(classeId)) {
+            throw new AccessDeniedException("Vous n'enseignez pas dans cette classe.");
+        }
         List<Student> students = getStudentsByClasse(classeId);
         if (students.isEmpty()) {
             return RapportPresenceDTO.builder()
@@ -315,6 +338,7 @@ public class AbsenceService {
     // ---- ABS-009: Historique presence par eleve ----
 
     public HistoriquePresenceDTO getHistorique(Long eleveId) {
+        currentUser.assertCanAccessStudent(eleveId);
         Student student = studentRepository.findById(eleveId)
             .orElseThrow(() -> new ResourceNotFoundException("Student", eleveId));
 

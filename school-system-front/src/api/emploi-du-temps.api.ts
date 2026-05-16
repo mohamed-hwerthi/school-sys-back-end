@@ -23,6 +23,12 @@ export const emploiDuTempsApi = {
     return res.data;
   },
 
+  // Current teacher's own timetable (teacher resolved from the auth token)
+  getMine: async (): Promise<EmploiDuTempsEntry[]> => {
+    const res = await api.get<EmploiDuTempsEntry[]>(`${BASE}/me`);
+    return res.data;
+  },
+
   saveAll: async (classeId: number, entries: EmploiDuTempsEntry[]): Promise<EmploiDuTempsEntry[]> => {
     const res = await api.put<EmploiDuTempsEntry[]>(`${BASE}/classe/${classeId}`, entries);
     return res.data;

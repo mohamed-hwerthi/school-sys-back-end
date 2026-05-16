@@ -47,17 +47,33 @@ public class DevoirService {
     public DevoirDTO findById(Long id) {
         Devoir devoir = devoirRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Devoir", id));
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)
+                && devoir.getClasseId() != null
+                && !currentUser.teacherTeachesClasse(devoir.getClasseId())) {
+            throw new AccessDeniedException("Ce devoir n'est pas dans votre périmètre.");
+        }
         return toDTO(devoir);
     }
 
     public List<DevoirDTO> findByClasse(Long classeId) {
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)
+                && !currentUser.teacherTeachesClasse(classeId)) {
+            throw new AccessDeniedException("Vous n'enseignez pas dans cette classe.");
+        }
         return devoirRepository.findByClasseIdOrderByDateLimiteDesc(classeId)
                 .stream().map(this::toDTO).toList();
     }
 
     public List<DevoirDTO> findByModule(Long moduleId) {
-        return devoirRepository.findByModuleIdOrderByDateLimiteDesc(moduleId)
-                .stream().map(this::toDTO).toList();
+        List<Devoir> devoirs = devoirRepository.findByModuleIdOrderByDateLimiteDesc(moduleId);
+        // A teacher only sees devoirs of this module that belong to his classes.
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
+            var scoped = currentUser.getScopedClasseIdsForTeacher();
+            devoirs = devoirs.stream()
+                    .filter(d -> d.getClasseId() == null || scoped.contains(d.getClasseId()))
+                    .toList();
+        }
+        return devoirs.stream().map(this::toDTO).toList();
     }
 
     @Transactional

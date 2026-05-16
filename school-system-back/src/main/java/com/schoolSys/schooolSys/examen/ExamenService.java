@@ -1,6 +1,8 @@
 package com.schoolSys.schooolSys.examen;
 
+import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.examen.dto.ExamenRequestDTO;
 import com.schoolSys.schooolSys.examen.dto.ExamenResponseDTO;
 import com.schoolSys.schooolSys.module.Module;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -28,10 +31,20 @@ public class ExamenService {
     private final TeacherRepository teacherRepository;
     private final NoteRepository noteRepository;
     private final StudentRepository studentRepository;
+    private final CurrentUserContext currentUser;
 
     public List<ExamenResponseDTO> findAll(Long moduleId, Long classeId, Integer trimestre) {
-        return examenRepository.findFiltered(moduleId, classeId, trimestre)
-                .stream()
+        List<Examen> list = examenRepository.findFiltered(moduleId, classeId, trimestre);
+        // Row-level scoping: an ENSEIGNANT only sees exams in his own classes and subjects.
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
+            Set<Long> scopedClasses = currentUser.getScopedClasseIdsForTeacher();
+            Set<Long> scopedModules = currentUser.getScopedModuleIdsForTeacher();
+            list = list.stream()
+                    .filter(e -> e.getClasse() != null && scopedClasses.contains(e.getClasse().getId()))
+                    .filter(e -> e.getModule() != null && scopedModules.contains(e.getModule().getId()))
+                    .toList();
+        }
+        return list.stream()
                 .map(this::toResponse)
                 .toList();
     }

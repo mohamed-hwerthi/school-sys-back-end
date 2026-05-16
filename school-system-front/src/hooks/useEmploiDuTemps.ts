@@ -31,6 +31,14 @@ export function useEmploiByEnseignant(enseignantId: number) {
   });
 }
 
+/** The logged-in teacher's own timetable. */
+export function useEmploiMine() {
+  return useQuery<EmploiDuTempsEntry[]>({
+    queryKey: [EDT_KEY, "me"],
+    queryFn: () => emploiDuTempsApi.getMine(),
+  });
+}
+
 export function useCreneaux() {
   return useQuery<Creneau[]>({
     queryKey: [CRENEAUX_KEY],

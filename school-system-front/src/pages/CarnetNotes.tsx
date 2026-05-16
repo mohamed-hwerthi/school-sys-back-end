@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
 import { motion } from "framer-motion";
@@ -28,15 +28,17 @@ type TabKey = typeof TAB_KEYS[number];
 export default function CarnetNotes() {
   const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState<TabKey>(
-    (TAB_KEYS as readonly string[]).includes(initialTab ?? "")
-      ? (initialTab as TabKey)
-      : "domaines"
-  );
+
+  // Active tab is derived from the URL — single source of truth.
+  // Keeps the tab in sync when navigating via links (e.g. the "Évaluations"
+  // sidebar entry redirects to ?tab=examens) or browser back/forward, even
+  // when CarnetNotes is already mounted and does not remount.
+  const tabParam = searchParams.get("tab");
+  const activeTab: TabKey = (TAB_KEYS as readonly string[]).includes(tabParam ?? "")
+    ? (tabParam as TabKey)
+    : "domaines";
 
   const selectTab = (key: TabKey) => {
-    setActiveTab(key);
     setSearchParams({ tab: key }, { replace: true });
   };
 

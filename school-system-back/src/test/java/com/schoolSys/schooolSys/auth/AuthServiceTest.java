@@ -3,6 +3,7 @@ package com.schoolSys.schooolSys.auth;
 import com.schoolSys.schooolSys.auth.dto.LoginRequestDTO;
 import com.schoolSys.schooolSys.auth.dto.LoginResponseDTO;
 import com.schoolSys.schooolSys.auth.dto.RefreshTokenRequestDTO;
+import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.tenant.TenantRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,6 +47,15 @@ class AuthServiceTest {
 
     @Mock
     private TenantRepository tenantRepository;
+
+    @Mock
+    private AuditService auditService;
+
+    @Mock
+    private LoginAttemptService loginAttemptService;
+
+    @Mock
+    private TokenBlacklistService tokenBlacklistService;
 
     @InjectMocks
     private AuthService authService;
@@ -87,7 +98,7 @@ class AuthServiceTest {
             when(jwtTokenProvider.getAccessTokenExpirationMs()).thenReturn(900000L);
             when(refreshTokenRepository.save(any(RefreshToken.class))).thenAnswer(inv -> inv.getArgument(0));
 
-            LoginResponseDTO result = authService.login(loginRequest, "Chrome", "127.0.0.1");
+            LoginResponseDTO result = authService.login(loginRequest, "Chrome", "127.0.0.1", null);
 
             assertThat(result.getAccessToken()).isEqualTo("jwt-access-token");
             assertThat(result.getRefreshToken()).isNotBlank();
@@ -103,7 +114,7 @@ class AuthServiceTest {
 
             loginRequest.setEmail("unknown@school.com");
 
-            assertThatThrownBy(() -> authService.login(loginRequest, "Chrome", "127.0.0.1"))
+            assertThatThrownBy(() -> authService.login(loginRequest, "Chrome", "127.0.0.1", null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Invalid email or password");
         }
@@ -117,7 +128,7 @@ class AuthServiceTest {
 
             loginRequest.setPassword("wrongpass");
 
-            assertThatThrownBy(() -> authService.login(loginRequest, "Chrome", "127.0.0.1"))
+            assertThatThrownBy(() -> authService.login(loginRequest, "Chrome", "127.0.0.1", null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Invalid email or password");
 
@@ -136,7 +147,7 @@ class AuthServiceTest {
 
             loginRequest.setPassword("wrongpass");
 
-            assertThatThrownBy(() -> authService.login(loginRequest, "Chrome", "127.0.0.1"))
+            assertThatThrownBy(() -> authService.login(loginRequest, "Chrome", "127.0.0.1", null))
                     .isInstanceOf(IllegalArgumentException.class);
 
             assertThat(activeUser.getFailedLoginAttempts()).isEqualTo(5);
@@ -151,7 +162,7 @@ class AuthServiceTest {
 
             when(userRepository.findByEmail("admin@school.com")).thenReturn(Optional.of(activeUser));
 
-            assertThatThrownBy(() -> authService.login(loginRequest, "Chrome", "127.0.0.1"))
+            assertThatThrownBy(() -> authService.login(loginRequest, "Chrome", "127.0.0.1", null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Compte verrouillé");
         }
@@ -164,7 +175,7 @@ class AuthServiceTest {
             when(userRepository.findByEmail("admin@school.com")).thenReturn(Optional.of(activeUser));
             when(passwordEncoder.matches("password123", "$2a$10$hashedPassword")).thenReturn(true);
 
-            assertThatThrownBy(() -> authService.login(loginRequest, "Chrome", "127.0.0.1"))
+            assertThatThrownBy(() -> authService.login(loginRequest, "Chrome", "127.0.0.1", null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Account is disabled");
         }
@@ -182,7 +193,7 @@ class AuthServiceTest {
             when(refreshTokenRepository.save(any(RefreshToken.class))).thenAnswer(inv -> inv.getArgument(0));
             when(userRepository.save(any(User.class))).thenReturn(activeUser);
 
-            authService.login(loginRequest, "Chrome", "127.0.0.1");
+            authService.login(loginRequest, "Chrome", "127.0.0.1", null);
 
             assertThat(activeUser.getFailedLoginAttempts()).isEqualTo(0);
             assertThat(activeUser.getLockedUntil()).isNull();
@@ -197,7 +208,7 @@ class AuthServiceTest {
             when(userRepository.findByEmail("admin@school.com")).thenReturn(Optional.of(activeUser));
             when(passwordEncoder.matches("password123", "$2a$10$hashedPassword")).thenReturn(true);
 
-            LoginResponseDTO result = authService.login(loginRequest, "Chrome", "127.0.0.1");
+            LoginResponseDTO result = authService.login(loginRequest, "Chrome", "127.0.0.1", null);
 
             assertThat(result.isTwoFactorRequired()).isTrue();
             assertThat(result.getTwoFactorUserId()).isEqualTo(1L);
@@ -314,7 +325,7 @@ class AuthServiceTest {
             when(refreshTokenRepository.findByToken("active-token")).thenReturn(Optional.of(token));
             when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(token);
 
-            authService.logout(request);
+            authService.logout(request, null, null);
 
             assertThat(token.getRevoked()).isTrue();
             verify(refreshTokenRepository).save(token);

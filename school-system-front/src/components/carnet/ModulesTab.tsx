@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useCarnetSelection } from "./CarnetSelectionContext";
-import { Plus, Edit, Trash2, BookOpen, GraduationCap } from "lucide-react";
+import { Plus, Edit, Trash2, BookOpen, GraduationCap, Layers } from "lucide-react";
 import { notify } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useNiveaux } from "@/hooks/useNiveaux";
+import { useHasRole } from "@/hooks/useRbac";
 import {
   useModules,
   useCreateModule,
@@ -74,7 +75,15 @@ const emptyForm: ModuleRequest = {
 
 export default function ModulesTab() {
   const { niveaux } = useNiveaux();
-  const { niveauId: selectedNiveauId, setNiveauId: setSelectedNiveauId } = useCarnetSelection();
+  // Matières are managed by the school admin/direction only; an ENSEIGNANT
+  // gets a read-only, scoped view of his own matières.
+  const canManage = useHasRole(["ADMIN", "SUPER_ADMIN", "DIRECTEUR"]);
+  const {
+    niveauId: selectedNiveauId,
+    setNiveauId: setSelectedNiveauId,
+    domaineId: filterDomaineId,
+    setDomaineId: setFilterDomaineId,
+  } = useCarnetSelection();
   const { data: modules = [], isLoading } = useModules(
     selectedNiveauId || undefined
   );
@@ -92,6 +101,11 @@ export default function ModulesTab() {
   // Flatten sous-domaines for the selected domaine in form
   const formDomaine = domaines.find((d) => d.id === form.domaineId);
   const formSousDomaines: SousDomaineDTO[] = formDomaine?.sousDomaines ?? [];
+
+  // Matières belong to a domaine — allow filtering the list by domaine
+  const filteredModules = filterDomaineId
+    ? modules.filter((m) => m.domaineId === filterDomaineId)
+    : modules;
 
   const openAdd = () => {
     if (!selectedNiveauId) {
@@ -128,6 +142,10 @@ export default function ModulesTab() {
   const handleSave = () => {
     if (!form.name.trim()) {
       notify.error("Le nom de la matière est obligatoire");
+      return;
+    }
+    if (!form.domaineId) {
+      notify.error("Le domaine est obligatoire");
       return;
     }
     if (editId) {
@@ -190,20 +208,44 @@ export default function ModulesTab() {
             </SelectContent>
           </Select>
 
-          <div className="sm:ms-auto">
-            <Button
-              size="sm"
-              className="gap-1.5 bg-gradient-primary shadow-btn"
-              onClick={openAdd}
-            >
-              <Plus className="h-4 w-4" />
-              Ajouter une matière
-            </Button>
-          </div>
+          <Select
+            value={filterDomaineId ? String(filterDomaineId) : "all"}
+            onValueChange={(v) =>
+              setFilterDomaineId(v === "all" ? 0 : Number(v))
+            }
+            disabled={!selectedNiveauId || domaines.length === 0}
+          >
+            <SelectTrigger className="w-[220px]">
+              <Layers className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
+              <SelectValue placeholder="Tous les domaines" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les domaines</SelectItem>
+              {domaines.map((d) => (
+                <SelectItem key={d.id} value={String(d.id)}>
+                  {d.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {canManage && (
+            <div className="sm:ms-auto">
+              <Button
+                size="sm"
+                className="gap-1.5 bg-gradient-primary shadow-btn"
+                onClick={openAdd}
+              >
+                <Plus className="h-4 w-4" />
+                Ajouter une matière
+              </Button>
+            </div>
+          )}
         </div>
         {selectedNiveauId > 0 && (
           <div className="mt-2 text-xs text-muted-foreground">
-            {modules.length} module{modules.length !== 1 ? "s" : ""}
+            {filteredModules.length} module
+            {filteredModules.length !== 1 ? "s" : ""}
           </div>
         )}
       </motion.div>
@@ -247,35 +289,39 @@ export default function ModulesTab() {
                   <th className="py-3 px-4 text-center text-xs font-semibold text-muted-foreground">
                     VP
                   </th>
-                  <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">
-                    Actions
-                  </th>
+                  {canManage && (
+                    <th className="py-3 px-4 text-end text-xs font-semibold text-muted-foreground">
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
                   <tr>
                     <td
-                      colSpan={10}
+                      colSpan={canManage ? 10 : 9}
                       className="py-16 text-center text-muted-foreground"
                     >
                       Chargement...
                     </td>
                   </tr>
-                ) : modules.length === 0 ? (
+                ) : filteredModules.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={10}
+                      colSpan={canManage ? 10 : 9}
                       className="py-16 text-center text-muted-foreground"
                     >
                       <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-30" />
                       <p className="font-medium">
-                        Aucune matière pour ce niveau
+                        {filterDomaineId
+                          ? "Aucune matière pour ce domaine"
+                          : "Aucune matière pour ce niveau"}
                       </p>
                     </td>
                   </tr>
                 ) : (
-                  modules.map((m) => (
+                  filteredModules.map((m) => (
                     <tr
                       key={m.id}
                       className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors"
@@ -314,26 +360,28 @@ export default function ModulesTab() {
                       <td className="py-3 px-4 text-center">
                         {m.versionPrivee ? "✓" : "—"}
                       </td>
-                      <td className="py-3 px-4 text-end">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-amber-600"
-                            onClick={() => openEdit(m)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-red-600"
-                            onClick={() => setDeleteTarget(m)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
+                      {canManage && (
+                        <td className="py-3 px-4 text-end">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-amber-600"
+                              onClick={() => openEdit(m)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-red-600"
+                              onClick={() => setDeleteTarget(m)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}
@@ -372,22 +420,21 @@ export default function ModulesTab() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Domaine</Label>
+                <Label>Domaine *</Label>
                 <Select
-                  value={form.domaineId ? String(form.domaineId) : "none"}
+                  value={form.domaineId ? String(form.domaineId) : ""}
                   onValueChange={(v) =>
                     setForm({
                       ...form,
-                      domaineId: v === "none" ? undefined : Number(v),
+                      domaineId: Number(v),
                       sousDomaineId: undefined,
                     })
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="— Aucun —" />
+                    <SelectValue placeholder="Sélectionner un domaine" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">— Aucun —</SelectItem>
                     {domaines.map((d) => (
                       <SelectItem key={d.id} value={String(d.id)}>
                         {d.name}
@@ -395,6 +442,11 @@ export default function ModulesTab() {
                     ))}
                   </SelectContent>
                 </Select>
+                {domaines.length === 0 && (
+                  <p className="mt-1 text-xs text-amber-600">
+                    Aucun domaine — créez-en un dans l'onglet « Domaines ».
+                  </p>
+                )}
               </div>
               <div>
                 <Label>Sous-domaine</Label>

@@ -980,6 +980,172 @@ Jour 10 (Vendredi)    │ Sprint Review (1h) + Sprint Retrospective (45 min)
 
 ---
 
+---
+
+# ═══════════════════════════════════════════
+# PHASE 1bis — DURCISSEMENT DU MOTEUR D'AUTHENTIFICATION
+# Sprints H1 → H3 (6 semaines)
+# Objectif : finir, sécuriser et câbler le moteur d'auth dans les actions métier
+# ═══════════════════════════════════════════
+
+> **Contexte** : le moteur d'auth (JWT access/refresh, lockout, 2FA TOTP,
+> sessions multi-appareils, matrice rôles/permissions, `@PreAuthorize` sur
+> 85/90 controllers, scoping `CurrentUserContext`) est **déjà en place**.
+> Cette phase corrige les failles révélées par l'audit SEC-028, durcit la
+> base et l'intègre proprement dans le web, le back et le mobile.
+> Total : 57 story points.
+
+---
+
+## 🔵 SPRINT H1 — Hotfix & Durcissement Backend
+
+> **Dates** : 18 Mai → 31 Mai 2026
+> **Objectif** : réparer les autorisations cassées, durcir l'auth serveur
+> **Capacité** : 18 story points
+
+| Ticket | Titre | Board | Assigné | Points | Statut |
+|--------|-------|-------|---------|--------|--------|
+| SEC-019 | Hotfix : `@PreAuthorize` cassés (MANAGE_FINANCE, VitrineAdmin, MANAGE_MEETINGS) | Sécurité | Backend Lead | 2 | 📥 To Do |
+| SEC-020 | Journal des connexions (login OK/échec/lockout → AuditLog) | Sécurité | Backend Lead | 3 | 📥 To Do |
+| SEC-021 | Fail-fast si `JWT_SECRET` absent en profil prod | Sécurité | Backend Lead | 2 | 📥 To Do |
+| SEC-022 | Rate-limiting sur `/api/auth/**` (anti brute-force) | Sécurité | Backend Lead | 3 | 📥 To Do |
+| SEC-023 | Résolution tenant ↔ utilisateur au login (claim + cohérence) | Sécurité | Backend Lead | 3 | 📥 To Do |
+| SEC-024 | Invalidation access-token au logout (blacklist courte durée) | Sécurité | Backend Lead | 2 | 📥 To Do |
+| SEC-028 | Auditer & aligner la matrice `@PreAuthorize` + test garde-fou | Sécurité | Backend Lead | 3 | 📥 To Do |
+
+### Détails Techniques Sprint H1
+
+```
+BUGS À CORRIGER (SEC-019) :
+├── BourseController / BudgetController / AuditFinancierController /
+│   ExportComptableController : hasAuthority('MANAGE_FINANCE')
+│   → MANAGE_FINANCE absent de l'enum Permission = 403 pour tous
+│   → remplacer par MANAGE_FACTURES / READ_FINANCE / READ_AUDIT
+├── VitrineAdminController : hasAnyAuthority('ADMIN','DIRECTEUR','MANAGE_VITRINE')
+│   → rôles non préfixés ROLE_ + permission absente = 403 pour tous
+│   → hasAnyRole('ADMIN','DIRECTEUR') ou nouvelle perm MANAGE_VITRINE
+└── MeetingController : MANAGE_MEETINGS absent (dégradé)
+    → ajouter la permission ou utiliser une perm existante
+
+DURCISSEMENT :
+├── SEC-020 : AuthService.login() appelle AuditService (OK/échec/lockout)
+├── SEC-021 : abort du démarrage si JWT_SECRET vide en profil prod
+├── SEC-022 : Bucket4j sur /api/auth/login + /forgot-password (par IP)
+├── SEC-023 : claim 'tenant' dans le JWT + contrôle X-Tenant-ID au login
+├── SEC-024 : blacklist jti (cache TTL = durée access token)
+└── SEC-028 : test unitaire — chaque chaîne @PreAuthorize ∈ Permission ∪ UserRole
+```
+
+### Definition of Done Sprint H1
+- [ ] Finance (Bourse/Budget/Audit) et admin vitrine de nouveau accessibles
+- [ ] Chaque connexion (succès/échec) est journalisée
+- [ ] Le backend refuse de démarrer en prod sans `JWT_SECRET`
+- [ ] Le brute-force sur `/api/auth/**` est limité par IP
+- [ ] Un test échoue si un `@PreAuthorize` référence une autorité inexistante
+
+---
+
+## 🔵 SPRINT H2 — Intégration dans les actions métier
+
+> **Dates** : 1 Juin → 14 Juin 2026
+> **Objectif** : câbler l'identité authentifiée dans les opérations métier
+> **Capacité** : 18 story points
+
+| Ticket | Titre | Board | Assigné | Points | Statut |
+|--------|-------|-------|---------|--------|--------|
+| SEC-027 | Compléter le scoping ligne-par-ligne (IDOR Messaging/Meeting/Soumission) | Sécurité | Backend Lead | 5 | 📥 To Do |
+| SEC-025 | Audit `createdBy`/`updatedBy` sur les entités métier | Sécurité | Backend Lead | 5 | 📥 To Do |
+| SEC-026 | Audit fonctionnel des actions sensibles (notes, finance, rôles) | Sécurité | Backend Lead | 5 | 📥 To Do |
+| SEC-029 | Lier comptes PARENT/ENSEIGNANT aux entités métier | Sécurité | Fullstack 1 | 3 | 📥 To Do |
+
+### Détails Techniques Sprint H2
+
+```
+SEC-027 — Failles d'accès à corriger :
+├── MessagingService : getInbox/{recipientId}, sent/{senderId}, markAsRead,
+│   delete prennent l'ID en URL sans contrôle → IDOR lecture mail d'autrui
+│   → forcer recipientId/senderId = utilisateur courant
+├── MeetingService : /parent/{id} /student/{id} /teacher/{id} → scoper
+├── SoumissionService / EmpruntService / PointageRepasService : by-{eleveId}
+│   → vérifier que l'élève est dans le périmètre (CurrentUserContext)
+├── EmploiDuTempsService : /enseignant/{id} → restreindre au prof courant
+└── TenantController GET / et /{id} : aucun @PreAuthorize
+    → ajouter hasAuthority('MANAGE_TENANTS')
+
+SEC-025 — Auditing JPA :
+├── @EnableJpaAuditing + AuditorAware<Long> branché sur CurrentUserContext
+└── @CreatedBy / @LastModifiedBy sur la classe de base des entités
+
+SEC-026 — Audit fonctionnel :
+├── Suppressions, modif notes/bulletins/finance, changement de rôle user
+└── Écriture AuditLog, exposé via AuditController (filtrable)
+
+SEC-029 — Liaison comptes :
+├── Création d'un Teacher → crée le User ENSEIGNANT (email cohérent)
+└── Création d'un Parent → crée le User PARENT + lignes ParentStudent
+```
+
+### Definition of Done Sprint H2
+- [ ] Plus aucun endpoint by-id ne fuit les données d'un autre utilisateur
+- [ ] Chaque entité métier porte son auteur (`createdBy`/`updatedBy`)
+- [ ] Les actions sensibles sont traçables dans le journal d'audit
+- [ ] Un parent/enseignant créé dispose d'un compte utilisable immédiatement
+
+---
+
+## 🔵 SPRINT H3 — Clients (web/mobile), tests & documentation
+
+> **Dates** : 15 Juin → 28 Juin 2026
+> **Objectif** : finaliser l'expérience auth web/mobile et verrouiller par les tests
+> **Capacité** : 21 story points
+
+| Ticket | Titre | Board | Assigné | Points | Statut |
+|--------|-------|-------|---------|--------|--------|
+| SEC-035 | Tests d'intégration sécurité (403, scoping, lockout, rotation) | Sécurité | Backend Lead | 5 | 📥 To Do |
+| SEC-030 | Audit du `PermissionGuard` sur toutes les routes front | Sécurité | Fullstack 1 | 3 | 📥 To Do |
+| SEC-031 | Refresh token silencieux + file d'attente (web) | Sécurité | Fullstack 1 | 2 | 📥 To Do |
+| SEC-032 | Pages 401/403 + écrans 2FA / reset password | Sécurité | Fullstack 1 | 2 | 📥 To Do |
+| SEC-033 | Déverrouillage biométrique mobile (expo-local-authentication) | Sécurité | Fullstack 2 | 3 | 📥 To Do |
+| SEC-034 | Mobile : expiration refresh → déconnexion forcée propre | Sécurité | Fullstack 2 | 2 | 📥 To Do |
+| SEC-037 | Seeds users de démo (1 par rôle) | Sécurité | Fullstack 2 | 2 | 📥 To Do |
+| SEC-036 | Mettre à jour CLAUDE.md + documentation auth | Sécurité | Backend Lead | 2 | 📥 To Do |
+
+### Détails Techniques Sprint H3
+
+```
+SEC-035 : tests @SpringBootTest + MockMvc
+├── 401 sans token, 403 mauvais rôle, scoping prof/parent
+├── Lockout après 5 échecs, rotation du refresh token
+└── @PreAuthorize cohérent avec la matrice (cf. SEC-028)
+
+FRONT :
+├── SEC-030 : chaque route protégée par la bonne permission (PermissionGuard)
+├── SEC-031 : intercepteur axios web — 401 → refresh → rejeu, sans double-refresh
+└── SEC-032 : pages 401/403, écrans 2FA + reset password
+
+MOBILE :
+├── SEC-033 : brancher expo-local-authentication (Face/Touch ID au réveil)
+└── SEC-034 : échec du refresh → purge SecureStore → retour écran login
+
+SEC-037 : migration de seed — 1 user actif par rôle (mots de passe de démo)
+SEC-036 : corriger « Auth: NOT implemented » dans CLAUDE.md + doc du flux
+```
+
+### Definition of Done Sprint H3
+- [ ] Suite de tests sécurité verte (403, scoping, lockout, rotation)
+- [ ] Refresh transparent côté web, sans déconnexion intempestive
+- [ ] Déverrouillage biométrique fonctionnel sur mobile
+- [ ] Un jeu de comptes de démo existe pour chaque rôle
+- [ ] `CLAUDE.md` et la doc auth reflètent l'état réel
+
+---
+
+### ✅ JALON PHASE 1bis : Moteur d'authentification durci et intégré aux métiers
+
+---
+
+---
+
 # 📋 CHECKLIST DÉPLOIEMENT PAR JALON
 
 ### Jalon Phase 1 (Sprint 3) — Staging
@@ -990,6 +1156,17 @@ Jour 10 (Vendredi)    │ Sprint Review (1h) + Sprint Retrospective (45 min)
 [ ] Reset password testé de bout en bout
 [ ] Audit log connexions actif
 [ ] Données de test seed pour chaque rôle
+```
+
+### Jalon Phase 1bis (Sprint H3) — Auth durcie
+```
+[ ] Aucun @PreAuthorize ne référence une autorité inexistante (test garde-fou)
+[ ] Aucun endpoint by-id ne fuit les données d'un autre utilisateur (IDOR)
+[ ] JWT_SECRET obligatoire en prod (fail-fast au démarrage)
+[ ] Rate-limiting actif sur /api/auth/**
+[ ] createdBy/updatedBy + audit fonctionnel sur les actions sensibles
+[ ] Suite de tests d'intégration sécurité verte
+[ ] Déverrouillage biométrique mobile opérationnel
 ```
 
 ### Jalon Phase 2 (Sprint 6) — Beta interne

@@ -19,7 +19,8 @@ spring:
     url: jdbc:postgresql://localhost:5432/school_dev_db
     user: ${DB_USERNAME:med}
     password: ${DB_PASSWORD:med}
-    locations: classpath:db/migration
+    # dev: schema + demo seed (db/seed). Prod uses db/migration only.
+    locations: classpath:db/migration,classpath:db/seed
     schemas: public
     baseline-on-migrate: true
 
@@ -65,6 +66,9 @@ app:
     secret: ${JWT_SECRET:aVeryLongSecretKeyThatIsAtLeast256BitsForHS256Algorithm2026!}
   cors:
     allowed-origins: "*"
+  tenant:
+    # dev: new tenant schemas are pre-filled with demo data (db/tenant-seed)
+    flyway-locations: classpath:db/tenant-migration,classpath:db/tenant-seed
 
 # Actuator — expose everything in dev
 management:

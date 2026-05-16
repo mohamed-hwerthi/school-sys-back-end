@@ -3,21 +3,67 @@ package com.schoolSys.schooolSys.auth;
 import com.schoolSys.schooolSys.auth.dto.UserResponseDTO;
 import com.schoolSys.schooolSys.auth.dto.CreateUserRequestDTO;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CurrentUserContext currentUserContext;
+
+    /**
+     * Account-creation hierarchy — which roles each role may create or assign.
+     * A creator can never produce an account whose role is not strictly below its own.
+     */
+    private static final Map<UserRole, Set<UserRole>> CREATABLE_ROLES = Map.of(
+        UserRole.SUPER_ADMIN, EnumSet.allOf(UserRole.class),
+        UserRole.ADMIN,       EnumSet.of(UserRole.DIRECTEUR, UserRole.ENSEIGNANT,
+                                         UserRole.COMPTABLE, UserRole.PARENT),
+        UserRole.DIRECTEUR,   EnumSet.of(UserRole.ENSEIGNANT, UserRole.PARENT)
+    );
+
+    /** Rejects the call if the current user's role may not manage/assign the given role. */
+    private void assertCanAssignRole(UserRole target) {
+        UserRole creator = currentUserContext.getRole()
+            .orElseThrow(() -> new AccessDeniedException("Authentification requise"));
+        if (!CREATABLE_ROLES.getOrDefault(creator, Set.of()).contains(target)) {
+            throw new AccessDeniedException(
+                "Votre rôle (" + creator + ") ne peut pas gérer un compte de rôle " + target + ".");
+        }
+    }
+
+    private boolean isSuperAdmin() {
+        return currentUserContext.getRole().filter(r -> r == UserRole.SUPER_ADMIN).isPresent();
+    }
+
+    /** Non-super-admins always operate within their own school's tenant. */
+    private String resolveTenantId(String requestedTenantId) {
+        if (isSuperAdmin()) {
+            return requestedTenantId;
+        }
+        return currentUserContext.getUser().map(User::getTenantId).orElse(null);
+    }
 
     public Page<UserResponseDTO> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable).map(this::toDto);
+        // Super-admin sees everyone; everyone else only their own school (no super-admins).
+        if (isSuperAdmin()) {
+            return userRepository.findAll(pageable).map(this::toDto);
+        }
+        String tenantId = currentUserContext.getUser().map(User::getTenantId).orElse(null);
+        return userRepository.findByTenantIdAndRoleNot(tenantId, UserRole.SUPER_ADMIN, pageable)
+            .map(this::toDto);
     }
 
     public UserResponseDTO getUserById(Long id) {
@@ -27,6 +73,7 @@ public class UserService {
 
     @Transactional
     public UserResponseDTO createUser(CreateUserRequestDTO request) {
+        assertCanAssignRole(request.getRole());
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already exists");
         }
@@ -36,7 +83,7 @@ public class UserService {
             .firstName(request.getFirstName())
             .lastName(request.getLastName())
             .role(request.getRole())
-            .tenantId(request.getTenantId())
+            .tenantId(resolveTenantId(request.getTenantId()))
             .build();
         return toDto(userRepository.save(user));
     }
@@ -45,11 +92,15 @@ public class UserService {
     public UserResponseDTO updateUser(Long id, CreateUserRequestDTO request) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User", id));
+        assertCanAssignRole(user.getRole());      // may the current user manage this account?
+        assertCanAssignRole(request.getRole());   // may they assign the requested role?
         user.setEmail(request.getEmail());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setRole(request.getRole());
-        user.setTenantId(request.getTenantId());
+        if (isSuperAdmin()) {
+            user.setTenantId(request.getTenantId());   // only super-admin may move a user across tenants
+        }
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         }
@@ -60,14 +111,17 @@ public class UserService {
     public void toggleActive(Long id) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User", id));
+        assertCanAssignRole(user.getRole());
         user.setIsActive(!user.getIsActive());
         userRepository.save(user);
     }
 
     @Transactional
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) throw new ResourceNotFoundException("User", id);
-        userRepository.deleteById(id);
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User", id));
+        assertCanAssignRole(user.getRole());
+        userRepository.delete(user);
     }
 
     private UserResponseDTO toDto(User u) {

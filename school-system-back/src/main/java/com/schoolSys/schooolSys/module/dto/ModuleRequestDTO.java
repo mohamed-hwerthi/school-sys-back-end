@@ -39,6 +39,7 @@ public class ModuleRequestDTO {
     @NotNull(message = "Le niveau est obligatoire")
     private Long niveauId;
 
+    @NotNull(message = "Le domaine est obligatoire")
     private Long domaineId;
 
     private Long sousDomaineId;

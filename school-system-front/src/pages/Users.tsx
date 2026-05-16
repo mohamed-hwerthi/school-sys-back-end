@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import { validate, type FormErrors } from "@/lib/validate";
 import { createUserSchema, editUserSchema } from "@/lib/user-schema";
@@ -67,6 +68,16 @@ const ROLES: UserRole[] = [
   "PARENT",
 ];
 
+/** Which roles each role may create — mirrors the backend account hierarchy. */
+const CREATABLE_ROLES: Record<UserRole, UserRole[]> = {
+  SUPER_ADMIN: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT", "COMPTABLE", "PARENT"],
+  ADMIN: ["DIRECTEUR", "ENSEIGNANT", "COMPTABLE", "PARENT"],
+  DIRECTEUR: ["ENSEIGNANT", "PARENT"],
+  ENSEIGNANT: [],
+  COMPTABLE: [],
+  PARENT: [],
+};
+
 const ROLE_COLORS: Record<UserRole, string> = {
   SUPER_ADMIN: "bg-red-100 text-red-700",
   ADMIN: "bg-purple-100 text-purple-700",
@@ -104,6 +115,10 @@ const emptyForm: CreateUserRequest = {
 
 export default function UsersPage() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+
+  // Roles the current user is allowed to create (account hierarchy).
+  const assignableRoles = user ? CREATABLE_ROLES[user.role] ?? [] : [];
 
   const ROLE_LABELS: Record<UserRole, string> = useMemo(() => ({
     SUPER_ADMIN: t("users.roles.superAdmin"),
@@ -136,6 +151,14 @@ export default function UsersPage() {
   const [deleteTarget, setDeleteTarget] = useState<UserItem | null>(null);
   const [form, setForm] = useState<CreateUserRequest>(emptyForm);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [showErrors, setShowErrors] = useState(false);
+
+  // Reactive validation: once a save has been attempted, re-check on every keystroke.
+  useEffect(() => {
+    if (!showErrors) return;
+    const result = validate(editTarget ? editUserSchema : createUserSchema, form);
+    setFormErrors(result.ok ? {} : result.errors);
+  }, [form, showErrors, editTarget]);
 
   const users = pagedData?.content ?? [];
   const totalElements = pagedData?.totalElements ?? 0;
@@ -162,6 +185,8 @@ export default function UsersPage() {
   const openCreate = () => {
     setEditTarget(null);
     setForm(emptyForm);
+    setFormErrors({});
+    setShowErrors(false);
     setFormOpen(true);
   };
 
@@ -173,10 +198,13 @@ export default function UsersPage() {
       lastName: user.lastName,
       role: user.role,
     });
+    setFormErrors({});
+    setShowErrors(false);
     setFormOpen(true);
   };
 
   const handleSave = () => {
+    setShowErrors(true);
     const schema = editTarget ? editUserSchema : createUserSchema;
     const result = validate(schema, form);
     if (!result.ok) { setFormErrors(result.errors); return; }
@@ -431,20 +459,26 @@ export default function UsersPage() {
               <div className="space-y-1.5">
                 <Label htmlFor="firstName">{t("common.firstName")}</Label>
                 <Input id="firstName" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
+                {formErrors.firstName && <p className="text-xs text-destructive">{formErrors.firstName}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="lastName">{t("common.lastName")}</Label>
                 <Input id="lastName" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
+                {formErrors.lastName && <p className="text-xs text-destructive">{formErrors.lastName}</p>}
               </div>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="email">{t("common.email")}</Label>
               <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              {formErrors.email && <p className="text-xs text-destructive">{formErrors.email}</p>}
             </div>
             {!editTarget && (
               <div className="space-y-1.5">
                 <Label htmlFor="password">{t("common.password")}</Label>
                 <Input id="password" type="password" value={form.password ?? ""} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+                {formErrors.password
+                  ? <p className="text-xs text-destructive">{formErrors.password}</p>
+                  : <p className="text-xs text-muted-foreground">8 caractères min., avec au moins une majuscule, une minuscule et un chiffre.</p>}
               </div>
             )}
             <div className="space-y-1.5">
@@ -454,12 +488,16 @@ export default function UsersPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {ROLES.map((r) => (
+                  {assignableRoles.map((r) => (
                     <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {formErrors.role && <p className="text-xs text-destructive">{formErrors.role}</p>}
             </div>
+            {formErrors._root && (
+              <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{formErrors._root}</p>
+            )}
           </div>
           <DialogFooter>
             <DialogClose asChild>

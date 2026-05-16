@@ -19,7 +19,7 @@ const item = {
 const Index = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { login, verify2FA, cancelTwoFactor, isAuthenticated, twoFactorPending } = useAuth();
+  const { login, verify2FA, cancelTwoFactor, isAuthenticated, twoFactorPending, user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [focused, setFocused] = useState<string | null>(null);
@@ -33,9 +33,12 @@ const Index = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/dashboard", { replace: true });
+      // SUPER_ADMIN has an independent space; everyone else uses /dashboard.
+      navigate(user?.role === "SUPER_ADMIN" ? "/super-admin" : "/dashboard", {
+        replace: true,
+      });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   // Focus TOTP input when 2FA step appears
   useEffect(() => {
@@ -58,7 +61,7 @@ const Index = () => {
     try {
       const response = await login({ email, password });
       if (!response.twoFactorRequired) {
-        navigate("/dashboard");
+        navigate(response.user.role === "SUPER_ADMIN" ? "/super-admin" : "/dashboard");
       }
       // If 2FA required, twoFactorPending state will be set by useAuth
     } catch (err: any) {
@@ -75,7 +78,7 @@ const Index = () => {
     setTwoFaLoading(true);
     try {
       await verify2FA(twoFactorPending.userId, totpCode);
-      navigate("/dashboard");
+      // Redirect handled by the role-aware isAuthenticated effect.
     } catch (err: any) {
       setError(err.message || "Code invalide");
     } finally {
@@ -111,7 +114,7 @@ const Index = () => {
     try {
       const response = await login({ email: demoEmail, password: demoPassword });
       if (!response.twoFactorRequired) {
-        navigate("/dashboard");
+        navigate(response.user.role === "SUPER_ADMIN" ? "/super-admin" : "/dashboard");
       }
     } catch (err: any) {
       setError(err.message || "Identifiants incorrects");

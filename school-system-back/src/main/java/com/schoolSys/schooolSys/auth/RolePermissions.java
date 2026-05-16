@@ -49,7 +49,8 @@ public final class RolePermissions {
                 MANAGE_CANTINE,
                 MANAGE_DEVOIRS,
                 MANAGE_QUIZ,
-                MANAGE_RH
+                MANAGE_RH,
+                MANAGE_USERS
         ));
 
         // ── ENSEIGNANT ─────────────────────────────────────────
@@ -58,6 +59,7 @@ public final class RolePermissions {
                 WRITE_NOTES, READ_NOTES,
                 READ_ABSENCES, WRITE_ABSENCES,
                 READ_EMPLOI_DU_TEMPS,
+                READ_DISCIPLINE,
                 READ_MESSAGES, WRITE_MESSAGES,
                 READ_BULLETINS,
                 MANAGE_DEVOIRS,

@@ -47,7 +47,9 @@ import { useTeachers } from "@/hooks/useTeachers";
 import { useModules } from "@/hooks/useModules";
 import type { EmploiDuTempsEntry, Creneau, Conflit, TeachingAssignment, TimetableGenerateResponse } from "@/types/emploi-du-temps";
 import { useRooms } from "@/hooks/useRooms";
+import { useCurrentUser } from "@/hooks/useRbac";
 import GenerationWizard from "@/components/emploi-du-temps/GenerationWizard";
+import TeacherEmploiDuTemps from "@/components/emploi-du-temps/TeacherEmploiDuTemps";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -68,6 +70,14 @@ const SLOT_COLORS = [
 ];
 
 export default function EmploiDuTempsPage() {
+  const { role } = useCurrentUser();
+  // A teacher gets a read-only view of his own schedule only; everyone else
+  // (admin/direction) gets the full editing & generation interface.
+  if (role === "ENSEIGNANT") return <TeacherEmploiDuTemps />;
+  return <AdminEmploiDuTemps />;
+}
+
+function AdminEmploiDuTemps() {
   const { t } = useLanguage();
 
   const JOURS = useMemo(() => [
@@ -478,7 +488,7 @@ export default function EmploiDuTempsPage() {
                               {entry ? (
                                 <>
                                   <div className="font-semibold truncate">
-                                    {entry.moduleName ?? "Module"}
+                                    {entry.moduleName ?? "Matière"}
                                   </div>
                                   {entry.enseignantNom && (
                                     <div className="text-[10px] opacity-70 truncate">

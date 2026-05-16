@@ -98,17 +98,17 @@ export default function SuiviEleve() {
     const entries: GradeEntry[] = [];
     for (const n of notesT1) {
       if (n.valeur != null) {
-        entries.push({ note: n.valeur, coefficient: 1, moduleName: n.examenName || "Module", trimestre: 1 });
+        entries.push({ note: n.valeur, coefficient: 1, moduleName: n.examenName || "Matière", trimestre: 1 });
       }
     }
     for (const n of notesT2) {
       if (n.valeur != null) {
-        entries.push({ note: n.valeur, coefficient: 1, moduleName: n.examenName || "Module", trimestre: 2 });
+        entries.push({ note: n.valeur, coefficient: 1, moduleName: n.examenName || "Matière", trimestre: 2 });
       }
     }
     for (const n of notesT3) {
       if (n.valeur != null) {
-        entries.push({ note: n.valeur, coefficient: 1, moduleName: n.examenName || "Module", trimestre: 3 });
+        entries.push({ note: n.valeur, coefficient: 1, moduleName: n.examenName || "Matière", trimestre: 3 });
       }
     }
     return entries;

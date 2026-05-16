@@ -1,6 +1,8 @@
 package com.schoolSys.schooolSys.module;
 
+import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.domaine.Domaine;
 import com.schoolSys.schooolSys.domaine.DomaineRepository;
 import com.schoolSys.schooolSys.domaine.SousDomaine;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class ModuleService {
     private final NiveauRepository niveauRepository;
     private final DomaineRepository domaineRepository;
     private final SousDomaineRepository sousDomaineRepository;
+    private final CurrentUserContext currentUser;
 
     public List<ModuleResponseDTO> findAll(Long niveauId) {
         List<Module> modules;
@@ -31,6 +35,11 @@ public class ModuleService {
             modules = moduleRepository.findByNiveauIdOrderByOrdreEtatiqueAsc(niveauId);
         } else {
             modules = moduleRepository.findAllByOrderByNiveauNameAscOrdreEtatiqueAsc();
+        }
+        // Row-level scoping: an ENSEIGNANT only sees the matières he is affected to teach.
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
+            Set<Long> scoped = currentUser.getScopedModuleIdsForTeacher();
+            modules = modules.stream().filter(m -> scoped.contains(m.getId())).toList();
         }
         return modules.stream().map(this::toResponse).toList();
     }

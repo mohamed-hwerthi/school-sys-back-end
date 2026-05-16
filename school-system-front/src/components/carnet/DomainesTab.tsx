@@ -30,6 +30,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useNiveaux } from "@/hooks/useNiveaux";
+import { useHasRole } from "@/hooks/useRbac";
 import {
   useDomaines,
   useCreateDomaine,
@@ -48,6 +49,9 @@ import type {
 
 export default function DomainesTab() {
   const { niveaux } = useNiveaux();
+  // Domaines are managed by the school admin/direction only; an ENSEIGNANT
+  // gets a read-only, scoped view of his own domaines.
+  const canManage = useHasRole(["ADMIN", "SUPER_ADMIN", "DIRECTEUR"]);
   const { niveauId: selectedNiveauId, setNiveauId: setSelectedNiveauId } = useCarnetSelection();
   const { data: domaines = [], isLoading } = useDomaines(
     selectedNiveauId || undefined
@@ -237,16 +241,18 @@ export default function DomainesTab() {
               ))}
             </SelectContent>
           </Select>
-          <div className="sm:ms-auto">
-            <Button
-              size="sm"
-              className="gap-1.5 bg-gradient-primary shadow-btn"
-              onClick={openAddDomaine}
-            >
-              <Plus className="h-4 w-4" />
-              Ajouter un domaine
-            </Button>
-          </div>
+          {canManage && (
+            <div className="sm:ms-auto">
+              <Button
+                size="sm"
+                className="gap-1.5 bg-gradient-primary shadow-btn"
+                onClick={openAddDomaine}
+              >
+                <Plus className="h-4 w-4" />
+                Ajouter un domaine
+              </Button>
+            </div>
+          )}
         </div>
         {selectedNiveauId > 0 && (
           <div className="mt-2 text-xs text-muted-foreground">
@@ -307,24 +313,26 @@ export default function DomainesTab() {
                       {d.sousDomaines.length !== 1 ? "s" : ""}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-amber-600"
-                      onClick={() => openEditDomaine(d)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-red-600"
-                      onClick={() => setDeleteTarget(d)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {canManage && (
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-amber-600"
+                        onClick={() => openEditDomaine(d)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-red-600"
+                        onClick={() => setDeleteTarget(d)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Sous-domaines */}
@@ -353,40 +361,44 @@ export default function DomainesTab() {
                           <span className="text-xs text-muted-foreground">
                             Ordre: {sd.ordre}
                           </span>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-muted-foreground hover:text-amber-600"
-                              onClick={() => openEditSD(sd)}
-                            >
-                              <Edit className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-muted-foreground hover:text-red-600"
-                              onClick={() => setDeleteSDTarget(sd)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
+                          {canManage && (
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-amber-600"
+                                onClick={() => openEditSD(sd)}
+                              >
+                                <Edit className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-red-600"
+                                onClick={() => setDeleteSDTarget(sd)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       ))
                     )}
-                    <div className="px-4 py-2 border-t border-border/30">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-                        onClick={() =>
-                          openAddSD(d.id, d.sousDomaines.length)
-                        }
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                        Ajouter un sous-domaine
-                      </Button>
-                    </div>
+                    {canManage && (
+                      <div className="px-4 py-2 border-t border-border/30">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                          onClick={() =>
+                            openAddSD(d.id, d.sousDomaines.length)
+                          }
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          Ajouter un sous-domaine
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

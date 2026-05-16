@@ -2,11 +2,13 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 
 type CarnetSelection = {
   niveauId: number;
+  domaineId: number;
   classeId: number;
   trimestre: number;
   moduleId: number;
   examenId: number;
   setNiveauId: (id: number) => void;
+  setDomaineId: (id: number) => void;
   setClasseId: (id: number) => void;
   setTrimestre: (t: number) => void;
   setModuleId: (id: number) => void;
@@ -24,6 +26,7 @@ export function CarnetSelectionProvider({
   goToTab: (tab: string) => void;
 }) {
   const [niveauId, setNiveauIdRaw] = useState<number>(0);
+  const [domaineId, setDomaineId] = useState<number>(0);
   const [classeId, setClasseIdRaw] = useState<number>(0);
   const [trimestre, setTrimestreRaw] = useState<number>(0);
   const [moduleId, setModuleIdRaw] = useState<number>(0);
@@ -32,6 +35,7 @@ export function CarnetSelectionProvider({
   // Cascading resets — changing a parent invalidates its children selections
   const setNiveauId = (id: number) => {
     setNiveauIdRaw(id);
+    setDomaineId(0);
     setClasseIdRaw(0);
     setModuleIdRaw(0);
     setExamenId(0);
@@ -52,8 +56,8 @@ export function CarnetSelectionProvider({
   return (
     <CarnetSelectionCtx.Provider
       value={{
-        niveauId, classeId, trimestre, moduleId, examenId,
-        setNiveauId, setClasseId, setTrimestre, setModuleId, setExamenId,
+        niveauId, domaineId, classeId, trimestre, moduleId, examenId,
+        setNiveauId, setDomaineId, setClasseId, setTrimestre, setModuleId, setExamenId,
         goToTab,
       }}
     >

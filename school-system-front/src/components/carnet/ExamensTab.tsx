@@ -79,10 +79,14 @@ export default function ExamensTab() {
 
   const { data: classes = [] } = useClasses(filterNiveauId || undefined);
   const { data: modules = [] } = useModules(filterNiveauId || undefined);
+  // Examens are fetched only once a class is selected — prevents loading
+  // every exam of every class and trimester in one shot.
+  const hasSelection = !!filterClasseId;
   const { data: examens = [], isLoading } = useExamensRaw(
     filterModuleId || undefined,
     filterClasseId || undefined,
-    filterTrimestre || undefined
+    filterTrimestre || undefined,
+    hasSelection
   );
 
   // Mutations
@@ -391,12 +395,30 @@ export default function ExamensTab() {
             </Button>
           </div>
         </div>
-        <div className="mt-2 text-xs text-muted-foreground">
-          {filtered.length} examen{filtered.length !== 1 ? "s" : ""}
-        </div>
+        {hasSelection && (
+          <div className="mt-2 text-xs text-muted-foreground">
+            {filtered.length} examen{filtered.length !== 1 ? "s" : ""}
+          </div>
+        )}
       </motion.div>
 
       {/* Table */}
+      {!hasSelection ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="rounded-xl border border-border/50 bg-card shadow-sm py-20 text-center"
+        >
+          <GraduationCap className="mx-auto h-12 w-12 text-muted-foreground opacity-25" />
+          <p className="mt-3 font-medium text-foreground">
+            Sélectionnez un niveau et une classe
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Choisissez une classe ci-dessus pour charger ses examens.
+          </p>
+        </motion.div>
+      ) : (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -420,7 +442,7 @@ export default function ExamensTab() {
                   Nom
                 </th>
                 <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">
-                  Module
+                  Matière
                 </th>
                 <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">
                   Classe
@@ -566,6 +588,7 @@ export default function ExamensTab() {
           </table>
         </div>
       </motion.div>
+      )}
 
       {/* Add/Edit Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>

@@ -56,7 +56,7 @@ public class Module {
     private Niveau niveau;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "domaine_id")
+    @JoinColumn(name = "domaine_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Domaine domaine;

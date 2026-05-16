@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   School,
@@ -56,6 +57,7 @@ const PLANS = [
 
 export default function Onboarding() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<TenantOnboardingRequest>({
     schoolName: "",
@@ -102,7 +104,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-blue-50 flex items-center justify-center p-4">
+    <div className="flex items-start justify-center p-4 md:p-8">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -266,14 +268,14 @@ export default function Onboarding() {
                 </div>
                 <h2 className="font-heading text-xl font-bold">Ecole creee avec succes !</h2>
                 <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                  Votre espace <strong>{form.schoolName}</strong> est pret.
-                  Vous pouvez maintenant vous connecter avec vos identifiants.
+                  L'espace <strong>{form.schoolName}</strong> est prêt.
+                  Son administrateur peut se connecter avec les identifiants saisis.
                 </p>
                 <Button
-                  onClick={() => window.location.href = "/"}
+                  onClick={() => navigate("/super-admin")}
                   className="gap-1.5 bg-gradient-to-r from-violet-500 to-purple-600"
                 >
-                  Aller a la connexion
+                  Retour au tableau de bord
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </motion.div>

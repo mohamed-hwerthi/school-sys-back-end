@@ -239,7 +239,7 @@ export default function VolumeHoraire() {
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground sticky start-0 bg-muted/30 z-10 min-w-[200px]">
-                    Module
+                    Matière
                   </th>
                   {classes.map((c) => (
                     <th key={c.id} className="py-3 px-3 text-center text-xs font-semibold text-muted-foreground min-w-[80px]">

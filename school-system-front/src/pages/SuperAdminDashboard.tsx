@@ -152,7 +152,7 @@ export default function SuperAdminDashboard() {
           asChild
           className="gap-1.5 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 self-start sm:self-auto"
         >
-          <Link to="/onboarding">
+          <Link to="/super-admin/nouvelle-ecole">
             <Plus className="h-4 w-4" />
             Nouvelle école
           </Link>
@@ -286,7 +286,7 @@ export default function SuperAdminDashboard() {
                     <Building2 className="h-8 w-8 mx-auto mb-2 opacity-30" />
                     <p className="mb-3">Aucune ecole enregistree</p>
                     <Button asChild size="sm" className="gap-1.5 bg-gradient-to-r from-violet-500 to-purple-600">
-                      <Link to="/onboarding">
+                      <Link to="/super-admin/nouvelle-ecole">
                         <Plus className="h-4 w-4" />
                         Créer la première école
                       </Link>

@@ -5,6 +5,9 @@ import com.schoolSys.schooolSys.affectation.AffectationRepository;
 import com.schoolSys.schooolSys.auth.User;
 import com.schoolSys.schooolSys.auth.UserRepository;
 import com.schoolSys.schooolSys.auth.UserRole;
+import com.schoolSys.schooolSys.domaine.Domaine;
+import com.schoolSys.schooolSys.module.Module;
+import com.schoolSys.schooolSys.module.ModuleRepository;
 import com.schoolSys.schooolSys.niveau.Classe;
 import com.schoolSys.schooolSys.niveau.ClasseRepository;
 import com.schoolSys.schooolSys.parent.ParentStudent;
@@ -21,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,6 +48,7 @@ public class CurrentUserContext {
     private final ParentStudentRepository parentStudentRepository;
     private final StudentRepository studentRepository;
     private final ClasseRepository classeRepository;
+    private final ModuleRepository moduleRepository;
 
     /** Current authenticated user ID, or empty if anonymous. */
     public Optional<Long> getUserId() {
@@ -98,6 +103,65 @@ public class CurrentUserContext {
                         .map(Affectation::getClasseId)
                         .collect(Collectors.toSet()))
                 .orElse(Set.of());
+    }
+
+    /**
+     * Module (matière) IDs the current teacher is explicitly affected to teach.
+     * Affectations without a module (professeur principal) contribute nothing —
+     * this is the strict "only my subjects" scope.
+     */
+    public Set<Long> getScopedModuleIdsForTeacher() {
+        return getCurrentTeacher()
+                .map(t -> affectationRepository.findAll().stream()
+                        .filter(a -> t.getId().equals(a.getTeacherId()))
+                        .map(Affectation::getModuleId)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet()))
+                .orElse(Set.of());
+    }
+
+    /** Domaine IDs derived from the modules the current teacher teaches. */
+    public Set<Long> getScopedDomaineIdsForTeacher() {
+        Set<Long> moduleIds = getScopedModuleIdsForTeacher();
+        if (moduleIds.isEmpty()) return Set.of();
+        return moduleRepository.findAllById(moduleIds).stream()
+                .map(Module::getDomaine)
+                .filter(Objects::nonNull)
+                .map(Domaine::getId)
+                .collect(Collectors.toSet());
+    }
+
+    /** Niveau IDs derived from the classes the current teacher is affected to. */
+    public Set<Long> getScopedNiveauIdsForTeacher() {
+        Set<Long> classeIds = getScopedClasseIdsForTeacher();
+        if (classeIds.isEmpty()) return Set.of();
+        return classeRepository.findAllById(classeIds).stream()
+                .map(c -> c.getNiveau().getId())
+                .collect(Collectors.toSet());
+    }
+
+    /** True if the current ENSEIGNANT is affected to teach the given moduleId. */
+    public boolean teacherTeachesModule(Long moduleId) {
+        if (!hasRole(UserRole.ENSEIGNANT)) return false;
+        return getScopedModuleIdsForTeacher().contains(moduleId);
+    }
+
+    /**
+     * IDs of all students enrolled in the current teacher's classes.
+     * Uses the same (niveau name, classe letter) matching rule as
+     * {@link #assertCanAccessStudent(Long)}.
+     */
+    public Set<Long> getScopedStudentIdsForTeacher() {
+        if (!hasRole(UserRole.ENSEIGNANT)) return Set.of();
+        Set<Long> classeIds = getScopedClasseIdsForTeacher();
+        if (classeIds.isEmpty()) return Set.of();
+        Set<String> classeKeys = classeRepository.findAllById(classeIds).stream()
+                .map(c -> c.getNiveau().getName() + "||" + c.getLetter())
+                .collect(Collectors.toSet());
+        return studentRepository.findAll().stream()
+                .filter(s -> classeKeys.contains(s.getNiveau() + "||" + s.getClasse()))
+                .map(Student::getId)
+                .collect(Collectors.toSet());
     }
 
     /**

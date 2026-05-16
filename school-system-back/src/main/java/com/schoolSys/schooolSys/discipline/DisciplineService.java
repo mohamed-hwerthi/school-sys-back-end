@@ -1,8 +1,11 @@
 package com.schoolSys.schooolSys.discipline;
 
+import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.discipline.dto.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,11 +22,43 @@ public class DisciplineService {
     private final IncidentRepository incidentRepository;
     private final SanctionRepository sanctionRepository;
     private final DisciplineNotificationService notificationService;
+    private final CurrentUserContext currentUser;
+
+    // --- Row-level scoping helpers (a teacher only sees his own students) ---
+
+    /** Filters incidents to those involving at least one student in the teacher's classes. */
+    private List<Incident> scopeIncidents(List<Incident> incidents) {
+        if (!currentUser.hasRole(UserRole.ENSEIGNANT)) return incidents;
+        Set<Long> scoped = currentUser.getScopedStudentIdsForTeacher();
+        return incidents.stream()
+            .filter(i -> i.getElevesImpliques().stream()
+                .anyMatch(ie -> scoped.contains(ie.getEleveId())))
+            .collect(Collectors.toList());
+    }
+
+    /** Filters sanctions to those concerning a student in the teacher's classes. */
+    private List<Sanction> scopeSanctions(List<Sanction> sanctions) {
+        if (!currentUser.hasRole(UserRole.ENSEIGNANT)) return sanctions;
+        Set<Long> scoped = currentUser.getScopedStudentIdsForTeacher();
+        return sanctions.stream()
+            .filter(s -> scoped.contains(s.getEleveId()))
+            .collect(Collectors.toList());
+    }
+
+    private void assertCanAccessIncident(Incident incident) {
+        if (!currentUser.hasRole(UserRole.ENSEIGNANT)) return;
+        Set<Long> scoped = currentUser.getScopedStudentIdsForTeacher();
+        boolean inScope = incident.getElevesImpliques().stream()
+            .anyMatch(ie -> scoped.contains(ie.getEleveId()));
+        if (!inScope) {
+            throw new AccessDeniedException("Cet incident n'est pas dans votre périmètre.");
+        }
+    }
 
     // --- Incident CRUD ---
 
     public List<IncidentResponseDTO> getAllIncidents() {
-        return incidentRepository.findAll().stream()
+        return scopeIncidents(incidentRepository.findAll()).stream()
             .map(this::toIncidentDto)
             .collect(Collectors.toList());
     }
@@ -31,23 +66,24 @@ public class DisciplineService {
     public IncidentResponseDTO getIncidentById(Long id) {
         Incident incident = incidentRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Incident", id));
+        assertCanAccessIncident(incident);
         return toIncidentDto(incident);
     }
 
     public List<IncidentResponseDTO> getIncidentsByDateRange(LocalDate start, LocalDate end) {
-        return incidentRepository.findByDateBetween(start, end).stream()
+        return scopeIncidents(incidentRepository.findByDateBetween(start, end)).stream()
             .map(this::toIncidentDto)
             .collect(Collectors.toList());
     }
 
     public List<IncidentResponseDTO> getIncidentsByType(String type) {
-        return incidentRepository.findByType(type).stream()
+        return scopeIncidents(incidentRepository.findByType(type)).stream()
             .map(this::toIncidentDto)
             .collect(Collectors.toList());
     }
 
     public List<IncidentResponseDTO> getIncidentsByGravite(String gravite) {
-        return incidentRepository.findByGravite(gravite).stream()
+        return scopeIncidents(incidentRepository.findByGravite(gravite)).stream()
             .map(this::toIncidentDto)
             .collect(Collectors.toList());
     }
@@ -124,7 +160,7 @@ public class DisciplineService {
     // --- Sanction CRUD ---
 
     public List<SanctionResponseDTO> getAllSanctions() {
-        return sanctionRepository.findAll().stream()
+        return scopeSanctions(sanctionRepository.findAll()).stream()
             .map(this::toSanctionDto)
             .collect(Collectors.toList());
     }
@@ -132,17 +168,19 @@ public class DisciplineService {
     public SanctionResponseDTO getSanctionById(Long id) {
         Sanction sanction = sanctionRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Sanction", id));
+        currentUser.assertCanAccessStudent(sanction.getEleveId());
         return toSanctionDto(sanction);
     }
 
     public List<SanctionResponseDTO> getSanctionsByEleve(Long eleveId) {
+        currentUser.assertCanAccessStudent(eleveId);
         return sanctionRepository.findByEleveId(eleveId).stream()
             .map(this::toSanctionDto)
             .collect(Collectors.toList());
     }
 
     public List<SanctionResponseDTO> getSanctionsByIncident(Long incidentId) {
-        return sanctionRepository.findByIncidentId(incidentId).stream()
+        return scopeSanctions(sanctionRepository.findByIncidentId(incidentId)).stream()
             .map(this::toSanctionDto)
             .collect(Collectors.toList());
     }
@@ -270,6 +308,7 @@ public class DisciplineService {
      * DISC-005: Get full discipline record for a student (incidents + sanctions chronologically).
      */
     public DossierDisciplinaireDTO getDossierDisciplinaire(Long eleveId) {
+        currentUser.assertCanAccessStudent(eleveId);
         List<Incident> incidents = incidentRepository.findByEleveId(eleveId);
         List<Sanction> sanctions = sanctionRepository.findByEleveIdOrderByCreatedAtDesc(eleveId);
 

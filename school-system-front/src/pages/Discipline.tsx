@@ -434,23 +434,25 @@ export default function DisciplinePage() {
                           {inc.elevesImpliques?.length ?? 0} eleve{(inc.elevesImpliques?.length ?? 0) !== 1 ? "s" : ""}
                         </td>
                         <td className="py-3 px-4 text-end">
-                          <div className="hidden sm:flex items-center justify-end gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-600" onClick={() => setDeleteIncidentTarget(inc)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 sm:hidden">
-                                <MoreHorizontal className="h-4 w-4" />
+                          <PermissionGate perms={["WRITE_DISCIPLINE"]}>
+                            <div className="hidden sm:flex items-center justify-end gap-1">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-600" onClick={() => setDeleteIncidentTarget(inc)}>
+                                <Trash2 className="h-4 w-4" />
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setDeleteIncidentTarget(inc)} className="text-red-600">
-                                <Trash2 className="h-4 w-4 me-2" /> Supprimer
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                            </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 sm:hidden">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setDeleteIncidentTarget(inc)} className="text-red-600">
+                                  <Trash2 className="h-4 w-4 me-2" /> Supprimer
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </PermissionGate>
                         </td>
                       </tr>
                     ))
@@ -514,9 +516,11 @@ export default function DisciplinePage() {
                           </Badge>
                         </td>
                         <td className="py-3 px-4 text-end">
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-600" onClick={() => setDeleteSanctionTarget(sanction)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <PermissionGate perms={["WRITE_DISCIPLINE"]}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-600" onClick={() => setDeleteSanctionTarget(sanction)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </PermissionGate>
                         </td>
                       </tr>
                     ))

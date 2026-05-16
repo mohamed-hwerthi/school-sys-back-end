@@ -311,7 +311,7 @@ function PreviewSummary({
           value={preview.niveauName ?? "Tous les niveaux"}
         />
         <Stat
-          label="Modules avec volume"
+          label="Matières avec volume"
           value={`${preview.modulesWithVolume} / ${preview.totalModules}`}
         />
         <Stat

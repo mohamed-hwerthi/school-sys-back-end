@@ -33,6 +33,30 @@
 | 🟡 **SEC-017** Gestion sessions multi-appareils | | | |
 | 🟡 **SEC-018** Page 403 Forbidden | | | |
 
+> **Durcissement & intégration du moteur d'auth** — le moteur (JWT, rôles, 2FA, sessions) est en place ; ces tickets le finissent, le sécurisent et le câblent dans les actions métier (audit SEC-028).
+
+| 📥 À Faire (To Do) | 🔄 En Cours (In Progress) | 👀 En Revue (Review) | ✅ Terminé (Done) |
+|---------------------|---------------------------|----------------------|-------------------|
+| 🔴 **SEC-019** Hotfix : `@PreAuthorize` cassés (MANAGE_FINANCE ×4, VitrineAdmin, MANAGE_MEETINGS) | | | |
+| 🟠 **SEC-020** Journal des connexions (login OK/échec/lockout → AuditLog) | | | |
+| 🟠 **SEC-021** Fail-fast si `JWT_SECRET` absent en profil prod | | | |
+| 🟠 **SEC-022** Rate-limiting sur `/api/auth/**` (anti brute-force) | | | |
+| 🟠 **SEC-023** Résolution tenant ↔ utilisateur au login (claim + cohérence) | | | |
+| 🟡 **SEC-024** Invalidation access-token au logout (blacklist courte durée) | | | |
+| 🟠 **SEC-025** Audit `createdBy`/`updatedBy` sur les entités métier | | | |
+| 🟠 **SEC-026** Audit fonctionnel des actions sensibles (notes, finance, rôles) | | | |
+| 🔴 **SEC-027** Compléter le scoping ligne-par-ligne (IDOR Messaging/Meeting/Soumission) | | | |
+| 🟠 **SEC-028** Auditer & aligner la matrice `@PreAuthorize` + test garde-fou | | | |
+| 🟠 **SEC-029** Lier comptes PARENT/ENSEIGNANT aux entités métier | | | |
+| 🟡 **SEC-030** Audit du `PermissionGuard` sur toutes les routes front | | | |
+| 🟡 **SEC-031** Refresh token silencieux + file d'attente (web) | | | |
+| 🟡 **SEC-032** Pages 401/403 + écrans 2FA / reset password | | | |
+| 🟢 **SEC-033** Déverrouillage biométrique mobile (expo-local-authentication) | | | |
+| 🟡 **SEC-034** Mobile : expiration refresh → déconnexion forcée propre | | | |
+| 🟠 **SEC-035** Tests d'intégration sécurité (403, scoping, lockout, rotation) | | | |
+| 🟢 **SEC-036** Mettre à jour CLAUDE.md + documentation auth | | | |
+| 🟡 **SEC-037** Seeds users de démo (1 par rôle) | | | |
+
 ### Détails des Tâches Techniques
 
 ```
@@ -51,6 +75,76 @@ SEC-007 : Rôles & Permissions
 ├── Table : users (id, email, password_hash, role, is_active, tenant_id)
 ├── Table : role_permissions (role, permission)
 └── Estimation : 8 story points
+```
+
+### Détails Durcissement Auth (SEC-019 → SEC-037)
+
+```
+SEC-019 : Hotfix @PreAuthorize cassés                        [🔴 2 pts]
+├── BUG : hasAuthority('MANAGE_FINANCE') — permission absente de l'enum
+│         → BourseController, BudgetController, AuditFinancierController,
+│           ExportComptableController = 403 pour TOUS (même SUPER_ADMIN)
+├── BUG : VitrineAdminController hasAnyAuthority('ADMIN','DIRECTEUR',
+│         'MANAGE_VITRINE') — rôles non préfixés ROLE_ + perm absente
+│         → admin vitrine = 403 pour tous
+├── BUG : MeetingController hasAnyAuthority('MANAGE_SYSTEM','MANAGE_MEETINGS')
+│         — MANAGE_MEETINGS absent (dégradé, marche via MANAGE_SYSTEM)
+└── FIX : remplacer par permissions réelles (MANAGE_FACTURES / READ_AUDIT,
+          hasAnyRole(...), nouvelle perm MANAGE_VITRINE/MANAGE_MEETINGS si besoin)
+
+SEC-020 : Journal des connexions                             [🟠 3 pts]
+├── AuthService → appel AuditService sur login OK / échec / lockout
+└── Champs : userId, email, IP, user-agent, résultat, timestamp
+
+SEC-021 : Fail-fast JWT_SECRET en prod                       [🟠 2 pts]
+├── application-prod.yml : secret = ${JWT_SECRET:} (vide par défaut)
+└── @PostConstruct / EnvironmentPostProcessor : abort si vide en profil prod
+
+SEC-022 : Rate-limiting /api/auth/**                         [🟠 3 pts]
+├── Bucket4j ou filtre maison : limite par IP sur login + forgot-password
+└── Complète le lockout par compte (anti brute-force distribué)
+
+SEC-023 : Tenant ↔ utilisateur au login                     [🟠 3 pts]
+├── Vérifier qu'un user ne s'authentifie que sur son schéma
+└── Claim 'tenant' dans le JWT, cohérence avec header X-Tenant-ID
+
+SEC-024 : Invalidation access-token au logout                [🟡 2 pts]
+└── Cache courte durée (jti blacklist) — ou décision documentée d'accepter
+    la fenêtre de 15 min
+
+SEC-025 : Audit createdBy / updatedBy                        [🟠 5 pts]
+├── Spring Data Auditing : @CreatedBy / @LastModifiedBy
+└── AuditorAware branché sur CurrentUserContext
+
+SEC-026 : Audit fonctionnel actions sensibles                [🟠 5 pts]
+├── Suppressions, modif notes/bulletins/finance, changement de rôle
+└── Entrée AuditLog, consultable via AuditController
+
+SEC-027 : Scoping ligne-par-ligne complet                    [🔴 5 pts]
+├── IDOR MessagingService : inbox/sent/markAsRead par {recipientId} d'URL
+│   sans contrôle = lecture mail d'autrui → forcer = user courant
+├── MeetingService : /parent/{id} /student/{id} /teacher/{id} non scopés
+├── SoumissionService / EmpruntService / PointageRepasService : by-{eleveId}
+├── EmploiDuTempsService : /enseignant/{id} → autre prof
+└── TenantController GET list/{id} : aucun @PreAuthorize → ajouter MANAGE_TENANTS
+
+SEC-028 : Audit & garde-fou matrice @PreAuthorize            [🟠 3 pts]
+├── Aligner chaque @PreAuthorize sur RolePermissions (source unique)
+├── Uniformiser hasAnyRole vs hasAuthority (classroom/domaine/module/niveau)
+└── Test : toute chaîne d'un @PreAuthorize = Permission ou UserRole réel
+
+SEC-029 : Liaison comptes PARENT/ENSEIGNANT                  [🟠 3 pts]
+└── À la création parent/enseignant : créer le User + lien
+    (ParentStudent, Teacher.email) sinon le scoping est vide
+
+SEC-030 : Audit PermissionGuard front                        [🟡 3 pts]
+SEC-031 : Refresh silencieux + file d'attente (web)          [🟡 2 pts]
+SEC-032 : Pages 401/403 + écrans 2FA / reset                 [🟡 2 pts]
+SEC-033 : Déverrouillage biométrique mobile                  [🟢 3 pts]
+SEC-034 : Mobile — expiration refresh → logout propre        [🟡 2 pts]
+SEC-035 : Tests d'intégration sécurité                       [🟠 5 pts]
+SEC-036 : MAJ CLAUDE.md + doc auth                           [🟢 2 pts]
+SEC-037 : Seeds users de démo (1 par rôle)                   [🟡 2 pts]
 ```
 
 ---
@@ -507,7 +601,7 @@ TECH-005 : Docker
 
 | Board | Total Tâches | ✅ Done | 📥 To Do | Story Points Est. |
 |-------|-------------|---------|----------|-------------------|
-| 1 — Sécurité | 18 | 0 | 18 | ~55 |
+| 1 — Sécurité | 37 | 0 | 37 | ~112 |
 | 2 — Élèves | 27 | 5 | 22 | ~65 |
 | 3 — Pédagogie | 25 | 7 | 18 | ~70 |
 | 4 — Finance | 20 | 9 | 11 | ~45 |
@@ -519,7 +613,7 @@ TECH-005 : Docker
 | 10 — Système | 10 | 4 | 6 | ~35 |
 | 11 — Année Scolaire | 7 | 1 | 6 | ~40 |
 | 12 — Technique | 10 | 0 | 10 | ~45 |
-| **TOTAL** | **158** | **30** | **128** | **~530** |
+| **TOTAL** | **177** | **30** | **147** | **~587** |
 
 ---
 
@@ -531,6 +625,13 @@ PHASE 1 — FONDATIONS (Sprint 1-3, 6 semaines)
 │ Sprint 1 │ SEC-001→008 (JWT, Login, Users, Roles tables)      │ 21pt │
 │ Sprint 2 │ SEC-009→012 (CRUD Users, Permissions, Guards)       │ 18pt │
 │ Sprint 3 │ SEC-013→015, SYS-005 (Reset pwd, Lockout, Tenants) │ 16pt │
+└──────────┴─────────────────────────────────────────────────────┴──────┘
+
+PHASE 1bis — DURCISSEMENT AUTH (Sprint H1-H3, 6 semaines)
+┌──────────┬─────────────────────────────────────────────────────┬──────┐
+│ Sprint H1│ SEC-019→024, 028 (Hotfix + durcissement backend)    │ 18pt │
+│ Sprint H2│ SEC-025→027, 029 (Intégration actions métier)       │ 18pt │
+│ Sprint H3│ SEC-030→037 (Front, mobile, tests, doc)             │ 21pt │
 └──────────┴─────────────────────────────────────────────────────┴──────┘
 
 PHASE 2 — CŒUR PÉDAGOGIQUE (Sprint 4-6, 6 semaines)
