@@ -2,7 +2,9 @@ package com.schoolSys.schooolSys.meeting;
 
 import com.schoolSys.schooolSys.auth.User;
 import com.schoolSys.schooolSys.auth.UserRepository;
+import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.meeting.dto.MeetingRequestDTO;
 import com.schoolSys.schooolSys.meeting.dto.MeetingResponseDTO;
 import com.schoolSys.schooolSys.student.Student;
@@ -10,12 +12,14 @@ import com.schoolSys.schooolSys.student.StudentRepository;
 import com.schoolSys.schooolSys.teacher.Teacher;
 import com.schoolSys.schooolSys.teacher.TeacherRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +31,7 @@ public class MeetingService {
     private final TeacherRepository teacherRepository;
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
+    private final CurrentUserContext currentUserContext;
 
     public List<MeetingResponseDTO> findAll() {
         return meetingRepository.findAllByOrderByDateAscHeureDebutAsc().stream()
@@ -41,18 +46,31 @@ public class MeetingService {
     }
 
     public List<MeetingResponseDTO> findByTeacher(Long enseignantId) {
+        if (currentUserContext.hasRole(UserRole.ENSEIGNANT)) {
+            Long ownId = currentUserContext.getCurrentTeacher().map(Teacher::getId).orElse(null);
+            if (!Objects.equals(ownId, enseignantId)) {
+                throw new AccessDeniedException("Vous ne pouvez consulter que vos propres rendez-vous.");
+            }
+        }
         return meetingRepository.findByEnseignantIdOrderByDateAscHeureDebutAsc(enseignantId).stream()
                 .map(this::enrichResponse)
                 .toList();
     }
 
     public List<MeetingResponseDTO> findByParent(Long parentId) {
+        if (currentUserContext.hasRole(UserRole.PARENT)) {
+            Long ownId = currentUserContext.getUserId().orElse(null);
+            if (!Objects.equals(ownId, parentId)) {
+                throw new AccessDeniedException("Vous ne pouvez consulter que vos propres rendez-vous.");
+            }
+        }
         return meetingRepository.findByParentIdOrderByDateAscHeureDebutAsc(parentId).stream()
                 .map(this::enrichResponse)
                 .toList();
     }
 
     public List<MeetingResponseDTO> findByStudent(Long studentId) {
+        currentUserContext.assertCanAccessStudent(studentId);
         return meetingRepository.findByStudentIdOrderByDateAscHeureDebutAsc(studentId).stream()
                 .map(this::enrichResponse)
                 .toList();
