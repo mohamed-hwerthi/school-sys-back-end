@@ -124,7 +124,7 @@ class AuthServiceTest {
         void shouldThrowOnInvalidPassword() {
             when(userRepository.findByEmail("admin@school.com")).thenReturn(Optional.of(activeUser));
             when(passwordEncoder.matches("wrongpass", "$2a$10$hashedPassword")).thenReturn(false);
-            when(userRepository.save(any(User.class))).thenReturn(activeUser);
+            when(loginAttemptService.recordFailedAttempt(1L)).thenReturn(1);
 
             loginRequest.setPassword("wrongpass");
 
@@ -132,27 +132,23 @@ class AuthServiceTest {
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Invalid email or password");
 
-            verify(userRepository).save(activeUser);
-            assertThat(activeUser.getFailedLoginAttempts()).isEqualTo(1);
+            verify(loginAttemptService).recordFailedAttempt(1L);
         }
 
         @Test
-        @DisplayName("should lock account after 5 failed attempts")
+        @DisplayName("should log ACCOUNT_LOCKED when attempts reach the threshold")
         void shouldLockAccountAfterMaxAttempts() {
-            activeUser.setFailedLoginAttempts(4); // Next failure will be the 5th
-
             when(userRepository.findByEmail("admin@school.com")).thenReturn(Optional.of(activeUser));
             when(passwordEncoder.matches("wrongpass", "$2a$10$hashedPassword")).thenReturn(false);
-            when(userRepository.save(any(User.class))).thenReturn(activeUser);
+            when(loginAttemptService.recordFailedAttempt(1L))
+                    .thenReturn(LoginAttemptService.MAX_FAILED_ATTEMPTS);
 
             loginRequest.setPassword("wrongpass");
 
             assertThatThrownBy(() -> authService.login(loginRequest, "Chrome", "127.0.0.1", null))
                     .isInstanceOf(IllegalArgumentException.class);
 
-            assertThat(activeUser.getFailedLoginAttempts()).isEqualTo(5);
-            assertThat(activeUser.getLockedUntil()).isNotNull();
-            assertThat(activeUser.getLockedUntil()).isAfter(LocalDateTime.now());
+            verify(auditService).logAuth(eq("ACCOUNT_LOCKED"), anyString(), anyString(), anyString());
         }
 
         @Test
@@ -183,20 +179,15 @@ class AuthServiceTest {
         @Test
         @DisplayName("should reset failed attempts on successful login")
         void shouldResetFailedAttemptsOnSuccess() {
-            activeUser.setFailedLoginAttempts(3);
-            activeUser.setLockedUntil(LocalDateTime.now().minusMinutes(1)); // Lockout has expired
-
             when(userRepository.findByEmail("admin@school.com")).thenReturn(Optional.of(activeUser));
             when(passwordEncoder.matches("password123", "$2a$10$hashedPassword")).thenReturn(true);
             when(jwtTokenProvider.generateAccessToken(activeUser)).thenReturn("jwt-token");
             when(jwtTokenProvider.getAccessTokenExpirationMs()).thenReturn(900000L);
             when(refreshTokenRepository.save(any(RefreshToken.class))).thenAnswer(inv -> inv.getArgument(0));
-            when(userRepository.save(any(User.class))).thenReturn(activeUser);
 
             authService.login(loginRequest, "Chrome", "127.0.0.1", null);
 
-            assertThat(activeUser.getFailedLoginAttempts()).isEqualTo(0);
-            assertThat(activeUser.getLockedUntil()).isNull();
+            verify(loginAttemptService).resetAttempts(1L);
         }
 
         @Test

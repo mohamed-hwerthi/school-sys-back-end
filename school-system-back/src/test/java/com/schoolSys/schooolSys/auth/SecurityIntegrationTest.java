@@ -108,7 +108,7 @@ class SecurityIntegrationTest {
             request.setEmail("admin@school.com");
             request.setPassword("password123");
 
-            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString()))
+            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString(), any()))
                     .thenReturn(loginResponse);
 
             mockMvc.perform(post("/api/auth/login")
@@ -358,7 +358,7 @@ class SecurityIntegrationTest {
             request.setEmail("admin@school.com");
             request.setPassword("password123");
 
-            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString()))
+            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString(), any()))
                     .thenReturn(loginResponse);
 
             mockMvc.perform(post("/api/auth/login")
@@ -387,7 +387,7 @@ class SecurityIntegrationTest {
             request.setEmail("admin@school.com");
             request.setPassword("password123");
 
-            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString()))
+            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString(), any()))
                     .thenReturn(twoFactorResponse);
 
             mockMvc.perform(post("/api/auth/login")
@@ -470,7 +470,7 @@ class SecurityIntegrationTest {
             request.setEmail("locked@school.com");
             request.setPassword("password123");
 
-            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString()))
+            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString(), any()))
                     .thenThrow(new IllegalArgumentException("Compte verrouillé. Réessayez après 25 minutes."));
 
             mockMvc.perform(post("/api/auth/login")
@@ -488,7 +488,7 @@ class SecurityIntegrationTest {
             request.setEmail("disabled@school.com");
             request.setPassword("password123");
 
-            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString()))
+            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString(), any()))
                     .thenThrow(new IllegalArgumentException("Account is disabled"));
 
             mockMvc.perform(post("/api/auth/login")

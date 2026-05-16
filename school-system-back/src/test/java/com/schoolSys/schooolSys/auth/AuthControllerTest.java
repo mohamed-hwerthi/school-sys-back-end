@@ -90,7 +90,7 @@ class AuthControllerTest {
             request.setEmail("admin@school.com");
             request.setPassword("password123");
 
-            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString()))
+            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString(), any()))
                     .thenReturn(loginResponse);
 
             mockMvc.perform(post("/api/auth/login")
@@ -111,7 +111,7 @@ class AuthControllerTest {
             request.setEmail("admin@school.com");
             request.setPassword("wrongpassword");
 
-            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString()))
+            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString(), any()))
                     .thenThrow(new IllegalArgumentException("Invalid email or password"));
 
             mockMvc.perform(post("/api/auth/login")
@@ -160,7 +160,7 @@ class AuthControllerTest {
             request.setEmail("admin@school.com");
             request.setPassword("password123");
 
-            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString()))
+            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString(), any()))
                     .thenReturn(twoFactorResponse);
 
             mockMvc.perform(post("/api/auth/login")
@@ -178,7 +178,7 @@ class AuthControllerTest {
             request.setEmail("admin@school.com");
             request.setPassword("password123");
 
-            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString()))
+            when(authService.login(any(LoginRequestDTO.class), anyString(), anyString(), any()))
                     .thenThrow(new IllegalArgumentException("Compte verrouillé. Réessayez après 25 minutes."));
 
             mockMvc.perform(post("/api/auth/login")
