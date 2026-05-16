@@ -1,5 +1,6 @@
 package com.schoolSys.schooolSys.finance;
 
+import com.schoolSys.schooolSys.common.audit.AuditableEntity;
 import com.schoolSys.schooolSys.student.Student;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,7 +19,7 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Paiement {
+public class Paiement extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

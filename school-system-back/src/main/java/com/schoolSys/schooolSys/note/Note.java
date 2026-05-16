@@ -1,5 +1,6 @@
 package com.schoolSys.schooolSys.note;
 
+import com.schoolSys.schooolSys.common.audit.AuditableEntity;
 import com.schoolSys.schooolSys.examen.Examen;
 import com.schoolSys.schooolSys.student.Student;
 import jakarta.persistence.*;
@@ -17,7 +18,7 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Note {
+public class Note extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

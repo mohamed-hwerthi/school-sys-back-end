@@ -1,5 +1,6 @@
 package com.schoolSys.schooolSys.discipline;
 
+import com.schoolSys.schooolSys.common.audit.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,7 +19,7 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Incident {
+public class Incident extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
