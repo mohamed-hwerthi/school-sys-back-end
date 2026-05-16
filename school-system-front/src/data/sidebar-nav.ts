@@ -122,14 +122,14 @@ export const sidebarSections: NavSection[] = [
     color: "text-purple-500",
     items: [
       { title: "Année scolaire", titleKey: "nav.schoolYear", icon: CalendarClock, url: "/dashboard/annee-scolaire", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
-      { title: "Conseil de classe", titleKey: "nav.classCouncil", icon: GraduationCap, url: "/dashboard/conseil-classe", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
-      { title: "Bilan annuel", titleKey: "nav.annualReview", icon: BarChart3, url: "/dashboard/bilan-annuel", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Clôture d'année", titleKey: "nav.yearClosure", icon: Lock, url: "/dashboard/cloture", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Emploi du temps", titleKey: "nav.schedule", icon: Clock, url: "/dashboard/emploi-du-temps", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT", "PARENT"] },
       { title: "Volume horaire", titleKey: "nav.weeklyVolume", icon: Clock, url: "/dashboard/volume-horaire", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Salles", titleKey: "nav.rooms", icon: Calendar, url: "/dashboard/emploi-salles", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Devoirs", titleKey: "nav.homework", icon: PenTool, url: "/dashboard/devoirs", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT"] },
       { title: "Carnets de notes", titleKey: "nav.gradeBooks", icon: BookOpen, url: "/dashboard/carnets", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT", "PARENT"] },
+      { title: "Conseil de classe", titleKey: "nav.classCouncil", icon: GraduationCap, url: "/dashboard/conseil-classe", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
+      { title: "Bilan annuel", titleKey: "nav.annualReview", icon: BarChart3, url: "/dashboard/bilan-annuel", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
     ],
   },
   {
