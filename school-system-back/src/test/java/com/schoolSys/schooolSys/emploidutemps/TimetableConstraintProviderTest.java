@@ -23,6 +23,32 @@ class TimetableConstraintProviderTest {
     private static final LocalTime T14 = LocalTime.of(14, 0);
     private static final LocalTime T15 = LocalTime.of(15, 0);
 
+    // ── Builders ──────────────────────────────────────────────
+    // PlanningLesson/Timeslot/Room carry solver-tuning fields (capacity, room
+    // type, preferences…) that are irrelevant to the conflict tests below.
+    // These helpers set only the facts the hard constraints rely on; the rest
+    // stay null — and every hard constraint is null-guarded.
+
+    private PlanningTimeslot timeslot(Long id, Long creneauId, Integer jourSemaine,
+                                      LocalTime heureDebut, LocalTime heureFin) {
+        return PlanningTimeslot.builder()
+            .id(id).creneauId(creneauId).jourSemaine(jourSemaine)
+            .heureDebut(heureDebut).heureFin(heureFin)
+            .build();
+    }
+
+    private PlanningRoom room(Long id, String name) {
+        return PlanningRoom.builder().id(id).name(name).build();
+    }
+
+    private PlanningLesson lesson(Long id, Long classeId, Long moduleId,
+                                  Long enseignantId, Double moduleCoefficient) {
+        return PlanningLesson.builder()
+            .id(id).classeId(classeId).moduleId(moduleId)
+            .enseignantId(enseignantId).moduleCoefficient(moduleCoefficient)
+            .build();
+    }
+
     private TimetableSolution solve(TimetableSolution problem, int timeoutSeconds) {
         SolverConfig config = new SolverConfig()
             .withSolutionClass(TimetableSolution.class)
@@ -40,25 +66,25 @@ class TimetableConstraintProviderTest {
     void solverFindsValidSolution_noHardViolations() {
         // 2 days x 3 creneaux = 6 timeslots
         List<PlanningTimeslot> timeslots = List.of(
-            new PlanningTimeslot(1L, 1L, 1, T08, T09),
-            new PlanningTimeslot(2L, 2L, 1, T09, T10),
-            new PlanningTimeslot(3L, 3L, 1, T10, T11),
-            new PlanningTimeslot(4L, 1L, 2, T08, T09),
-            new PlanningTimeslot(5L, 2L, 2, T09, T10),
-            new PlanningTimeslot(6L, 3L, 2, T10, T11)
+            timeslot(1L, 1L, 1, T08, T09),
+            timeslot(2L, 2L, 1, T09, T10),
+            timeslot(3L, 3L, 1, T10, T11),
+            timeslot(4L, 1L, 2, T08, T09),
+            timeslot(5L, 2L, 2, T09, T10),
+            timeslot(6L, 3L, 2, T10, T11)
         );
 
         List<PlanningRoom> rooms = List.of(
-            new PlanningRoom(1L, "Salle A1"),
-            new PlanningRoom(2L, "Salle A2")
+            room(1L, "Salle A1"),
+            room(2L, "Salle A2")
         );
 
         // 4 lessons: 2 classes, 2 modules, 2 teachers
         List<PlanningLesson> lessons = new ArrayList<>();
-        lessons.add(new PlanningLesson(1L, 1L, 10L, 100L, 2.0));
-        lessons.add(new PlanningLesson(2L, 1L, 11L, 101L, 1.0));
-        lessons.add(new PlanningLesson(3L, 2L, 10L, 100L, 2.0));
-        lessons.add(new PlanningLesson(4L, 2L, 11L, 102L, 1.0));
+        lessons.add(lesson(1L, 1L, 10L, 100L, 2.0));
+        lessons.add(lesson(2L, 1L, 11L, 101L, 1.0));
+        lessons.add(lesson(3L, 2L, 10L, 100L, 2.0));
+        lessons.add(lesson(4L, 2L, 11L, 102L, 1.0));
 
         TimetableSolution problem = new TimetableSolution(timeslots, rooms, lessons);
         TimetableSolution solution = solve(problem, 5);
@@ -78,14 +104,14 @@ class TimetableConstraintProviderTest {
     void solverRespects_roomConflict() {
         // 1 timeslot, 1 room, 2 lessons → impossible to avoid room conflict
         List<PlanningTimeslot> timeslots = List.of(
-            new PlanningTimeslot(1L, 1L, 1, T08, T09)
+            timeslot(1L, 1L, 1, T08, T09)
         );
         List<PlanningRoom> rooms = List.of(
-            new PlanningRoom(1L, "Salle A1")
+            room(1L, "Salle A1")
         );
         List<PlanningLesson> lessons = new ArrayList<>();
-        lessons.add(new PlanningLesson(1L, 1L, 10L, 100L, 1.0));
-        lessons.add(new PlanningLesson(2L, 2L, 11L, 101L, 1.0));
+        lessons.add(lesson(1L, 1L, 10L, 100L, 1.0));
+        lessons.add(lesson(2L, 2L, 11L, 101L, 1.0));
 
         TimetableSolution problem = new TimetableSolution(timeslots, rooms, lessons);
         TimetableSolution solution = solve(problem, 5);
@@ -100,17 +126,17 @@ class TimetableConstraintProviderTest {
         // 2 timeslots, 2 rooms, but same teacher for both lessons
         // Solver should find a solution by assigning different timeslots
         List<PlanningTimeslot> timeslots = List.of(
-            new PlanningTimeslot(1L, 1L, 1, T08, T09),
-            new PlanningTimeslot(2L, 2L, 1, T09, T10)
+            timeslot(1L, 1L, 1, T08, T09),
+            timeslot(2L, 2L, 1, T09, T10)
         );
         List<PlanningRoom> rooms = List.of(
-            new PlanningRoom(1L, "Salle A1"),
-            new PlanningRoom(2L, "Salle A2")
+            room(1L, "Salle A1"),
+            room(2L, "Salle A2")
         );
         // Same teacher (100) for both lessons
         List<PlanningLesson> lessons = new ArrayList<>();
-        lessons.add(new PlanningLesson(1L, 1L, 10L, 100L, 1.0));
-        lessons.add(new PlanningLesson(2L, 2L, 11L, 100L, 1.0));
+        lessons.add(lesson(1L, 1L, 10L, 100L, 1.0));
+        lessons.add(lesson(2L, 2L, 11L, 100L, 1.0));
 
         TimetableSolution problem = new TimetableSolution(timeslots, rooms, lessons);
         TimetableSolution solution = solve(problem, 5);
@@ -129,17 +155,17 @@ class TimetableConstraintProviderTest {
     void solverRespects_classConflict() {
         // 2 timeslots, 2 rooms, same class for both lessons
         List<PlanningTimeslot> timeslots = List.of(
-            new PlanningTimeslot(1L, 1L, 1, T08, T09),
-            new PlanningTimeslot(2L, 2L, 1, T09, T10)
+            timeslot(1L, 1L, 1, T08, T09),
+            timeslot(2L, 2L, 1, T09, T10)
         );
         List<PlanningRoom> rooms = List.of(
-            new PlanningRoom(1L, "Salle A1"),
-            new PlanningRoom(2L, "Salle A2")
+            room(1L, "Salle A1"),
+            room(2L, "Salle A2")
         );
         // Same class (1L) for both lessons
         List<PlanningLesson> lessons = new ArrayList<>();
-        lessons.add(new PlanningLesson(1L, 1L, 10L, 100L, 1.0));
-        lessons.add(new PlanningLesson(2L, 1L, 11L, 101L, 1.0));
+        lessons.add(lesson(1L, 1L, 10L, 100L, 1.0));
+        lessons.add(lesson(2L, 1L, 11L, 101L, 1.0));
 
         TimetableSolution problem = new TimetableSolution(timeslots, rooms, lessons);
         TimetableSolution solution = solve(problem, 5);
