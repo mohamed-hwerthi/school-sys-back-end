@@ -2,6 +2,8 @@ package com.schoolSys.schooolSys.auth;
 
 import com.schoolSys.schooolSys.auth.dto.*;
 import com.schoolSys.schooolSys.common.audit.AuditService;
+import com.schoolSys.schooolSys.common.multitenancy.TenantContext;
+import com.schoolSys.schooolSys.tenant.Tenant;
 import com.schoolSys.schooolSys.tenant.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,15 +28,28 @@ public class AuthService {
     private final TenantRepository tenantRepository;
     private final AuditService auditService;
     private final LoginAttemptService loginAttemptService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Value("${app.jwt.refresh-expiration-ms:604800000}")
     private long refreshTokenExpirationMs;
 
     @Transactional
-    public LoginResponseDTO login(LoginRequestDTO request, String deviceName, String ipAddress) {
+    public LoginResponseDTO login(LoginRequestDTO request, String deviceName,
+                                  String ipAddress, String requestedTenant) {
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
         if (user == null) {
             auditService.logAuth("LOGIN_FAILED", request.getEmail(), ipAddress, "Utilisateur inconnu");
+            throw new IllegalArgumentException("Invalid email or password");
+        }
+
+        // Tenant coherence: an X-Tenant-ID header, when present, must match the
+        // tenant the user actually belongs to (SUPER_ADMIN has no tenant).
+        if (requestedTenant != null && !requestedTenant.isBlank()
+                && !TenantContext.DEFAULT_SCHEMA.equals(requestedTenant)
+                && user.getTenantId() != null
+                && !requestedTenant.equals(user.getTenantId())) {
+            auditService.logAuth("LOGIN_FAILED", user.getEmail(), ipAddress,
+                    "Tenant demande (" + requestedTenant + ") different du tenant de l'utilisateur");
             throw new IllegalArgumentException("Invalid email or password");
         }
 
@@ -66,6 +81,18 @@ public class AuthService {
         if (!user.getIsActive()) {
             auditService.logAuth("LOGIN_FAILED", user.getEmail(), ipAddress, "Compte desactive");
             throw new IllegalArgumentException("Account is disabled. Contact your administrator.");
+        }
+
+        // The tenant (school) must still be active.
+        if (user.getTenantId() != null) {
+            boolean tenantActive = tenantRepository.findBySchemaName(user.getTenantId())
+                    .map(Tenant::isActive)
+                    .orElse(true);
+            if (!tenantActive) {
+                auditService.logAuth("LOGIN_FAILED", user.getEmail(), ipAddress, "Etablissement desactive");
+                throw new IllegalArgumentException(
+                        "L'établissement est désactivé. Contactez l'administration.");
+            }
         }
 
         // Reset failed attempts on successful login
@@ -201,13 +228,17 @@ public class AuthService {
     }
 
     @Transactional
-    public void logout(RefreshTokenRequestDTO request, String ipAddress) {
+    public void logout(RefreshTokenRequestDTO request, String accessToken, String ipAddress) {
         refreshTokenRepository.findByToken(request.getRefreshToken())
                 .ifPresent(rt -> {
                     rt.setRevoked(true);
                     refreshTokenRepository.save(rt);
                     auditService.logAuth("LOGOUT", rt.getUser().getEmail(), ipAddress, "Deconnexion");
                 });
+        // Blacklist the still-valid access token so logout takes effect immediately.
+        if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
+            tokenBlacklistService.blacklist(accessToken, jwtTokenProvider.getExpiration(accessToken));
+        }
     }
 
     public UserResponseDTO getCurrentUser(Long userId) {

@@ -29,7 +29,8 @@ public class AuthController {
             HttpServletRequest httpRequest) {
         String deviceName = extractDeviceName(httpRequest);
         String ipAddress = extractIpAddress(httpRequest);
-        LoginResponseDTO response = authService.login(request, deviceName, ipAddress);
+        String requestedTenant = httpRequest.getHeader("X-Tenant-ID");
+        LoginResponseDTO response = authService.login(request, deviceName, ipAddress, requestedTenant);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
@@ -47,7 +48,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> logout(
             @Valid @RequestBody RefreshTokenRequestDTO request,
             HttpServletRequest httpRequest) {
-        authService.logout(request, extractIpAddress(httpRequest));
+        authService.logout(request, extractBearerToken(httpRequest), extractIpAddress(httpRequest));
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 
@@ -171,6 +172,15 @@ public class AuthController {
             return userAgent.substring(0, 200);
         }
         return userAgent;
+    }
+
+    /** Extracts the raw JWT from the {@code Authorization: Bearer ...} header. */
+    private String extractBearerToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+        return null;
     }
 
     private String extractIpAddress(HttpServletRequest request) {

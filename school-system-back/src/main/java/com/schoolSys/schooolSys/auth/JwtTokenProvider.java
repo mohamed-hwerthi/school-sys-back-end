@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -95,6 +96,11 @@ public class JwtTokenProvider {
 
     public long getAccessTokenExpirationMs() {
         return accessTokenExpirationMs;
+    }
+
+    /** Expiry instant carried by the token, used to bound blacklist entries. */
+    public Instant getExpiration(String token) {
+        return parseToken(token).getExpiration().toInstant();
     }
 
     private Claims parseToken(String token) {
