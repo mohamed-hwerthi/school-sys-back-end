@@ -1,5 +1,6 @@
 package com.schoolSys.schooolSys.finance;
 
+import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.finance.dto.PaiementRequestDTO;
 import com.schoolSys.schooolSys.finance.dto.PaiementResponseDTO;
@@ -41,6 +42,9 @@ class PaiementServiceTest {
 
     @Mock
     private StudentRepository studentRepository;
+
+    @Mock
+    private AuditService auditService;
 
     @InjectMocks
     private PaiementService paiementService;

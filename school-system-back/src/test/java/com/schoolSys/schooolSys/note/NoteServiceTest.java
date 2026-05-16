@@ -1,5 +1,6 @@
 package com.schoolSys.schooolSys.note;
 
+import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.examen.Examen;
@@ -57,6 +58,9 @@ class NoteServiceTest {
 
     @Mock
     private CurrentUserContext currentUser;
+
+    @Mock
+    private AuditService auditService;
 
     @InjectMocks
     private NoteService noteService;
