@@ -25,12 +25,10 @@ public class AuthService {
     private final TwoFactorService twoFactorService;
     private final TenantRepository tenantRepository;
     private final AuditService auditService;
+    private final LoginAttemptService loginAttemptService;
 
     @Value("${app.jwt.refresh-expiration-ms:604800000}")
     private long refreshTokenExpirationMs;
-
-    private static final int MAX_FAILED_ATTEMPTS = 5;
-    private static final int LOCKOUT_DURATION_MINUTES = 30;
 
     @Transactional
     public LoginResponseDTO login(LoginRequestDTO request, String deviceName, String ipAddress) {
@@ -50,19 +48,17 @@ public class AuthService {
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            // Increment failed attempts
-            int attempts = user.getFailedLoginAttempts() + 1;
-            user.setFailedLoginAttempts(attempts);
-            boolean locked = attempts >= MAX_FAILED_ATTEMPTS;
-            if (locked) {
-                user.setLockedUntil(LocalDateTime.now().plusMinutes(LOCKOUT_DURATION_MINUTES));
-            }
-            userRepository.save(user);
+            // Counter is persisted in its own transaction so it survives the
+            // rollback caused by the exception thrown below.
+            int attempts = loginAttemptService.recordFailedAttempt(user.getId());
+            boolean locked = attempts >= LoginAttemptService.MAX_FAILED_ATTEMPTS;
             auditService.logAuth("LOGIN_FAILED", user.getEmail(), ipAddress,
-                    "Mot de passe incorrect (tentative " + attempts + "/" + MAX_FAILED_ATTEMPTS + ")");
+                    "Mot de passe incorrect (tentative " + attempts
+                            + "/" + LoginAttemptService.MAX_FAILED_ATTEMPTS + ")");
             if (locked) {
                 auditService.logAuth("ACCOUNT_LOCKED", user.getEmail(), ipAddress,
-                        "Compte verrouille " + LOCKOUT_DURATION_MINUTES + " min apres " + attempts + " echecs");
+                        "Compte verrouille " + LoginAttemptService.LOCKOUT_DURATION_MINUTES
+                                + " min apres " + attempts + " echecs");
             }
             throw new IllegalArgumentException("Invalid email or password");
         }
@@ -73,11 +69,7 @@ public class AuthService {
         }
 
         // Reset failed attempts on successful login
-        if (user.getFailedLoginAttempts() > 0 || user.getLockedUntil() != null) {
-            user.setFailedLoginAttempts(0);
-            user.setLockedUntil(null);
-            userRepository.save(user);
-        }
+        loginAttemptService.resetAttempts(user.getId());
 
         // If 2FA is enabled, don't return tokens yet
         if (Boolean.TRUE.equals(user.getTwoFactorEnabled())) {
