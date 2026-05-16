@@ -2,6 +2,7 @@ package com.schoolSys.schooolSys.auth;
 
 import com.schoolSys.schooolSys.auth.dto.UserResponseDTO;
 import com.schoolSys.schooolSys.auth.dto.CreateUserRequestDTO;
+import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final CurrentUserContext currentUserContext;
+    private final AuditService auditService;
 
     /**
      * Account-creation hierarchy — which roles each role may create or assign.
@@ -85,7 +87,10 @@ public class UserService {
             .role(request.getRole())
             .tenantId(resolveTenantId(request.getTenantId()))
             .build();
-        return toDto(userRepository.save(user));
+        User saved = userRepository.save(user);
+        auditService.log("CREATE", "USER", saved.getId(),
+            "Création du compte " + saved.getEmail() + " (rôle " + saved.getRole() + ")");
+        return toDto(saved);
     }
 
     @Transactional
@@ -94,6 +99,7 @@ public class UserService {
             .orElseThrow(() -> new ResourceNotFoundException("User", id));
         assertCanAssignRole(user.getRole());      // may the current user manage this account?
         assertCanAssignRole(request.getRole());   // may they assign the requested role?
+        UserRole previousRole = user.getRole();
         user.setEmail(request.getEmail());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
@@ -104,7 +110,13 @@ public class UserService {
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         }
-        return toDto(userRepository.save(user));
+        User saved = userRepository.save(user);
+        String details = "Mise à jour du compte " + saved.getEmail();
+        if (previousRole != saved.getRole()) {
+            details += " — changement de rôle " + previousRole + " → " + saved.getRole();
+        }
+        auditService.log("UPDATE", "USER", saved.getId(), details);
+        return toDto(saved);
     }
 
     @Transactional
@@ -114,6 +126,8 @@ public class UserService {
         assertCanAssignRole(user.getRole());
         user.setIsActive(!user.getIsActive());
         userRepository.save(user);
+        auditService.log("UPDATE", "USER", user.getId(),
+            (user.getIsActive() ? "Activation" : "Désactivation") + " du compte " + user.getEmail());
     }
 
     @Transactional
@@ -121,6 +135,8 @@ public class UserService {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User", id));
         assertCanAssignRole(user.getRole());
+        auditService.log("DELETE", "USER", user.getId(),
+            "Suppression du compte " + user.getEmail() + " (rôle " + user.getRole() + ")");
         userRepository.delete(user);
     }
 

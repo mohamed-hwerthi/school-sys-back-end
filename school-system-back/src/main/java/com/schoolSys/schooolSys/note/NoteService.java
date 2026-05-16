@@ -1,5 +1,6 @@
 package com.schoolSys.schooolSys.note;
 
+import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.examen.Examen;
@@ -30,6 +31,7 @@ public class NoteService {
     private final EvaluationCompetenceRepository evaluationCompetenceRepository;
     private final ParentNotificationService parentNotificationService;
     private final CurrentUserContext currentUser;
+    private final AuditService auditService;
 
     public List<NoteResponseDTO> findByExamen(Long examenId, Integer trimestre) {
         return noteRepository.findByExamenIdAndTrimestre(examenId, trimestre).stream()
@@ -163,6 +165,7 @@ public class NoteService {
     public void delete(Long id) {
         if (!noteRepository.existsById(id)) throw new ResourceNotFoundException("Note", id);
         noteRepository.deleteById(id);
+        auditService.log("DELETE", "NOTE", id, "Suppression d'une note");
     }
 
     // --- Barèmes ---

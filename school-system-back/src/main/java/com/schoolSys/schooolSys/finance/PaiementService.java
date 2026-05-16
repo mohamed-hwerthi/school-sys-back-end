@@ -1,5 +1,6 @@
 package com.schoolSys.schooolSys.finance;
 
+import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.common.dto.PagedResponse;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.finance.dto.PaiementRequestDTO;
@@ -30,6 +31,7 @@ public class PaiementService {
     private final PaiementMapper paiementMapper;
     private final TypeFraisRepository typeFraisRepository;
     private final StudentRepository studentRepository;
+    private final AuditService auditService;
 
     public PagedResponse<PaiementResponseDTO> findAll(
             String search,
@@ -93,7 +95,10 @@ public class PaiementService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        return paiementMapper.toResponseDTO(paiementRepository.save(paiement));
+        Paiement saved = paiementRepository.save(paiement);
+        auditService.log("CREATE", "PAIEMENT", saved.getId(),
+                "Paiement de " + saved.getMontantPaye() + " (élève #" + student.getId() + ")");
+        return paiementMapper.toResponseDTO(saved);
     }
 
     @Transactional
@@ -121,7 +126,10 @@ public class PaiementService {
         paiement.setStatut(computeStatut(dto.getMontantPaye(), dto.getMontantDu()));
         paiement.setNotes(dto.getNotes());
 
-        return paiementMapper.toResponseDTO(paiementRepository.save(paiement));
+        Paiement saved = paiementRepository.save(paiement);
+        auditService.log("UPDATE", "PAIEMENT", saved.getId(),
+                "Modification du paiement #" + saved.getId());
+        return paiementMapper.toResponseDTO(saved);
     }
 
     @Transactional
@@ -130,6 +138,7 @@ public class PaiementService {
             throw new ResourceNotFoundException("Paiement", id);
         }
         paiementRepository.deleteById(id);
+        auditService.log("DELETE", "PAIEMENT", id, "Suppression d'un paiement");
     }
 
     public FinanceDashboardDTO getDashboard(String anneeScolaire) {
