@@ -14,6 +14,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Forbidden from "./pages/Forbidden";
 import DashboardLayout from "./components/layout/DashboardLayout";
+import SuperAdminLayout from "./components/layout/SuperAdminLayout";
 import { TeachersProvider } from "./hooks/useTeachers";
 import { MessagesProvider } from "./hooks/useMessages";
 import { SchoolProvider } from "./hooks/useSchool";
@@ -61,6 +62,7 @@ const VolumeHorairePage = lazy(() => import("./pages/VolumeHoraire"));
 const DisciplinePage = lazy(() => import("./pages/Discipline"));
 const AnneeScolairePage = lazy(() => import("./pages/AnneeScolaire"));
 const ConseilClassePage = lazy(() => import("./pages/ConseilClasse"));
+const BilanAnnuelPage = lazy(() => import("./pages/BilanAnnuel"));
 const ContratsPage = lazy(() => import("./pages/Contrats"));
 const FacturesPage = lazy(() => import("./pages/Factures"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
@@ -173,6 +175,19 @@ const App = () => (
             <Route path="/onboarding" element={<Suspense fallback={<PageLoader />}><OnboardingPage /></Suspense>} />
             {/* Quiz passation (student exam taking) */}
             <Route path="/quiz/:quizId" element={<Suspense fallback={<PageLoader />}><QuizPassationPage /></Suspense>} />
+            {/* Super Admin — independent platform space, separate from /dashboard */}
+            <Route
+              path="/super-admin"
+              element={
+                <PrivateRoute>
+                  <RoleGuard roles={["SUPER_ADMIN"]}>
+                    <SuperAdminLayout />
+                  </RoleGuard>
+                </PrivateRoute>
+              }
+            >
+              <Route index element={<S><SuperAdminDashboardPage /></S>} />
+            </Route>
             <Route
               path="/dashboard"
               element={
@@ -238,6 +253,7 @@ const App = () => (
               <Route path="carnets" element={<G roles={[...STAFF_ROLES, "PARENT"]}><CarnetNotes /></G>} />
               <Route path="annee-scolaire" element={<G roles={MANAGEMENT_ROLES}><AnneeScolairePage /></G>} />
               <Route path="conseil-classe" element={<G roles={MANAGEMENT_ROLES}><ConseilClassePage /></G>} />
+              <Route path="bilan-annuel" element={<G roles={MANAGEMENT_ROLES}><BilanAnnuelPage /></G>} />
               <Route path="devoirs" element={<G roles={STAFF_ROLES}><DevoirsPage /></G>} />
               <Route path="quiz" element={<G roles={STAFF_ROLES}><QuizManagementPage /></G>} />
               <Route path="calendrier" element={<S><CalendrierPage /></S>} />
@@ -279,14 +295,11 @@ const App = () => (
               {/* Intégrations */}
               <Route path="integrations" element={<G roles={ADMIN_ROLES}><IntegrationsPage /></G>} />
 
-              {/* SaaS Admin */}
-              <Route path="super-admin" element={<G roles={["SUPER_ADMIN"]}><SuperAdminDashboardPage /></G>} />
-
               {/* Vitrine */}
               <Route path="vitrine" element={<G roles={MANAGEMENT_ROLES}><VitrineAdminPage /></G>} />
 
               {/* Administration */}
-              <Route path="utilisateurs" element={<G roles={ADMIN_ROLES}><UsersPage /></G>} />
+              <Route path="utilisateurs" element={<G roles={MANAGEMENT_ROLES}><UsersPage /></G>} />
               <Route path="configuration" element={<G roles={ADMIN_ROLES}><Configuration /></G>} />
               <Route path="tracabilite" element={<G roles={ADMIN_ROLES}><Tracabilite /></G>} />
               <Route path="statistique" element={<G roles={MANAGEMENT_ROLES}><Statistiques /></G>} />

@@ -13,6 +13,7 @@ export interface PropositionPassage {
   rang: number | null;
   decisionProposee: DecisionType;
   niveauSuivant: string | null;
+  mention: string | null;
 }
 
 /** Conseil de classe for one class: propositions plus the context to validate them. */

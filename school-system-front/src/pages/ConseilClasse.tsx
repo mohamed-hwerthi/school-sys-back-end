@@ -159,6 +159,23 @@ export default function ConseilClasse() {
       return;
     }
 
+    // EXCLUSION / TRANSFERT require a motif (also enforced server-side).
+    const missingMotif = propositions.some((p) => {
+      const e = edits[p.studentId];
+      const decision = e?.decision ?? p.decisionProposee;
+      return (
+        (decision === "EXCLUSION" || decision === "TRANSFERT") &&
+        !(e?.motif ?? "").trim()
+      );
+    });
+    if (missingMotif) {
+      notify.error(
+        "Motif requis",
+        "Un motif est obligatoire pour les décisions Exclusion et Transfert."
+      );
+      return;
+    }
+
     const passages = propositions.map((p) =>
       buildPayload(p, edits[p.studentId] ?? { decision: p.decisionProposee, motif: "" })
     );

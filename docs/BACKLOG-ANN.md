@@ -34,7 +34,7 @@ Points d'attention :
 |---|---|---|---|---|---|
 | ANN-001 | Calculer la **moyenne annuelle** d'un élève (moyenne pondérée des 3 trimestres) — service backend + endpoint | P0 | 5 | — | Fait |
 | ANN-002 | Endpoint **moyenne annuelle par classe** (liste élèves + moyennes + rang annuel) | P0 | 3 | ANN-001 | Fait |
-| ANN-003 | Remplacer `Passage.anneeScolaire` (String) par une **FK vers `AnneeScolaire`** + migration Flyway | P1 | 3 | — | À faire |
+| ANN-003 | Remplacer `Passage.anneeScolaire` (String) par une **FK vers `AnneeScolaire`** + migration Flyway | P1 | 3 | — | Fait (FK additive, label conservé) |
 | ANN-004 | Historiser le couple niveau/classe de l'élève **par année** (dette technique sur les champs String) | P2 | 8 | ANN-003 | À faire |
 
 ## EPIC B — Moteur de passage / redoublement
@@ -45,8 +45,8 @@ Points d'attention :
 | ANN-011 | Endpoint « proposition de passage » par classe (élève + moyenne + décision proposée) | P0 | 3 | ANN-010 | Fait |
 | ANN-012 | UI **« Conseil de classe »** : tableau éditable, validation/correction par classe | P0 | 8 | ANN-011 | Fait |
 | ANN-013 | **Génération en lot** des `Passage` à partir des décisions validées | P0 | 5 | ANN-012 | Fait (existant) |
-| ANN-014 | Gérer `EXCLUSION` / `TRANSFERT` avec **motif obligatoire** | P1 | 2 | ANN-013 | À faire |
-| ANN-015 | Garde-fous : double passage la même année, niveau max | P1 | 3 | ANN-013 | À faire |
+| ANN-014 | Gérer `EXCLUSION` / `TRANSFERT` avec **motif obligatoire** | P1 | 2 | ANN-013 | Fait |
+| ANN-015 | Garde-fous : double passage la même année, niveau max | P1 | 3 | ANN-013 | Fait |
 | ANN-016 | RBAC : seul le **DIRECTEUR** valide/exécute les passages | P0 | 2 | ANN-012 | Fait |
 | ANN-017 | Mettre à jour `Student.classe/niveau` après passage (vérifier/compléter `PassageService`) | P0 | 2 | ANN-013 | Fait (existant) |
 
@@ -54,11 +54,11 @@ Points d'attention :
 
 | ID | User story | Prio | Est. | Dépend. | Statut |
 |---|---|---|---|---|---|
-| ANN-020 | Page **« Bilan annuel »** : KPI effectif, taux passage/redoublement/exclusion/transfert | P0 | 5 | ANN-021 | À faire |
-| ANN-021 | Endpoint stats annuelles agrégées (par niveau / classe) | P0 | 5 | ANN-013 | À faire |
-| ANN-022 | Graphiques : évolution effectifs & taux de réussite par niveau | P1 | 3 | ANN-021 | À faire |
+| ANN-020 | Page **« Bilan annuel »** : KPI effectif, taux passage/redoublement/exclusion/transfert | P0 | 5 | ANN-021 | Fait |
+| ANN-021 | Endpoint stats annuelles agrégées (par niveau / classe) | P0 | 5 | ANN-013 | Fait |
+| ANN-022 | Graphiques : évolution effectifs & taux de réussite par niveau | P1 | 3 | ANN-021 | Fait |
 | ANN-023 | **Comparatif inter-années** (3-5 ans) | P2 | 5 | ANN-021 | À faire |
-| ANN-024 | **Tableau d'honneur / palmarès** annuel (certificats de `BulletinService`) | P1 | 3 | ANN-001 | À faire |
+| ANN-024 | **Tableau d'honneur / palmarès** annuel (certificats de `BulletinService`) | P1 | 3 | ANN-001 | Fait |
 | ANN-025 | Taux de réussite **par matière** | P2 | 5 | ANN-021 | À faire |
 
 ## EPIC D — Clôture d'année

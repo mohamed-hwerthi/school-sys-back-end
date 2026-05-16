@@ -1,5 +1,6 @@
 package com.schoolSys.schooolSys.student;
 
+import com.schoolSys.schooolSys.anneescolaire.AnneeScolaire;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -41,6 +42,13 @@ public class Passage {
 
     @Column(name = "annee_scolaire", nullable = false, length = 20)
     private String anneeScolaire;
+
+    /** ANN-003: FK to the academic year; {@code anneeScolaire} above is kept as a denormalised label. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "annee_scolaire_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private AnneeScolaire anneeScolaireRef;
 
     @Column(columnDefinition = "TEXT")
     private String motif;

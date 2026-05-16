@@ -44,7 +44,6 @@ import {
   FileDown,
   Plug,
   Target,
-  Crown,
 } from "lucide-react";
 
 /**
@@ -123,6 +122,7 @@ export const sidebarSections: NavSection[] = [
     items: [
       { title: "Année scolaire", titleKey: "nav.schoolYear", icon: CalendarClock, url: "/dashboard/annee-scolaire", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Conseil de classe", titleKey: "nav.classCouncil", icon: GraduationCap, url: "/dashboard/conseil-classe", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
+      { title: "Bilan annuel", titleKey: "nav.annualReview", icon: BarChart3, url: "/dashboard/bilan-annuel", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Emploi du temps", titleKey: "nav.schedule", icon: Clock, url: "/dashboard/emploi-du-temps", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT", "PARENT"] },
       { title: "Volume horaire", titleKey: "nav.weeklyVolume", icon: Clock, url: "/dashboard/volume-horaire", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Salles", titleKey: "nav.rooms", icon: Calendar, url: "/dashboard/emploi-salles", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
@@ -225,13 +225,12 @@ export const sidebarSections: NavSection[] = [
     labelKey: "nav.administration",
     icon: Settings,
     color: "text-gray-500",
-    roles: ["SUPER_ADMIN", "ADMIN"],
+    roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"],
     items: [
       { title: "Utilisateurs", titleKey: "nav.users", icon: ShieldCheck, url: "/dashboard/utilisateurs" },
-      { title: "Configuration", titleKey: "nav.configuration", icon: Settings, url: "/dashboard/configuration" },
-      { title: "Intégrations", titleKey: "nav.integrations", icon: Plug, url: "/dashboard/integrations" },
-      { title: "Traçabilité", titleKey: "nav.traceability", icon: Eye, url: "/dashboard/tracabilite" },
-      { title: "Super Admin", titleKey: "nav.superAdmin", icon: Crown, url: "/dashboard/super-admin", roles: ["SUPER_ADMIN"] },
+      { title: "Configuration", titleKey: "nav.configuration", icon: Settings, url: "/dashboard/configuration", roles: ["SUPER_ADMIN", "ADMIN"] },
+      { title: "Intégrations", titleKey: "nav.integrations", icon: Plug, url: "/dashboard/integrations", roles: ["SUPER_ADMIN", "ADMIN"] },
+      { title: "Traçabilité", titleKey: "nav.traceability", icon: Eye, url: "/dashboard/tracabilite", roles: ["SUPER_ADMIN", "ADMIN"] },
     ],
   },
 ];

@@ -40,4 +40,7 @@ public class PropositionPassageDTO {
 
     /** Next niveau name for a PASSAGE; {@code null} when none is configured. */
     private String niveauSuivant;
+
+    /** Honour-roll mention derived from the annual average; {@code null} below the threshold (ANN-024). */
+    private String mention;
 }

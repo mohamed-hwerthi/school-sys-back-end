@@ -1,5 +1,6 @@
 package com.schoolSys.schooolSys.student;
 
+import com.schoolSys.schooolSys.anneescolaire.AnneeScolaireRepository;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.niveau.Niveau;
 import com.schoolSys.schooolSys.niveau.NiveauRepository;
@@ -22,6 +23,7 @@ public class PassageService {
     private final PassageRepository passageRepository;
     private final StudentRepository studentRepository;
     private final NiveauRepository niveauRepository;
+    private final AnneeScolaireRepository anneeScolaireRepository;
 
     public List<PassageDTO> findByAnneeScolaire(String anneeScolaire) {
         return passageRepository.findByAnneeScolaire(anneeScolaire).stream()
@@ -42,6 +44,7 @@ public class PassageService {
         }
 
         validateDecision(dto);
+        assertNoExistingPassage(dto);
 
         Passage passage = Passage.builder()
                 .studentId(dto.getStudentId())
@@ -53,6 +56,12 @@ public class PassageService {
                 .anneeScolaire(dto.getAnneeScolaire())
                 .motif(dto.getMotif())
                 .build();
+
+        // ANN-003: attach the AnneeScolaire row when its label matches.
+        if (dto.getAnneeScolaire() != null) {
+            anneeScolaireRepository.findByLabel(dto.getAnneeScolaire())
+                    .ifPresent(passage::setAnneeScolaireRef);
+        }
 
         Passage saved = passageRepository.save(passage);
 
@@ -78,6 +87,20 @@ public class PassageService {
     }
 
     /**
+     * ANN-015: a student may only receive one end-of-year decision per school year.
+     */
+    private void assertNoExistingPassage(PassageDTO dto) {
+        if (dto.getAnneeScolaire() == null || dto.getAnneeScolaire().isBlank()) return;
+        boolean exists = passageRepository.findByStudentId(dto.getStudentId()).stream()
+                .anyMatch(p -> dto.getAnneeScolaire().equalsIgnoreCase(p.getAnneeScolaire()));
+        if (exists) {
+            throw new IllegalArgumentException(
+                    "Une décision a déjà été enregistrée pour cet élève sur l'année « "
+                            + dto.getAnneeScolaire() + " ».");
+        }
+    }
+
+    /**
      * Enforces business rules on the decision:
      * - PASSAGE: nouveauNiveau must be exactly the next niveau in the configured order
      *   (leading number + 1). Skipping a level is rejected.
@@ -91,6 +114,13 @@ public class PassageService {
         String decision = dto.getDecision() == null ? "" : dto.getDecision().toUpperCase();
         String ancien = dto.getAncienNiveau();
         String nouveau = dto.getNouveauNiveau();
+
+        // ANN-014: EXCLUSION and TRANSFERT must be justified.
+        if (("EXCLUSION".equals(decision) || "TRANSFERT".equals(decision))
+                && (dto.getMotif() == null || dto.getMotif().isBlank())) {
+            throw new IllegalArgumentException(
+                    "Le motif est obligatoire pour une décision « " + decision + " ».");
+        }
 
         if ("PASSAGE".equals(decision)) {
             if (ancien == null || ancien.isBlank()) {

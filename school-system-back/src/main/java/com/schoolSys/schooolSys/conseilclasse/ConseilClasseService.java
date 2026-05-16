@@ -99,6 +99,7 @@ public class ConseilClasseService {
                     .moyenneAnnuelle(annuelle)
                     .decisionProposee(passe ? "PASSAGE" : "REDOUBLEMENT")
                     .niveauSuivant(niveauSuivant)
+                    .mention(mention(annuelle))
                     .build());
         }
 
@@ -149,6 +150,16 @@ public class ConseilClasseService {
             }
         }
         return count == 0 ? null : round2(sum / count);
+    }
+
+    /** Honour-roll mention ("tableau d'honneur") derived from the annual average (ANN-024). */
+    private String mention(Double moyenne) {
+        if (moyenne == null) return null;
+        if (moyenne >= 18) return "Excellence";
+        if (moyenne >= 16) return "Félicitations";
+        if (moyenne >= 14) return "Tableau d'honneur";
+        if (moyenne >= 12) return "Encouragements";
+        return null;
     }
 
     /** Descending rank by annual average; equal averages share a rank, nulls stay unranked. */
