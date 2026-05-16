@@ -19,20 +19,20 @@ public class BourseController {
     private final BourseService bourseService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('MANAGE_FINANCE')")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<BourseDTO>>> getAll(
             @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(bourseService.findAll(anneeScolaire)));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('MANAGE_FINANCE')")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<BourseDTO>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(bourseService.findById(id)));
     }
 
     @GetMapping("/student/{studentId}")
-    @PreAuthorize("hasAuthority('MANAGE_FINANCE')")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<BourseDTO>>> getByStudent(
             @PathVariable Long studentId,
             @RequestParam(required = false) String anneeScolaire) {
@@ -46,21 +46,21 @@ public class BourseController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('MANAGE_FINANCE')")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<BourseDTO>> create(@Valid @RequestBody BourseDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(bourseService.create(dto)));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('MANAGE_FINANCE')")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<BourseDTO>> update(
             @PathVariable Long id, @Valid @RequestBody BourseDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(bourseService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('MANAGE_FINANCE')")
+    @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         bourseService.delete(id);
         return ResponseEntity.noContent().build();

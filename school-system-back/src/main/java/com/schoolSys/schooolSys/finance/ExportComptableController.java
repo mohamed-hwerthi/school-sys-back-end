@@ -15,7 +15,7 @@ public class ExportComptableController {
     private final ExportComptableService exportComptableService;
 
     @GetMapping("/csv")
-    @PreAuthorize("hasAuthority('MANAGE_FINANCE')")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<String> exportCSV(@RequestParam String anneeScolaire) {
         String csv = exportComptableService.exportCSV(anneeScolaire);
         String filename = "export-comptable-" + anneeScolaire + ".csv";

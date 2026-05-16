@@ -21,7 +21,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/vitrine")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyAuthority('ADMIN', 'DIRECTEUR', 'MANAGE_VITRINE')")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'DIRECTEUR')")
 public class VitrineAdminController {
 
     private final VitrineService vitrineService;

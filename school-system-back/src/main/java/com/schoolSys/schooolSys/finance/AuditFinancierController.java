@@ -17,14 +17,14 @@ public class AuditFinancierController {
     private final AuditFinancierService auditFinancierService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('MANAGE_FINANCE')")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<AuditFinancierDTO>>> getAll(
             @RequestParam(required = false) String entityType) {
         return ResponseEntity.ok(ApiResponse.ok(auditFinancierService.getAll(entityType)));
     }
 
     @GetMapping("/{entityType}/{entityId}")
-    @PreAuthorize("hasAuthority('MANAGE_FINANCE')")
+    @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<AuditFinancierDTO>>> getByEntity(
             @PathVariable String entityType,
             @PathVariable Long entityId) {

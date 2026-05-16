@@ -66,19 +66,19 @@ public class MeetingController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('MANAGE_SYSTEM', 'MANAGE_MEETINGS')")
+    @PreAuthorize("hasAnyAuthority('MANAGE_SYSTEM', 'MANAGE_COMMUNICATION')")
     public ResponseEntity<ApiResponse<MeetingResponseDTO>> create(@Valid @RequestBody MeetingRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(meetingService.create(dto)));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('MANAGE_SYSTEM', 'MANAGE_MEETINGS')")
+    @PreAuthorize("hasAnyAuthority('MANAGE_SYSTEM', 'MANAGE_COMMUNICATION')")
     public ResponseEntity<ApiResponse<MeetingResponseDTO>> update(@PathVariable Long id, @Valid @RequestBody MeetingRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(meetingService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('MANAGE_SYSTEM', 'MANAGE_MEETINGS')")
+    @PreAuthorize("hasAnyAuthority('MANAGE_SYSTEM', 'MANAGE_COMMUNICATION')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         meetingService.delete(id);
         return ResponseEntity.noContent().build();
