@@ -22,6 +22,7 @@ import com.schoolSys.schooolSys.settings.SchoolSettings;
 import com.schoolSys.schooolSys.settings.SchoolSettingsRepository;
 import com.schoolSys.schooolSys.student.Student;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,6 +53,7 @@ public class BulletinService {
      * Compute bulletins for all students in a class for a given trimestre.
      */
     public List<BulletinDTO> getBulletins(Long classeId, Integer trimestre, String version) {
+        assertTeacherTeachesClasse(classeId);
         boolean prive = VERSION_PRIVE.equalsIgnoreCase(version);
 
         Classe classe = classeRepository.findById(classeId)
@@ -348,6 +350,130 @@ public class BulletinService {
                 .orElseThrow(() -> new ResourceNotFoundException("Bulletin for student", studentId));
     }
 
+    // ── ANN-040: Bulletin annuel (synthèse des 3 trimestres) ──────
+
+    /**
+     * Annual bulletin: per-student synthesis of the three trimestre bulletins —
+     * per-module and general annual averages, annual rank and mention.
+     */
+    public List<BulletinAnnuelDTO> getBulletinsAnnuels(Long classeId, String version) {
+        List<BulletinDTO> t1 = getBulletins(classeId, 1, version);
+        List<BulletinDTO> t2 = getBulletins(classeId, 2, version);
+        List<BulletinDTO> t3 = getBulletins(classeId, 3, version);
+
+        Map<Long, BulletinDTO> m1 = indexByStudent(t1);
+        Map<Long, BulletinDTO> m2 = indexByStudent(t2);
+        Map<Long, BulletinDTO> m3 = indexByStudent(t3);
+
+        Map<Long, BulletinDTO> roster = new LinkedHashMap<>();
+        for (BulletinDTO b : t1) roster.putIfAbsent(b.getStudentId(), b);
+        for (BulletinDTO b : t2) roster.putIfAbsent(b.getStudentId(), b);
+        for (BulletinDTO b : t3) roster.putIfAbsent(b.getStudentId(), b);
+
+        List<BulletinAnnuelDTO> result = new ArrayList<>();
+        for (Map.Entry<Long, BulletinDTO> entry : roster.entrySet()) {
+            Long studentId = entry.getKey();
+            BulletinDTO ref = entry.getValue();
+            BulletinDTO b1 = m1.get(studentId), b2 = m2.get(studentId), b3 = m3.get(studentId);
+
+            Double mg1 = b1 != null ? b1.getMoyenneGenerale() : null;
+            Double mg2 = b2 != null ? b2.getMoyenneGenerale() : null;
+            Double mg3 = b3 != null ? b3.getMoyenneGenerale() : null;
+            Double annuelle = moyenneNonNull(mg1, mg2, mg3);
+
+            Map<Long, Double[]> moduleVals = new LinkedHashMap<>();
+            Map<Long, String> moduleNames = new LinkedHashMap<>();
+            collectModuleAverages(b1, 0, moduleVals, moduleNames);
+            collectModuleAverages(b2, 1, moduleVals, moduleNames);
+            collectModuleAverages(b3, 2, moduleVals, moduleNames);
+
+            List<ModuleAnnuelDTO> modules = new ArrayList<>();
+            for (Map.Entry<Long, Double[]> me : moduleVals.entrySet()) {
+                Double[] v = me.getValue();
+                modules.add(ModuleAnnuelDTO.builder()
+                        .moduleId(me.getKey())
+                        .moduleName(moduleNames.get(me.getKey()))
+                        .moyenneT1(v[0]).moyenneT2(v[1]).moyenneT3(v[2])
+                        .moyenneAnnuelle(moyenneNonNull(v[0], v[1], v[2]))
+                        .build());
+            }
+
+            result.add(BulletinAnnuelDTO.builder()
+                    .studentId(studentId)
+                    .studentName(ref.getStudentName())
+                    .studentNameAr(ref.getStudentNameAr())
+                    .classe(ref.getClasse())
+                    .niveau(ref.getNiveau())
+                    .version(ref.getVersion())
+                    .moyenneT1(mg1).moyenneT2(mg2).moyenneT3(mg3)
+                    .moyenneAnnuelle(annuelle)
+                    .mention(mentionAnnuelle(annuelle))
+                    .modules(modules)
+                    .build());
+        }
+
+        // Annual rank — descending by annual average, ties share a rank.
+        List<BulletinAnnuelDTO> ranked = result.stream()
+                .filter(b -> b.getMoyenneAnnuelle() != null)
+                .sorted((a, b) -> Double.compare(b.getMoyenneAnnuelle(), a.getMoyenneAnnuelle()))
+                .toList();
+        for (int i = 0; i < ranked.size(); i++) {
+            if (i > 0 && Objects.equals(ranked.get(i).getMoyenneAnnuelle(),
+                    ranked.get(i - 1).getMoyenneAnnuelle())) {
+                ranked.get(i).setRang(ranked.get(i - 1).getRang());
+            } else {
+                ranked.get(i).setRang(i + 1);
+            }
+        }
+        result.forEach(b -> b.setTotalEleves(result.size()));
+        result.sort(Comparator.comparing(BulletinAnnuelDTO::getStudentName,
+                Comparator.nullsLast(String::compareToIgnoreCase)));
+        return result;
+    }
+
+    private Map<Long, BulletinDTO> indexByStudent(List<BulletinDTO> bulletins) {
+        Map<Long, BulletinDTO> map = new LinkedHashMap<>();
+        for (BulletinDTO b : bulletins) map.put(b.getStudentId(), b);
+        return map;
+    }
+
+    private void collectModuleAverages(BulletinDTO bulletin, int trimIndex,
+                                       Map<Long, Double[]> vals, Map<Long, String> names) {
+        if (bulletin == null) return;
+        List<BulletinModuleDTO> modules = new ArrayList<>();
+        if (bulletin.getDomaines() != null) {
+            for (BulletinDomaineDTO d : bulletin.getDomaines()) {
+                if (d.getModules() != null) modules.addAll(d.getModules());
+            }
+        }
+        if (bulletin.getModulesHorsDomaine() != null) {
+            modules.addAll(bulletin.getModulesHorsDomaine());
+        }
+        for (BulletinModuleDTO m : modules) {
+            vals.computeIfAbsent(m.getModuleId(), k -> new Double[3])[trimIndex] = m.getMoyenneModule();
+            names.putIfAbsent(m.getModuleId(), m.getModuleName());
+        }
+    }
+
+    /** Mean of the non-null values rounded to 2 decimals; {@code null} when all are null. */
+    private Double moyenneNonNull(Double... values) {
+        double sum = 0;
+        int count = 0;
+        for (Double v : values) {
+            if (v != null) { sum += v; count++; }
+        }
+        return count == 0 ? null : round2(sum / count);
+    }
+
+    private String mentionAnnuelle(Double moyenne) {
+        if (moyenne == null) return null;
+        if (moyenne >= 18) return "Excellence";
+        if (moyenne >= 16) return "Félicitations";
+        if (moyenne >= 14) return "Tableau d'honneur";
+        if (moyenne >= 12) return "Encouragements";
+        return null;
+    }
+
     // ── BUL-003: Template CRUD ─────────────────────────────
 
     public List<BulletinTemplateDTO> getAllTemplates() {
@@ -552,6 +678,7 @@ public class BulletinService {
     // ── BUL-006: Attestation de scolarite ────────────────
 
     public AttestationDTO getAttestation(Long eleveId) {
+        currentUser.assertCanAccessStudent(eleveId);
         List<Note> notes = noteRepository.findByStudentIdAndTrimestre(eleveId, 1);
         if (notes.isEmpty()) {
             notes = noteRepository.findByStudentIdAndTrimestre(eleveId, 2);
@@ -610,6 +737,13 @@ public class BulletinService {
                 .orElseThrow(() -> new ResourceNotFoundException("Niveau", niveauId));
 
         List<Classe> classes = classeRepository.findByNiveauId(niveauId);
+        // A teacher only compares classes he is affected to.
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
+            Set<Long> scoped = currentUser.getScopedClasseIdsForTeacher();
+            classes = classes.stream()
+                    .filter(c -> scoped.contains(c.getId()))
+                    .collect(Collectors.toList());
+        }
         List<ComparatifDTO.ClassePerformanceDTO> classesPerf = new ArrayList<>();
 
         for (Classe classe : classes) {
@@ -686,6 +820,14 @@ public class BulletinService {
     }
 
     // ── Helpers ────────────────────────────────────────────
+
+    /** A teacher may only access bulletins of classes he is affected to. */
+    private void assertTeacherTeachesClasse(Long classeId) {
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)
+                && !currentUser.teacherTeachesClasse(classeId)) {
+            throw new AccessDeniedException("Cette classe n'est pas dans votre périmètre.");
+        }
+    }
 
     private String determineCertificat(double moyenne) {
         if (moyenne >= 18) return "شهادة شرف الدرجة الأولى";

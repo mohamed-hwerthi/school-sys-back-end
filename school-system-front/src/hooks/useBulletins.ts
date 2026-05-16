@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   bulletinsApi,
   type BulletinDTO,
+  type BulletinAnnuelDTO,
   type BulletinTemplateDTO,
   type StatsReussiteDTO,
   type AttestationDTO,
@@ -20,6 +21,15 @@ export function useBulletins(
     queryKey: [KEY, classeId, trimestre, version],
     queryFn: () => bulletinsApi.getAll(classeId, trimestre, version),
     enabled: classeId > 0 && trimestre > 0,
+  });
+}
+
+// ANN-040: annual bulletin (3-trimestre synthesis)
+export function useBulletinsAnnuels(classeId: number, version: string = "etatique") {
+  return useQuery<BulletinAnnuelDTO[]>({
+    queryKey: [KEY, "annuel", classeId, version],
+    queryFn: () => bulletinsApi.getAnnuels(classeId, version),
+    enabled: classeId > 0,
   });
 }
 

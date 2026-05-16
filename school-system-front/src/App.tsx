@@ -63,6 +63,7 @@ const DisciplinePage = lazy(() => import("./pages/Discipline"));
 const AnneeScolairePage = lazy(() => import("./pages/AnneeScolaire"));
 const ConseilClassePage = lazy(() => import("./pages/ConseilClasse"));
 const BilanAnnuelPage = lazy(() => import("./pages/BilanAnnuel"));
+const ClotureAnneePage = lazy(() => import("./pages/ClotureAnnee"));
 const ContratsPage = lazy(() => import("./pages/Contrats"));
 const FacturesPage = lazy(() => import("./pages/Factures"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
@@ -72,6 +73,7 @@ const VitrineAdminPage = lazy(() => import("./pages/VitrineAdmin"));
 
 // Bulletin pages
 const BulletinsMassePage = lazy(() => import("./pages/BulletinsMasse"));
+const BulletinsAnnuelsPage = lazy(() => import("./pages/BulletinsAnnuels"));
 const StatsReussitePage = lazy(() => import("./pages/StatsReussite"));
 const ComparatifPerformancesPage = lazy(() => import("./pages/ComparatifPerformances"));
 
@@ -172,7 +174,6 @@ const App = () => (
             <Route path="/vitrine/:slug" element={<Suspense fallback={<PageLoader />}><VitrineSite /></Suspense>} />
             <Route path="/vitrine/:slug/:pageSlug" element={<Suspense fallback={<PageLoader />}><VitrineSite /></Suspense>} />
             <Route path="/inscription" element={<Suspense fallback={<PageLoader />}><InscriptionPubliquePage /></Suspense>} />
-            <Route path="/onboarding" element={<Suspense fallback={<PageLoader />}><OnboardingPage /></Suspense>} />
             {/* Quiz passation (student exam taking) */}
             <Route path="/quiz/:quizId" element={<Suspense fallback={<PageLoader />}><QuizPassationPage /></Suspense>} />
             {/* Super Admin — independent platform space, separate from /dashboard */}
@@ -187,6 +188,7 @@ const App = () => (
               }
             >
               <Route index element={<S><SuperAdminDashboardPage /></S>} />
+              <Route path="nouvelle-ecole" element={<S><OnboardingPage /></S>} />
             </Route>
             <Route
               path="/dashboard"
@@ -254,12 +256,14 @@ const App = () => (
               <Route path="annee-scolaire" element={<G roles={MANAGEMENT_ROLES}><AnneeScolairePage /></G>} />
               <Route path="conseil-classe" element={<G roles={MANAGEMENT_ROLES}><ConseilClassePage /></G>} />
               <Route path="bilan-annuel" element={<G roles={MANAGEMENT_ROLES}><BilanAnnuelPage /></G>} />
+              <Route path="cloture" element={<G roles={MANAGEMENT_ROLES}><ClotureAnneePage /></G>} />
               <Route path="devoirs" element={<G roles={STAFF_ROLES}><DevoirsPage /></G>} />
               <Route path="quiz" element={<G roles={STAFF_ROLES}><QuizManagementPage /></G>} />
               <Route path="calendrier" element={<S><CalendrierPage /></S>} />
 
               {/* Bulletins */}
               <Route path="bulletins-masse" element={<G roles={MANAGEMENT_ROLES}><BulletinsMassePage /></G>} />
+              <Route path="bulletins-annuels" element={<G roles={MANAGEMENT_ROLES}><BulletinsAnnuelsPage /></G>} />
               <Route path="stats-reussite" element={<G roles={MANAGEMENT_ROLES}><StatsReussitePage /></G>} />
               <Route path="comparatif" element={<G roles={MANAGEMENT_ROLES}><ComparatifPerformancesPage /></G>} />
 

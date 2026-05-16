@@ -65,17 +65,17 @@ Points d'attention :
 
 | ID | User story | Prio | Est. | Dépend. | Statut |
 |---|---|---|---|---|---|
-| ANN-030 | **Assistant de clôture** multi-étapes | P1 | 5 | ANN-013 | À faire |
-| ANN-031 | Pré-vérifications : notes saisies, examens complets, passages traités | P1 | 3 | ANN-030 | À faire |
-| ANN-032 | **Verrouillage en lecture seule** d'une année `cloturee` | P1 | 5 | ANN-030 | À faire |
-| ANN-033 | Création de la **nouvelle année scolaire** + trimestres à la clôture | P1 | 3 | ANN-030 | À faire |
+| ANN-030 | **Assistant de clôture** multi-étapes | P1 | 5 | ANN-013 | Fait |
+| ANN-031 | Pré-vérifications : notes saisies, examens complets, passages traités | P1 | 3 | ANN-030 | Fait |
+| ANN-032 | **Verrouillage en lecture seule** d'une année `cloturee` | P1 | 5 | ANN-030 | Fait |
+| ANN-033 | Création de la **nouvelle année scolaire** + trimestres à la clôture | P1 | 3 | ANN-030 | Fait |
 | ANN-034 | Journal / audit de clôture (qui, quand, quoi) | P2 | 2 | ANN-030 | À faire |
 
 ## EPIC E — Documents de fin d'année
 
 | ID | User story | Prio | Est. | Dépend. | Statut |
 |---|---|---|---|---|---|
-| ANN-040 | **Bulletin annuel** PDF (synthèse des 3 trimestres) | P1 | 5 | ANN-001 | À faire |
+| ANN-040 | **Bulletin annuel** PDF (synthèse des 3 trimestres) | P1 | 5 | ANN-001 | Fait (synthèse + impression) |
 | ANN-041 | Relevé de notes annuel | P2 | 3 | ANN-040 | À faire |
 | ANN-042 | Attestation de réussite / certificat de scolarité | P2 | 3 | ANN-013 | À faire |
 | ANN-043 | **PV de conseil de classe** (PDF) | P2 | 3 | ANN-013 | À faire |

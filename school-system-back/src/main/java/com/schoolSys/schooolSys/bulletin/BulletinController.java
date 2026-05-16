@@ -39,6 +39,17 @@ public class BulletinController {
                 bulletinService.getBulletin(classeId, studentId, trimestre, version)));
     }
 
+    // --- ANN-040: Bulletin annuel ---
+
+    @GetMapping("/annuel")
+    @PreAuthorize("hasAuthority('GENERATE_BULLETINS')")
+    public ResponseEntity<ApiResponse<List<BulletinAnnuelDTO>>> getBulletinsAnnuels(
+            @RequestParam Long classeId,
+            @RequestParam(defaultValue = "etatique") String version) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                bulletinService.getBulletinsAnnuels(classeId, version)));
+    }
+
     // --- BUL-003: Templates ---
 
     @GetMapping("/templates")

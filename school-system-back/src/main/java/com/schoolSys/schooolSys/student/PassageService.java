@@ -45,6 +45,7 @@ public class PassageService {
 
         validateDecision(dto);
         assertNoExistingPassage(dto);
+        assertAnneeOuverte(dto);
 
         Passage passage = Passage.builder()
                 .studentId(dto.getStudentId())
@@ -98,6 +99,17 @@ public class PassageService {
                     "Une décision a déjà été enregistrée pour cet élève sur l'année « "
                             + dto.getAnneeScolaire() + " ».");
         }
+    }
+
+    /** ANN-032: no decision may be recorded against a clôturée school year. */
+    private void assertAnneeOuverte(PassageDTO dto) {
+        if (dto.getAnneeScolaire() == null || dto.getAnneeScolaire().isBlank()) return;
+        anneeScolaireRepository.findByLabel(dto.getAnneeScolaire())
+                .filter(a -> Boolean.TRUE.equals(a.getCloturee()))
+                .ifPresent(a -> {
+                    throw new IllegalStateException("L'année scolaire « " + dto.getAnneeScolaire()
+                            + " » est clôturée — aucune nouvelle décision possible.");
+                });
     }
 
     /**

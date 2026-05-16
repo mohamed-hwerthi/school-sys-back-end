@@ -153,6 +153,33 @@ export interface ComparatifDTO {
   evolution?: EvolutionTrimestreDTO[];
 }
 
+// ANN-040: Bulletin annuel
+export interface ModuleAnnuelDTO {
+  moduleId: number;
+  moduleName: string;
+  moyenneT1: number | null;
+  moyenneT2: number | null;
+  moyenneT3: number | null;
+  moyenneAnnuelle: number | null;
+}
+
+export interface BulletinAnnuelDTO {
+  studentId: number;
+  studentName: string;
+  studentNameAr: string | null;
+  classe: string;
+  niveau: string;
+  version: string;
+  moyenneT1: number | null;
+  moyenneT2: number | null;
+  moyenneT3: number | null;
+  moyenneAnnuelle: number | null;
+  rang: number | null;
+  totalEleves: number;
+  mention: string | null;
+  modules: ModuleAnnuelDTO[];
+}
+
 const BASE = "/bulletins";
 
 export const bulletinsApi = {
@@ -176,6 +203,17 @@ export const bulletinsApi = {
   ): Promise<BulletinDTO> => {
     const res = await api.get<BulletinDTO>(
       `${BASE}/student/${studentId}?classeId=${classeId}&trimestre=${trimestre}&version=${version}`
+    );
+    return res.data;
+  },
+
+  // ANN-040: Bulletin annuel (synthèse des 3 trimestres)
+  getAnnuels: async (
+    classeId: number,
+    version: string = "etatique"
+  ): Promise<BulletinAnnuelDTO[]> => {
+    const res = await api.get<BulletinAnnuelDTO[]>(
+      `${BASE}/annuel?classeId=${classeId}&version=${version}`
     );
     return res.data;
   },

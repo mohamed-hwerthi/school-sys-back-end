@@ -44,6 +44,7 @@ import {
   FileDown,
   Plug,
   Target,
+  Lock,
 } from "lucide-react";
 
 /**
@@ -123,6 +124,7 @@ export const sidebarSections: NavSection[] = [
       { title: "Année scolaire", titleKey: "nav.schoolYear", icon: CalendarClock, url: "/dashboard/annee-scolaire", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Conseil de classe", titleKey: "nav.classCouncil", icon: GraduationCap, url: "/dashboard/conseil-classe", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Bilan annuel", titleKey: "nav.annualReview", icon: BarChart3, url: "/dashboard/bilan-annuel", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
+      { title: "Clôture d'année", titleKey: "nav.yearClosure", icon: Lock, url: "/dashboard/cloture", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Emploi du temps", titleKey: "nav.schedule", icon: Clock, url: "/dashboard/emploi-du-temps", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT", "PARENT"] },
       { title: "Volume horaire", titleKey: "nav.weeklyVolume", icon: Clock, url: "/dashboard/volume-horaire", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Salles", titleKey: "nav.rooms", icon: Calendar, url: "/dashboard/emploi-salles", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
@@ -150,6 +152,7 @@ export const sidebarSections: NavSection[] = [
     roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"],
     items: [
       { title: "Impression masse", titleKey: "nav.bulkPrint", icon: Printer, url: "/dashboard/bulletins-masse" },
+      { title: "Bulletins annuels", titleKey: "nav.annualBulletins", icon: FileText, url: "/dashboard/bulletins-annuels" },
       { title: "Stats réussite", titleKey: "nav.successStats", icon: TrendingUp, url: "/dashboard/stats-reussite" },
       { title: "Comparatif", titleKey: "nav.comparative", icon: Activity, url: "/dashboard/comparatif" },
     ],

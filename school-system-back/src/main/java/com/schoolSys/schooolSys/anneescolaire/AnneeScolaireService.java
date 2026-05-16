@@ -101,6 +101,7 @@ public class AnneeScolaireService {
     public AnneeScolaireResponseDTO updateAnnee(Long id, AnneeScolaireRequestDTO request) {
         AnneeScolaire annee = anneeScolaireRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("AnneeScolaire", id));
+        assertModifiable(annee);
 
         annee.setLabel(request.getLabel());
         annee.setDateDebut(request.getDateDebut());
@@ -169,6 +170,7 @@ public class AnneeScolaireService {
     public AnneeScolaireResponseDTO activateAnnee(Long id) {
         AnneeScolaire annee = anneeScolaireRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("AnneeScolaire", id));
+        assertModifiable(annee);
         deactivateAllAnnees();
         annee.setActive(true);
         return toDto(anneeScolaireRepository.save(annee));
@@ -198,6 +200,7 @@ public class AnneeScolaireService {
     public TrimestreDTO addTrimestre(Long anneeScolaireId, TrimestreDTO dto) {
         AnneeScolaire annee = anneeScolaireRepository.findById(anneeScolaireId)
             .orElseThrow(() -> new ResourceNotFoundException("AnneeScolaire", anneeScolaireId));
+        assertModifiable(annee);
         Trimestre t = Trimestre.builder()
             .anneeScolaire(annee)
             .numero(dto.getNumero())
@@ -213,6 +216,7 @@ public class AnneeScolaireService {
     public TrimestreDTO updateTrimestre(Long id, TrimestreDTO dto) {
         Trimestre t = trimestreRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Trimestre", id));
+        assertModifiable(t.getAnneeScolaire());
         t.setNumero(dto.getNumero());
         t.setLabel(dto.getLabel());
         t.setDateDebut(dto.getDateDebut());
@@ -225,7 +229,9 @@ public class AnneeScolaireService {
 
     @Transactional
     public void deleteTrimestre(Long id) {
-        if (!trimestreRepository.existsById(id)) throw new ResourceNotFoundException("Trimestre", id);
+        Trimestre t = trimestreRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Trimestre", id));
+        assertModifiable(t.getAnneeScolaire());
         trimestreRepository.deleteById(id);
     }
 
@@ -316,6 +322,14 @@ public class AnneeScolaireService {
                 anneeScolaireRepository.save(a);
             }
         });
+    }
+
+    /** ANN-032: a clôturée year is read-only — its structure cannot be modified. */
+    private void assertModifiable(AnneeScolaire annee) {
+        if (annee != null && Boolean.TRUE.equals(annee.getCloturee())) {
+            throw new IllegalStateException("Année scolaire « " + annee.getLabel()
+                    + " » clôturée — modification impossible (lecture seule).");
+        }
     }
 
     // --- Mappers ---
