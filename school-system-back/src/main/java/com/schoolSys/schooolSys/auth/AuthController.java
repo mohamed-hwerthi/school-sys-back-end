@@ -44,8 +44,10 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody RefreshTokenRequestDTO request) {
-        authService.logout(request);
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @Valid @RequestBody RefreshTokenRequestDTO request,
+            HttpServletRequest httpRequest) {
+        authService.logout(request, extractIpAddress(httpRequest));
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 

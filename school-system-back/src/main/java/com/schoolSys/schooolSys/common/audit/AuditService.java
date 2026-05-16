@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -60,6 +61,35 @@ public class AuditService {
     @Transactional
     public void log(String action, String details) {
         log(action, null, null, details);
+    }
+
+    /**
+     * Records an authentication event (LOGIN_SUCCESS, LOGIN_FAILED,
+     * ACCOUNT_LOCKED, LOGIN_2FA_REQUIRED, LOGOUT ...).
+     * <p>
+     * Runs in its own transaction ({@code REQUIRES_NEW}) so the entry is
+     * persisted even when the surrounding {@code login()} transaction rolls
+     * back after a failed attempt. Username and IP are supplied explicitly
+     * because the actor is not yet authenticated at login time.
+     * </p>
+     *
+     * @param action    the auth action
+     * @param username  the email used for the attempt
+     * @param ipAddress client IP, as resolved by the caller
+     * @param details   human-readable context
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logAuth(String action, String username, String ipAddress, String details) {
+        AuditLog entry = AuditLog.builder()
+                .username(username)
+                .action(action)
+                .details(details)
+                .ipAddress(ipAddress)
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        repository.save(entry);
+        log.debug("Audit auth: {} by {} from {}", action, username, ipAddress);
     }
 
     /* ── Read ───────────────────────────────────────────────── */

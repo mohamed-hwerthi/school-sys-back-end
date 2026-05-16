@@ -1,6 +1,7 @@
 package com.schoolSys.schooolSys.auth;
 
 import com.schoolSys.schooolSys.auth.dto.*;
+import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.tenant.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TwoFactorService twoFactorService;
     private final TenantRepository tenantRepository;
+    private final AuditService auditService;
 
     @Value("${app.jwt.refresh-expiration-ms:604800000}")
     private long refreshTokenExpirationMs;
@@ -32,12 +34,17 @@ public class AuthService {
 
     @Transactional
     public LoginResponseDTO login(LoginRequestDTO request, String deviceName, String ipAddress) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user == null) {
+            auditService.logAuth("LOGIN_FAILED", request.getEmail(), ipAddress, "Utilisateur inconnu");
+            throw new IllegalArgumentException("Invalid email or password");
+        }
 
         // Check if account is locked
         if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
             long minutesRemaining = java.time.Duration.between(LocalDateTime.now(), user.getLockedUntil()).toMinutes() + 1;
+            auditService.logAuth("LOGIN_FAILED", user.getEmail(), ipAddress,
+                    "Compte verrouille (" + minutesRemaining + " min restantes)");
             throw new IllegalArgumentException(
                     "Compte verrouillé. Réessayez après " + minutesRemaining + " minutes.");
         }
@@ -46,14 +53,22 @@ public class AuthService {
             // Increment failed attempts
             int attempts = user.getFailedLoginAttempts() + 1;
             user.setFailedLoginAttempts(attempts);
-            if (attempts >= MAX_FAILED_ATTEMPTS) {
+            boolean locked = attempts >= MAX_FAILED_ATTEMPTS;
+            if (locked) {
                 user.setLockedUntil(LocalDateTime.now().plusMinutes(LOCKOUT_DURATION_MINUTES));
             }
             userRepository.save(user);
+            auditService.logAuth("LOGIN_FAILED", user.getEmail(), ipAddress,
+                    "Mot de passe incorrect (tentative " + attempts + "/" + MAX_FAILED_ATTEMPTS + ")");
+            if (locked) {
+                auditService.logAuth("ACCOUNT_LOCKED", user.getEmail(), ipAddress,
+                        "Compte verrouille " + LOCKOUT_DURATION_MINUTES + " min apres " + attempts + " echecs");
+            }
             throw new IllegalArgumentException("Invalid email or password");
         }
 
         if (!user.getIsActive()) {
+            auditService.logAuth("LOGIN_FAILED", user.getEmail(), ipAddress, "Compte desactive");
             throw new IllegalArgumentException("Account is disabled. Contact your administrator.");
         }
 
@@ -66,6 +81,8 @@ public class AuthService {
 
         // If 2FA is enabled, don't return tokens yet
         if (Boolean.TRUE.equals(user.getTwoFactorEnabled())) {
+            auditService.logAuth("LOGIN_2FA_REQUIRED", user.getEmail(), ipAddress,
+                    "Mot de passe valide, code 2FA requis");
             return LoginResponseDTO.builder()
                     .twoFactorRequired(true)
                     .twoFactorUserId(user.getId())
@@ -73,6 +90,7 @@ public class AuthService {
         }
 
         // No 2FA — issue tokens directly
+        auditService.logAuth("LOGIN_SUCCESS", user.getEmail(), ipAddress, "Connexion reussie");
         return issueTokens(user, deviceName, ipAddress);
     }
 
@@ -86,9 +104,11 @@ public class AuthService {
         }
 
         if (!twoFactorService.verifyCode(user.getTotpSecret(), code)) {
+            auditService.logAuth("LOGIN_FAILED", user.getEmail(), ipAddress, "Code 2FA invalide");
             throw new IllegalArgumentException("Invalid 2FA code");
         }
 
+        auditService.logAuth("LOGIN_SUCCESS", user.getEmail(), ipAddress, "Connexion reussie (2FA)");
         return issueTokens(user, deviceName, ipAddress);
     }
 
@@ -189,11 +209,12 @@ public class AuthService {
     }
 
     @Transactional
-    public void logout(RefreshTokenRequestDTO request) {
+    public void logout(RefreshTokenRequestDTO request, String ipAddress) {
         refreshTokenRepository.findByToken(request.getRefreshToken())
                 .ifPresent(rt -> {
                     rt.setRevoked(true);
                     refreshTokenRepository.save(rt);
+                    auditService.logAuth("LOGOUT", rt.getUser().getEmail(), ipAddress, "Deconnexion");
                 });
     }
 
