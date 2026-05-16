@@ -8,6 +8,7 @@ import com.schoolSys.schooolSys.auth.dto.LoginRequestDTO;
 import com.schoolSys.schooolSys.auth.dto.LoginResponseDTO;
 import com.schoolSys.schooolSys.auth.dto.RefreshTokenRequestDTO;
 import com.schoolSys.schooolSys.auth.dto.UserResponseDTO;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -47,6 +48,9 @@ class AuthControllerTest {
 
     @MockitoBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockitoBean
+    private CurrentUserContext currentUserContext;
 
     private UserResponseDTO userResponse;
     private LoginResponseDTO loginResponse;

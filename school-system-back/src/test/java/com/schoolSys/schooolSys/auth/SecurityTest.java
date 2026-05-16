@@ -1,12 +1,16 @@
 package com.schoolSys.schooolSys.auth;
 
+import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.common.config.SecurityConfig;
+import com.schoolSys.schooolSys.common.security.AuditingAccessDeniedHandler;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,7 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, AuditingAccessDeniedHandler.class})
 @DisplayName("Security Configuration Tests")
 class SecurityTest {
 
@@ -37,6 +41,15 @@ class SecurityTest {
 
     @MockitoBean
     private PasswordResetService passwordResetService;
+
+    @MockitoBean
+    private CurrentUserContext currentUserContext;
+
+    @MockitoBean
+    private CorsConfigurationSource corsConfigurationSource;
+
+    @MockitoBean
+    private AuditService auditService;
 
     @BeforeEach
     void setUp() throws Exception {

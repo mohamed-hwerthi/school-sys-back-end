@@ -5,8 +5,16 @@ import com.schoolSys.schooolSys.emploidutemps.dto.TeachingAssignmentDTO;
 import com.schoolSys.schooolSys.emploidutemps.dto.TimetableGenerationRequestDTO;
 import com.schoolSys.schooolSys.emploidutemps.dto.TimetableGenerationResponseDTO;
 import com.schoolSys.schooolSys.emploidutemps.solver.TimetableSolverService;
+import com.schoolSys.schooolSys.anneescolaire.AnneeScolaireRepository;
+import com.schoolSys.schooolSys.classroom.ClassroomRepository;
+import com.schoolSys.schooolSys.disponibilite.EnseignantDisponibiliteRepository;
 import com.schoolSys.schooolSys.module.Module;
 import com.schoolSys.schooolSys.module.ModuleRepository;
+import com.schoolSys.schooolSys.niveau.ClasseRepository;
+import com.schoolSys.schooolSys.niveau.NiveauRepository;
+import com.schoolSys.schooolSys.student.StudentRepository;
+import com.schoolSys.schooolSys.teacher.TeacherRepository;
+import com.schoolSys.schooolSys.volumehoraire.ModuleClasseVolumeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,8 +23,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +39,9 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
+// The solver exercises a variable set of repositories depending on the input;
+// lenient stubbing keeps the per-scenario setup readable.
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("TimetableSolverService Unit Tests")
 class TimetableSolverServiceTest {
 
@@ -40,6 +54,30 @@ class TimetableSolverServiceTest {
     @Mock
     private ModuleRepository moduleRepository;
 
+    @Mock
+    private ModuleClasseVolumeRepository volumeRepository;
+
+    @Mock
+    private EnseignantDisponibiliteRepository disponibiliteRepository;
+
+    @Mock
+    private ClassroomRepository classroomRepository;
+
+    @Mock
+    private ClasseRepository classeRepository;
+
+    @Mock
+    private NiveauRepository niveauRepository;
+
+    @Mock
+    private StudentRepository studentRepository;
+
+    @Mock
+    private TeacherRepository teacherRepository;
+
+    @Mock
+    private AnneeScolaireRepository anneeScolaireRepository;
+
     @InjectMocks
     private TimetableSolverService timetableSolverService;
 
@@ -48,11 +86,12 @@ class TimetableSolverServiceTest {
     @BeforeEach
     void setUp() {
         // Simulate 3 course creneaux (like a real school day)
-        courseCreneaux = List.of(
+        // Mutable list — TimetableSolverService sorts the creneaux in place.
+        courseCreneaux = new ArrayList<>(List.of(
                 buildCreneau(1L, "Session 1", LocalTime.of(8, 0), LocalTime.of(9, 0), "COURS"),
                 buildCreneau(2L, "Session 2", LocalTime.of(9, 0), LocalTime.of(10, 0), "COURS"),
                 buildCreneau(3L, "Session 3", LocalTime.of(10, 0), LocalTime.of(11, 0), "COURS")
-        );
+        ));
     }
 
     private Creneau buildCreneau(Long id, String label, LocalTime debut, LocalTime fin, String type) {
@@ -164,7 +203,7 @@ class TimetableSolverServiceTest {
         @DisplayName("should return INFEASIBLE when too many lessons for available slots")
         void shouldReturnInfeasibleWhenOverloaded() {
             // Only 1 creneau for the whole week = 6 slots (6 days x 1 creneau)
-            when(creneauRepository.findByType("COURS")).thenReturn(List.of(courseCreneaux.get(0)));
+            when(creneauRepository.findByType("COURS")).thenReturn(new ArrayList<>(List.of(courseCreneaux.get(0))));
             when(moduleRepository.findById(anyLong())).thenReturn(Optional.of(
                     Module.builder().id(10L).coeffEtatique(1.0).build()
             ));

@@ -6,7 +6,10 @@ import com.schoolSys.schooolSys.auth.dto.LoginRequestDTO;
 import com.schoolSys.schooolSys.auth.dto.LoginResponseDTO;
 import com.schoolSys.schooolSys.auth.dto.RefreshTokenRequestDTO;
 import com.schoolSys.schooolSys.auth.dto.UserResponseDTO;
+import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.common.config.SecurityConfig;
+import com.schoolSys.schooolSys.common.security.AuditingAccessDeniedHandler;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,6 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * correctly protects all routes and allows public endpoints.
  */
 @WebMvcTest(AuthController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, AuditingAccessDeniedHandler.class})
 @DisplayName("Security Integration Tests - End-to-End Route Protection")
 class SecurityIntegrationTest {
 
@@ -51,6 +57,15 @@ class SecurityIntegrationTest {
 
     @MockitoBean
     private PasswordResetService passwordResetService;
+
+    @MockitoBean
+    private CurrentUserContext currentUserContext;
+
+    @MockitoBean
+    private CorsConfigurationSource corsConfigurationSource;
+
+    @MockitoBean
+    private AuditService auditService;
 
     private LoginResponseDTO loginResponse;
 
@@ -120,15 +135,16 @@ class SecurityIntegrationTest {
         }
 
         @Test
-        @DisplayName("POST /api/auth/logout should be accessible without auth")
-        void logoutShouldBeAccessibleWithoutAuth() throws Exception {
+        @DisplayName("POST /api/auth/logout requires authentication (not a public path)")
+        void logoutRequiresAuthentication() throws Exception {
+            // /api/auth/logout is deliberately NOT in SecurityConfig.PUBLIC_PATHS.
             RefreshTokenRequestDTO request = new RefreshTokenRequestDTO();
             request.setRefreshToken("token-to-revoke");
 
             mockMvc.perform(post("/api/auth/logout")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isForbidden());
         }
 
         @Test
@@ -427,6 +443,16 @@ class SecurityIntegrationTest {
         @Test
         @DisplayName("logout should succeed and return 200")
         void logoutShouldSucceed() throws Exception {
+            // The JWT filter authenticates the request — simulate that here so the
+            // STATELESS chain sees an authenticated user for this protected endpoint.
+            doAnswer(inv -> {
+                SecurityContextHolder.getContext().setAuthentication(
+                        new UsernamePasswordAuthenticationToken("user", null, java.util.List.of()));
+                inv.<jakarta.servlet.FilterChain>getArgument(2)
+                        .doFilter(inv.getArgument(0), inv.getArgument(1));
+                return null;
+            }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
+
             RefreshTokenRequestDTO request = new RefreshTokenRequestDTO();
             request.setRefreshToken("active-token");
 

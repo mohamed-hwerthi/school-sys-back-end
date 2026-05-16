@@ -2,6 +2,8 @@ package com.schoolSys.schooolSys.student;
 
 import com.schoolSys.schooolSys.common.dto.PagedResponse;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
+import com.schoolSys.schooolSys.niveau.ClasseRepository;
 import com.schoolSys.schooolSys.student.dto.StudentRequestDTO;
 import com.schoolSys.schooolSys.student.dto.StudentResponseDTO;
 import jakarta.persistence.EntityManager;
@@ -45,6 +47,15 @@ class StudentServiceTest {
     @Mock
     private EntityManager entityManager;
 
+    @Mock
+    private StudentImportRowSaver rowSaver;
+
+    @Mock
+    private CurrentUserContext currentUser;
+
+    @Mock
+    private ClasseRepository classeRepository;
+
     @InjectMocks
     private StudentService studentService;
 
@@ -55,6 +66,9 @@ class StudentServiceTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(studentService, "entityManager", entityManager);
+
+        // Default to an unrestricted (admin) scope; teacher/parent scoping is covered elsewhere.
+        lenient().when(currentUser.hasUnrestrictedAccess()).thenReturn(true);
 
         sampleStudent = Student.builder()
                 .id(1L)
@@ -103,7 +117,7 @@ class StudentServiceTest {
         @Test
         @DisplayName("should return all students as DTOs")
         void shouldReturnAllStudents() {
-            when(studentRepository.findAll()).thenReturn(List.of(sampleStudent));
+            when(studentRepository.findAll(any(Specification.class))).thenReturn(List.of(sampleStudent));
             when(studentMapper.toResponseDTO(sampleStudent)).thenReturn(sampleResponse);
 
             List<StudentResponseDTO> result = studentService.findAll();
@@ -111,14 +125,14 @@ class StudentServiceTest {
             assertThat(result).hasSize(1);
             assertThat(result.get(0).getFirstName()).isEqualTo("Ahmed");
             assertThat(result.get(0).getLastName()).isEqualTo("Benali");
-            verify(studentRepository).findAll();
+            verify(studentRepository).findAll(any(Specification.class));
             verify(studentMapper).toResponseDTO(sampleStudent);
         }
 
         @Test
         @DisplayName("should return empty list when no students exist")
         void shouldReturnEmptyListWhenNoStudents() {
-            when(studentRepository.findAll()).thenReturn(Collections.emptyList());
+            when(studentRepository.findAll(any(Specification.class))).thenReturn(Collections.emptyList());
 
             List<StudentResponseDTO> result = studentService.findAll();
 

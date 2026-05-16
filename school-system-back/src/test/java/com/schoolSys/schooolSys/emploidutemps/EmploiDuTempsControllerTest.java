@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.schoolSys.schooolSys.auth.JwtAuthenticationFilter;
 import com.schoolSys.schooolSys.auth.JwtTokenProvider;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.emploidutemps.dto.*;
 import com.schoolSys.schooolSys.emploidutemps.solver.TimetableSolverService;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +51,9 @@ class EmploiDuTempsControllerTest {
 
     @MockitoBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockitoBean
+    private CurrentUserContext currentUserContext;
 
     private EmploiDuTempsResponseDTO sampleResponse;
     private EmploiDuTempsRequestDTO sampleRequest;
@@ -302,8 +306,10 @@ class EmploiDuTempsControllerTest {
 
         @Test
         @WithMockUser(authorities = "WRITE_EMPLOI_DU_TEMPS")
-        @DisplayName("should return 400 when assignments list is empty")
-        void shouldReturn400WhenAssignmentsEmpty() throws Exception {
+        @DisplayName("should accept empty assignments (auto-generation mode)")
+        void shouldAcceptEmptyAssignments() throws Exception {
+            // Empty assignments is a valid request — it triggers auto mode,
+            // where the timetable is derived from volume horaire.
             TimetableGenerationRequestDTO request = TimetableGenerationRequestDTO.builder()
                     .assignments(List.of())
                     .rooms(List.of("Salle A1"))
@@ -313,13 +319,14 @@ class EmploiDuTempsControllerTest {
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isOk());
         }
 
         @Test
         @WithMockUser(authorities = "WRITE_EMPLOI_DU_TEMPS")
-        @DisplayName("should return 400 when rooms list is empty")
-        void shouldReturn400WhenRoomsEmpty() throws Exception {
+        @DisplayName("should accept empty rooms (loaded from classrooms table)")
+        void shouldAcceptEmptyRooms() throws Exception {
+            // Empty rooms is valid — rooms are then loaded from the classrooms table.
             TimetableGenerationRequestDTO request = TimetableGenerationRequestDTO.builder()
                     .assignments(List.of(
                             TeachingAssignmentDTO.builder()
@@ -333,7 +340,7 @@ class EmploiDuTempsControllerTest {
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isOk());
         }
     }
 

@@ -1,11 +1,13 @@
 package com.schoolSys.schooolSys.note;
 
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.examen.Examen;
 import com.schoolSys.schooolSys.examen.ExamenRepository;
 import com.schoolSys.schooolSys.module.Module;
 import com.schoolSys.schooolSys.note.dto.NoteRequestDTO;
 import com.schoolSys.schooolSys.note.dto.NoteResponseDTO;
+import com.schoolSys.schooolSys.parentnotif.ParentNotificationService;
 import com.schoolSys.schooolSys.student.Student;
 import com.schoolSys.schooolSys.student.StudentRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +51,12 @@ class NoteServiceTest {
 
     @Mock
     private EvaluationCompetenceRepository evaluationCompetenceRepository;
+
+    @Mock
+    private ParentNotificationService parentNotificationService;
+
+    @Mock
+    private CurrentUserContext currentUser;
 
     @InjectMocks
     private NoteService noteService;

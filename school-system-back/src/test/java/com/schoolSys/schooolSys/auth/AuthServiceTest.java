@@ -3,6 +3,7 @@ package com.schoolSys.schooolSys.auth;
 import com.schoolSys.schooolSys.auth.dto.LoginRequestDTO;
 import com.schoolSys.schooolSys.auth.dto.LoginResponseDTO;
 import com.schoolSys.schooolSys.auth.dto.RefreshTokenRequestDTO;
+import com.schoolSys.schooolSys.tenant.TenantRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -41,6 +42,9 @@ class AuthServiceTest {
 
     @Mock
     private TwoFactorService twoFactorService;
+
+    @Mock
+    private TenantRepository tenantRepository;
 
     @InjectMocks
     private AuthService authService;
