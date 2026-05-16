@@ -11,4 +11,10 @@ export const bilanAnnuelApi = {
     });
     return res.data;
   },
+
+  /** ANN-023 — one bilan per recorded school year, for inter-year comparison. */
+  getComparatif: async (): Promise<BilanAnnuel[]> => {
+    const res = await api.get<BilanAnnuel[]>(`${BASE}/comparatif`);
+    return res.data;
+  },
 };

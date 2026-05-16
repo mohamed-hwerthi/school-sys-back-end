@@ -64,6 +64,7 @@ const AnneeScolairePage = lazy(() => import("./pages/AnneeScolaire"));
 const ConseilClassePage = lazy(() => import("./pages/ConseilClasse"));
 const BilanAnnuelPage = lazy(() => import("./pages/BilanAnnuel"));
 const ClotureAnneePage = lazy(() => import("./pages/ClotureAnnee"));
+const ReinscriptionsPage = lazy(() => import("./pages/Reinscriptions"));
 const ContratsPage = lazy(() => import("./pages/Contrats"));
 const FacturesPage = lazy(() => import("./pages/Factures"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
@@ -257,6 +258,7 @@ const App = () => (
               <Route path="conseil-classe" element={<G roles={MANAGEMENT_ROLES}><ConseilClassePage /></G>} />
               <Route path="bilan-annuel" element={<G roles={MANAGEMENT_ROLES}><BilanAnnuelPage /></G>} />
               <Route path="cloture" element={<G roles={MANAGEMENT_ROLES}><ClotureAnneePage /></G>} />
+              <Route path="reinscriptions" element={<G roles={MANAGEMENT_ROLES}><ReinscriptionsPage /></G>} />
               <Route path="devoirs" element={<G roles={STAFF_ROLES}><DevoirsPage /></G>} />
               <Route path="quiz" element={<G roles={STAFF_ROLES}><QuizManagementPage /></G>} />
               <Route path="calendrier" element={<S><CalendrierPage /></S>} />

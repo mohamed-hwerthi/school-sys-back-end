@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { motion } from "framer-motion";
-import { FileText, Loader2, Printer, AlertTriangle } from "lucide-react";
+import { FileText, Loader2, Printer, AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,7 @@ export default function BulletinsAnnuels() {
   const [selectedNiveau, setSelectedNiveau] = useState(0);
   const { data: classes = [] } = useClasses(selectedNiveau || undefined);
   const [selectedClasse, setSelectedClasse] = useState(0);
+  const [expanded, setExpanded] = useState<number | null>(null);
   const { data: bulletins = [], isLoading } = useBulletinsAnnuels(selectedClasse);
 
   return (
@@ -147,33 +148,89 @@ export default function BulletinsAnnuels() {
                   </TableHeader>
                   <TableBody>
                     {bulletins.map((b) => (
-                      <TableRow key={b.studentId}>
-                        <TableCell className="font-semibold text-slate-400">{b.rang ?? "—"}</TableCell>
-                        <TableCell className="font-medium text-slate-800">{b.studentName}</TableCell>
-                        <TableCell className="text-center text-slate-600">{fmt(b.moyenneT1)}</TableCell>
-                        <TableCell className="text-center text-slate-600">{fmt(b.moyenneT2)}</TableCell>
-                        <TableCell className="text-center text-slate-600">{fmt(b.moyenneT3)}</TableCell>
-                        <TableCell
-                          className={`text-center font-bold ${
-                            b.moyenneAnnuelle == null
-                              ? "text-slate-400"
-                              : b.moyenneAnnuelle >= 10
-                                ? "text-emerald-600"
-                                : "text-red-600"
-                          }`}
+                      <Fragment key={b.studentId}>
+                        <TableRow
+                          className="cursor-pointer"
+                          onClick={() =>
+                            setExpanded(expanded === b.studentId ? null : b.studentId)
+                          }
                         >
-                          {fmt(b.moyenneAnnuelle)}
-                        </TableCell>
-                        <TableCell>
-                          {b.mention ? (
-                            <Badge variant="outline" className={MENTION_STYLES[b.mention] ?? ""}>
-                              {b.mention}
-                            </Badge>
-                          ) : (
-                            <span className="text-slate-300">—</span>
-                          )}
-                        </TableCell>
-                      </TableRow>
+                          <TableCell className="font-semibold text-slate-400">{b.rang ?? "—"}</TableCell>
+                          <TableCell className="font-medium text-slate-800">
+                            <span className="inline-flex items-center gap-1">
+                              {expanded === b.studentId ? (
+                                <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                              ) : (
+                                <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                              )}
+                              {b.studentName}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center text-slate-600">{fmt(b.moyenneT1)}</TableCell>
+                          <TableCell className="text-center text-slate-600">{fmt(b.moyenneT2)}</TableCell>
+                          <TableCell className="text-center text-slate-600">{fmt(b.moyenneT3)}</TableCell>
+                          <TableCell
+                            className={`text-center font-bold ${
+                              b.moyenneAnnuelle == null
+                                ? "text-slate-400"
+                                : b.moyenneAnnuelle >= 10
+                                  ? "text-emerald-600"
+                                  : "text-red-600"
+                            }`}
+                          >
+                            {fmt(b.moyenneAnnuelle)}
+                          </TableCell>
+                          <TableCell>
+                            {b.mention ? (
+                              <Badge variant="outline" className={MENTION_STYLES[b.mention] ?? ""}>
+                                {b.mention}
+                              </Badge>
+                            ) : (
+                              <span className="text-slate-300">—</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                        {expanded === b.studentId && (
+                          <TableRow>
+                            <TableCell colSpan={7} className="bg-slate-50 p-3">
+                              <div className="mb-1 text-xs font-semibold text-slate-500">
+                                Relevé annuel par matière
+                              </div>
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr className="text-xs text-slate-400">
+                                    <th className="text-left font-medium">Matière</th>
+                                    <th className="font-medium">T1</th>
+                                    <th className="font-medium">T2</th>
+                                    <th className="font-medium">T3</th>
+                                    <th className="font-medium">Annuelle</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {b.modules.map((m) => (
+                                    <tr key={m.moduleId} className="border-t border-slate-100">
+                                      <td className="py-1 text-slate-700">{m.moduleName}</td>
+                                      <td className="text-center text-slate-500">{fmt(m.moyenneT1)}</td>
+                                      <td className="text-center text-slate-500">{fmt(m.moyenneT2)}</td>
+                                      <td className="text-center text-slate-500">{fmt(m.moyenneT3)}</td>
+                                      <td className="text-center font-semibold text-slate-700">
+                                        {fmt(m.moyenneAnnuelle)}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                  {b.modules.length === 0 && (
+                                    <tr>
+                                      <td colSpan={5} className="py-2 text-center text-slate-400">
+                                        Aucune matière notée
+                                      </td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </Fragment>
                     ))}
                   </TableBody>
                 </Table>

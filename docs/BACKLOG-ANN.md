@@ -35,7 +35,7 @@ Points d'attention :
 | ANN-001 | Calculer la **moyenne annuelle** d'un élève (moyenne pondérée des 3 trimestres) — service backend + endpoint | P0 | 5 | — | Fait |
 | ANN-002 | Endpoint **moyenne annuelle par classe** (liste élèves + moyennes + rang annuel) | P0 | 3 | ANN-001 | Fait |
 | ANN-003 | Remplacer `Passage.anneeScolaire` (String) par une **FK vers `AnneeScolaire`** + migration Flyway | P1 | 3 | — | Fait (FK additive, label conservé) |
-| ANN-004 | Historiser le couple niveau/classe de l'élève **par année** (dette technique sur les champs String) | P2 | 8 | ANN-003 | À faire |
+| ANN-004 | Historiser le couple niveau/classe de l'élève **par année** (dette technique sur les champs String) | P2 | 8 | ANN-003 | Fait |
 
 ## EPIC B — Moteur de passage / redoublement
 
@@ -57,9 +57,9 @@ Points d'attention :
 | ANN-020 | Page **« Bilan annuel »** : KPI effectif, taux passage/redoublement/exclusion/transfert | P0 | 5 | ANN-021 | Fait |
 | ANN-021 | Endpoint stats annuelles agrégées (par niveau / classe) | P0 | 5 | ANN-013 | Fait |
 | ANN-022 | Graphiques : évolution effectifs & taux de réussite par niveau | P1 | 3 | ANN-021 | Fait |
-| ANN-023 | **Comparatif inter-années** (3-5 ans) | P2 | 5 | ANN-021 | À faire |
+| ANN-023 | **Comparatif inter-années** (3-5 ans) | P2 | 5 | ANN-021 | Fait |
 | ANN-024 | **Tableau d'honneur / palmarès** annuel (certificats de `BulletinService`) | P1 | 3 | ANN-001 | Fait |
-| ANN-025 | Taux de réussite **par matière** | P2 | 5 | ANN-021 | À faire |
+| ANN-025 | Taux de réussite **par matière** | P2 | 5 | ANN-021 | Fait |
 
 ## EPIC D — Clôture d'année
 
@@ -69,23 +69,23 @@ Points d'attention :
 | ANN-031 | Pré-vérifications : notes saisies, examens complets, passages traités | P1 | 3 | ANN-030 | Fait |
 | ANN-032 | **Verrouillage en lecture seule** d'une année `cloturee` | P1 | 5 | ANN-030 | Fait |
 | ANN-033 | Création de la **nouvelle année scolaire** + trimestres à la clôture | P1 | 3 | ANN-030 | Fait |
-| ANN-034 | Journal / audit de clôture (qui, quand, quoi) | P2 | 2 | ANN-030 | À faire |
+| ANN-034 | Journal / audit de clôture (qui, quand, quoi) | P2 | 2 | ANN-030 | Fait |
 
 ## EPIC E — Documents de fin d'année
 
 | ID | User story | Prio | Est. | Dépend. | Statut |
 |---|---|---|---|---|---|
 | ANN-040 | **Bulletin annuel** PDF (synthèse des 3 trimestres) | P1 | 5 | ANN-001 | Fait (synthèse + impression) |
-| ANN-041 | Relevé de notes annuel | P2 | 3 | ANN-040 | À faire |
-| ANN-042 | Attestation de réussite / certificat de scolarité | P2 | 3 | ANN-013 | À faire |
-| ANN-043 | **PV de conseil de classe** (PDF) | P2 | 3 | ANN-013 | À faire |
+| ANN-041 | Relevé de notes annuel | P2 | 3 | ANN-040 | Fait |
+| ANN-042 | Attestation de réussite / certificat de scolarité | P2 | 3 | ANN-013 | Fait |
+| ANN-043 | **PV de conseil de classe** (PDF) | P2 | 3 | ANN-013 | Fait |
 
 ## EPIC F — Réinscriptions
 
 | ID | User story | Prio | Est. | Dépend. | Statut |
 |---|---|---|---|---|---|
-| ANN-050 | Générer les **réinscriptions** des élèves passants dans la nouvelle année | P2 | 5 | ANN-033 | À faire |
-| ANN-051 | Suivi réinscrits vs partis | P2 | 3 | ANN-050 | À faire |
+| ANN-050 | Générer les **réinscriptions** des élèves passants dans la nouvelle année | P2 | 5 | ANN-033 | Fait |
+| ANN-051 | Suivi réinscrits vs partis | P2 | 3 | ANN-050 | Fait |
 
 ## EPIC G — Navigation & accès
 

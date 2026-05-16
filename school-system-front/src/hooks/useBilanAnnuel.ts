@@ -11,3 +11,11 @@ export function useBilanAnnuel(anneeScolaire?: string) {
     queryFn: () => bilanAnnuelApi.get(anneeScolaire),
   });
 }
+
+/** ANN-023 — inter-year comparison (one bilan per school year). */
+export function useBilanComparatif() {
+  return useQuery<BilanAnnuel[]>({
+    queryKey: [KEY, "comparatif"],
+    queryFn: () => bilanAnnuelApi.getComparatif(),
+  });
+}

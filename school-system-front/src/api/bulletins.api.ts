@@ -180,6 +180,16 @@ export interface BulletinAnnuelDTO {
   modules: ModuleAnnuelDTO[];
 }
 
+// ANN-025: stats de réussite par matière
+export interface MatiereStatDTO {
+  moduleId: number;
+  moduleName: string;
+  moyenne: number;
+  reussis: number;
+  echoues: number;
+  taux: number;
+}
+
 const BASE = "/bulletins";
 
 export const bulletinsApi = {
@@ -214,6 +224,17 @@ export const bulletinsApi = {
   ): Promise<BulletinAnnuelDTO[]> => {
     const res = await api.get<BulletinAnnuelDTO[]>(
       `${BASE}/annuel?classeId=${classeId}&version=${version}`
+    );
+    return res.data;
+  },
+
+  // ANN-025: taux de réussite par matière (annuel)
+  getStatsMatieres: async (
+    classeId: number,
+    version: string = "etatique"
+  ): Promise<MatiereStatDTO[]> => {
+    const res = await api.get<MatiereStatDTO[]>(
+      `${BASE}/stats-matieres?classeId=${classeId}&version=${version}`
     );
     return res.data;
   },

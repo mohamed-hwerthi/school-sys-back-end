@@ -50,6 +50,17 @@ public class BulletinController {
                 bulletinService.getBulletinsAnnuels(classeId, version)));
     }
 
+    // --- ANN-025: Taux de réussite par matière ---
+
+    @GetMapping("/stats-matieres")
+    @PreAuthorize("hasAuthority('READ_BULLETINS')")
+    public ResponseEntity<ApiResponse<List<MatiereStatDTO>>> getStatsMatieres(
+            @RequestParam Long classeId,
+            @RequestParam(defaultValue = "etatique") String version) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                bulletinService.getStatsMatieresAnnuelles(classeId, version)));
+    }
+
     // --- BUL-003: Templates ---
 
     @GetMapping("/templates")

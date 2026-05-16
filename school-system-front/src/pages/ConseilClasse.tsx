@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Users,
+  Printer,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -218,7 +219,7 @@ export default function ConseilClasse() {
         </div>
 
         {/* Filters */}
-        <Card className="mb-6">
+        <Card className="mb-6 print:hidden">
           <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">
             <div>
               <Label>Niveau</Label>
@@ -324,10 +325,16 @@ export default function ConseilClasse() {
                   <TrendingUp className="h-4 w-4 text-purple-600" />
                   Propositions — {conseil.classeNom}
                 </CardTitle>
-                <Button variant="ghost" size="sm" onClick={resetEdits} disabled={submitted}>
-                  <RotateCcw className="me-1.5 h-3.5 w-3.5" />
-                  Réinitialiser
-                </Button>
+                <div className="flex gap-1 print:hidden">
+                  <Button variant="ghost" size="sm" onClick={() => window.print()}>
+                    <Printer className="me-1.5 h-3.5 w-3.5" />
+                    Imprimer le PV
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={resetEdits} disabled={submitted}>
+                    <RotateCcw className="me-1.5 h-3.5 w-3.5" />
+                    Réinitialiser
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">

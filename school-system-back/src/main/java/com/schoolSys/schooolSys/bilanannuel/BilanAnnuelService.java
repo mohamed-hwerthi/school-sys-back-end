@@ -90,6 +90,14 @@ public class BilanAnnuelService {
                 .build();
     }
 
+    /** ANN-023 — annual review for every recorded school year, oldest first. */
+    public List<BilanAnnuelDTO> getComparatif() {
+        return anneeScolaireRepository.findAll().stream()
+                .sorted((a, b) -> a.getLabel().compareToIgnoreCase(b.getLabel()))
+                .map(a -> getBilan(a.getLabel()))
+                .toList();
+    }
+
     private static int decisionIndex(String decision) {
         if (decision == null) return -1;
         for (int i = 0; i < DECISIONS.length; i++) {

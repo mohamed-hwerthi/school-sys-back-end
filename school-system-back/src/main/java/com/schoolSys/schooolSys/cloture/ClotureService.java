@@ -8,6 +8,7 @@ import com.schoolSys.schooolSys.cloture.dto.ClotureRequestDTO;
 import com.schoolSys.schooolSys.cloture.dto.ClotureResultDTO;
 import com.schoolSys.schooolSys.cloture.dto.PreCheckDTO;
 import com.schoolSys.schooolSys.cloture.dto.PreChecksResponseDTO;
+import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.examen.ExamenRepository;
 import com.schoolSys.schooolSys.note.NoteRepository;
@@ -35,6 +36,7 @@ public class ClotureService {
     private final PassageRepository passageRepository;
     private final NoteRepository noteRepository;
     private final ExamenRepository examenRepository;
+    private final AuditService auditService;
 
     /** ANN-031 — pre-closure checks for a school year. */
     public PreChecksResponseDTO getPreChecks(Long anneeId) {
@@ -101,6 +103,12 @@ public class ClotureService {
 
         String message = "Année « " + annee.getLabel() + " » clôturée."
                 + (nouvelleLabel != null ? " Nouvelle année « " + nouvelleLabel + " » créée." : "");
+
+        // ANN-034: journalise la clôture dans l'audit.
+        auditService.log("CLOTURE_ANNEE", "AnneeScolaire", anneeId,
+                "{\"anneeCloturee\":\"" + annee.getLabel() + "\""
+                        + (nouvelleLabel != null ? ",\"nouvelleAnnee\":\"" + nouvelleLabel + "\"" : "")
+                        + ",\"trimestresCrees\":" + trimestresCrees + "}");
 
         return ClotureResultDTO.builder()
                 .anneeClotureeId(anneeId)

@@ -123,6 +123,7 @@ export const sidebarSections: NavSection[] = [
     items: [
       { title: "Année scolaire", titleKey: "nav.schoolYear", icon: CalendarClock, url: "/dashboard/annee-scolaire", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Clôture d'année", titleKey: "nav.yearClosure", icon: Lock, url: "/dashboard/cloture", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
+      { title: "Réinscriptions", titleKey: "nav.reEnrollment", icon: UserPlus, url: "/dashboard/reinscriptions", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Emploi du temps", titleKey: "nav.schedule", icon: Clock, url: "/dashboard/emploi-du-temps", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT", "PARENT"] },
       { title: "Volume horaire", titleKey: "nav.weeklyVolume", icon: Clock, url: "/dashboard/volume-horaire", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Salles", titleKey: "nav.rooms", icon: Calendar, url: "/dashboard/emploi-salles", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },

@@ -431,6 +431,41 @@ public class BulletinService {
         return result;
     }
 
+    /**
+     * ANN-025 — annual success rate per subject: across all students of a class,
+     * the share whose annual module average reaches the pass mark (10).
+     */
+    public List<MatiereStatDTO> getStatsMatieresAnnuelles(Long classeId, String version) {
+        List<BulletinAnnuelDTO> annuels = getBulletinsAnnuels(classeId, version);
+        Map<Long, List<Double>> parModule = new LinkedHashMap<>();
+        Map<Long, String> noms = new LinkedHashMap<>();
+        for (BulletinAnnuelDTO b : annuels) {
+            if (b.getModules() == null) continue;
+            for (ModuleAnnuelDTO m : b.getModules()) {
+                if (m.getMoyenneAnnuelle() != null) {
+                    parModule.computeIfAbsent(m.getModuleId(), k -> new ArrayList<>())
+                            .add(m.getMoyenneAnnuelle());
+                    noms.putIfAbsent(m.getModuleId(), m.getModuleName());
+                }
+            }
+        }
+        List<MatiereStatDTO> stats = new ArrayList<>();
+        for (Map.Entry<Long, List<Double>> e : parModule.entrySet()) {
+            List<Double> vals = e.getValue();
+            int reussis = (int) vals.stream().filter(v -> v >= 10).count();
+            double avg = vals.stream().mapToDouble(Double::doubleValue).average().orElse(0);
+            stats.add(MatiereStatDTO.builder()
+                    .moduleId(e.getKey())
+                    .moduleName(noms.get(e.getKey()))
+                    .moyenne(round2(avg))
+                    .reussis(reussis)
+                    .echoues(vals.size() - reussis)
+                    .taux(vals.isEmpty() ? 0 : round2((double) reussis / vals.size() * 100))
+                    .build());
+        }
+        return stats;
+    }
+
     private Map<Long, BulletinDTO> indexByStudent(List<BulletinDTO> bulletins) {
         Map<Long, BulletinDTO> map = new LinkedHashMap<>();
         for (BulletinDTO b : bulletins) map.put(b.getStudentId(), b);

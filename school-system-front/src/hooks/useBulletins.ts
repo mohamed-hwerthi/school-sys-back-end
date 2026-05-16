@@ -3,6 +3,7 @@ import {
   bulletinsApi,
   type BulletinDTO,
   type BulletinAnnuelDTO,
+  type MatiereStatDTO,
   type BulletinTemplateDTO,
   type StatsReussiteDTO,
   type AttestationDTO,
@@ -29,6 +30,15 @@ export function useBulletinsAnnuels(classeId: number, version: string = "etatiqu
   return useQuery<BulletinAnnuelDTO[]>({
     queryKey: [KEY, "annuel", classeId, version],
     queryFn: () => bulletinsApi.getAnnuels(classeId, version),
+    enabled: classeId > 0,
+  });
+}
+
+// ANN-025: annual success rate per subject
+export function useStatsMatieres(classeId: number, version: string = "etatique") {
+  return useQuery<MatiereStatDTO[]>({
+    queryKey: [KEY, "stats-matieres", classeId, version],
+    queryFn: () => bulletinsApi.getStatsMatieres(classeId, version),
     enabled: classeId > 0,
   });
 }

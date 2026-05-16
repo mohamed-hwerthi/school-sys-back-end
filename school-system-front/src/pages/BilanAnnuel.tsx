@@ -23,6 +23,8 @@ import {
   PieChart,
   Pie,
   Cell,
+  LineChart,
+  Line,
 } from "recharts";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -43,7 +45,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useBilanAnnuel } from "@/hooks/useBilanAnnuel";
+import { useBilanAnnuel, useBilanComparatif } from "@/hooks/useBilanAnnuel";
+import { useStatsMatieres } from "@/hooks/useBulletins";
 import { useNiveaux } from "@/hooks/useNiveaux";
 import { useClasses } from "@/hooks/useClasses";
 import { useConseilClasse } from "@/hooks/useConseilClasse";
@@ -75,6 +78,8 @@ export default function BilanAnnuel() {
   const { data: classes = [] } = useClasses(selectedNiveau || undefined);
   const [selectedClasse, setSelectedClasse] = useState(0);
   const { data: conseil, isLoading: conseilLoading } = useConseilClasse(selectedClasse);
+  const { data: comparatif = [] } = useBilanComparatif();
+  const { data: matieres = [] } = useStatsMatieres(selectedClasse);
 
   const kpis = useMemo(() => {
     if (!bilan) return [];
@@ -132,6 +137,8 @@ export default function BilanAnnuel() {
           <TabsList className="mb-6">
             <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="palmares">Palmarès</TabsTrigger>
+            <TabsTrigger value="comparatif">Comparatif</TabsTrigger>
+            <TabsTrigger value="matieres">Par matière</TabsTrigger>
           </TabsList>
 
           {/* ── Vue d'ensemble ── */}
@@ -421,6 +428,142 @@ export default function BilanAnnuel() {
                 <CardContent className="flex flex-col items-center gap-2 py-12 text-slate-400">
                   <GraduationCap className="h-8 w-8" />
                   Sélectionnez une classe pour afficher son palmarès.
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* ── Comparatif inter-années (ANN-023) ── */}
+          <TabsContent value="comparatif">
+            {comparatif.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center text-slate-500">
+                  <AlertTriangle className="mx-auto mb-2 h-8 w-8 text-amber-400" />
+                  Aucune donnée disponible pour comparer les années.
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    Évolution sur {comparatif.length} année(s)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <LineChart data={comparatif}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="anneeScolaire" fontSize={12} />
+                      <YAxis fontSize={12} unit="%" />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="tauxPassage" name="Taux de passage" stroke="#10b981" strokeWidth={2} />
+                      <Line type="monotone" dataKey="tauxRedoublement" name="Taux de redoublement" stroke="#f59e0b" strokeWidth={2} />
+                      <Line type="monotone" dataKey="tauxExclusion" name="Taux d'exclusion" stroke="#ef4444" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* ── Taux de réussite par matière (ANN-025) ── */}
+          <TabsContent value="matieres">
+            <Card className="mb-6">
+              <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">
+                <div>
+                  <Label>Niveau</Label>
+                  <Select
+                    value={selectedNiveau ? String(selectedNiveau) : ""}
+                    onValueChange={(v) => {
+                      setSelectedNiveau(Number(v));
+                      setSelectedClasse(0);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez un niveau" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {niveaux.map((n) => (
+                        <SelectItem key={n.id} value={String(n.id)}>
+                          {n.nom}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Classe</Label>
+                  <Select
+                    value={selectedClasse ? String(selectedClasse) : ""}
+                    onValueChange={(v) => setSelectedClasse(Number(v))}
+                    disabled={!selectedNiveau}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez une classe" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classes.map((c) => (
+                        <SelectItem key={c.id} value={String(c.id)}>
+                          {c.fullName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {selectedClasse > 0 && matieres.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Taux de réussite par matière</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Matière</TableHead>
+                          <TableHead className="text-center">Moyenne</TableHead>
+                          <TableHead className="text-center">Réussis</TableHead>
+                          <TableHead className="text-center">Échoués</TableHead>
+                          <TableHead className="text-center">Taux</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {matieres.map((m) => (
+                          <TableRow key={m.moduleId}>
+                            <TableCell className="font-medium text-slate-800">{m.moduleName}</TableCell>
+                            <TableCell className="text-center text-slate-600">{m.moyenne.toFixed(2)}</TableCell>
+                            <TableCell className="text-center text-emerald-600">{m.reussis}</TableCell>
+                            <TableCell className="text-center text-red-600">{m.echoues}</TableCell>
+                            <TableCell
+                              className={`text-center font-semibold ${
+                                m.taux >= 50 ? "text-emerald-600" : "text-red-600"
+                              }`}
+                            >
+                              {m.taux}%
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            {selectedClasse > 0 && matieres.length === 0 && (
+              <Card>
+                <CardContent className="py-12 text-center text-slate-500">
+                  Aucune note saisie pour cette classe.
+                </CardContent>
+              </Card>
+            )}
+            {selectedClasse === 0 && (
+              <Card>
+                <CardContent className="py-12 text-center text-slate-400">
+                  Sélectionnez une classe pour voir les taux par matière.
                 </CardContent>
               </Card>
             )}
