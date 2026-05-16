@@ -3,6 +3,7 @@ package com.schoolSys.schooolSys.cantine;
 import com.schoolSys.schooolSys.cantine.dto.CantineStatsDTO;
 import com.schoolSys.schooolSys.cantine.dto.PointageBatchRequest;
 import com.schoolSys.schooolSys.cantine.dto.PointageRepasDTO;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ public class PointageRepasService {
 
     private final PointageRepasRepository pointageRepository;
     private final AbonnementCantineRepository abonnementRepository;
+    private final CurrentUserContext currentUserContext;
 
     public List<PointageRepasDTO> getByDate(LocalDate date) {
         return pointageRepository.findByDateRepas(date).stream()
@@ -32,6 +34,7 @@ public class PointageRepasService {
     }
 
     public List<PointageRepasDTO> getByEleve(Long eleveId) {
+        currentUserContext.assertCanAccessStudent(eleveId);
         return pointageRepository.findByEleveId(eleveId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());

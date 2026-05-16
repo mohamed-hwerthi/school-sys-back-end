@@ -1,8 +1,10 @@
 package com.schoolSys.schooolSys.messaging;
 
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.messaging.dto.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,11 +18,15 @@ public class MessagingService {
 
     private final MessageRepository messageRepository;
     private final MessageRecipientRepository messageRecipientRepository;
+    private final CurrentUserContext currentUserContext;
 
     @Transactional
     public MessageResponseDTO sendMessage(MessageRequestDTO request) {
+        // The sender is always the authenticated user, never trusted from the body.
+        Long senderId = currentUserContext.getUserId()
+            .orElseThrow(() -> new AccessDeniedException("Utilisateur non authentifié."));
         Message message = Message.builder()
-            .senderId(request.getSenderId())
+            .senderId(senderId)
             .subject(request.getSubject())
             .body(request.getBody())
             .type(request.getType() != null ? request.getType() : "MESSAGE")
@@ -38,6 +44,7 @@ public class MessagingService {
     }
 
     public List<MessageResponseDTO> getInbox(Long recipientId) {
+        assertSelfOrAdmin(recipientId);
         return messageRecipientRepository
             .findByRecipientIdAndDeletedFalseOrderByMessageCreatedAtDesc(recipientId)
             .stream()
@@ -46,6 +53,7 @@ public class MessagingService {
     }
 
     public List<MessageResponseDTO> getSent(Long senderId) {
+        assertSelfOrAdmin(senderId);
         return messageRepository.findBySenderIdOrderByCreatedAtDesc(senderId).stream()
             .map(this::toDto)
             .collect(Collectors.toList());
@@ -54,11 +62,13 @@ public class MessagingService {
     public MessageResponseDTO getMessageById(Long id) {
         Message message = messageRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Message", id));
+        assertParticipant(message);
         return toDto(message);
     }
 
     @Transactional
     public void markAsRead(Long messageId, Long recipientId) {
+        assertSelfOrAdmin(recipientId);
         MessageRecipient mr = messageRecipientRepository
             .findByMessageIdAndRecipientId(messageId, recipientId)
             .orElseThrow(() -> new ResourceNotFoundException("MessageRecipient", messageId));
@@ -70,11 +80,41 @@ public class MessagingService {
 
     @Transactional
     public void deleteForRecipient(Long messageId, Long recipientId) {
+        assertSelfOrAdmin(recipientId);
         MessageRecipient mr = messageRecipientRepository
             .findByMessageIdAndRecipientId(messageId, recipientId)
             .orElseThrow(() -> new ResourceNotFoundException("MessageRecipient", messageId));
         mr.setDeleted(true);
         messageRecipientRepository.save(mr);
+    }
+
+    /**
+     * Ensures the caller is acting on their own mailbox — unless they are an
+     * administrator. Prevents reading or modifying another user's messages.
+     */
+    private void assertSelfOrAdmin(Long targetUserId) {
+        if (currentUserContext.hasUnrestrictedAccess()) {
+            return;
+        }
+        Long currentUserId = currentUserContext.getUserId().orElse(null);
+        if (currentUserId == null || !currentUserId.equals(targetUserId)) {
+            throw new AccessDeniedException("Vous ne pouvez accéder qu'à vos propres messages.");
+        }
+    }
+
+    /** Ensures the caller is the sender or one of the recipients of the message. */
+    private void assertParticipant(Message message) {
+        if (currentUserContext.hasUnrestrictedAccess()) {
+            return;
+        }
+        Long currentUserId = currentUserContext.getUserId().orElse(null);
+        boolean participant = currentUserId != null
+            && (currentUserId.equals(message.getSenderId())
+                || message.getRecipients().stream()
+                    .anyMatch(r -> currentUserId.equals(r.getRecipientId())));
+        if (!participant) {
+            throw new AccessDeniedException("Ce message n'est pas dans votre périmètre.");
+        }
     }
 
     private MessageResponseDTO toDto(Message m) {

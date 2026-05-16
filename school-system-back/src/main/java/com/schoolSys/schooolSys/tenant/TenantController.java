@@ -14,8 +14,8 @@ import java.util.List;
 /**
  * REST controller for managing school tenants.
  * <p>
- * GET endpoints are publicly accessible (permitAll in SecurityConfig).
- * Write operations require the MANAGE_TENANTS permission.
+ * Every endpoint requires the MANAGE_TENANTS permission — tenant data must
+ * never be enumerable by a regular authenticated user.
  * </p>
  */
 @RestController
@@ -31,6 +31,7 @@ public class TenantController {
      * @return all tenants
      */
     @GetMapping
+    @PreAuthorize("hasAuthority('MANAGE_TENANTS')")
     public ResponseEntity<ApiResponse<List<TenantResponseDTO>>> getAll() {
         return ResponseEntity.ok(ApiResponse.ok(tenantService.findAll()));
     }
@@ -42,6 +43,7 @@ public class TenantController {
      * @return the tenant
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('MANAGE_TENANTS')")
     public ResponseEntity<ApiResponse<TenantResponseDTO>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(tenantService.findById(id)));
     }

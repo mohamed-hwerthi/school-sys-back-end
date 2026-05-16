@@ -4,6 +4,7 @@ import com.schoolSys.schooolSys.bibliotheque.dto.BibliothequeStatsDTO;
 import com.schoolSys.schooolSys.bibliotheque.dto.CreateEmpruntRequest;
 import com.schoolSys.schooolSys.bibliotheque.dto.EmpruntDTO;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.student.Student;
 import com.schoolSys.schooolSys.student.StudentRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class EmpruntService {
     private final EmpruntRepository empruntRepository;
     private final LivreRepository livreRepository;
     private final StudentRepository studentRepository;
+    private final CurrentUserContext currentUserContext;
 
     public List<EmpruntDTO> findAll() {
         return empruntRepository.findAll().stream()
@@ -43,6 +45,7 @@ public class EmpruntService {
     }
 
     public List<EmpruntDTO> findByEleve(Long eleveId) {
+        currentUserContext.assertCanAccessStudent(eleveId);
         return empruntRepository.findByEleveId(eleveId).stream()
                 .map(this::toDTO)
                 .toList();

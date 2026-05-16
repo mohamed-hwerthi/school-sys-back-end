@@ -1,6 +1,7 @@
 package com.schoolSys.schooolSys.devoir;
 
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.devoir.dto.CorrectionRequest;
 import com.schoolSys.schooolSys.devoir.dto.CreateSoumissionRequest;
 import com.schoolSys.schooolSys.devoir.dto.DevoirStatsDTO;
@@ -22,6 +23,7 @@ public class SoumissionService {
 
     private final SoumissionRepository soumissionRepository;
     private final DevoirRepository devoirRepository;
+    private final CurrentUserContext currentUserContext;
 
     public List<SoumissionDTO> findByDevoir(Long devoirId) {
         return soumissionRepository.findByDevoirIdOrderByDateSoumissionDesc(devoirId)
@@ -29,6 +31,7 @@ public class SoumissionService {
     }
 
     public List<SoumissionDTO> findByEleve(Long eleveId) {
+        currentUserContext.assertCanAccessStudent(eleveId);
         return soumissionRepository.findByEleveIdOrderByDateSoumissionDesc(eleveId)
                 .stream().map(this::toDTO).toList();
     }
