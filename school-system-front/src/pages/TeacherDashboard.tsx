@@ -13,7 +13,7 @@ import {
 import { useCurrentUser } from "@/hooks/useRbac";
 import { useClasses } from "@/hooks/useClasses";
 import { useDevoirs } from "@/hooks/useDevoirs";
-import { useEmploiDuTemps } from "@/hooks/useEmploiDuTemps";
+import { useEmploiMine } from "@/hooks/useEmploiDuTemps";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -62,7 +62,7 @@ export default function TeacherDashboard() {
   const { user, scopedClasseIds } = useCurrentUser();
   const { classes, isLoading: loadingClasses } = useClasses();
   const { data: devoirs = [], isLoading: loadingDevoirs } = useDevoirs();
-  const { data: edtEntries = [], isLoading: loadingEdt } = useEmploiDuTemps();
+  const { data: edtEntries = [], isLoading: loadingEdt } = useEmploiMine();
 
   // EDT entries scheduled for today (relies on EDT items having a `jour` field 1-7)
   const todayCourses = useMemo(() => {

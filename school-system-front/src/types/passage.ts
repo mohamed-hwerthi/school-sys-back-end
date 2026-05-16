@@ -17,3 +17,5 @@ export interface BulkPassage {
 }
 
 export const DECISIONS = ["PASSAGE", "REDOUBLEMENT", "EXCLUSION", "TRANSFERT"] as const;
+
+export type DecisionType = (typeof DECISIONS)[number];

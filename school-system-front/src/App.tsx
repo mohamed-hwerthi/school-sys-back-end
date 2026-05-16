@@ -60,6 +60,7 @@ const EmploiDuTempsPage = lazy(() => import("./pages/EmploiDuTemps"));
 const VolumeHorairePage = lazy(() => import("./pages/VolumeHoraire"));
 const DisciplinePage = lazy(() => import("./pages/Discipline"));
 const AnneeScolairePage = lazy(() => import("./pages/AnneeScolaire"));
+const ConseilClassePage = lazy(() => import("./pages/ConseilClasse"));
 const ContratsPage = lazy(() => import("./pages/Contrats"));
 const FacturesPage = lazy(() => import("./pages/Factures"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
@@ -236,6 +237,7 @@ const App = () => (
               <Route path="evaluations" element={<Navigate to="/dashboard/carnets?tab=examens" replace />} />
               <Route path="carnets" element={<G roles={[...STAFF_ROLES, "PARENT"]}><CarnetNotes /></G>} />
               <Route path="annee-scolaire" element={<G roles={MANAGEMENT_ROLES}><AnneeScolairePage /></G>} />
+              <Route path="conseil-classe" element={<G roles={MANAGEMENT_ROLES}><ConseilClassePage /></G>} />
               <Route path="devoirs" element={<G roles={STAFF_ROLES}><DevoirsPage /></G>} />
               <Route path="quiz" element={<G roles={STAFF_ROLES}><QuizManagementPage /></G>} />
               <Route path="calendrier" element={<S><CalendrierPage /></S>} />
