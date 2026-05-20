@@ -1,6 +1,6 @@
 -- Vitrine page view analytics (simple, no external dependencies)
 CREATE TABLE vitrine_page_views (
-    id              BIGSERIAL       PRIMARY KEY,
+    id              UUID       PRIMARY KEY DEFAULT gen_random_uuid(),
     page_slug       VARCHAR(255)    NOT NULL,
     visitor_hash    VARCHAR(64),
     user_agent      VARCHAR(500),

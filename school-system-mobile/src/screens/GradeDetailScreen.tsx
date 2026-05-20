@@ -1,4 +1,5 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 interface GradeDetailProps {
@@ -7,6 +8,7 @@ interface GradeDetailProps {
 }
 
 export default function GradeDetailScreen({ grade, onBack }: GradeDetailProps) {
+  const { colors } = useTheme();
   if (!grade) return null;
 
   const noteColor = (grade.note >= 14) ? colors.success : (grade.note >= 10) ? colors.warning : colors.error;

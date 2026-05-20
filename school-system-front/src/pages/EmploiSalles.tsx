@@ -205,7 +205,7 @@ export default function EmploiSalles() {
     });
   };
 
-  const getRoomName = (id: number) => rooms.find((r) => r.id === id)?.nom ?? "—";
+  const getRoomName = (id: string) => rooms.find((r) => r.id === id)?.nom ?? "—";
 
   if (isLoading) return <EmploiSallesSkeleton />;
 

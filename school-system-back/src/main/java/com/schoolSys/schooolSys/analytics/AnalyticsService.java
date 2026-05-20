@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.analytics;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.absence.Absence;
 import com.schoolSys.schooolSys.absence.AbsenceRepository;
 import com.schoolSys.schooolSys.analytics.dto.*;
@@ -39,7 +41,7 @@ public class AnalyticsService {
     /**
      * Aggregate 360-degree view for a single student.
      */
-    public SuiviEleveDTO getSuiviEleve(Long eleveId) {
+    public SuiviEleveDTO getSuiviEleve(UUID eleveId) {
         Student student = studentRepository.findById(eleveId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student", eleveId));
 
@@ -126,7 +128,7 @@ public class AnalyticsService {
             if (effectif == 0) continue;
 
             // Average grade
-            List<Long> studentIds = classeStudents.stream().map(Student::getId).toList();
+            List<UUID> studentIds = classeStudents.stream().map(Student::getId).toList();
             double moyenne = noteRepository.findAll().stream()
                     .filter(n -> n.getValeur() != null && studentIds.contains(n.getStudent().getId()))
                     .mapToDouble(Note::getValeur)
@@ -204,7 +206,7 @@ public class AnalyticsService {
     /**
      * Track cohort retention and performance across years for a given niveau.
      */
-    public List<CohorteDTO> getCohortes(Long niveauId) {
+    public List<CohorteDTO> getCohortes(UUID niveauId) {
         List<Student> allStudents = studentRepository.findAll();
 
         // Group students by school year based on enrollment date
@@ -230,7 +232,7 @@ public class AnalyticsService {
                     ? Math.round((double) effectifFinal / effectifInitial * 100.0 * 10.0) / 10.0
                     : 0.0;
 
-            List<Long> ids = students.stream().map(Student::getId).toList();
+            List<UUID> ids = students.stream().map(Student::getId).toList();
             double moyenneGenerale = noteRepository.findAll().stream()
                     .filter(n -> n.getValeur() != null && ids.contains(n.getStudent().getId()))
                     .mapToDouble(Note::getValeur)

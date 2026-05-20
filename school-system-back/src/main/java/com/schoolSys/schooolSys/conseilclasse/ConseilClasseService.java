@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.conseilclasse;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.anneescolaire.AnneeScolaireRepository;
 import com.schoolSys.schooolSys.bulletin.BulletinService;
 import com.schoolSys.schooolSys.bulletin.dto.BulletinDTO;
@@ -51,7 +53,7 @@ public class ConseilClasseService {
      * Build the conseil de classe for a class: annual averages, ranks and a
      * proposed decision for every student that has at least one grade.
      */
-    public ConseilClasseDTO getConseilClasse(Long classeId) {
+    public ConseilClasseDTO getConseilClasse(UUID classeId) {
         Classe classe = classeRepository.findById(classeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Classe", classeId));
 
@@ -67,11 +69,11 @@ public class ConseilClasseService {
                 .orElse(null);
 
         // 1. Per-trimestre general averages (reuse the bulletin engine).
-        Map<Long, String> names = new LinkedHashMap<>();
-        Map<Long, String> classeDisplay = new LinkedHashMap<>();
-        Map<Long, Double> mt1 = new LinkedHashMap<>();
-        Map<Long, Double> mt2 = new LinkedHashMap<>();
-        Map<Long, Double> mt3 = new LinkedHashMap<>();
+        Map<UUID, String> names = new LinkedHashMap<>();
+        Map<UUID, String> classeDisplay = new LinkedHashMap<>();
+        Map<UUID, Double> mt1 = new LinkedHashMap<>();
+        Map<UUID, Double> mt2 = new LinkedHashMap<>();
+        Map<UUID, Double> mt3 = new LinkedHashMap<>();
 
         index(bulletinService.getBulletins(classeId, 1, VERSION), names, classeDisplay, mt1);
         index(bulletinService.getBulletins(classeId, 2, VERSION), names, classeDisplay, mt2);
@@ -79,8 +81,8 @@ public class ConseilClasseService {
 
         // 2. Build one proposition per student.
         List<PropositionPassageDTO> propositions = new ArrayList<>();
-        for (Map.Entry<Long, String> entry : names.entrySet()) {
-            Long studentId = entry.getKey();
+        for (Map.Entry<UUID, String> entry : names.entrySet()) {
+            UUID studentId = entry.getKey();
             Double t1 = mt1.get(studentId);
             Double t2 = mt2.get(studentId);
             Double t3 = mt3.get(studentId);
@@ -128,8 +130,8 @@ public class ConseilClasseService {
     }
 
     /** Collect names, classe display and the trimestre average for each student. */
-    private void index(List<BulletinDTO> bulletins, Map<Long, String> names,
-                       Map<Long, String> classeDisplay, Map<Long, Double> trimestre) {
+    private void index(List<BulletinDTO> bulletins, Map<UUID, String> names,
+                       Map<UUID, String> classeDisplay, Map<UUID, Double> trimestre) {
         for (BulletinDTO b : bulletins) {
             names.putIfAbsent(b.getStudentId(), b.getStudentName());
             classeDisplay.putIfAbsent(b.getStudentId(), b.getClasse());

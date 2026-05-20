@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.auth;
 
+import java.util.UUID;
+
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,9 +74,9 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public Long getUserIdFromToken(String token) {
+    public UUID getUserIdFromToken(String token) {
         Claims claims = parseToken(token);
-        return Long.valueOf(claims.getSubject());
+        return UUID.fromString(claims.getSubject());
     }
 
     public String getRoleFromToken(String token) {

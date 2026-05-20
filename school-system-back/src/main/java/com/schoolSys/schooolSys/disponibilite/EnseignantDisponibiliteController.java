@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.disponibilite;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.disponibilite.dto.EnseignantDisponibiliteRequestDTO;
 import com.schoolSys.schooolSys.disponibilite.dto.EnseignantDisponibiliteResponseDTO;
@@ -21,7 +23,7 @@ public class EnseignantDisponibiliteController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<EnseignantDisponibiliteResponseDTO>>> getAll(
-            @RequestParam(required = false) Long enseignantId) {
+            @RequestParam(required = false) UUID enseignantId) {
         List<EnseignantDisponibiliteResponseDTO> data = enseignantId != null
                 ? service.findByEnseignant(enseignantId)
                 : service.findAll();
@@ -29,7 +31,7 @@ public class EnseignantDisponibiliteController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<EnseignantDisponibiliteResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<EnseignantDisponibiliteResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(service.findById(id)));
     }
 
@@ -44,14 +46,14 @@ public class EnseignantDisponibiliteController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_EMPLOI_DU_TEMPS')")
     public ResponseEntity<ApiResponse<EnseignantDisponibiliteResponseDTO>> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody EnseignantDisponibiliteRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_EMPLOI_DU_TEMPS')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

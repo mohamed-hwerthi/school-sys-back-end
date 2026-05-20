@@ -3,9 +3,9 @@
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS relances (
-    id               BIGSERIAL PRIMARY KEY,
-    student_id       BIGINT       NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-    paiement_id      BIGINT       REFERENCES paiements(id) ON DELETE SET NULL,
+    id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id       UUID       NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    paiement_id      UUID       REFERENCES paiements(id) ON DELETE SET NULL,
     type             VARCHAR(10)  NOT NULL CHECK (type IN ('EMAIL','SMS','COURRIER')),
     statut           VARCHAR(15)  NOT NULL CHECK (statut IN ('EN_ATTENTE','ENVOYEE','ECHOUEE')),
     message          TEXT         NOT NULL,

@@ -2,10 +2,10 @@
 -- Une ligne par tentative d'envoi (un envoi multi-canal = plusieurs lignes).
 
 CREATE TABLE IF NOT EXISTS notification_logs (
-    id                    BIGSERIAL    PRIMARY KEY,
+    id                    UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
     recipient_type        VARCHAR(20)  NOT NULL,
         -- PARENT, TEACHER, STUDENT, ADMIN
-    recipient_id          BIGINT,
+    recipient_id          UUID,
         -- ID de l'élève (si PARENT, on log le student_id pour pouvoir filtrer)
     recipient_address     VARCHAR(255) NOT NULL,
         -- numéro de tel ou email ciblé
@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS notification_logs (
     error_message         TEXT,
     related_entity_type   VARCHAR(50),
         -- NOTE, ABSENCE, BULLETIN… pour pouvoir remonter à l'objet métier
-    related_entity_id     BIGINT,
-    triggered_by_user_id  BIGINT,
+    related_entity_id     UUID,
+    triggered_by_user_id  UUID,
     retry_count           INTEGER      NOT NULL DEFAULT 0,
     created_at            TIMESTAMP    NOT NULL DEFAULT NOW(),
     sent_at               TIMESTAMP

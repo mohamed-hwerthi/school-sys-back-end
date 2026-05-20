@@ -1,5 +1,5 @@
 import api from "./axios";
-import type { AuthUser, LoginRequest, LoginResponse } from "@/types/auth";
+import type { LoginRequest, LoginResponse, MeResponse, Session } from "@/types/auth";
 
 export const authApi = {
   login: (data: LoginRequest): Promise<LoginResponse> =>
@@ -11,7 +11,7 @@ export const authApi = {
   logout: (refreshToken: string): Promise<void> =>
     api.post("/auth/logout", { refreshToken }),
 
-  getMe: (): Promise<AuthUser> =>
+  getMe: (): Promise<MeResponse> =>
     api.get("/auth/me"),
 
   verify2FA: (data: { userId: number; code: string }): Promise<LoginResponse> =>
@@ -22,4 +22,16 @@ export const authApi = {
 
   resetPassword: (token: string, newPassword: string): Promise<string> =>
     api.post("/auth/reset-password", { token, newPassword }),
+
+  /** Active sessions of the current user. */
+  getSessions: (): Promise<Session[]> =>
+    api.get("/auth/sessions"),
+
+  /** Revokes a single session by id. */
+  revokeSession: (sessionId: string): Promise<void> =>
+    api.delete(`/auth/sessions/${sessionId}`),
+
+  /** Revokes all sessions except the current one. */
+  revokeOtherSessions: (): Promise<void> =>
+    api.delete("/auth/sessions"),
 };

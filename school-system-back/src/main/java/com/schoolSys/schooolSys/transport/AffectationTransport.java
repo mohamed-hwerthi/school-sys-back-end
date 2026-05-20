@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.transport;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,11 +21,12 @@ import org.hibernate.annotations.SQLRestriction;
 public class AffectationTransport {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "eleve_id", nullable = false)
-    private Long eleveId;
+    private UUID eleveId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "circuit_id", nullable = false)

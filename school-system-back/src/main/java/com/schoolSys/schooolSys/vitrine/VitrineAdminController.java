@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.vitrine;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.vitrine.dto.*;
 import jakarta.validation.Valid;
@@ -63,7 +65,7 @@ public class VitrineAdminController {
     }
 
     @GetMapping("/pages/{id}")
-    public ResponseEntity<ApiResponse<VitrinePageDTO>> getPage(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<VitrinePageDTO>> getPage(@PathVariable UUID id) {
         // Get by ID for admin (not by slug)
         return ResponseEntity.ok(ApiResponse.ok(vitrineService.getPageBySlug(
                 vitrineService.getAllPages().stream()
@@ -81,13 +83,13 @@ public class VitrineAdminController {
     }
 
     @PutMapping("/pages/{id}")
-    public ResponseEntity<ApiResponse<VitrinePageDTO>> updatePage(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<VitrinePageDTO>> updatePage(@PathVariable UUID id,
                                                                     @RequestBody VitrinePageDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(vitrineService.updatePage(id, dto)));
     }
 
     @DeleteMapping("/pages/{id}")
-    public ResponseEntity<Void> deletePage(@PathVariable Long id) {
+    public ResponseEntity<Void> deletePage(@PathVariable UUID id) {
         vitrineService.deletePage(id);
         return ResponseEntity.noContent().build();
     }
@@ -95,25 +97,25 @@ public class VitrineAdminController {
     // ======================== SECTIONS ========================
 
     @GetMapping("/pages/{pageId}/sections")
-    public ResponseEntity<ApiResponse<List<VitrineSectionDTO>>> getSections(@PathVariable Long pageId) {
+    public ResponseEntity<ApiResponse<List<VitrineSectionDTO>>> getSections(@PathVariable UUID pageId) {
         return ResponseEntity.ok(ApiResponse.ok(vitrineService.getSectionsByPage(pageId)));
     }
 
     @PostMapping("/pages/{pageId}/sections")
-    public ResponseEntity<ApiResponse<VitrineSectionDTO>> createSection(@PathVariable Long pageId,
+    public ResponseEntity<ApiResponse<VitrineSectionDTO>> createSection(@PathVariable UUID pageId,
                                                                          @RequestBody VitrineSectionDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(vitrineService.createSection(pageId, dto)));
     }
 
     @PutMapping("/sections/{id}")
-    public ResponseEntity<ApiResponse<VitrineSectionDTO>> updateSection(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<VitrineSectionDTO>> updateSection(@PathVariable UUID id,
                                                                          @RequestBody VitrineSectionDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(vitrineService.updateSection(id, dto)));
     }
 
     @DeleteMapping("/sections/{id}")
-    public ResponseEntity<Void> deleteSection(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteSection(@PathVariable UUID id) {
         vitrineService.deleteSection(id);
         return ResponseEntity.noContent().build();
     }
@@ -132,7 +134,7 @@ public class VitrineAdminController {
     }
 
     @DeleteMapping("/gallery/{id}")
-    public ResponseEntity<Void> deleteGalleryItem(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteGalleryItem(@PathVariable UUID id) {
         vitrineService.deleteGalleryItem(id);
         return ResponseEntity.noContent().build();
     }
@@ -151,13 +153,13 @@ public class VitrineAdminController {
     }
 
     @PutMapping("/announcements/{id}")
-    public ResponseEntity<ApiResponse<VitrineAnnouncementDTO>> updateAnnouncement(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<VitrineAnnouncementDTO>> updateAnnouncement(@PathVariable UUID id,
                                                                                     @RequestBody VitrineAnnouncementDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(vitrineService.updateAnnouncement(id, dto)));
     }
 
     @DeleteMapping("/announcements/{id}")
-    public ResponseEntity<Void> deleteAnnouncement(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteAnnouncement(@PathVariable UUID id) {
         vitrineService.deleteAnnouncement(id);
         return ResponseEntity.noContent().build();
     }
@@ -175,14 +177,14 @@ public class VitrineAdminController {
     }
 
     @PutMapping("/contacts/{id}/read")
-    public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
+    public ResponseEntity<Void> markAsRead(@PathVariable UUID id) {
         vitrineService.markAsRead(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/contacts/{id}/reply")
     public ResponseEntity<ApiResponse<String>> replyToContact(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody VitrineReplyDTO dto) {
         vitrineService.replyToContact(id, dto.getReplyText());
         return ResponseEntity.ok(ApiResponse.ok("Réponse envoyée"));

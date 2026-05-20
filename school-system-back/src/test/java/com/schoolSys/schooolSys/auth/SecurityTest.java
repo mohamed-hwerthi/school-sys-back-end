@@ -2,7 +2,11 @@ package com.schoolSys.schooolSys.auth;
 
 import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.common.config.SecurityConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import com.schoolSys.schooolSys.common.security.AuditingAccessDeniedHandler;
+import com.schoolSys.schooolSys.common.security.RestAuthenticationEntryPoint;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -23,9 +27,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
-@Import({SecurityConfig.class, AuditingAccessDeniedHandler.class})
+@Import({SecurityConfig.class, AuditingAccessDeniedHandler.class, RestAuthenticationEntryPoint.class, SecurityTest.JacksonTestConfig.class})
 @DisplayName("Security Configuration Tests")
 class SecurityTest {
+
+    @TestConfiguration
+    static class JacksonTestConfig {
+        @Bean
+        ObjectMapper objectMapper() { return new ObjectMapper(); }
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -102,21 +112,21 @@ class SecurityTest {
         @DisplayName("GET /api/students should require authentication")
         void studentsShouldRequireAuth() throws Exception {
             mockMvc.perform(get("/api/students"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("GET /api/paiements should require authentication")
         void paiementsShouldRequireAuth() throws Exception {
             mockMvc.perform(get("/api/paiements"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("GET /api/auth/me should require authentication")
         void meShouldRequireAuth() throws Exception {
             mockMvc.perform(get("/api/auth/me"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
     }
 

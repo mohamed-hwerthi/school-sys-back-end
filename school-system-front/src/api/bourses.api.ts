@@ -3,8 +3,8 @@ import api from "./axios";
 // ─── Backend DTOs ────────────────────────────────────────
 
 export interface BourseDTO {
-  id: number;
-  studentId: number;
+  id: string;
+  studentId: string;
   studentName: string;
   type: "BOURSE" | "AIDE" | "EXONERATION";
   label: string;
@@ -20,7 +20,7 @@ export interface BourseDTO {
 }
 
 export interface BourseRequest {
-  studentId: number;
+  studentId: string;
   type: "BOURSE" | "AIDE" | "EXONERATION";
   label: string;
   montant: number;
@@ -41,12 +41,12 @@ export const boursesApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<BourseDTO> => {
+  getById: async (id: string): Promise<BourseDTO> => {
     const res = await api.get<BourseDTO>(`/bourses/${id}`);
     return res.data;
   },
 
-  getByStudent: async (studentId: number, anneeScolaire?: string): Promise<BourseDTO[]> => {
+  getByStudent: async (studentId: string, anneeScolaire?: string): Promise<BourseDTO[]> => {
     const params = anneeScolaire ? `?anneeScolaire=${anneeScolaire}` : "";
     const res = await api.get<BourseDTO[]>(`/bourses/student/${studentId}${params}`);
     return res.data;
@@ -57,10 +57,10 @@ export const boursesApi = {
     return res.data;
   },
 
-  update: async (id: number, data: BourseRequest): Promise<BourseDTO> => {
+  update: async (id: string, data: BourseRequest): Promise<BourseDTO> => {
     const res = await api.put<BourseDTO>(`/bourses/${id}`, data);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`/bourses/${id}`),
+  delete: (id: string) => api.delete(`/bourses/${id}`),
 };

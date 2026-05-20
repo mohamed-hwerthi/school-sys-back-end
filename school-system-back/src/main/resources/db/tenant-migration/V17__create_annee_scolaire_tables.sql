@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS annees_scolaires (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     label VARCHAR(20) NOT NULL UNIQUE,
     date_debut DATE NOT NULL,
     date_fin DATE NOT NULL,
@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS annees_scolaires (
 );
 
 CREATE TABLE IF NOT EXISTS trimestres (
-    id BIGSERIAL PRIMARY KEY,
-    annee_scolaire_id BIGINT NOT NULL REFERENCES annees_scolaires(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    annee_scolaire_id UUID NOT NULL REFERENCES annees_scolaires(id) ON DELETE CASCADE,
     numero INTEGER NOT NULL CHECK (numero BETWEEN 1 AND 3),
     label VARCHAR(50) NOT NULL,
     date_debut DATE NOT NULL,
@@ -20,16 +20,16 @@ CREATE TABLE IF NOT EXISTS trimestres (
 );
 
 CREATE TABLE IF NOT EXISTS vacances (
-    id BIGSERIAL PRIMARY KEY,
-    annee_scolaire_id BIGINT NOT NULL REFERENCES annees_scolaires(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    annee_scolaire_id UUID NOT NULL REFERENCES annees_scolaires(id) ON DELETE CASCADE,
     label VARCHAR(100) NOT NULL,
     date_debut DATE NOT NULL,
     date_fin DATE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS jours_feries (
-    id BIGSERIAL PRIMARY KEY,
-    annee_scolaire_id BIGINT NOT NULL REFERENCES annees_scolaires(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    annee_scolaire_id UUID NOT NULL REFERENCES annees_scolaires(id) ON DELETE CASCADE,
     label VARCHAR(100) NOT NULL,
     date DATE NOT NULL
 );

@@ -1,9 +1,11 @@
-import { View, Text, ScrollView, RefreshControl, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, RefreshControl, TouchableOpacity } from "react-native";
+import { ListSkeleton } from "@/components/skeletons/ListSkeleton";
 import { useState, useCallback, useMemo } from "react";
 import { useChild } from "@/context/ChildContext";
 import { ChildSelector } from "@/components/ChildSelector";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorView } from "@/components/ErrorView";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 import { useQuery } from "@tanstack/react-query";
 import { notesApi } from "@/api/notes.api";
@@ -15,6 +17,7 @@ function gradeColor(note: number): string {
 }
 
 export default function GradesTab() {
+  const { colors } = useTheme();
   const { selectedChild } = useChild();
   const [trimestre, setTrimestre] = useState(1);
 
@@ -115,7 +118,7 @@ export default function GradesTab() {
       {!selectedChild ? (
         <EmptyState icon="📊" title="Aucun enfant selectionne" subtitle="Selectionnez un enfant pour voir ses notes." />
       ) : isLoading ? (
-        <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xl }} />
+        <ListSkeleton count={5} avatar={false} />
       ) : notes.length === 0 ? (
         <EmptyState icon="📝" title="Aucune note pour ce trimestre" subtitle={`Trimestre ${trimestre} - ${selectedChild.firstName} ${selectedChild.lastName}`} />
       ) : (

@@ -35,7 +35,7 @@ export function useCreateCategorieDepense() {
 export function useUpdateCategorieDepense() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CategorieDepenseRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: CategorieDepenseRequest }) =>
       categoriesDepenseApi.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [CATEGORIES_KEY] }),
   });
@@ -44,7 +44,7 @@ export function useUpdateCategorieDepense() {
 export function useDeleteCategorieDepense() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => categoriesDepenseApi.delete(id),
+    mutationFn: (id: string) => categoriesDepenseApi.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [CATEGORIES_KEY] }),
   });
 }
@@ -72,7 +72,7 @@ export function useCreateDepense() {
 export function useUpdateDepense() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: DepenseRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: DepenseRequest }) =>
       depensesApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [DEPENSES_KEY] });
@@ -84,7 +84,7 @@ export function useUpdateDepense() {
 export function useDeleteDepense() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => depensesApi.delete(id),
+    mutationFn: (id: string) => depensesApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [DEPENSES_KEY] });
       qc.invalidateQueries({ queryKey: [DEPENSES_STATS_KEY] });

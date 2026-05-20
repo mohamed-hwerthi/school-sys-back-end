@@ -7,8 +7,8 @@ export type StatutConge = 'EN_ATTENTE' | 'APPROUVE' | 'REFUSE';
 export type StatutContrat = 'ACTIF' | 'TERMINE' | 'SUSPENDU';
 
 export interface ContratEnseignant {
-  id: number;
-  enseignantId: number;
+  id: string;
+  enseignantId: string;
   enseignantNom?: string;
   typeContrat: TypeContrat;
   dateDebut: string;
@@ -19,8 +19,8 @@ export interface ContratEnseignant {
 }
 
 export interface Conge {
-  id: number;
-  enseignantId: number;
+  id: string;
+  enseignantId: string;
   enseignantNom?: string;
   typeConge: TypeConge;
   dateDebut: string;

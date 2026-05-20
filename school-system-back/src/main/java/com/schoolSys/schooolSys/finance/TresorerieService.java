@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.depense.CategorieDepenseRepository;
 import com.schoolSys.schooolSys.depense.Depense;
 import com.schoolSys.schooolSys.depense.DepenseRepository;
@@ -46,7 +48,7 @@ public class TresorerieService {
 
         // ─── Élèves à jour / en retard ─────────────────
         List<Paiement> allPaiements = paiementRepository.findByAnneeScolaire(anneeScolaire);
-        Map<Long, BigDecimal[]> eleveSoldes = new HashMap<>();
+        Map<UUID, BigDecimal[]> eleveSoldes = new HashMap<>();
         for (Paiement p : allPaiements) {
             eleveSoldes.computeIfAbsent(p.getStudent().getId(), k -> new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
             BigDecimal[] vals = eleveSoldes.get(p.getStudent().getId());

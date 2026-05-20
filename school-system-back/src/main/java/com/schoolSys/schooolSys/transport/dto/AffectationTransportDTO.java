@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.transport.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,11 +14,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AffectationTransportDTO {
-    private Long id;
-    private Long eleveId;
-    private Long circuitId;
+    private UUID id;
+    private UUID eleveId;
+    private UUID circuitId;
     private String circuitNom;
-    private Long arretId;
+    private UUID arretId;
     private String arretNom;
     private String anneeScolaire;
     private Boolean actif;

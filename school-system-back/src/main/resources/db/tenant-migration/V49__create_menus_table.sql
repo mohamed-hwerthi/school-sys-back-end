@@ -1,5 +1,5 @@
 CREATE TABLE menus (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     date_menu DATE NOT NULL,
     jour_semaine VARCHAR(10) NOT NULL,
     entree VARCHAR(300),

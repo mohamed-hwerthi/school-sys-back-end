@@ -125,7 +125,7 @@ export default function QuizPassationPage() {
     );
   };
 
-  const handleAnswerChange = (questionId: number, answer: Partial<ReponseItem>) => {
+  const handleAnswerChange = (questionId: string, answer: Partial<ReponseItem>) => {
     setAnswers((prev) => ({
       ...prev,
       [questionId]: { questionId, ...prev[questionId], ...answer },
@@ -430,7 +430,7 @@ export default function QuizPassationPage() {
           id="eleveIdInput"
           type="number"
           value={eleveId}
-          onChange={(e) => setEleveId(Number(e.target.value))}
+          onChange={(e) => setEleveId(e.target.value)}
           className="w-32"
         />
       </div>

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,11 +15,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AuditFinancierDTO {
 
-    private Long id;
+    private UUID id;
     private String entityType;
-    private Long entityId;
+    private UUID entityId;
     private String action;
-    private Long userId;
+    private UUID userId;
     private String userName;
     private String oldValues;
     private String newValues;

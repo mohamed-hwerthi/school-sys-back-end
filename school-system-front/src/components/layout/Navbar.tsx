@@ -22,10 +22,12 @@ import {
   Settings,
   ChevronRight,
   Globe,
+  School,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useSchool } from "@/hooks/useSchool";
 import { useLanguage } from "@/hooks/useLanguage";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { buildVitrineUrl } from "@/lib/vitrine-routing";
@@ -111,6 +113,7 @@ function Breadcrumb() {
 export function Navbar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { school } = useSchool();
   const { t } = useLanguage();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -143,6 +146,19 @@ export function Navbar() {
       <Separator orientation="vertical" className="h-5" />
 
       <Breadcrumb />
+
+      {/* Nom de l'école */}
+      {school.nom && (
+        <>
+          <Separator orientation="vertical" className="hidden h-5 md:block" />
+          <div className="hidden items-center gap-1.5 md:flex">
+            <School className="h-4 w-4 text-primary" />
+            <span className="max-w-[220px] truncate text-sm font-semibold text-foreground">
+              {school.nom}
+            </span>
+          </div>
+        </>
+      )}
 
       {/* Search Bar - Center */}
       <div className="hidden lg:flex items-center mx-auto">

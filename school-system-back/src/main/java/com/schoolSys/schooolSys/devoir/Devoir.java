@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.devoir;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,8 +22,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class Devoir {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(nullable = false, length = 300)
     private String titre;
@@ -29,13 +33,13 @@ public class Devoir {
     private String description;
 
     @Column(name = "module_id")
-    private Long moduleId;
+    private UUID moduleId;
 
     @Column(name = "classe_id")
-    private Long classeId;
+    private UUID classeId;
 
     @Column(name = "enseignant_id")
-    private Long enseignantId;
+    private UUID enseignantId;
 
     @Column(name = "date_publication", nullable = false)
     @Builder.Default

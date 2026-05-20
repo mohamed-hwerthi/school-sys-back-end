@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.bibliotheque;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.bibliotheque.dto.CreateLivreRequest;
 import com.schoolSys.schooolSys.bibliotheque.dto.LivreDTO;
 import com.schoolSys.schooolSys.common.dto.PagedResponse;
@@ -42,7 +44,7 @@ public class LivreService {
         return PagedResponse.from(page, content);
     }
 
-    public LivreDTO findById(Long id) {
+    public LivreDTO findById(UUID id) {
         Livre livre = livreRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Livre", id));
         return toDTO(livre);
@@ -77,7 +79,7 @@ public class LivreService {
     }
 
     @Transactional
-    public LivreDTO update(Long id, CreateLivreRequest request) {
+    public LivreDTO update(UUID id, CreateLivreRequest request) {
         Livre livre = livreRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Livre", id));
 
@@ -104,7 +106,7 @@ public class LivreService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!livreRepository.existsById(id)) {
             throw new ResourceNotFoundException("Livre", id);
         }

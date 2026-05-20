@@ -1,7 +1,7 @@
 export interface Facture {
-  id: number;
+  id: string;
   numero: string;
-  eleveId: number;
+  eleveId: string;
   eleveNom?: string;
   dateEmission: string;
   dateEcheance?: string;
@@ -12,9 +12,9 @@ export interface Facture {
 }
 
 export interface Echeancier {
-  id: number;
-  eleveId: number;
-  typeFraisId?: number;
+  id: string;
+  eleveId: string;
+  typeFraisId?: string;
   montantTotal: number;
   nbMensualites: number;
   dateDebut: string;
@@ -22,10 +22,10 @@ export interface Echeancier {
 }
 
 export interface Echeance {
-  id: number;
+  id: string;
   numero: number;
   montant: number;
   dateEcheance: string;
   statut: 'EN_ATTENTE' | 'PAYEE' | 'EN_RETARD';
-  paiementId?: number;
+  paiementId?: string;
 }

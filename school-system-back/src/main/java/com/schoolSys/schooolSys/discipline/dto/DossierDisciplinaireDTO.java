@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.discipline.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DossierDisciplinaireDTO {
-    private Long eleveId;
+    private UUID eleveId;
     private String eleveNom;
     private int totalIncidents;
     private int totalSanctions;
@@ -31,6 +33,6 @@ public class DossierDisciplinaireDTO {
         private String gravite;   // for incidents
         private Integer niveau;   // for sanctions
         private String statut;    // for sanctions
-        private Long id;
+        private UUID id;
     }
 }

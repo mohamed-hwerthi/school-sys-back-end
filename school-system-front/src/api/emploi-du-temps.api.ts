@@ -13,12 +13,12 @@ import type {
 const BASE = "/emploi-du-temps";
 
 export const emploiDuTempsApi = {
-  getByClasse: async (classeId: number): Promise<EmploiDuTempsEntry[]> => {
+  getByClasse: async (classeId: string): Promise<EmploiDuTempsEntry[]> => {
     const res = await api.get<EmploiDuTempsEntry[]>(`${BASE}/classe/${classeId}`);
     return res.data;
   },
 
-  getByEnseignant: async (enseignantId: number): Promise<EmploiDuTempsEntry[]> => {
+  getByEnseignant: async (enseignantId: string): Promise<EmploiDuTempsEntry[]> => {
     const res = await api.get<EmploiDuTempsEntry[]>(`${BASE}/enseignant/${enseignantId}`);
     return res.data;
   },
@@ -29,12 +29,12 @@ export const emploiDuTempsApi = {
     return res.data;
   },
 
-  saveAll: async (classeId: number, entries: EmploiDuTempsEntry[]): Promise<EmploiDuTempsEntry[]> => {
+  saveAll: async (classeId: string, entries: EmploiDuTempsEntry[]): Promise<EmploiDuTempsEntry[]> => {
     const res = await api.put<EmploiDuTempsEntry[]>(`${BASE}/classe/${classeId}`, entries);
     return res.data;
   },
 
-  checkConflits: async (classeId: number, entries: EmploiDuTempsEntry[]): Promise<Conflit[]> => {
+  checkConflits: async (classeId: string, entries: EmploiDuTempsEntry[]): Promise<Conflit[]> => {
     const res = await api.post<Conflit[]>(`${BASE}/check-conflits`, entries);
     return res.data;
   },
@@ -50,7 +50,7 @@ export const emploiDuTempsApi = {
     return res.data;
   },
 
-  deleteCreneau: async (id: number): Promise<void> => {
+  deleteCreneau: async (id: string): Promise<void> => {
     await api.delete(`/creneaux/${id}`);
   },
 
@@ -65,7 +65,7 @@ export const emploiDuTempsApi = {
     return res.data;
   },
 
-  deleteRemplacement: async (id: number): Promise<void> => {
+  deleteRemplacement: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/remplacements/${id}`);
   },
 
@@ -76,8 +76,8 @@ export const emploiDuTempsApi = {
   },
 
   previewCheck: async (params?: {
-    niveauId?: number;
-    anneeScolaireId?: number;
+    niveauId?: string;
+    anneeScolaireId?: string;
   }): Promise<TimetablePreviewCheck> => {
     const res = await api.get<TimetablePreviewCheck>(`${BASE}/preview-check`, { params });
     return res.data;

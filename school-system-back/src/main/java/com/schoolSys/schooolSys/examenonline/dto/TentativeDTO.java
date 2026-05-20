@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.examenonline.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,10 +17,10 @@ import java.util.List;
 @AllArgsConstructor
 public class TentativeDTO {
 
-    private Long id;
-    private Long quizId;
+    private UUID id;
+    private UUID quizId;
     private String quizTitre;
-    private Long eleveId;
+    private UUID eleveId;
     private LocalDateTime dateDebut;
     private LocalDateTime dateFin;
     private BigDecimal score;

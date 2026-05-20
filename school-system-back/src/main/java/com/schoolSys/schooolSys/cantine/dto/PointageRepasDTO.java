@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.cantine.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +15,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PointageRepasDTO {
-    private Long id;
-    private Long eleveId;
+    private UUID id;
+    private UUID eleveId;
     private LocalDate dateRepas;
     private String typeRepas;
     private Boolean present;

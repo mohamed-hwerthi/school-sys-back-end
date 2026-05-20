@@ -884,7 +884,7 @@ export default function FormationsPage() {
                     onValueChange={(v) =>
                       setParticipantForm({
                         ...participantForm,
-                        employeId: Number(v),
+                        employeId: v,
                       })
                     }
                     disabled={employeCandidates.length === 0}

@@ -3,12 +3,12 @@ export type StatutDevoir = 'BROUILLON' | 'PUBLIE' | 'FERME';
 export type TypeRessource = 'DOCUMENT' | 'VIDEO' | 'LIEN' | 'IMAGE' | 'AUDIO';
 
 export interface Devoir {
-  id: number;
+  id: string;
   titre: string;
   description: string | null;
-  moduleId: number | null;
-  classeId: number | null;
-  enseignantId: number | null;
+  moduleId: string | null;
+  classeId: string | null;
+  enseignantId: string | null;
   datePublication: string;
   dateLimite: string;
   type: TypeDevoir;
@@ -23,9 +23,9 @@ export interface Devoir {
 export interface CreateDevoirRequest {
   titre: string;
   description?: string;
-  moduleId?: number;
-  classeId?: number;
-  enseignantId?: number;
+  moduleId?: string;
+  classeId?: string;
+  enseignantId?: string;
   datePublication?: string;
   dateLimite: string;
   type?: TypeDevoir;
@@ -35,10 +35,10 @@ export interface CreateDevoirRequest {
 }
 
 export interface Soumission {
-  id: number;
-  devoirId: number;
+  id: string;
+  devoirId: string;
   devoirTitre: string;
-  eleveId: number;
+  eleveId: string;
   contenu: string | null;
   fichierUrl: string | null;
   dateSoumission: string;
@@ -50,8 +50,8 @@ export interface Soumission {
 }
 
 export interface CreateSoumissionRequest {
-  devoirId: number;
-  eleveId: number;
+  devoirId: string;
+  eleveId: string;
   contenu?: string;
   fichierUrl?: string;
 }
@@ -62,14 +62,14 @@ export interface CorrectionRequest {
 }
 
 export interface RessourcePedagogique {
-  id: number;
+  id: string;
   titre: string;
   description: string | null;
-  moduleId: number | null;
+  moduleId: string | null;
   type: TypeRessource;
   fichierUrl: string | null;
   lienExterne: string | null;
-  enseignantId: number | null;
+  enseignantId: string | null;
   tailleFichier: number | null;
   createdAt: string;
 }
@@ -77,11 +77,11 @@ export interface RessourcePedagogique {
 export interface CreateRessourceRequest {
   titre: string;
   description?: string;
-  moduleId?: number;
+  moduleId?: string;
   type?: TypeRessource;
   fichierUrl?: string;
   lienExterne?: string;
-  enseignantId?: number;
+  enseignantId?: string;
   tailleFichier?: number;
 }
 

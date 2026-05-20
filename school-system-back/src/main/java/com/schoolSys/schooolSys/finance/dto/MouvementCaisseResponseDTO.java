@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.finance.MouvementCaisse;
 import lombok.*;
 
@@ -10,8 +12,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor @AllArgsConstructor
 @Builder
 public class MouvementCaisseResponseDTO {
-    private Long id;
-    private Long caisseId;
+    private UUID id;
+    private UUID caisseId;
     private MouvementCaisse.TypeMouvement type;
     private MouvementCaisse.CategorieMouvement categorie;
     private BigDecimal montant;

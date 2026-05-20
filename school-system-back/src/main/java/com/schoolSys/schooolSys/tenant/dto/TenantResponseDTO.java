@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.tenant.dto;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -14,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 public class TenantResponseDTO {
 
-    private Long id;
+    private UUID id;
     private String name;
     private String schemaName;
     private String slug;

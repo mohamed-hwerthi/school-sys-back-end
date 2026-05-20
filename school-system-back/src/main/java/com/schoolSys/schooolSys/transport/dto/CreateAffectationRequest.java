@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.transport.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,10 +14,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateAffectationRequest {
     @NotNull
-    private Long eleveId;
+    private UUID eleveId;
     @NotNull
-    private Long circuitId;
-    private Long arretId;
+    private UUID circuitId;
+    private UUID arretId;
     @NotNull
     private String anneeScolaire;
 }

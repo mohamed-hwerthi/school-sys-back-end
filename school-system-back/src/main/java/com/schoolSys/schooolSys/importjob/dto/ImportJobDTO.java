@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.importjob.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.student.dto.StudentBulkImportResultDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ImportJobDTO {
-    private Long id;
+    private UUID id;
     private String type;
     private String status;
     private String strategy;

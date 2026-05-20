@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.cloture;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.anneescolaire.AnneeScolaire;
 import com.schoolSys.schooolSys.anneescolaire.AnneeScolaireRepository;
 import com.schoolSys.schooolSys.anneescolaire.Trimestre;
@@ -39,7 +41,7 @@ public class ClotureService {
     private final AuditService auditService;
 
     /** ANN-031 — pre-closure checks for a school year. */
-    public PreChecksResponseDTO getPreChecks(Long anneeId) {
+    public PreChecksResponseDTO getPreChecks(UUID anneeId) {
         AnneeScolaire annee = anneeScolaireRepository.findById(anneeId)
                 .orElseThrow(() -> new ResourceNotFoundException("AnneeScolaire", anneeId));
 
@@ -79,7 +81,7 @@ public class ClotureService {
 
     /** ANN-030/033 — close a school year, optionally creating the next one. */
     @Transactional
-    public ClotureResultDTO cloturer(Long anneeId, ClotureRequestDTO request) {
+    public ClotureResultDTO cloturer(UUID anneeId, ClotureRequestDTO request) {
         AnneeScolaire annee = anneeScolaireRepository.findById(anneeId)
                 .orElseThrow(() -> new ResourceNotFoundException("AnneeScolaire", anneeId));
         if (Boolean.TRUE.equals(annee.getCloturee())) {
@@ -90,7 +92,7 @@ public class ClotureService {
         annee.setActive(false);
         anneeScolaireRepository.save(annee);
 
-        Long nouvelleId = null;
+        UUID nouvelleId = null;
         String nouvelleLabel = null;
         int trimestresCrees = 0;
 

@@ -1,10 +1,12 @@
 package com.schoolSys.schooolSys.bulletin.dto;
 
+import java.util.UUID;
+
 import lombok.*;
 
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class BulletinTemplateDTO {
-    private Long id;
+    private UUID id;
     private String nom;
     private String logoUrl;
     private String nomEcoleFr;

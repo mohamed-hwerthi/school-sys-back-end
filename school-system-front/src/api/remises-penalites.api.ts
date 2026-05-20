@@ -3,11 +3,11 @@ import api from "./axios";
 // ─── Remise DTOs ──────────────────────────────────────
 
 export interface RemiseDTO {
-  id: number;
-  studentId: number;
+  id: string;
+  studentId: string;
   studentFirstName: string;
   studentLastName: string;
-  typeFraisId: number | null;
+  typeFraisId: string | null;
   typeFraisNom: string | null;
   type: "FRATRIE" | "BOURSE" | "PERSONNEL" | "ANTICIPATION" | "COMMERCIAL";
   valeur: number;
@@ -19,8 +19,8 @@ export interface RemiseDTO {
 }
 
 export interface RemiseRequest {
-  studentId: number;
-  typeFraisId?: number | null;
+  studentId: string;
+  typeFraisId?: string | null;
   type: RemiseDTO["type"];
   valeur: number;
   estPourcentage?: boolean;
@@ -32,11 +32,11 @@ export interface RemiseRequest {
 // ─── Pénalité DTOs ────────────────────────────────────
 
 export interface PenaliteDTO {
-  id: number;
-  studentId: number;
+  id: string;
+  studentId: string;
   studentFirstName: string;
   studentLastName: string;
-  paiementId: number | null;
+  paiementId: string | null;
   paiementReference: string | null;
   montant: number;
   motif: string;
@@ -47,8 +47,8 @@ export interface PenaliteDTO {
 }
 
 export interface PenaliteRequest {
-  studentId: number;
-  paiementId?: number | null;
+  studentId: string;
+  paiementId?: string | null;
   montant: number;
   motif: string;
   dateApplication?: string;
@@ -64,7 +64,7 @@ export const remisesApi = {
     return res.data;
   },
 
-  getByStudent: async (studentId: number, anneeScolaire = "2025-2026"): Promise<RemiseDTO[]> => {
+  getByStudent: async (studentId: string, anneeScolaire = "2025-2026"): Promise<RemiseDTO[]> => {
     const res = await api.get<RemiseDTO[]>(`/remises/eleve/${studentId}?anneeScolaire=${anneeScolaire}`);
     return res.data;
   },
@@ -74,12 +74,12 @@ export const remisesApi = {
     return res.data;
   },
 
-  update: async (id: number, data: RemiseRequest): Promise<RemiseDTO> => {
+  update: async (id: string, data: RemiseRequest): Promise<RemiseDTO> => {
     const res = await api.put<RemiseDTO>(`/remises/${id}`, data);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`/remises/${id}`),
+  delete: (id: string) => api.delete(`/remises/${id}`),
 };
 
 export const penalitesApi = {
@@ -88,7 +88,7 @@ export const penalitesApi = {
     return res.data;
   },
 
-  getByStudent: async (studentId: number, anneeScolaire = "2025-2026"): Promise<PenaliteDTO[]> => {
+  getByStudent: async (studentId: string, anneeScolaire = "2025-2026"): Promise<PenaliteDTO[]> => {
     const res = await api.get<PenaliteDTO[]>(`/penalites/eleve/${studentId}?anneeScolaire=${anneeScolaire}`);
     return res.data;
   },
@@ -98,15 +98,15 @@ export const penalitesApi = {
     return res.data;
   },
 
-  update: async (id: number, data: PenaliteRequest): Promise<PenaliteDTO> => {
+  update: async (id: string, data: PenaliteRequest): Promise<PenaliteDTO> => {
     const res = await api.put<PenaliteDTO>(`/penalites/${id}`, data);
     return res.data;
   },
 
-  togglePayee: async (id: number): Promise<PenaliteDTO> => {
+  togglePayee: async (id: string): Promise<PenaliteDTO> => {
     const res = await api.patch<PenaliteDTO>(`/penalites/${id}/toggle-payee`);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`/penalites/${id}`),
+  delete: (id: string) => api.delete(`/penalites/${id}`),
 };

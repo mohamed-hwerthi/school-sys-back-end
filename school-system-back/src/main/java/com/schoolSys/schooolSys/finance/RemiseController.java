@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.finance.dto.RemiseRequestDTO;
 import com.schoolSys.schooolSys.finance.dto.RemiseResponseDTO;
@@ -29,14 +31,14 @@ public class RemiseController {
     @GetMapping("/eleve/{studentId}")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<RemiseResponseDTO>>> getByStudent(
-            @PathVariable Long studentId,
+            @PathVariable UUID studentId,
             @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(remiseService.findByStudentId(studentId, anneeScolaire)));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
-    public ResponseEntity<ApiResponse<RemiseResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<RemiseResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(remiseService.findById(id)));
     }
 
@@ -51,13 +53,13 @@ public class RemiseController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<RemiseResponseDTO>> update(
-            @PathVariable Long id, @Valid @RequestBody RemiseRequestDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody RemiseRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(remiseService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         remiseService.delete(id);
         return ResponseEntity.noContent().build();
     }

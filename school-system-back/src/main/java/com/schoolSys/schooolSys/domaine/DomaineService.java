@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.domaine;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -25,19 +27,19 @@ public class DomaineService {
 
     // ── Domaines ────────────────────────────────────────────
 
-    public List<DomaineResponseDTO> findAll(Long niveauId) {
+    public List<DomaineResponseDTO> findAll(UUID niveauId) {
         List<Domaine> list = niveauId != null
                 ? domaineRepository.findByNiveauIdOrderByOrdreAsc(niveauId)
                 : domaineRepository.findAllByOrderByNiveauNameAscOrdreAsc();
         // Row-level scoping: an ENSEIGNANT only sees the domaines of his own subjects.
         if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
-            Set<Long> scoped = currentUser.getScopedDomaineIdsForTeacher();
+            Set<UUID> scoped = currentUser.getScopedDomaineIdsForTeacher();
             list = list.stream().filter(d -> scoped.contains(d.getId())).toList();
         }
         return list.stream().map(this::toResponse).toList();
     }
 
-    public DomaineResponseDTO findById(Long id) {
+    public DomaineResponseDTO findById(UUID id) {
         Domaine d = domaineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Domaine", id));
         return toResponse(d);
@@ -59,7 +61,7 @@ public class DomaineService {
     }
 
     @Transactional
-    public DomaineResponseDTO update(Long id, DomaineRequestDTO dto) {
+    public DomaineResponseDTO update(UUID id, DomaineRequestDTO dto) {
         Domaine domaine = domaineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Domaine", id));
 
@@ -77,7 +79,7 @@ public class DomaineService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!domaineRepository.existsById(id)) {
             throw new ResourceNotFoundException("Domaine", id);
         }
@@ -86,7 +88,7 @@ public class DomaineService {
 
     // ── Sous-domaines ───────────────────────────────────────
 
-    public List<SousDomaineDTO> findSousDomaines(Long domaineId) {
+    public List<SousDomaineDTO> findSousDomaines(UUID domaineId) {
         return sousDomaineRepository.findByDomaineIdOrderByOrdreAsc(domaineId)
                 .stream().map(this::toSousDomaineDTO).toList();
     }
@@ -107,7 +109,7 @@ public class DomaineService {
     }
 
     @Transactional
-    public SousDomaineDTO updateSousDomaine(Long id, SousDomaineRequestDTO dto) {
+    public SousDomaineDTO updateSousDomaine(UUID id, SousDomaineRequestDTO dto) {
         SousDomaine sd = sousDomaineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SousDomaine", id));
 
@@ -125,7 +127,7 @@ public class DomaineService {
     }
 
     @Transactional
-    public void deleteSousDomaine(Long id) {
+    public void deleteSousDomaine(UUID id) {
         if (!sousDomaineRepository.existsById(id)) {
             throw new ResourceNotFoundException("SousDomaine", id);
         }

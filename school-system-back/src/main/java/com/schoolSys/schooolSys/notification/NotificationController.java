@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.notification;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.notification.dto.NotificationDTO;
 import lombok.RequiredArgsConstructor;
@@ -20,38 +22,38 @@ public class NotificationController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<NotificationDTO>>> getNotifications(Authentication auth) {
-        Long userId = extractUserId(auth);
+        UUID userId = extractUserId(auth);
         return ResponseEntity.ok(ApiResponse.ok(notificationService.getByUser(userId)));
     }
 
     @GetMapping("/count")
     public ResponseEntity<ApiResponse<Long>> getUnreadCount(Authentication auth) {
-        Long userId = extractUserId(auth);
+        UUID userId = extractUserId(auth);
         return ResponseEntity.ok(ApiResponse.ok(notificationService.getUnreadCount(userId)));
     }
 
     @PutMapping("/{id}/read")
-    public ResponseEntity<ApiResponse<NotificationDTO>> markAsRead(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<NotificationDTO>> markAsRead(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(notificationService.markAsRead(id)));
     }
 
     @PutMapping("/read-all")
     public ResponseEntity<ApiResponse<Void>> markAllAsRead(Authentication auth) {
-        Long userId = extractUserId(auth);
+        UUID userId = extractUserId(auth);
         notificationService.markAllAsRead(userId);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         notificationService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    private Long extractUserId(Authentication auth) {
+    private UUID extractUserId(Authentication auth) {
         // The principal name is the user ID set by JwtAuthenticationFilter
         try {
-            return Long.parseLong(auth.getName());
+            return UUID.fromString(auth.getName());
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid user authentication");
         }

@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.parentnotif;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,15 +17,16 @@ import java.time.LocalDateTime;
 public class NotificationLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "recipient_type", nullable = false, length = 20)
     private RecipientType recipientType;
 
     @Column(name = "recipient_id")
-    private Long recipientId;
+    private UUID recipientId;
 
     @Column(name = "recipient_address", nullable = false)
     private String recipientAddress;
@@ -55,10 +59,10 @@ public class NotificationLog {
     private String relatedEntityType;
 
     @Column(name = "related_entity_id")
-    private Long relatedEntityId;
+    private UUID relatedEntityId;
 
     @Column(name = "triggered_by_user_id")
-    private Long triggeredByUserId;
+    private UUID triggeredByUserId;
 
     @Column(name = "retry_count", nullable = false)
     @Builder.Default

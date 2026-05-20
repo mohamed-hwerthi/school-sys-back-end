@@ -5,11 +5,11 @@ import type { PreChecksResponse, ClotureRequest } from "@/types/cloture";
 const KEY = "cloture";
 
 /** Pre-closure verifications for a school year. */
-export function usePreChecks(anneeId: number) {
+export function usePreChecks(anneeId: string) {
   return useQuery<PreChecksResponse>({
     queryKey: [KEY, "pre-checks", anneeId],
     queryFn: () => clotureApi.getPreChecks(anneeId),
-    enabled: anneeId > 0,
+    enabled: !!anneeId,
   });
 }
 
@@ -17,7 +17,7 @@ export function usePreChecks(anneeId: number) {
 export function useCloturer() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ anneeId, request }: { anneeId: number; request: ClotureRequest }) =>
+    mutationFn: ({ anneeId, request }: { anneeId: string; request: ClotureRequest }) =>
       clotureApi.cloturer(anneeId, request),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });

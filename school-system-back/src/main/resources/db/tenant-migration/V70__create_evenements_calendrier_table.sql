@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS evenements_calendrier (
-    id              BIGSERIAL       PRIMARY KEY,
+    id              UUID       PRIMARY KEY DEFAULT gen_random_uuid(),
     titre           VARCHAR(255)    NOT NULL,
     description     TEXT,
     date_debut      DATE            NOT NULL,

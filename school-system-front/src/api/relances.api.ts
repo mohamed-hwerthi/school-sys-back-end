@@ -6,12 +6,12 @@ export type TypeRelance = "EMAIL" | "SMS" | "COURRIER";
 export type StatutRelance = "EN_ATTENTE" | "ENVOYEE" | "ECHOUEE";
 
 export interface RelanceDTO {
-  id: number;
-  studentId: number;
+  id: string;
+  studentId: string;
   studentFirstName: string;
   studentLastName: string;
   studentClasse: string;
-  paiementId: number | null;
+  paiementId: string | null;
   paiementReference: string | null;
   type: TypeRelance;
   statut: StatutRelance;
@@ -26,8 +26,8 @@ export interface RelanceDTO {
 }
 
 export interface RelanceRequest {
-  studentId: number;
-  paiementId?: number | null;
+  studentId: string;
+  paiementId?: string | null;
   type: TypeRelance;
   message: string;
   destinataire?: string;
@@ -52,7 +52,7 @@ export const relancesApi = {
     return res.data;
   },
 
-  getByStudent: async (studentId: number, anneeScolaire = "2025-2026"): Promise<RelanceDTO[]> => {
+  getByStudent: async (studentId: string, anneeScolaire = "2025-2026"): Promise<RelanceDTO[]> => {
     const res = await api.get<RelanceDTO[]>(`/relances/eleve/${studentId}?anneeScolaire=${anneeScolaire}`);
     return res.data;
   },
@@ -77,15 +77,15 @@ export const relancesApi = {
     return res.data;
   },
 
-  markEnvoyee: async (id: number): Promise<RelanceDTO> => {
+  markEnvoyee: async (id: string): Promise<RelanceDTO> => {
     const res = await api.patch<RelanceDTO>(`/relances/${id}/envoyee`);
     return res.data;
   },
 
-  markEchouee: async (id: number): Promise<RelanceDTO> => {
+  markEchouee: async (id: string): Promise<RelanceDTO> => {
     const res = await api.patch<RelanceDTO>(`/relances/${id}/echouee`);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`/relances/${id}`),
+  delete: (id: string) => api.delete(`/relances/${id}`),
 };

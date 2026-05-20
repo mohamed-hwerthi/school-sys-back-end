@@ -35,7 +35,7 @@ type CellErrors = Partial<Record<FieldKey, string>>;
 type RawRow = { [K in FieldKey]: string };
 
 interface EditableRow {
-  id: number;
+  id: string;
   raw: RawRow;
   errors: CellErrors;
 }
@@ -302,7 +302,7 @@ export function ExcelImportDialog({
     if (file) processFile(file);
   };
 
-  const updateCell = (rowId: number, field: FieldKey, value: string) => {
+  const updateCell = (rowId: string, field: FieldKey, value: string) => {
     setRows((prev) => {
       const next = prev.map((r) =>
         r.id === rowId
@@ -319,7 +319,7 @@ export function ExcelImportDialog({
     });
   };
 
-  const removeRow = (rowId: number) => {
+  const removeRow = (rowId: string) => {
     setRows((prev) =>
       applyDuplicateMarks(prev.filter((r) => r.id !== rowId))
     );

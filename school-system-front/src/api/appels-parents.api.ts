@@ -1,8 +1,8 @@
 import api from "./axios";
 
 export interface AppelParentDTO {
-  id: number;
-  eleveId: number;
+  id: string;
+  eleveId: string;
   appelePar: string | null;
   telephone: string | null;
   motif: string | null;
@@ -13,7 +13,7 @@ export interface AppelParentDTO {
 }
 
 export interface AppelParentRequest {
-  eleveId: number;
+  eleveId: string;
   appelePar?: string;
   telephone?: string;
   motif?: string;
@@ -24,7 +24,7 @@ export interface AppelParentRequest {
 const BASE = "/appels-parents";
 
 export const appelsParentsApi = {
-  getAll: async (eleveId?: number): Promise<AppelParentDTO[]> => {
+  getAll: async (eleveId?: string): Promise<AppelParentDTO[]> => {
     const res = await api.get<AppelParentDTO[]>(BASE, {
       params: eleveId ? { eleveId } : undefined,
     });
@@ -36,12 +36,12 @@ export const appelsParentsApi = {
     return res.data;
   },
 
-  update: async (id: number, data: AppelParentRequest): Promise<AppelParentDTO> => {
+  update: async (id: string, data: AppelParentRequest): Promise<AppelParentDTO> => {
     const res = await api.put<AppelParentDTO>(`${BASE}/${id}`, data);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/${id}`);
   },
 };

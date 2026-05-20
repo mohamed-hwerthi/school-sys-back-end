@@ -3,7 +3,7 @@ export type TypeRapport = "Bulletin trimestriel" | "Rapport annuel" | "Rapport d
 export type StatutRapport = "Brouillon" | "Généré" | "Validé" | "Envoyé";
 
 export type Rapport = {
-  id: number;
+  id: string;
   titre: string;
   type: TypeRapport;
   periode: string;

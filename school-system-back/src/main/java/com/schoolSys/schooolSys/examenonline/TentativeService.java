@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.examenonline;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.examenonline.dto.*;
 import lombok.RequiredArgsConstructor;
@@ -23,17 +25,17 @@ public class TentativeService {
     private final ChoixReponseRepository choixReponseRepository;
     private final ReponseEleveRepository reponseEleveRepository;
 
-    public List<TentativeDTO> findByQuiz(Long quizId) {
+    public List<TentativeDTO> findByQuiz(UUID quizId) {
         return tentativeRepository.findByQuizIdOrderByDateDebutDesc(quizId)
                 .stream().map(this::toDTO).toList();
     }
 
-    public List<TentativeDTO> findByEleve(Long eleveId) {
+    public List<TentativeDTO> findByEleve(UUID eleveId) {
         return tentativeRepository.findByEleveIdOrderByDateDebutDesc(eleveId)
                 .stream().map(this::toDTO).toList();
     }
 
-    public TentativeDTO findById(Long id) {
+    public TentativeDTO findById(UUID id) {
         Tentative tentative = tentativeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tentative", id));
         return toDTOWithReponses(tentative);
@@ -136,7 +138,7 @@ public class TentativeService {
         return toDTOWithReponses(tentativeRepository.save(tentative));
     }
 
-    public QuizStatsDTO getStats(Long quizId) {
+    public QuizStatsDTO getStats(UUID quizId) {
         quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", quizId));
 

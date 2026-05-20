@@ -40,7 +40,7 @@ const fadeUp = {
 };
 
 function NiveauCard({ niveauId, nom, sections, students, index, onOpenClasse }: {
-  niveauId: number;
+  niveauId: string;
   nom: string;
   sections: string[];
   students: Student[];

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.transport;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.transport.dto.VehiculeDTO;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +23,7 @@ public class VehiculeService {
                 .collect(Collectors.toList());
     }
 
-    public VehiculeDTO getById(Long id) {
+    public VehiculeDTO getById(UUID id) {
         return toDto(vehiculeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicule", id)));
     }
@@ -43,7 +45,7 @@ public class VehiculeService {
     }
 
     @Transactional
-    public VehiculeDTO update(Long id, VehiculeDTO dto) {
+    public VehiculeDTO update(UUID id, VehiculeDTO dto) {
         Vehicule vehicule = vehiculeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicule", id));
         if (dto.getImmatriculation() != null) vehicule.setImmatriculation(dto.getImmatriculation());
@@ -59,7 +61,7 @@ public class VehiculeService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!vehiculeRepository.existsById(id)) {
             throw new ResourceNotFoundException("Vehicule", id);
         }

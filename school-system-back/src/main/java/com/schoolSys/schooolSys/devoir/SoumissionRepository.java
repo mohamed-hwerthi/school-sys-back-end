@@ -1,20 +1,22 @@
 package com.schoolSys.schooolSys.devoir;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface SoumissionRepository extends JpaRepository<Soumission, Long> {
+public interface SoumissionRepository extends JpaRepository<Soumission, UUID> {
 
-    List<Soumission> findByDevoirIdOrderByDateSoumissionDesc(Long devoirId);
+    List<Soumission> findByDevoirIdOrderByDateSoumissionDesc(UUID devoirId);
 
-    List<Soumission> findByEleveIdOrderByDateSoumissionDesc(Long eleveId);
+    List<Soumission> findByEleveIdOrderByDateSoumissionDesc(UUID eleveId);
 
-    List<Soumission> findByDevoirIdAndEleveId(Long devoirId, Long eleveId);
+    List<Soumission> findByDevoirIdAndEleveId(UUID devoirId, UUID eleveId);
 
-    long countByDevoirId(Long devoirId);
+    long countByDevoirId(UUID devoirId);
 
-    long countByDevoirIdAndCorrigeTrue(Long devoirId);
+    long countByDevoirIdAndCorrigeTrue(UUID devoirId);
 
-    long countByDevoirIdAndEnRetardTrue(Long devoirId);
+    long countByDevoirIdAndEnRetardTrue(UUID devoirId);
 }

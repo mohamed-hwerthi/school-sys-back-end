@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.facture.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +15,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FactureLigneDTO {
-    private Long id;
+    private UUID id;
     @NotNull
     private String designation;
     private Integer quantite;

@@ -25,23 +25,23 @@ export const saasApi = {
     return res.data;
   },
 
-  getTenantUsage: async (id: number): Promise<TenantUsage> => {
+  getTenantUsage: async (id: string): Promise<TenantUsage> => {
     const res = await api.get<TenantUsage>(`/super-admin/tenants/${id}/usage`);
     return res.data;
   },
 
-  changePlan: async (id: number, plan: string): Promise<TenantPlan> => {
+  changePlan: async (id: string, plan: string): Promise<TenantPlan> => {
     const res = await api.put<TenantPlan>(`/super-admin/tenants/${id}/plan`, null, {
       params: { plan },
     });
     return res.data;
   },
 
-  activateTenant: async (id: number): Promise<void> => {
+  activateTenant: async (id: string): Promise<void> => {
     await api.put(`/super-admin/tenants/${id}/activate`);
   },
 
-  deactivateTenant: async (id: number): Promise<void> => {
+  deactivateTenant: async (id: string): Promise<void> => {
     await api.put(`/super-admin/tenants/${id}/deactivate`);
   },
 };

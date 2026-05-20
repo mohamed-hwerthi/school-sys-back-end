@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.auth;
 
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -33,7 +35,7 @@ public class LoginAttemptService {
      * @return the new failed-attempt count (0 if the user no longer exists)
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public int recordFailedAttempt(Long userId) {
+    public int recordFailedAttempt(UUID userId) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return 0;
@@ -53,7 +55,7 @@ public class LoginAttemptService {
      * @param userId the user who authenticated successfully
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void resetAttempts(Long userId) {
+    public void resetAttempts(UUID userId) {
         userRepository.findById(userId).ifPresent(user -> {
             if (user.getFailedLoginAttempts() > 0 || user.getLockedUntil() != null) {
                 user.setFailedLoginAttempts(0);

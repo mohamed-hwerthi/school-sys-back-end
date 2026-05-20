@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.affectation.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,13 +17,13 @@ import java.time.LocalDate;
 public class AffectationRequestDTO {
 
     @NotNull
-    private Long teacherId;
+    private UUID teacherId;
 
     @NotNull
-    private Long classeId;
+    private UUID classeId;
 
     /** Nullable: prof principal sans matière dédiée. */
-    private Long moduleId;
+    private UUID moduleId;
 
     @NotNull
     private String anneeScolaire;

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.discipline;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -29,7 +31,7 @@ public class DisciplineService {
     /** Filters incidents to those involving at least one student in the teacher's classes. */
     private List<Incident> scopeIncidents(List<Incident> incidents) {
         if (!currentUser.hasRole(UserRole.ENSEIGNANT)) return incidents;
-        Set<Long> scoped = currentUser.getScopedStudentIdsForTeacher();
+        Set<UUID> scoped = currentUser.getScopedStudentIdsForTeacher();
         return incidents.stream()
             .filter(i -> i.getElevesImpliques().stream()
                 .anyMatch(ie -> scoped.contains(ie.getEleveId())))
@@ -39,7 +41,7 @@ public class DisciplineService {
     /** Filters sanctions to those concerning a student in the teacher's classes. */
     private List<Sanction> scopeSanctions(List<Sanction> sanctions) {
         if (!currentUser.hasRole(UserRole.ENSEIGNANT)) return sanctions;
-        Set<Long> scoped = currentUser.getScopedStudentIdsForTeacher();
+        Set<UUID> scoped = currentUser.getScopedStudentIdsForTeacher();
         return sanctions.stream()
             .filter(s -> scoped.contains(s.getEleveId()))
             .collect(Collectors.toList());
@@ -47,7 +49,7 @@ public class DisciplineService {
 
     private void assertCanAccessIncident(Incident incident) {
         if (!currentUser.hasRole(UserRole.ENSEIGNANT)) return;
-        Set<Long> scoped = currentUser.getScopedStudentIdsForTeacher();
+        Set<UUID> scoped = currentUser.getScopedStudentIdsForTeacher();
         boolean inScope = incident.getElevesImpliques().stream()
             .anyMatch(ie -> scoped.contains(ie.getEleveId()));
         if (!inScope) {
@@ -63,7 +65,7 @@ public class DisciplineService {
             .collect(Collectors.toList());
     }
 
-    public IncidentResponseDTO getIncidentById(Long id) {
+    public IncidentResponseDTO getIncidentById(UUID id) {
         Incident incident = incidentRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Incident", id));
         assertCanAccessIncident(incident);
@@ -124,7 +126,7 @@ public class DisciplineService {
     }
 
     @Transactional
-    public IncidentResponseDTO updateIncident(Long id, IncidentRequestDTO request) {
+    public IncidentResponseDTO updateIncident(UUID id, IncidentRequestDTO request) {
         Incident incident = incidentRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Incident", id));
 
@@ -152,7 +154,7 @@ public class DisciplineService {
     }
 
     @Transactional
-    public void deleteIncident(Long id) {
+    public void deleteIncident(UUID id) {
         if (!incidentRepository.existsById(id)) throw new ResourceNotFoundException("Incident", id);
         incidentRepository.deleteById(id);
     }
@@ -165,21 +167,21 @@ public class DisciplineService {
             .collect(Collectors.toList());
     }
 
-    public SanctionResponseDTO getSanctionById(Long id) {
+    public SanctionResponseDTO getSanctionById(UUID id) {
         Sanction sanction = sanctionRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Sanction", id));
         currentUser.assertCanAccessStudent(sanction.getEleveId());
         return toSanctionDto(sanction);
     }
 
-    public List<SanctionResponseDTO> getSanctionsByEleve(Long eleveId) {
+    public List<SanctionResponseDTO> getSanctionsByEleve(UUID eleveId) {
         currentUser.assertCanAccessStudent(eleveId);
         return sanctionRepository.findByEleveId(eleveId).stream()
             .map(this::toSanctionDto)
             .collect(Collectors.toList());
     }
 
-    public List<SanctionResponseDTO> getSanctionsByIncident(Long incidentId) {
+    public List<SanctionResponseDTO> getSanctionsByIncident(UUID incidentId) {
         return scopeSanctions(sanctionRepository.findByIncidentId(incidentId)).stream()
             .map(this::toSanctionDto)
             .collect(Collectors.toList());
@@ -218,7 +220,7 @@ public class DisciplineService {
     }
 
     @Transactional
-    public SanctionResponseDTO updateSanction(Long id, SanctionRequestDTO request) {
+    public SanctionResponseDTO updateSanction(UUID id, SanctionRequestDTO request) {
         Sanction sanction = sanctionRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Sanction", id));
 
@@ -242,7 +244,7 @@ public class DisciplineService {
     }
 
     @Transactional
-    public void deleteSanction(Long id) {
+    public void deleteSanction(UUID id) {
         if (!sanctionRepository.existsById(id)) throw new ResourceNotFoundException("Sanction", id);
         sanctionRepository.deleteById(id);
     }
@@ -254,7 +256,7 @@ public class DisciplineService {
      * 0 sanctions -> AVERTISSEMENT (1), has AVERTISSEMENT -> BLAME (2),
      * has BLAME -> EXCLUSION_TEMPORAIRE (3), has EXCLUSION_TEMPORAIRE -> EXCLUSION_DEFINITIVE (4)
      */
-    public Map<String, Object> escalateSanction(Long eleveId) {
+    public Map<String, Object> escalateSanction(UUID eleveId) {
         List<Sanction> activeSanctions = sanctionRepository.findByEleveIdAndStatut(eleveId, "ACTIVE");
 
         int maxNiveau = activeSanctions.stream()
@@ -280,7 +282,7 @@ public class DisciplineService {
      * Approve an exclusion sanction (requires director/admin approval).
      */
     @Transactional
-    public SanctionResponseDTO approveSanction(Long sanctionId, Long approvedByUserId, String comment) {
+    public SanctionResponseDTO approveSanction(UUID sanctionId, UUID approvedByUserId, String comment) {
         Sanction sanction = sanctionRepository.findById(sanctionId)
             .orElseThrow(() -> new ResourceNotFoundException("Sanction", sanctionId));
 
@@ -295,7 +297,7 @@ public class DisciplineService {
      * Lift (lever) an active sanction.
      */
     @Transactional
-    public SanctionResponseDTO leverSanction(Long sanctionId) {
+    public SanctionResponseDTO leverSanction(UUID sanctionId) {
         Sanction sanction = sanctionRepository.findById(sanctionId)
             .orElseThrow(() -> new ResourceNotFoundException("Sanction", sanctionId));
 
@@ -307,7 +309,7 @@ public class DisciplineService {
     /**
      * DISC-005: Get full discipline record for a student (incidents + sanctions chronologically).
      */
-    public DossierDisciplinaireDTO getDossierDisciplinaire(Long eleveId) {
+    public DossierDisciplinaireDTO getDossierDisciplinaire(UUID eleveId) {
         currentUser.assertCanAccessStudent(eleveId);
         List<Incident> incidents = incidentRepository.findByEleveId(eleveId);
         List<Sanction> sanctions = sanctionRepository.findByEleveIdOrderByCreatedAtDesc(eleveId);

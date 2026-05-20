@@ -139,7 +139,7 @@ export default function TeacherEvaluationsPage() {
   // When one is selected, scope to that teacher only.
   const { data: evaluations = [], isLoading: loadingEvaluations } =
     useTeacherEvaluations(
-      selectedTeacherId > 0
+      selectedTeacherId
         ? { teacherId: selectedTeacherId, anneeScolaire }
         : { anneeScolaire }
     );
@@ -258,7 +258,7 @@ export default function TeacherEvaluationsPage() {
             placeholder="2025-2026"
             className="w-32"
           />
-          {selectedTeacherId > 0 && (
+          {selectedTeacherId && (
             <Button
               size="sm"
               className="gap-1.5 bg-gradient-primary shadow-btn"
@@ -283,7 +283,7 @@ export default function TeacherEvaluationsPage() {
           {t("teacherEval.chooseTeacher")}
         </Label>
         <Select
-          value={selectedTeacherId > 0 ? String(selectedTeacherId) : "all"}
+          value={selectedTeacherId ? String(selectedTeacherId) : "all"}
           onValueChange={(v) => setSelectedTeacherId(v === "all" ? 0 : Number(v))}
         >
           <SelectTrigger className="w-full max-w-md">
@@ -301,7 +301,7 @@ export default function TeacherEvaluationsPage() {
       </motion.div>
 
       {/* All-teachers default view ─────────────────────────── */}
-      {selectedTeacherId === 0 && (
+      {!selectedTeacherId && (
         <motion.div
           custom={2}
           variants={fadeUp}
@@ -386,7 +386,7 @@ export default function TeacherEvaluationsPage() {
       )}
 
       {/* Single-teacher detail view ─────────────────────────── */}
-      {selectedTeacherId > 0 && selectedTeacher && (
+      {selectedTeacherId && selectedTeacher && (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <motion.div
             custom={2}

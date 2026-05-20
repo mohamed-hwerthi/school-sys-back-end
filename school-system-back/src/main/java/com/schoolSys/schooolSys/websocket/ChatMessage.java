@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.websocket;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,11 +18,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ChatMessage {
 
-    private Long senderId;
+    private UUID senderId;
 
     private String senderName;
 
-    private Long recipientId;
+    private UUID recipientId;
 
     private String content;
 

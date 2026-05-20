@@ -4,7 +4,7 @@ import { notify } from "@/lib/toast";
 
 const KEYS = {
   all: (annee: string) => ["relances", annee] as const,
-  byStudent: (id: number, annee: string) => ["relances", "student", id, annee] as const,
+  byStudent: (id: string, annee: string) => ["relances", "student", id, annee] as const,
   pending: (annee: string) => ["relances", "pending", annee] as const,
   stats: (annee: string) => ["relances", "stats", annee] as const,
 };
@@ -16,7 +16,7 @@ export function useRelances(anneeScolaire = "2025-2026") {
   });
 }
 
-export function useRelancesByStudent(studentId: number, anneeScolaire = "2025-2026") {
+export function useRelancesByStudent(studentId: string, anneeScolaire = "2025-2026") {
   return useQuery({
     queryKey: KEYS.byStudent(studentId, anneeScolaire),
     queryFn: () => relancesApi.getByStudent(studentId, anneeScolaire),
@@ -65,7 +65,7 @@ export function useGenerateRelances(anneeScolaire = "2025-2026") {
 export function useMarkRelanceEnvoyee() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => relancesApi.markEnvoyee(id),
+    mutationFn: (id: string) => relancesApi.markEnvoyee(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["relances"] });
       notify.success("Relance marquee comme envoyee");
@@ -77,7 +77,7 @@ export function useMarkRelanceEnvoyee() {
 export function useMarkRelanceEchouee() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => relancesApi.markEchouee(id),
+    mutationFn: (id: string) => relancesApi.markEchouee(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["relances"] });
       notify.success("Relance marquee comme echouee");
@@ -89,7 +89,7 @@ export function useMarkRelanceEchouee() {
 export function useDeleteRelance() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => relancesApi.delete(id),
+    mutationFn: (id: string) => relancesApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["relances"] });
       notify.success("Relance supprimee");

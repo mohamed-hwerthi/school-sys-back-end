@@ -1,25 +1,25 @@
 import api from "./axios";
 
 export interface RecommandationDTO {
-  id: number;
-  studentId: number;
+  id: string;
+  studentId: string;
   studentName: string;
-  domaineId: number;
+  domaineId: string;
   domaineName: string;
   trimestre: number;
   texte: string | null;
 }
 
 export interface RecommandationRequest {
-  studentId: number;
-  domaineId: number;
+  studentId: string;
+  domaineId: string;
   trimestre: number;
   texte?: string;
 }
 
 export interface ObservationDTO {
-  id: number;
-  studentId: number;
+  id: string;
+  studentId: string;
   studentName: string;
   trimestre: number;
   comportement: string | null;
@@ -27,7 +27,7 @@ export interface ObservationDTO {
 }
 
 export interface ObservationRequest {
-  studentId: number;
+  studentId: string;
   trimestre: number;
   comportement?: string;
   certificatType?: string;
@@ -37,7 +37,7 @@ const BASE = "/appreciations";
 
 export const appreciationsApi = {
   getRecommandations: async (
-    studentIds: number[],
+    studentIds: string[],
     trimestre: number
   ): Promise<RecommandationDTO[]> => {
     const ids = studentIds.join(",");
@@ -58,7 +58,7 @@ export const appreciationsApi = {
   },
 
   getObservations: async (
-    studentIds: number[],
+    studentIds: string[],
     trimestre: number
   ): Promise<ObservationDTO[]> => {
     const ids = studentIds.join(",");

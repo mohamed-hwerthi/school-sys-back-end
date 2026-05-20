@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.appreciation.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -10,10 +12,10 @@ import lombok.*;
 public class RecommandationRequestDTO {
 
     @NotNull
-    private Long studentId;
+    private UUID studentId;
 
     @NotNull
-    private Long domaineId;
+    private UUID domaineId;
 
     @NotNull
     private Integer trimestre;

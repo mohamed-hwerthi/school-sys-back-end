@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.cantine;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.cantine.dto.AbonnementCantineDTO;
 import com.schoolSys.schooolSys.cantine.dto.CreateAbonnementRequest;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
@@ -22,7 +24,7 @@ public class AbonnementCantineService {
                 .collect(Collectors.toList());
     }
 
-    public AbonnementCantineDTO getById(Long id) {
+    public AbonnementCantineDTO getById(UUID id) {
         return toDto(abonnementRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("AbonnementCantine", id)));
     }
@@ -33,7 +35,7 @@ public class AbonnementCantineService {
                 .collect(Collectors.toList());
     }
 
-    public List<AbonnementCantineDTO> getByEleve(Long eleveId) {
+    public List<AbonnementCantineDTO> getByEleve(UUID eleveId) {
         return abonnementRepository.findByEleveId(eleveId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
@@ -54,7 +56,7 @@ public class AbonnementCantineService {
     }
 
     @Transactional
-    public AbonnementCantineDTO update(Long id, CreateAbonnementRequest request) {
+    public AbonnementCantineDTO update(UUID id, CreateAbonnementRequest request) {
         AbonnementCantine abonnement = abonnementRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("AbonnementCantine", id));
         if (request.getEleveId() != null) abonnement.setEleveId(request.getEleveId());
@@ -68,7 +70,7 @@ public class AbonnementCantineService {
     }
 
     @Transactional
-    public AbonnementCantineDTO deactivate(Long id) {
+    public AbonnementCantineDTO deactivate(UUID id) {
         AbonnementCantine abonnement = abonnementRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("AbonnementCantine", id));
         abonnement.setActif(false);
@@ -76,7 +78,7 @@ public class AbonnementCantineService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!abonnementRepository.existsById(id)) {
             throw new ResourceNotFoundException("AbonnementCantine", id);
         }

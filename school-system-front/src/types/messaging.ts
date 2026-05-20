@@ -1,6 +1,6 @@
 export interface MessageItem {
-  id: number;
-  senderId: number;
+  id: string;
+  senderId: string;
   senderName?: string;
   subject: string;
   body: string;
@@ -10,7 +10,7 @@ export interface MessageItem {
 }
 
 export interface SendMessageRequest {
-  recipientIds: number[];
+  recipientIds: string[];
   subject: string;
   body: string;
   type: 'MESSAGE' | 'CIRCULAIRE';

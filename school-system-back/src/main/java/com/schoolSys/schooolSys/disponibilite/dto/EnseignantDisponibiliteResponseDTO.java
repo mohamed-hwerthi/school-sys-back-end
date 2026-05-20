@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.disponibilite.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,10 +15,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class EnseignantDisponibiliteResponseDTO {
 
-    private Long id;
-    private Long enseignantId;
+    private UUID id;
+    private UUID enseignantId;
     private Integer jourSemaine;
-    private Long creneauId;
+    private UUID creneauId;
     private String type;
     private String motif;
     private LocalDateTime createdAt;

@@ -2,7 +2,7 @@
 
 -- Global vitrine configuration (one row per school)
 CREATE TABLE vitrine_config (
-    id                  BIGSERIAL       PRIMARY KEY,
+    id                  UUID       PRIMARY KEY DEFAULT gen_random_uuid(),
     school_display_name VARCHAR(255),
     slogan              VARCHAR(500),
     logo_url            VARCHAR(500),
@@ -25,7 +25,7 @@ CREATE TABLE vitrine_config (
 
 -- Dynamic pages (Accueil, A propos, Contact, etc.)
 CREATE TABLE vitrine_pages (
-    id              BIGSERIAL       PRIMARY KEY,
+    id              UUID       PRIMARY KEY DEFAULT gen_random_uuid(),
     title           VARCHAR(255)    NOT NULL,
     slug            VARCHAR(255)    NOT NULL UNIQUE,
     display_order   INT             NOT NULL DEFAULT 0,
@@ -36,8 +36,8 @@ CREATE TABLE vitrine_pages (
 
 -- Sections within pages (hero banner, text blocks, gallery, stats, etc.)
 CREATE TABLE vitrine_sections (
-    id              BIGSERIAL       PRIMARY KEY,
-    page_id         BIGINT          NOT NULL REFERENCES vitrine_pages(id) ON DELETE CASCADE,
+    id              UUID       PRIMARY KEY DEFAULT gen_random_uuid(),
+    page_id         UUID          NOT NULL REFERENCES vitrine_pages(id) ON DELETE CASCADE,
     section_type    VARCHAR(50)     NOT NULL CHECK (section_type IN ('hero','text','gallery','stats','cta','testimonials','map','announcements')),
     title           VARCHAR(255),
     content         JSONB,
@@ -49,7 +49,7 @@ CREATE TABLE vitrine_sections (
 
 -- Image gallery
 CREATE TABLE vitrine_gallery (
-    id              BIGSERIAL       PRIMARY KEY,
+    id              UUID       PRIMARY KEY DEFAULT gen_random_uuid(),
     image_url       VARCHAR(500)    NOT NULL,
     caption         VARCHAR(500),
     category        VARCHAR(100),
@@ -59,7 +59,7 @@ CREATE TABLE vitrine_gallery (
 
 -- Public announcements / news
 CREATE TABLE vitrine_announcements (
-    id              BIGSERIAL       PRIMARY KEY,
+    id              UUID       PRIMARY KEY DEFAULT gen_random_uuid(),
     title           VARCHAR(255)    NOT NULL,
     body            TEXT,
     pinned          BOOLEAN         NOT NULL DEFAULT false,

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rh.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,8 +16,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FichePaieDTO {
-    private Long id;
-    private Long employeId;
+    private UUID id;
+    private UUID employeId;
     private String employeType;
     private Integer mois;
     private Integer annee;

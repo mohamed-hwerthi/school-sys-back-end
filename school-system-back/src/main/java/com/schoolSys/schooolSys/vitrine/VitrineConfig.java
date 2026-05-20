@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.vitrine;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,8 +21,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class VitrineConfig {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "school_display_name")
     private String schoolDisplayName;

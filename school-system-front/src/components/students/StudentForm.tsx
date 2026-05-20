@@ -22,7 +22,7 @@ interface StudentFormProps {
   onSubmit: (data: StudentFormValues) => void;
   onCancel: () => void;
   submitLabel?: string;
-  studentId?: number;
+  studentId?: string;
 }
 
 export function StudentForm({

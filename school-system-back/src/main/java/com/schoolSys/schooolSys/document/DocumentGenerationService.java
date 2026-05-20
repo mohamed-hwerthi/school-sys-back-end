@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.document;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.document.dto.DocumentHistoryDTO;
 import com.schoolSys.schooolSys.document.dto.DocumentTemplateConfig;
 import com.schoolSys.schooolSys.student.Student;
@@ -34,7 +36,7 @@ public class DocumentGenerationService {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @Transactional
-    public byte[] generateCertificatScolarite(Long eleveId) {
+    public byte[] generateCertificatScolarite(UUID eleveId) {
         Student student = findStudent(eleveId);
         DocumentTemplateConfig config = templateService.getTemplateConfig();
 
@@ -60,7 +62,7 @@ public class DocumentGenerationService {
     }
 
     @Transactional
-    public byte[] generateCarteScolaire(Long eleveId) {
+    public byte[] generateCarteScolaire(UUID eleveId) {
         Student student = findStudent(eleveId);
         DocumentTemplateConfig config = templateService.getTemplateConfig();
 
@@ -85,7 +87,7 @@ public class DocumentGenerationService {
     }
 
     @Transactional
-    public byte[] generateAttestationReussite(Long eleveId, String anneeScolaire) {
+    public byte[] generateAttestationReussite(UUID eleveId, String anneeScolaire) {
         Student student = findStudent(eleveId);
         DocumentTemplateConfig config = templateService.getTemplateConfig();
 
@@ -110,7 +112,7 @@ public class DocumentGenerationService {
     }
 
     @Transactional
-    public byte[] generateReleveNotes(Long eleveId, Integer trimestre) {
+    public byte[] generateReleveNotes(UUID eleveId, Integer trimestre) {
         Student student = findStudent(eleveId);
         DocumentTemplateConfig config = templateService.getTemplateConfig();
 
@@ -147,7 +149,7 @@ public class DocumentGenerationService {
     }
 
     @Transactional
-    public byte[] generateRecuPaiement(Long paiementId) {
+    public byte[] generateRecuPaiement(UUID paiementId) {
         DocumentTemplateConfig config = templateService.getTemplateConfig();
 
         String html = buildHtmlDocument(config, "Recu de Paiement",
@@ -169,7 +171,7 @@ public class DocumentGenerationService {
     }
 
     @Transactional
-    public byte[] generateBulk(List<Long> eleveIds, String type) {
+    public byte[] generateBulk(List<UUID> eleveIds, String type) {
         DocumentGenere.TypeDocument typeDoc;
         try {
             typeDoc = DocumentGenere.TypeDocument.valueOf(type);
@@ -180,7 +182,7 @@ public class DocumentGenerationService {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              ZipOutputStream zos = new ZipOutputStream(baos)) {
 
-            for (Long eleveId : eleveIds) {
+            for (UUID eleveId : eleveIds) {
                 byte[] content;
                 switch (typeDoc) {
                     case CERTIFICAT_SCOLARITE -> content = generateCertificatScolarite(eleveId);
@@ -214,12 +216,12 @@ public class DocumentGenerationService {
 
     // --- Helpers ---
 
-    private Student findStudent(Long eleveId) {
+    private Student findStudent(UUID eleveId) {
         return studentRepository.findById(eleveId)
                 .orElseThrow(() -> new ResourceNotFoundException("Eleve non trouve avec l'id: " + eleveId));
     }
 
-    private DocumentGenere saveRecord(DocumentGenere.TypeDocument type, Long eleveId, String fileName, String anneeScolaire) {
+    private DocumentGenere saveRecord(DocumentGenere.TypeDocument type, UUID eleveId, String fileName, String anneeScolaire) {
         DocumentGenere doc = DocumentGenere.builder()
                 .typeDocument(type)
                 .eleveId(eleveId)

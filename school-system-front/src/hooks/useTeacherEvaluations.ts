@@ -8,7 +8,7 @@ const STATS_KEY = "teacher-evaluation-stats";
 /**
  * All evaluations, optionally filtered by teacherId and/or anneeScolaire.
  */
-export function useTeacherEvaluations(params?: { teacherId?: number; anneeScolaire?: string }) {
+export function useTeacherEvaluations(params?: { teacherId?: string; anneeScolaire?: string }) {
   return useQuery<TeacherEvaluation[]>({
     queryKey: [EVALUATIONS_KEY, params],
     queryFn: () => teacherEvaluationsApi.getAll(params),
@@ -18,7 +18,7 @@ export function useTeacherEvaluations(params?: { teacherId?: number; anneeScolai
 /**
  * Single evaluation by ID.
  */
-export function useTeacherEvaluation(id: number) {
+export function useTeacherEvaluation(id: string) {
   return useQuery<TeacherEvaluation>({
     queryKey: [EVALUATIONS_KEY, id],
     queryFn: () => teacherEvaluationsApi.getById(id),
@@ -47,7 +47,7 @@ export function useCreateTeacherEvaluation() {
 export function useUpdateTeacherEvaluation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<TeacherEvaluation> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<TeacherEvaluation> }) =>
       teacherEvaluationsApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [EVALUATIONS_KEY] });
@@ -62,7 +62,7 @@ export function useUpdateTeacherEvaluation() {
 export function useDeleteTeacherEvaluation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => teacherEvaluationsApi.delete(id),
+    mutationFn: (id: string) => teacherEvaluationsApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [EVALUATIONS_KEY] });
       qc.invalidateQueries({ queryKey: [STATS_KEY] });
@@ -73,10 +73,10 @@ export function useDeleteTeacherEvaluation() {
 /**
  * Stats (averages) for a specific teacher.
  */
-export function useTeacherEvaluationStats(teacherId: number) {
+export function useTeacherEvaluationStats(teacherId: string) {
   return useQuery<TeacherEvaluationStats>({
     queryKey: [STATS_KEY, teacherId],
     queryFn: () => teacherEvaluationsApi.getStats(teacherId),
-    enabled: teacherId > 0,
+    enabled: !!teacherId,
   });
 }

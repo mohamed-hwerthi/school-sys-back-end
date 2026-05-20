@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.inscription.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class InscriptionDTO {
 
-    private Long id;
+    private UUID id;
     private String nom;
     private String prenom;
     private LocalDate dateNaissance;
@@ -26,7 +28,7 @@ public class InscriptionDTO {
     private String emailParent;
     private String nomParent;
     private String prenomParent;
-    private Long niveauId;
+    private UUID niveauId;
     private String niveauNom;
     private String anneeScolaire;
     private String statut;

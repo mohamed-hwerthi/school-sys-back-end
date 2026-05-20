@@ -227,7 +227,7 @@ export default function Bourses() {
           <Input
             type="number"
             value={form.studentId || ""}
-            onChange={(e) => setForm({ ...form, studentId: Number(e.target.value) })}
+            onChange={(e) => setForm({ ...form, studentId: e.target.value })}
             placeholder="ID de l'eleve"
           />
         </div>

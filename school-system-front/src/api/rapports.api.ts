@@ -18,7 +18,7 @@ export const rapportsApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<Rapport> => {
+  getById: async (id: string): Promise<Rapport> => {
     const res = await api.get<Rapport>(`${BASE}/${id}`);
     return res.data;
   },
@@ -28,10 +28,10 @@ export const rapportsApi = {
     return res.data;
   },
 
-  update: async (id: number, data: Partial<Rapport>): Promise<Rapport> => {
+  update: async (id: string, data: Partial<Rapport>): Promise<Rapport> => {
     const res = await api.put<Rapport>(`${BASE}/${id}`, data);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`${BASE}/${id}`),
+  delete: (id: string) => api.delete(`${BASE}/${id}`),
 };

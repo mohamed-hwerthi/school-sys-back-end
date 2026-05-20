@@ -28,7 +28,7 @@ import { useNotesByExamen } from "@/hooks/useNotes";
 import type { BulletinDTO } from "@/api/bulletins.api";
 import { computeStats, KpiCard, DistributionChart, PassFailPie, MentionsBar } from "./statsCharts";
 
-type StatsScope = "module" | "examen";
+type StatsScope = "domaine" | "module" | "examen";
 
 function StatsBlock({
   title,
@@ -145,14 +145,14 @@ function StatsBlock({
 
 interface Props {
   bulletins: BulletinDTO[];
-  classeId: number;
+  classeId: string;
   trimestre: number;
-  statsModuleId: number;
-  setStatsModuleId: (id: number) => void;
+  statsModuleId: string;
+  setStatsModuleId: (id: string) => void;
 }
 
 export default function MoyennesStatsPanel({ bulletins, classeId, trimestre, statsModuleId, setStatsModuleId }: Props) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const [scope, setScope] = useState<StatsScope>("module");
 
   const { data: examensList = [] } = useExamensRaw(
@@ -160,18 +160,48 @@ export default function MoyennesStatsPanel({ bulletins, classeId, trimestre, sta
     classeId || undefined,
     trimestre || undefined
   );
-  const [statsExamenId, setStatsExamenId] = useState<number>(0);
-  const { data: examenNotes = [] } = useNotesByExamen(statsExamenId || 0, trimestre);
+  const [statsExamenId, setStatsExamenId] = useState<string>("");
+  const [statsDomaineId, setStatsDomaineId] = useState<string>("");
+  const { data: examenNotes = [] } = useNotesByExamen(statsExamenId, trimestre);
 
   // Build module options from bulletins (only modules actually graded for this class)
   const moduleOptions = useMemo(() => {
-    const seen = new Map<number, string>();
+    const seen = new Map<string, string>();
     bulletins.forEach((b) => {
       b.domaines.forEach((d) => d.modules.forEach((m) => seen.set(m.moduleId, m.moduleName)));
       b.modulesHorsDomaine?.forEach((m) => seen.set(m.moduleId, m.moduleName));
     });
     return Array.from(seen.entries()).map(([id, name]) => ({ id, name }));
   }, [bulletins]);
+
+  // Build domaine options from bulletins
+  const domaineOptions = useMemo(() => {
+    const seen = new Map<string, string>();
+    bulletins.forEach((b) => {
+      b.domaines.forEach((d) => seen.set(d.domaineId, d.domaineName));
+    });
+    return Array.from(seen.entries()).map(([id, name]) => ({ id, name }));
+  }, [bulletins]);
+
+  // DOMAINE scope
+  const domaineValues = useMemo(() => {
+    if (!statsDomaineId) return [];
+    const vals: number[] = [];
+    bulletins.forEach((b) => {
+      const d = b.domaines.find((dd) => dd.domaineId === statsDomaineId);
+      if (d && d.moyenneDomaine != null) vals.push(d.moyenneDomaine);
+    });
+    return vals;
+  }, [bulletins, statsDomaineId]);
+  const domaineTop = useMemo(() => {
+    if (!statsDomaineId) return [];
+    const list: { name: string; value: number }[] = [];
+    bulletins.forEach((b) => {
+      const d = b.domaines.find((dd) => dd.domaineId === statsDomaineId);
+      if (d && d.moyenneDomaine != null) list.push({ name: b.studentName, value: d.moyenneDomaine });
+    });
+    return list;
+  }, [bulletins, statsDomaineId]);
 
   // MODULE scope
   const moduleValues = useMemo(() => {
@@ -217,6 +247,7 @@ export default function MoyennesStatsPanel({ bulletins, classeId, trimestre, sta
 
   const selectedModuleName = moduleOptions.find((m) => m.id === statsModuleId)?.name ?? "";
   const selectedExamenName = examensList.find((e) => e.id === statsExamenId)?.name ?? "";
+  const selectedDomaineName = domaineOptions.find((d) => d.id === statsDomaineId)?.name ?? "";
 
   return (
     <motion.div
@@ -233,7 +264,7 @@ export default function MoyennesStatsPanel({ bulletins, classeId, trimestre, sta
         <BarChart3 className="h-4 w-4 text-blue-600" />
         <span className="font-semibold text-sm text-foreground">Statistiques détaillées</span>
         <span className="ms-auto text-xs text-muted-foreground">
-          {scope === "examen" ? "par examen" : "par matière"}
+          {scope === "examen" ? "par examen" : scope === "domaine" ? "par domaine" : "par matière"}
         </span>
       </button>
 
@@ -241,7 +272,7 @@ export default function MoyennesStatsPanel({ bulletins, classeId, trimestre, sta
         <div className="p-4 space-y-4 border-t border-border">
           {/* Scope selector */}
           <div className="flex flex-wrap gap-2">
-            {(["module", "examen"] as StatsScope[]).map((s) => (
+            {(["domaine", "module", "examen"] as StatsScope[]).map((s) => (
               <button
                 key={s}
                 onClick={() => setScope(s)}
@@ -251,24 +282,37 @@ export default function MoyennesStatsPanel({ bulletins, classeId, trimestre, sta
                     : "border-border/50 bg-background text-muted-foreground hover:border-border hover:text-foreground"
                 }`}
               >
-                {s === "module" ? "Par matière" : "Par examen"}
+                {s === "module" ? "Par matière" : s === "examen" ? "Par examen" : "Par domaine"}
               </button>
             ))}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
-            <Select value={statsModuleId ? String(statsModuleId) : ""} onValueChange={(v) => setStatsModuleId(Number(v))}>
-              <SelectTrigger className="w-full sm:w-[260px]">
-                <SelectValue placeholder="Sélectionner une matière" />
-              </SelectTrigger>
-              <SelectContent>
-                {moduleOptions.map((m) => (
-                  <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {scope === "domaine" ? (
+              <Select value={statsDomaineId || ""} onValueChange={(v) => setStatsDomaineId(v)}>
+                <SelectTrigger className="w-full sm:w-[260px]">
+                  <SelectValue placeholder="Sélectionner un domaine" />
+                </SelectTrigger>
+                <SelectContent>
+                  {domaineOptions.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Select value={statsModuleId ? String(statsModuleId) : ""} onValueChange={(v) => setStatsModuleId(v)}>
+                <SelectTrigger className="w-full sm:w-[260px]">
+                  <SelectValue placeholder="Sélectionner une matière" />
+                </SelectTrigger>
+                <SelectContent>
+                  {moduleOptions.map((m) => (
+                    <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             {scope === "examen" && (
-              <Select value={statsExamenId ? String(statsExamenId) : ""} onValueChange={(v) => setStatsExamenId(Number(v))} disabled={!statsModuleId}>
+              <Select value={statsExamenId ? String(statsExamenId) : ""} onValueChange={(v) => setStatsExamenId(v)} disabled={!statsModuleId}>
                 <SelectTrigger className="w-full sm:w-[260px]">
                   <SelectValue placeholder={statsModuleId ? "Sélectionner un examen" : "Choisir une matière d'abord"} />
                 </SelectTrigger>
@@ -281,15 +325,23 @@ export default function MoyennesStatsPanel({ bulletins, classeId, trimestre, sta
             )}
           </div>
 
-          {scope === "module" && statsModuleId > 0 && (
+          {scope === "module" && statsModuleId && (
             <StatsBlock title={`Matière : ${selectedModuleName}`} values={moduleValues} top={moduleTop} />
           )}
-          {scope === "module" && statsModuleId === 0 && (
+          {scope === "module" && !statsModuleId && (
             <div className="rounded-lg border border-border/50 bg-card p-8 text-center text-sm text-muted-foreground">
               Sélectionnez une matière pour voir ses statistiques
             </div>
           )}
-          {scope === "examen" && statsExamenId > 0 && (
+          {scope === "domaine" && statsDomaineId && (
+            <StatsBlock title={`Domaine : ${selectedDomaineName}`} values={domaineValues} top={domaineTop} />
+          )}
+          {scope === "domaine" && !statsDomaineId && (
+            <div className="rounded-lg border border-border/50 bg-card p-8 text-center text-sm text-muted-foreground">
+              Sélectionnez un domaine pour voir ses statistiques
+            </div>
+          )}
+          {scope === "examen" && statsExamenId && (
             <StatsBlock
               title={`Examen : ${selectedExamenName}`}
               values={examenValues}
@@ -297,7 +349,7 @@ export default function MoyennesStatsPanel({ bulletins, classeId, trimestre, sta
               absentCount={examenAbsentCount}
             />
           )}
-          {scope === "examen" && statsExamenId === 0 && (
+          {scope === "examen" && !statsExamenId && (
             <div className="rounded-lg border border-border/50 bg-card p-8 text-center text-sm text-muted-foreground">
               Sélectionnez une matière puis un examen pour voir ses statistiques
             </div>

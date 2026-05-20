@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.auth.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class SessionDTO {
 
-    private Long id;
+    private UUID id;
     private String deviceName;
     private String ipAddress;
     private LocalDateTime lastUsedAt;

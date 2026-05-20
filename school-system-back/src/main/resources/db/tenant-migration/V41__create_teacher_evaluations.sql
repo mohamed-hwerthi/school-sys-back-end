@@ -1,7 +1,7 @@
 CREATE TABLE teacher_evaluations (
-    id BIGSERIAL PRIMARY KEY,
-    teacher_id BIGINT NOT NULL,
-    evaluator_id BIGINT,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    teacher_id UUID NOT NULL,
+    evaluator_id UUID,
     evaluator_name VARCHAR(100),
     annee_scolaire VARCHAR(20) NOT NULL,
     trimestre INTEGER NOT NULL,

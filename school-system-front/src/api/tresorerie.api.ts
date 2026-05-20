@@ -8,7 +8,7 @@ export interface FluxMensuel {
 }
 
 export interface TopDebiteur {
-  studentId: number;
+  studentId: string;
   studentName: string;
   classe: string;
   montantDu: number;

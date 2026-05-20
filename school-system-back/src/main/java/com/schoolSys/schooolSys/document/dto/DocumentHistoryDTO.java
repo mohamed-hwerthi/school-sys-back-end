@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.document.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.document.DocumentGenere;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class DocumentHistoryDTO {
 
-    private Long id;
+    private UUID id;
 
     private DocumentGenere.TypeDocument type;
 

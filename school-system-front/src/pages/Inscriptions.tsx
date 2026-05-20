@@ -873,7 +873,7 @@ export default function InscriptionsPage() {
                 <Label>Niveau souhaité</Label>
                 <Select
                   value={createForm.niveauId ? String(createForm.niveauId) : undefined}
-                  onValueChange={(v) => setCreateForm({ ...createForm, niveauId: Number(v) })}
+                  onValueChange={(v) => setCreateForm({ ...createForm, niveauId: v })}
                 >
                   <SelectTrigger><SelectValue placeholder="Choisir" /></SelectTrigger>
                   <SelectContent>

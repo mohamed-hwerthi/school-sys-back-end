@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.evenement;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.evenement.dto.EvenementCalendrierRequestDTO;
 import com.schoolSys.schooolSys.evenement.dto.EvenementCalendrierResponseDTO;
@@ -30,7 +32,7 @@ public class EvenementCalendrierController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<EvenementCalendrierResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<EvenementCalendrierResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(service.findById(id)));
     }
 
@@ -45,13 +47,13 @@ public class EvenementCalendrierController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_COMMUNICATION')")
     public ResponseEntity<ApiResponse<EvenementCalendrierResponseDTO>> update(
-            @PathVariable Long id, @Valid @RequestBody EvenementCalendrierRequestDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody EvenementCalendrierRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_COMMUNICATION')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.transport;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.transport.dto.AffectationTransportDTO;
 import com.schoolSys.schooolSys.transport.dto.CreateAffectationRequest;
@@ -28,13 +30,13 @@ public class AffectationTransportController {
 
     @GetMapping("/circuit/{circuitId}")
     @PreAuthorize("hasAuthority('MANAGE_TRANSPORT')")
-    public ResponseEntity<ApiResponse<List<AffectationTransportDTO>>> getByCircuit(@PathVariable Long circuitId) {
+    public ResponseEntity<ApiResponse<List<AffectationTransportDTO>>> getByCircuit(@PathVariable UUID circuitId) {
         return ResponseEntity.ok(ApiResponse.ok(affectationService.getByCircuit(circuitId)));
     }
 
     @GetMapping("/eleve/{eleveId}")
     @PreAuthorize("hasAuthority('MANAGE_TRANSPORT')")
-    public ResponseEntity<ApiResponse<List<AffectationTransportDTO>>> getByEleve(@PathVariable Long eleveId) {
+    public ResponseEntity<ApiResponse<List<AffectationTransportDTO>>> getByEleve(@PathVariable UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(affectationService.getByEleve(eleveId)));
     }
 
@@ -53,13 +55,13 @@ public class AffectationTransportController {
 
     @PutMapping("/{id}/desaffecter")
     @PreAuthorize("hasAuthority('MANAGE_TRANSPORT')")
-    public ResponseEntity<ApiResponse<AffectationTransportDTO>> desaffecter(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<AffectationTransportDTO>> desaffecter(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(affectationService.desaffecter(id)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TRANSPORT')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         affectationService.delete(id);
         return ResponseEntity.noContent().build();
     }

@@ -5,9 +5,9 @@ import { MOCK_MESSAGES } from "@/data/messages";
 
 interface MessagesContextValue {
   messages: Message[];
-  sendMessage: (studentId: number, content: string, senderRole: "admin" | "parent") => void;
-  getConversation: (studentId: number) => Conversation;
-  markAsRead: (studentId: number) => void;
+  sendMessage: (studentId: string, content: string, senderRole: "admin" | "parent") => void;
+  getConversation: (studentId: string) => Conversation;
+  markAsRead: (studentId: string) => void;
   getTotalUnreadCount: () => number;
 }
 
@@ -17,7 +17,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
 
   const sendMessage = useCallback(
-    (studentId: number, content: string, senderRole: "admin" | "parent") => {
+    (studentId: string, content: string, senderRole: "admin" | "parent") => {
       setMessages((prev) => {
         const id = prev.length > 0 ? Math.max(...prev.map((m) => m.id)) + 1 : 1;
         const newMessage: Message = {
@@ -35,7 +35,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
   );
 
   const getConversation = useCallback(
-    (studentId: number): Conversation => {
+    (studentId: string): Conversation => {
       const studentMessages = messages
         .filter((m) => m.studentId === studentId)
         .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
@@ -47,7 +47,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
     [messages]
   );
 
-  const markAsRead = useCallback((studentId: number) => {
+  const markAsRead = useCallback((studentId: string) => {
     setMessages((prev) =>
       prev.map((m) =>
         m.studentId === studentId && m.senderRole === "parent" && !m.read

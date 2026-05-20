@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS rapports (
-    id              BIGSERIAL       PRIMARY KEY,
+    id              UUID       PRIMARY KEY DEFAULT gen_random_uuid(),
     titre           VARCHAR(255)    NOT NULL,
     type            VARCHAR(100)    NOT NULL,
     periode         VARCHAR(100),

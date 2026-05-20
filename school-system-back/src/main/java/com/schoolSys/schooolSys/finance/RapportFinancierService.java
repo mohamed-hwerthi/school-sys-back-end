@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.depense.Depense;
 import com.schoolSys.schooolSys.depense.DepenseRepository;
 import com.schoolSys.schooolSys.finance.dto.RapportFinancierDTO;
@@ -157,7 +159,7 @@ public class RapportFinancierService {
     // ── Par eleve ──
 
     private List<LigneParEleve> buildParEleve(List<Paiement> paiements) {
-        Map<Long, List<Paiement>> byStudent = paiements.stream()
+        Map<UUID, List<Paiement>> byStudent = paiements.stream()
                 .collect(Collectors.groupingBy(p -> p.getStudent().getId()));
 
         return byStudent.entrySet().stream()

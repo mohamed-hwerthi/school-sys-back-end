@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.discipline.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -17,13 +19,13 @@ public class IncidentRequestDTO {
     private String type;
     private String gravite;
     private String lieu;
-    private Long signaleParId;
+    private UUID signaleParId;
     private List<IncidentEleveDTO> elevesImpliques;
 
     @Data
     public static class IncidentEleveDTO {
         @NotNull
-        private Long eleveId;
+        private UUID eleveId;
         private String roleEleve;
     }
 }

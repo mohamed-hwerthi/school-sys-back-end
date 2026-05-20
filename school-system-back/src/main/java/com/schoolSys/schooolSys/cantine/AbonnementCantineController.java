@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.cantine;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.cantine.dto.AbonnementCantineDTO;
 import com.schoolSys.schooolSys.cantine.dto.CreateAbonnementRequest;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
@@ -33,13 +35,13 @@ public class AbonnementCantineController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_CANTINE')")
-    public ResponseEntity<ApiResponse<AbonnementCantineDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<AbonnementCantineDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(abonnementService.getById(id)));
     }
 
     @GetMapping("/eleve/{eleveId}")
     @PreAuthorize("hasAuthority('MANAGE_CANTINE')")
-    public ResponseEntity<ApiResponse<List<AbonnementCantineDTO>>> getByEleve(@PathVariable Long eleveId) {
+    public ResponseEntity<ApiResponse<List<AbonnementCantineDTO>>> getByEleve(@PathVariable UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(abonnementService.getByEleve(eleveId)));
     }
 
@@ -52,19 +54,19 @@ public class AbonnementCantineController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_CANTINE')")
-    public ResponseEntity<ApiResponse<AbonnementCantineDTO>> update(@PathVariable Long id, @Valid @RequestBody CreateAbonnementRequest request) {
+    public ResponseEntity<ApiResponse<AbonnementCantineDTO>> update(@PathVariable UUID id, @Valid @RequestBody CreateAbonnementRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(abonnementService.update(id, request)));
     }
 
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasAuthority('MANAGE_CANTINE')")
-    public ResponseEntity<ApiResponse<AbonnementCantineDTO>> deactivate(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<AbonnementCantineDTO>> deactivate(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(abonnementService.deactivate(id)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_CANTINE')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         abonnementService.delete(id);
         return ResponseEntity.noContent().build();
     }

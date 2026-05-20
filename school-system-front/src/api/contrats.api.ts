@@ -11,7 +11,7 @@ export const contratsApi = {
     return res.data;
   },
 
-  getByEnseignant: async (enseignantId: number): Promise<ContratEnseignant[]> => {
+  getByEnseignant: async (enseignantId: string): Promise<ContratEnseignant[]> => {
     const res = await api.get<ContratEnseignant[]>(`${CONTRATS}/enseignant/${enseignantId}`);
     return res.data;
   },
@@ -21,12 +21,12 @@ export const contratsApi = {
     return res.data;
   },
 
-  update: async (id: number, data: Partial<ContratEnseignant>): Promise<ContratEnseignant> => {
+  update: async (id: string, data: Partial<ContratEnseignant>): Promise<ContratEnseignant> => {
     const res = await api.put<ContratEnseignant>(`${CONTRATS}/${id}`, data);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`${CONTRATS}/${id}`);
   },
 
@@ -36,7 +36,7 @@ export const contratsApi = {
     return res.data;
   },
 
-  getCongesByEnseignant: async (enseignantId: number): Promise<Conge[]> => {
+  getCongesByEnseignant: async (enseignantId: string): Promise<Conge[]> => {
     const res = await api.get<Conge[]>(`${CONGES}/enseignant/${enseignantId}`);
     return res.data;
   },
@@ -46,17 +46,17 @@ export const contratsApi = {
     return res.data;
   },
 
-  approuverConge: async (id: number): Promise<Conge> => {
+  approuverConge: async (id: string): Promise<Conge> => {
     const res = await api.put<Conge>(`${CONGES}/${id}/approuver`);
     return res.data;
   },
 
-  refuserConge: async (id: number): Promise<Conge> => {
+  refuserConge: async (id: string): Promise<Conge> => {
     const res = await api.put<Conge>(`${CONGES}/${id}/refuser`);
     return res.data;
   },
 
-  deleteConge: async (id: number): Promise<void> => {
+  deleteConge: async (id: string): Promise<void> => {
     await api.delete(`${CONGES}/${id}`);
   },
 };

@@ -4,15 +4,8 @@
 --      matières orphelines.
 -- ============================================================
 
--- 0. Resynchroniser la séquence d'id de "domaines".
---    Les données de seed ont inséré des id explicites sans avancer la
---    séquence : sans ce reset, l'INSERT ci-dessous génère un id déjà
---    pris -> "duplicate key value violates unique constraint domaines_pkey".
-SELECT setval(
-    pg_get_serial_sequence('domaines', 'id'),
-    (SELECT COALESCE(MAX(id), 0) FROM domaines) + 1,
-    false
-);
+-- (Les id de "domaines" sont des UUID générés par défaut — aucune séquence
+--  SERIAL à resynchroniser, contrairement à l'ancien schéma BIGSERIAL.)
 
 -- 1. Créer un domaine "Domaine général" pour les niveaux qui possèdent
 --    des matières sans domaine et aucun domaine actif réutilisable.

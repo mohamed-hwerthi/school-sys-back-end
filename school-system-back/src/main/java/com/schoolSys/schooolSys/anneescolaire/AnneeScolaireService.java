@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.anneescolaire;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.anneescolaire.dto.*;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +31,7 @@ public class AnneeScolaireService {
     }
 
     @Transactional(readOnly = true)
-    public AnneeScolaireResponseDTO getAnneeById(Long id) {
+    public AnneeScolaireResponseDTO getAnneeById(UUID id) {
         AnneeScolaire annee = anneeScolaireRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("AnneeScolaire", id));
         return toDto(annee);
@@ -98,7 +100,7 @@ public class AnneeScolaireService {
     }
 
     @Transactional
-    public AnneeScolaireResponseDTO updateAnnee(Long id, AnneeScolaireRequestDTO request) {
+    public AnneeScolaireResponseDTO updateAnnee(UUID id, AnneeScolaireRequestDTO request) {
         AnneeScolaire annee = anneeScolaireRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("AnneeScolaire", id));
         assertModifiable(annee);
@@ -161,13 +163,13 @@ public class AnneeScolaireService {
     }
 
     @Transactional
-    public void deleteAnnee(Long id) {
+    public void deleteAnnee(UUID id) {
         if (!anneeScolaireRepository.existsById(id)) throw new ResourceNotFoundException("AnneeScolaire", id);
         anneeScolaireRepository.deleteById(id);
     }
 
     @Transactional
-    public AnneeScolaireResponseDTO activateAnnee(Long id) {
+    public AnneeScolaireResponseDTO activateAnnee(UUID id) {
         AnneeScolaire annee = anneeScolaireRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("AnneeScolaire", id));
         assertModifiable(annee);
@@ -177,7 +179,7 @@ public class AnneeScolaireService {
     }
 
     @Transactional
-    public AnneeScolaireResponseDTO cloturerAnnee(Long id) {
+    public AnneeScolaireResponseDTO cloturerAnnee(UUID id) {
         AnneeScolaire annee = anneeScolaireRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("AnneeScolaire", id));
         annee.setCloturee(true);
@@ -188,7 +190,7 @@ public class AnneeScolaireService {
     // --- Trimestre operations ---
 
     @Transactional(readOnly = true)
-    public List<TrimestreDTO> getTrimestresByAnnee(Long anneeScolaireId) {
+    public List<TrimestreDTO> getTrimestresByAnnee(UUID anneeScolaireId) {
         if (!anneeScolaireRepository.existsById(anneeScolaireId))
             throw new ResourceNotFoundException("AnneeScolaire", anneeScolaireId);
         return trimestreRepository.findByAnneeScolaireId(anneeScolaireId).stream()
@@ -197,7 +199,7 @@ public class AnneeScolaireService {
     }
 
     @Transactional
-    public TrimestreDTO addTrimestre(Long anneeScolaireId, TrimestreDTO dto) {
+    public TrimestreDTO addTrimestre(UUID anneeScolaireId, TrimestreDTO dto) {
         AnneeScolaire annee = anneeScolaireRepository.findById(anneeScolaireId)
             .orElseThrow(() -> new ResourceNotFoundException("AnneeScolaire", anneeScolaireId));
         assertModifiable(annee);
@@ -213,7 +215,7 @@ public class AnneeScolaireService {
     }
 
     @Transactional
-    public TrimestreDTO updateTrimestre(Long id, TrimestreDTO dto) {
+    public TrimestreDTO updateTrimestre(UUID id, TrimestreDTO dto) {
         Trimestre t = trimestreRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Trimestre", id));
         assertModifiable(t.getAnneeScolaire());
@@ -228,7 +230,7 @@ public class AnneeScolaireService {
     }
 
     @Transactional
-    public void deleteTrimestre(Long id) {
+    public void deleteTrimestre(UUID id) {
         Trimestre t = trimestreRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Trimestre", id));
         assertModifiable(t.getAnneeScolaire());
@@ -238,7 +240,7 @@ public class AnneeScolaireService {
     // --- Vacance operations ---
 
     @Transactional(readOnly = true)
-    public List<VacanceDTO> getVacancesByAnnee(Long anneeScolaireId) {
+    public List<VacanceDTO> getVacancesByAnnee(UUID anneeScolaireId) {
         if (!anneeScolaireRepository.existsById(anneeScolaireId))
             throw new ResourceNotFoundException("AnneeScolaire", anneeScolaireId);
         return vacanceRepository.findByAnneeScolaireId(anneeScolaireId).stream()
@@ -247,7 +249,7 @@ public class AnneeScolaireService {
     }
 
     @Transactional
-    public VacanceDTO addVacance(Long anneeScolaireId, VacanceDTO dto) {
+    public VacanceDTO addVacance(UUID anneeScolaireId, VacanceDTO dto) {
         AnneeScolaire annee = anneeScolaireRepository.findById(anneeScolaireId)
             .orElseThrow(() -> new ResourceNotFoundException("AnneeScolaire", anneeScolaireId));
         Vacance v = Vacance.builder()
@@ -260,7 +262,7 @@ public class AnneeScolaireService {
     }
 
     @Transactional
-    public VacanceDTO updateVacance(Long id, VacanceDTO dto) {
+    public VacanceDTO updateVacance(UUID id, VacanceDTO dto) {
         Vacance v = vacanceRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Vacance", id));
         v.setLabel(dto.getLabel());
@@ -270,7 +272,7 @@ public class AnneeScolaireService {
     }
 
     @Transactional
-    public void deleteVacance(Long id) {
+    public void deleteVacance(UUID id) {
         if (!vacanceRepository.existsById(id)) throw new ResourceNotFoundException("Vacance", id);
         vacanceRepository.deleteById(id);
     }
@@ -278,7 +280,7 @@ public class AnneeScolaireService {
     // --- JourFerie operations ---
 
     @Transactional(readOnly = true)
-    public List<JourFerieDTO> getJoursFeriesByAnnee(Long anneeScolaireId) {
+    public List<JourFerieDTO> getJoursFeriesByAnnee(UUID anneeScolaireId) {
         if (!anneeScolaireRepository.existsById(anneeScolaireId))
             throw new ResourceNotFoundException("AnneeScolaire", anneeScolaireId);
         return jourFerieRepository.findByAnneeScolaireId(anneeScolaireId).stream()
@@ -287,7 +289,7 @@ public class AnneeScolaireService {
     }
 
     @Transactional
-    public JourFerieDTO addJourFerie(Long anneeScolaireId, JourFerieDTO dto) {
+    public JourFerieDTO addJourFerie(UUID anneeScolaireId, JourFerieDTO dto) {
         AnneeScolaire annee = anneeScolaireRepository.findById(anneeScolaireId)
             .orElseThrow(() -> new ResourceNotFoundException("AnneeScolaire", anneeScolaireId));
         JourFerie jf = JourFerie.builder()
@@ -299,7 +301,7 @@ public class AnneeScolaireService {
     }
 
     @Transactional
-    public JourFerieDTO updateJourFerie(Long id, JourFerieDTO dto) {
+    public JourFerieDTO updateJourFerie(UUID id, JourFerieDTO dto) {
         JourFerie jf = jourFerieRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("JourFerie", id));
         jf.setLabel(dto.getLabel());
@@ -308,7 +310,7 @@ public class AnneeScolaireService {
     }
 
     @Transactional
-    public void deleteJourFerie(Long id) {
+    public void deleteJourFerie(UUID id) {
         if (!jourFerieRepository.existsById(id)) throw new ResourceNotFoundException("JourFerie", id);
         jourFerieRepository.deleteById(id);
     }

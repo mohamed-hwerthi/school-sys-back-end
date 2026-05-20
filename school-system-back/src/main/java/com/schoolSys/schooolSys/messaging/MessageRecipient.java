@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.messaging;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,8 +21,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class MessageRecipient {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "message_id", nullable = false)
@@ -28,7 +32,7 @@ public class MessageRecipient {
     private Message message;
 
     @Column(name = "recipient_id", nullable = false)
-    private Long recipientId;
+    private UUID recipientId;
 
     @Column(name = "read_at")
     private LocalDateTime readAt;

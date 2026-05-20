@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.common.audit;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
@@ -28,10 +31,10 @@ public abstract class AuditableEntity {
     /** Id of the user who created the row; null for system or anonymous writes. */
     @CreatedBy
     @Column(name = "created_by", updatable = false)
-    private Long createdBy;
+    private UUID createdBy;
 
     /** Id of the user who last modified the row. */
     @LastModifiedBy
     @Column(name = "updated_by")
-    private Long updatedBy;
+    private UUID updatedBy;
 }

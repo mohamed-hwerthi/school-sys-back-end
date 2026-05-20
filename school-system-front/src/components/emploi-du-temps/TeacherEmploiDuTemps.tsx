@@ -41,15 +41,15 @@ export default function TeacherEmploiDuTemps() {
   const { data: modules = [] } = useModules();
   const { data: classes = [] } = useClasses();
 
-  const getEntry = (jour: number, creneauId: number) =>
+  const getEntry = (jour: number, creneauId: string) =>
     entries.find((e) => e.jourSemaine === jour && e.creneauId === creneauId);
 
-  const moduleName = (id?: number) =>
+  const moduleName = (id?: string) =>
     id ? modules.find((m) => m.id === id)?.name : undefined;
-  const classeName = (id: number) =>
+  const classeName = (id: string) =>
     classes.find((c) => c.id === id)?.fullName;
 
-  const getModuleColor = (moduleId?: number) =>
+  const getModuleColor = (moduleId?: string) =>
     moduleId ? SLOT_COLORS[moduleId % SLOT_COLORS.length] : "";
 
   const isLoading = entriesLoading || creneauxLoading;

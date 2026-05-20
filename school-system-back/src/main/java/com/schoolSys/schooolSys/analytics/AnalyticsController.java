@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.analytics;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.analytics.dto.*;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +24,7 @@ public class AnalyticsController {
 
     @GetMapping("/suivi-eleve/{eleveId}")
     @PreAuthorize("hasAuthority('VIEW_REPORTS')")
-    public ResponseEntity<ApiResponse<SuiviEleveDTO>> getSuiviEleve(@PathVariable Long eleveId) {
+    public ResponseEntity<ApiResponse<SuiviEleveDTO>> getSuiviEleve(@PathVariable UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(analyticsService.getSuiviEleve(eleveId)));
     }
 
@@ -48,7 +50,7 @@ public class AnalyticsController {
     @GetMapping("/cohortes")
     @PreAuthorize("hasAuthority('VIEW_REPORTS')")
     public ResponseEntity<ApiResponse<List<CohorteDTO>>> getCohortes(
-            @RequestParam(required = false) Long niveauId) {
+            @RequestParam(required = false) UUID niveauId) {
         return ResponseEntity.ok(ApiResponse.ok(analyticsService.getCohortes(niveauId)));
     }
 
@@ -62,7 +64,7 @@ public class AnalyticsController {
 
     @GetMapping("/kpi-config/{id}")
     @PreAuthorize("hasAuthority('MANAGE_SETTINGS')")
-    public ResponseEntity<ApiResponse<KpiConfigResponseDTO>> getKpiConfig(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<KpiConfigResponseDTO>> getKpiConfig(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(kpiConfigService.findById(id)));
     }
 
@@ -76,13 +78,13 @@ public class AnalyticsController {
     @PutMapping("/kpi-config/{id}")
     @PreAuthorize("hasAuthority('MANAGE_SETTINGS')")
     public ResponseEntity<ApiResponse<KpiConfigResponseDTO>> updateKpiConfig(
-            @PathVariable Long id, @RequestBody KpiConfigRequestDTO dto) {
+            @PathVariable UUID id, @RequestBody KpiConfigRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(kpiConfigService.update(id, dto)));
     }
 
     @DeleteMapping("/kpi-config/{id}")
     @PreAuthorize("hasAuthority('MANAGE_SETTINGS')")
-    public ResponseEntity<Void> deleteKpiConfig(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteKpiConfig(@PathVariable UUID id) {
         kpiConfigService.delete(id);
         return ResponseEntity.noContent().build();
     }

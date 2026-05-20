@@ -1,15 +1,48 @@
-import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Alert } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/context/AuthContext";
-import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
+import { useSchool } from "@/context/SchoolContext";
+import { useBiometricSettings } from "@/hooks/useBiometricSettings";
+import { authenticateBiometric } from "@/utils/biometric";
+import { storage } from "@/utils/storage";
+import { useTheme } from "@/context/ThemeContext";
+import { colors, spacing, fontSize, borderRadius, gradients, shadows } from "@/constants/theme";
 
 export default function LoginScreen() {
-  const { login, verify2FA, twoFactorPending, cancelTwoFactor } = useAuth();
+  const { colors } = useTheme();
+  const { login, loginWithBiometric, verify2FA, twoFactorPending, cancelTwoFactor } = useAuth();
+  const { available: bioAvailable, enabled: bioEnabled } = useBiometricSettings();
+  const [hasRefresh, setHasRefresh] = useState(false);
+
+  useEffect(() => {
+    (async () => { setHasRefresh(!!(await storage.getItem("refreshToken"))); })();
+  }, []);
+
+  const showBiometric = bioAvailable && bioEnabled && hasRefresh;
+  const { school, clearSchool } = useSchool();
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [totpCode, setTotpCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleBiometricLogin = async () => {
+    setError(null);
+    const ok = await authenticateBiometric("Se connecter avec biométrie");
+    if (!ok) return;
+    setLoading(true);
+    try {
+      await loginWithBiometric();
+    } catch (err: any) {
+      setError(err?.message || "Échec de la connexion biométrique");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -40,154 +73,211 @@ export default function LoginScreen() {
     }
   };
 
-  const handleDemoLogin = async (demoEmail: string, demoPassword: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPassword);
-    setError(null);
-    setLoading(true);
-    try {
-      await login({ email: demoEmail, password: demoPassword });
-    } catch (err: any) {
-      setError(err.message || "Identifiants incorrects");
-    } finally {
-      setLoading(false);
-    }
+  const inputStyle = {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 13,
+    fontSize: fontSize.md,
+    color: colors.text,
   };
 
+  const errorBox = error ? (
+    <View style={{
+      flexDirection: "row", alignItems: "center", gap: 8,
+      backgroundColor: "#fef2f2", borderRadius: 12, padding: spacing.md, marginBottom: spacing.md,
+    }}>
+      <Text style={{ fontSize: 14 }}>⚠️</Text>
+      <Text style={{ color: colors.error, fontSize: fontSize.sm, flex: 1 }}>{error}</Text>
+    </View>
+  ) : null;
+
+  // ---- 2FA verification ----
   if (twoFactorPending) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: "center", padding: spacing.xl }}>
-        <View style={{ alignItems: "center", marginBottom: spacing.xl }}>
-          <Text style={{ fontSize: fontSize.xxl, fontWeight: "800", color: colors.primary }}>Verification 2FA</Text>
-          <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary, marginTop: spacing.sm, textAlign: "center" }}>
-            Saisissez le code de votre application d'authentification
-          </Text>
-        </View>
-
-        {error && (
-          <View style={{ backgroundColor: "#fef2f2", borderRadius: borderRadius.md, padding: spacing.md, marginBottom: spacing.md }}>
-            <Text style={{ color: colors.error, fontSize: fontSize.sm }}>{error}</Text>
-          </View>
-        )}
-
-        <TextInput
-          value={totpCode}
-          onChangeText={(t) => setTotpCode(t.replace(/\D/g, "").slice(0, 6))}
-          placeholder="000000"
-          keyboardType="number-pad"
-          maxLength={6}
+      <View style={{ flex: 1, backgroundColor: colors.surface }}>
+        <LinearGradient
+          colors={gradients.primary}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
           style={{
-            borderWidth: 1, borderColor: colors.border, borderRadius: borderRadius.md,
-            padding: spacing.md, fontSize: fontSize.xl, textAlign: "center",
-            letterSpacing: 8, fontWeight: "700", marginBottom: spacing.lg,
-          }}
-        />
-
-        <TouchableOpacity
-          onPress={handleVerify2FA}
-          disabled={loading || totpCode.length !== 6}
-          style={{
-            backgroundColor: colors.primary, borderRadius: borderRadius.md,
-            padding: spacing.md, alignItems: "center", opacity: loading ? 0.7 : 1,
+            paddingTop: insets.top + 56, paddingBottom: 72, paddingHorizontal: spacing.lg,
+            borderBottomLeftRadius: 36, borderBottomRightRadius: 36, alignItems: "center",
           }}
         >
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: "#fff", fontWeight: "700", fontSize: fontSize.md }}>Verifier</Text>}
-        </TouchableOpacity>
+          <Text style={{ fontSize: 40, marginBottom: spacing.sm }}>🔐</Text>
+          <Text style={{ fontSize: 24, fontWeight: "800", color: "#fff" }}>Vérification 2FA</Text>
+          <Text style={{ fontSize: fontSize.sm, color: "rgba(255,255,255,0.85)", marginTop: 4, textAlign: "center" }}>
+            Saisissez le code de votre application d'authentification
+          </Text>
+        </LinearGradient>
 
-        <TouchableOpacity onPress={cancelTwoFactor} style={{ marginTop: spacing.lg, alignItems: "center" }}>
-          <Text style={{ color: colors.primary, fontWeight: "600", fontSize: fontSize.sm }}>Retour a la connexion</Text>
-        </TouchableOpacity>
+        <View style={{
+          marginHorizontal: spacing.lg, marginTop: -44,
+          backgroundColor: colors.background, borderRadius: 24, padding: spacing.lg, ...shadows.card,
+        }}>
+          {errorBox}
+          <TextInput
+            value={totpCode}
+            onChangeText={(t) => setTotpCode(t.replace(/\D/g, "").slice(0, 6))}
+            placeholder="000000"
+            placeholderTextColor={colors.textMuted}
+            keyboardType="number-pad"
+            maxLength={6}
+            style={{
+              ...inputStyle, fontSize: fontSize.xxl, textAlign: "center",
+              letterSpacing: 10, fontWeight: "800", marginBottom: spacing.lg,
+            }}
+          />
+          <TouchableOpacity onPress={handleVerify2FA} disabled={loading || totpCode.length !== 6} activeOpacity={0.85}>
+            <LinearGradient
+              colors={gradients.primary}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{
+                borderRadius: 14, paddingVertical: 15, alignItems: "center",
+                opacity: loading || totpCode.length !== 6 ? 0.6 : 1,
+              }}
+            >
+              {loading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: "#fff", fontWeight: "800", fontSize: fontSize.md }}>Vérifier</Text>}
+            </LinearGradient>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={cancelTwoFactor} style={{ marginTop: spacing.md, alignItems: "center" }}>
+            <Text style={{ color: colors.primary, fontWeight: "600", fontSize: fontSize.sm }}>Retour à la connexion</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
 
+  // ---- Login ----
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center", padding: spacing.xl }} keyboardShouldPersistTaps="handled">
-        {/* Logo */}
-        <View style={{ alignItems: "center", marginBottom: 40 }}>
+    <View style={{ flex: 1, backgroundColor: colors.surface }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: spacing.xl }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          {/* Hero */}
+          <LinearGradient
+            colors={gradients.primary}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              paddingTop: insets.top + 52, paddingBottom: 84, paddingHorizontal: spacing.lg,
+              borderBottomLeftRadius: 36, borderBottomRightRadius: 36, alignItems: "center",
+            }}
+          >
+            <View style={{
+              width: 72, height: 72, borderRadius: 24, backgroundColor: colors.background,
+              justifyContent: "center", alignItems: "center", marginBottom: spacing.md, ...shadows.card,
+            }}>
+              <Text style={{ color: colors.primary, fontSize: 32, fontWeight: "900" }}>E</Text>
+            </View>
+            <Text style={{ fontSize: 27, fontWeight: "800", color: "#fff", letterSpacing: 0.3 }}>EcoleNet</Text>
+            <View style={{
+              backgroundColor: "rgba(255,255,255,0.2)", borderRadius: borderRadius.full,
+              paddingHorizontal: 12, paddingVertical: 3, marginTop: 8,
+            }}>
+              <Text style={{ fontSize: fontSize.xs, fontWeight: "700", color: "#fff", letterSpacing: 2 }}>
+                ESPACE MOBILE
+              </Text>
+            </View>
+          </LinearGradient>
+
+          {/* Login card */}
           <View style={{
-            width: 64, height: 64, borderRadius: 20, backgroundColor: colors.primary,
-            justifyContent: "center", alignItems: "center", marginBottom: spacing.md,
-            shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
+            marginHorizontal: spacing.lg, marginTop: -52,
+            backgroundColor: colors.background, borderRadius: 24, padding: spacing.lg, ...shadows.card,
           }}>
-            <Text style={{ color: "#fff", fontSize: 28, fontWeight: "900" }}>E</Text>
-          </View>
-          <Text style={{ fontSize: fontSize.xxl, fontWeight: "800", color: colors.text }}>EcoleNet</Text>
-          <Text style={{ fontSize: fontSize.xs, fontWeight: "600", color: colors.textMuted, letterSpacing: 2, marginTop: 2 }}>ESPACE PARENT</Text>
-        </View>
+            {/* Selected school */}
+            {school && (
+              <View style={{
+                flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+                backgroundColor: colors.surface, borderRadius: 14, paddingHorizontal: spacing.md,
+                paddingVertical: 10, marginBottom: spacing.lg,
+              }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
+                  <Text style={{ fontSize: 16 }}>🏫</Text>
+                  <Text style={{ fontSize: fontSize.sm, fontWeight: "700", color: colors.text }} numberOfLines={1}>
+                    {school.name}
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={() => clearSchool()}>
+                  <Text style={{ fontSize: fontSize.xs, fontWeight: "700", color: colors.primary }}>Changer</Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
-        {error && (
-          <View style={{ backgroundColor: "#fef2f2", borderRadius: borderRadius.md, padding: spacing.md, marginBottom: spacing.md }}>
-            <Text style={{ color: colors.error, fontSize: fontSize.sm }}>{error}</Text>
-          </View>
-        )}
+            {errorBox}
 
-        {/* Email */}
-        <Text style={{ fontSize: fontSize.xs, fontWeight: "700", color: colors.text, marginBottom: 6 }}>E-mail</Text>
-        <TextInput
-          value={email}
-          onChangeText={setEmail}
-          placeholder="nom@ecole.fr"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-          style={{
-            borderWidth: 1, borderColor: colors.border, borderRadius: borderRadius.md,
-            padding: spacing.md, fontSize: fontSize.md, marginBottom: spacing.md, backgroundColor: colors.surface,
-          }}
-        />
+            {/* Biometric quick login */}
+            {showBiometric && (
+              <>
+                <TouchableOpacity
+                  onPress={handleBiometricLogin}
+                  disabled={loading}
+                  activeOpacity={0.85}
+                  style={{
+                    flexDirection: "row", alignItems: "center", justifyContent: "center",
+                    backgroundColor: colors.primary + "12", borderRadius: 14, paddingVertical: 14,
+                    borderWidth: 1, borderColor: colors.primary + "25", marginBottom: spacing.md,
+                  }}
+                >
+                  <Ionicons name="finger-print" size={22} color={colors.primary} />
+                  <Text style={{ fontSize: fontSize.md, fontWeight: "700", color: colors.primary, marginLeft: 10 }}>
+                    Connexion biométrique
+                  </Text>
+                </TouchableOpacity>
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: spacing.md }}>
+                  <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+                  <Text style={{ fontSize: fontSize.xs, color: colors.textMuted, marginHorizontal: 10 }}>
+                    OU AVEC VOS IDENTIFIANTS
+                  </Text>
+                  <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+                </View>
+              </>
+            )}
 
-        {/* Password */}
-        <Text style={{ fontSize: fontSize.xs, fontWeight: "700", color: colors.text, marginBottom: 6 }}>Mot de passe</Text>
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          placeholder="••••••••"
-          secureTextEntry
-          style={{
-            borderWidth: 1, borderColor: colors.border, borderRadius: borderRadius.md,
-            padding: spacing.md, fontSize: fontSize.md, marginBottom: spacing.lg, backgroundColor: colors.surface,
-          }}
-        />
+            {/* Email */}
+            <Text style={{ fontSize: fontSize.xs, fontWeight: "700", color: colors.text, marginBottom: 6 }}>E-MAIL</Text>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="nom@ecole.fr"
+              placeholderTextColor={colors.textMuted}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={{ ...inputStyle, marginBottom: spacing.md }}
+            />
 
-        {/* Login button */}
-        <TouchableOpacity
-          onPress={handleLogin}
-          disabled={loading}
-          style={{
-            backgroundColor: colors.primary, borderRadius: borderRadius.md,
-            padding: spacing.md, alignItems: "center", opacity: loading ? 0.7 : 1,
-            shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
-          }}
-        >
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: "#fff", fontWeight: "700", fontSize: fontSize.md }}>Se connecter</Text>}
-        </TouchableOpacity>
+            {/* Password */}
+            <Text style={{ fontSize: fontSize.xs, fontWeight: "700", color: colors.text, marginBottom: 6 }}>MOT DE PASSE</Text>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="••••••••"
+              placeholderTextColor={colors.textMuted}
+              secureTextEntry
+              style={{ ...inputStyle, marginBottom: spacing.lg }}
+            />
 
-        {/* Demo accounts */}
-        <View style={{ marginTop: 32 }}>
-          <Text style={{ fontSize: fontSize.xs, color: colors.textMuted, textAlign: "center", marginBottom: spacing.md, fontWeight: "600" }}>COMPTES DEMO</Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 8 }}>
-            {[
-              { label: "Parent", email: "parent@school.dev", password: "parent123", color: "#0ea5e9" },
-              { label: "Admin", email: "admin@school.dev", password: "admin123", color: "#eab308" },
-              { label: "Directeur", email: "directeur@school.dev", password: "directeur123", color: "#3b82f6" },
-            ].map((d) => (
-              <TouchableOpacity
-                key={d.email}
-                onPress={() => handleDemoLogin(d.email, d.password)}
-                disabled={loading}
-                style={{
-                  paddingHorizontal: 14, paddingVertical: 8, borderRadius: borderRadius.lg,
-                  backgroundColor: d.color + "15", borderWidth: 1, borderColor: d.color + "30",
-                }}
+            {/* Login button */}
+            <TouchableOpacity onPress={handleLogin} disabled={loading} activeOpacity={0.85}>
+              <LinearGradient
+                colors={gradients.primary}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ borderRadius: 14, paddingVertical: 15, alignItems: "center", opacity: loading ? 0.7 : 1 }}
               >
-                <Text style={{ fontSize: fontSize.xs, fontWeight: "700", color: d.color }}>{d.label}</Text>
-              </TouchableOpacity>
-            ))}
+                {loading
+                  ? <ActivityIndicator color="#fff" />
+                  : <Text style={{ color: "#fff", fontWeight: "800", fontSize: fontSize.md }}>Se connecter</Text>}
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }

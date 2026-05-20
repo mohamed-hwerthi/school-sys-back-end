@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.devoir;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.devoir.dto.CreateRessourceRequest;
 import com.schoolSys.schooolSys.devoir.dto.RessourceDTO;
@@ -16,7 +18,7 @@ public class RessourceService {
 
     private final RessourcePedagogiqueRepository ressourceRepository;
 
-    public List<RessourceDTO> findAll(Long moduleId) {
+    public List<RessourceDTO> findAll(UUID moduleId) {
         List<RessourcePedagogique> ressources;
         if (moduleId != null) {
             ressources = ressourceRepository.findByModuleIdOrderByCreatedAtDesc(moduleId);
@@ -26,13 +28,13 @@ public class RessourceService {
         return ressources.stream().map(this::toDTO).toList();
     }
 
-    public RessourceDTO findById(Long id) {
+    public RessourceDTO findById(UUID id) {
         RessourcePedagogique ressource = ressourceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ressource", id));
         return toDTO(ressource);
     }
 
-    public List<RessourceDTO> findByModule(Long moduleId) {
+    public List<RessourceDTO> findByModule(UUID moduleId) {
         return ressourceRepository.findByModuleIdOrderByCreatedAtDesc(moduleId)
                 .stream().map(this::toDTO).toList();
     }
@@ -53,7 +55,7 @@ public class RessourceService {
     }
 
     @Transactional
-    public RessourceDTO update(Long id, CreateRessourceRequest request) {
+    public RessourceDTO update(UUID id, CreateRessourceRequest request) {
         RessourcePedagogique ressource = ressourceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ressource", id));
 
@@ -70,7 +72,7 @@ public class RessourceService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!ressourceRepository.existsById(id)) {
             throw new ResourceNotFoundException("Ressource", id);
         }

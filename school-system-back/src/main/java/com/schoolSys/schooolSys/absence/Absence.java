@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.absence;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,11 +23,12 @@ import org.hibernate.annotations.SQLRestriction;
 public class Absence {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "eleve_id", nullable = false)
-    private Long eleveId;
+    private UUID eleveId;
 
     @Column(nullable = false)
     private LocalDate date;
@@ -46,7 +50,7 @@ public class Absence {
     private String motif;
 
     @Column(name = "enseignant_id")
-    private Long enseignantId;
+    private UUID enseignantId;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.finance.MouvementCaisse;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,7 +16,7 @@ import java.math.BigDecimal;
 public class MouvementCaisseRequestDTO {
 
     @NotNull
-    private Long caisseId;
+    private UUID caisseId;
 
     @NotNull
     private MouvementCaisse.TypeMouvement type;

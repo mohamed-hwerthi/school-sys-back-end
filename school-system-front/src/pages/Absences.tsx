@@ -103,7 +103,7 @@ export default function AbsencesPage() {
     });
   }, [absencesRaw, allStudents]);
   const { data: stats } = useAbsenceStats(
-    selectedClasseId > 0 ? selectedClasseId : undefined,
+    selectedClasseId ? selectedClasseId : undefined,
     undefined,
     undefined
   );
@@ -193,7 +193,7 @@ export default function AbsencesPage() {
     },
   ];
 
-  if (isLoading && selectedClasseId !== 0) {
+  if (isLoading && selectedClasseId) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -224,7 +224,7 @@ export default function AbsencesPage() {
             label="Exporter"
             filters={{ from: selectedDate, to: selectedDate }}
           />
-          {selectedClasseId > 0 && (
+          {selectedClasseId && (
             <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate(`/dashboard/absences/feuille?classeId=${selectedClasseId}&date=${selectedDate}`)}>
               <FileCheck className="h-4 w-4" />
               Feuille complète
@@ -351,7 +351,7 @@ export default function AbsencesPage() {
       </motion.div>
 
       {/* Table */}
-      {selectedClasseId !== 0 ? (
+      {selectedClasseId ? (
         <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible" className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

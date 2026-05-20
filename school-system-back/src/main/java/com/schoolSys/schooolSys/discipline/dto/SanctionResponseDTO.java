@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.discipline.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,18 +15,18 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SanctionResponseDTO {
-    private Long id;
-    private Long eleveId;
-    private Long incidentId;
+    private UUID id;
+    private UUID eleveId;
+    private UUID incidentId;
     private String type;
     private String description;
     private LocalDate dateDebut;
     private LocalDate dateFin;
-    private Long decideParId;
+    private UUID decideParId;
     private Boolean notifieParents;
     private Integer niveau;
     private String statut;
-    private Long approuvePar;
+    private UUID approuvePar;
     private String commentaireApprobation;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

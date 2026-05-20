@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.student;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.anneescolaire.AnneeScolaireRepository;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.niveau.Niveau;
@@ -31,7 +33,7 @@ public class PassageService {
                 .toList();
     }
 
-    public List<PassageDTO> findByStudentId(Long studentId) {
+    public List<PassageDTO> findByStudentId(UUID studentId) {
         return passageRepository.findByStudentIdOrderByCreatedAtDesc(studentId).stream()
                 .map(this::toDTO)
                 .toList();

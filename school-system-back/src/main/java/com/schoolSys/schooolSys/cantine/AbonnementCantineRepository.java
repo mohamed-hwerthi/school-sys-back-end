@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.cantine;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -8,13 +10,13 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface AbonnementCantineRepository extends JpaRepository<AbonnementCantine, Long> {
+public interface AbonnementCantineRepository extends JpaRepository<AbonnementCantine, UUID> {
 
     List<AbonnementCantine> findByActifTrue();
 
-    List<AbonnementCantine> findByEleveId(Long eleveId);
+    List<AbonnementCantine> findByEleveId(UUID eleveId);
 
-    List<AbonnementCantine> findByEleveIdAndActifTrue(Long eleveId);
+    List<AbonnementCantine> findByEleveIdAndActifTrue(UUID eleveId);
 
     @Query("SELECT COUNT(a) FROM AbonnementCantine a WHERE a.actif = true")
     long countActifs();

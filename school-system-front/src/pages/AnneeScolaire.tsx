@@ -54,6 +54,7 @@ import {
   useActivateAnneeScolaire,
   useTrimestres,
   useCreateTrimestre,
+  useUpdateTrimestre,
   useDeleteTrimestre,
   useVacances,
   useCreateVacance,
@@ -98,7 +99,7 @@ function nextNiveauName(current: string, niveaux: { nom: string }[]): string | n
 }
 
 export default function AnneeScolairePage() {
-  const [selectedAnneeId, setSelectedAnneeId] = useState(0);
+  const [selectedAnneeId, setSelectedAnneeId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("trimestres");
 
   // Annee form
@@ -112,6 +113,7 @@ export default function AnneeScolairePage() {
 
   // Trimestre form
   const [trimestreFormOpen, setTrimestreFormOpen] = useState(false);
+  const [editTrimestreId, setEditTrimestreId] = useState<string | null>(null);
   const [trimestreForm, setTrimestreForm] = useState({
     numero: 1,
     label: "",
@@ -129,9 +131,9 @@ export default function AnneeScolairePage() {
   const [jourFerieForm, setJourFerieForm] = useState({ label: "", date: "" });
 
   // Delete targets
-  const [deleteTrimestreId, setDeleteTrimestreId] = useState<number | null>(null);
-  const [deleteVacanceId, setDeleteVacanceId] = useState<number | null>(null);
-  const [deleteJourFerieId, setDeleteJourFerieId] = useState<number | null>(null);
+  const [deleteTrimestreId, setDeleteTrimestreId] = useState<string | null>(null);
+  const [deleteVacanceId, setDeleteVacanceId] = useState<string | null>(null);
+  const [deleteJourFerieId, setDeleteJourFerieId] = useState<string | null>(null);
 
   // Passage form
   const [passageFormOpen, setPassageFormOpen] = useState(false);
@@ -153,6 +155,15 @@ export default function AnneeScolairePage() {
   const [bulkNouvelleClasse, setBulkNouvelleClasse] = useState("");
 
   const { data: annees = [], isLoading } = useAllAnneesScolaires();
+
+  // Auto-sélectionne l'année active au premier chargement pour que la
+  // section "Trimestres / Vacances / Jours fériés / Passages" apparaisse
+  // sans clic préalable.
+  useEffect(() => {
+    if (selectedAnneeId || annees.length === 0) return;
+    const active = annees.find((a) => a.active) ?? annees[0];
+    if (active) setSelectedAnneeId(active.id);
+  }, [annees, selectedAnneeId]);
   const createAnneeMutation = useCreateAnneeScolaire();
   const updateAnneeMutation = useUpdateAnneeScolaire();
   const cloturerMutation = useCloturerAnneeScolaire();
@@ -160,6 +171,7 @@ export default function AnneeScolairePage() {
 
   const { data: trimestres = [] } = useTrimestres(selectedAnneeId);
   const createTrimestreMutation = useCreateTrimestre();
+  const updateTrimestreMutation = useUpdateTrimestre();
   const deleteTrimestreMutation = useDeleteTrimestre();
 
   const { data: vacances = [] } = useVacances(selectedAnneeId);
@@ -257,15 +269,39 @@ export default function AnneeScolairePage() {
     else setter({ _root: msg });
   };
 
-  const handleCreateTrimestre = () => {
+  const handleSaveTrimestre = () => {
     if (!selectedAnneeId) return;
     const result = validate(trimestreSchema, trimestreForm);
     if (!result.ok) { setTrimestreErrors(result.errors); return; }
     setTrimestreErrors({});
-    createTrimestreMutation.mutate(
-      { anneeScolaireId: selectedAnneeId, data: result.data },
-      { onSuccess: () => setTrimestreFormOpen(false), onError: apiError(setTrimestreErrors) }
-    );
+    const onSuccess = () => {
+      setTrimestreFormOpen(false);
+      setEditTrimestreId(null);
+    };
+    if (editTrimestreId) {
+      updateTrimestreMutation.mutate(
+        { id: editTrimestreId, data: result.data },
+        { onSuccess, onError: apiError(setTrimestreErrors) }
+      );
+    } else {
+      createTrimestreMutation.mutate(
+        { anneeScolaireId: selectedAnneeId, data: result.data },
+        { onSuccess, onError: apiError(setTrimestreErrors) }
+      );
+    }
+  };
+
+  const openEditTrimestre = (t: Trimestre) => {
+    setEditTrimestreId(t.id);
+    setTrimestreForm({
+      numero: t.numero,
+      label: t.label,
+      dateDebut: t.dateDebut,
+      dateFin: t.dateFin,
+      saisieNotesOuverte: t.saisieNotesOuverte,
+    });
+    setTrimestreErrors({});
+    setTrimestreFormOpen(true);
   };
 
   const handleCreateVacance = () => {
@@ -372,7 +408,7 @@ export default function AnneeScolairePage() {
       </motion.div>
 
       {/* Selected year details */}
-      {selectedAnneeId > 0 && selectedAnnee && (
+      {selectedAnneeId && selectedAnnee && (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <motion.div custom={2} variants={fadeUp} initial="hidden" animate="visible" className="rounded-xl border border-border/50 bg-card p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
@@ -397,6 +433,7 @@ export default function AnneeScolairePage() {
                   <p className="text-xs text-muted-foreground">Maximum de 3 trimestres atteint</p>
                 )}
                 <Button size="sm" variant="outline" className="gap-1.5" disabled={trimestres.length >= 3} onClick={() => {
+                  setEditTrimestreId(null);
                   setTrimestreForm({ numero: trimestres.length + 1, label: `Trimestre ${trimestres.length + 1}`, dateDebut: "", dateFin: "", saisieNotesOuverte: false });
                   setTrimestreErrors({});
                   setTrimestreFormOpen(true);
@@ -424,6 +461,9 @@ export default function AnneeScolairePage() {
                         <Badge variant="outline" className={t.saisieNotesOuverte ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}>
                           {t.saisieNotesOuverte ? "Notes ouvertes" : "Notes fermees"}
                         </Badge>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => openEditTrimestre(t)}>
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-red-600" onClick={() => setDeleteTrimestreId(t.id)}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
@@ -577,7 +617,7 @@ export default function AnneeScolairePage() {
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
               <Label>Eleve</Label>
-              <Select value={passageForm.studentId > 0 ? String(passageForm.studentId) : ""} onValueChange={(v) => {
+              <Select value={passageForm.studentId ? String(passageForm.studentId) : ""} onValueChange={(v) => {
                 const student = allStudents.find((s) => s.id === Number(v));
                 const ancien = student?.niveau || "";
                 const auto = passageForm.decision === "PASSAGE"
@@ -587,7 +627,7 @@ export default function AnneeScolairePage() {
                     : passageForm.nouveauNiveau;
                 setPassageForm({
                   ...passageForm,
-                  studentId: Number(v),
+                  studentId: v,
                   ancienNiveau: ancien,
                   ancienneClasse: student?.classe || "",
                   nouveauNiveau: auto,
@@ -911,11 +951,11 @@ export default function AnneeScolairePage() {
         </DialogContent>
       </Dialog>
 
-      {/* Create Trimestre Dialog */}
-      <Dialog open={trimestreFormOpen} onOpenChange={setTrimestreFormOpen}>
+      {/* Create / Edit Trimestre Dialog */}
+      <Dialog open={trimestreFormOpen} onOpenChange={(open) => { setTrimestreFormOpen(open); if (!open) setEditTrimestreId(null); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Ajouter un trimestre</DialogTitle>
+            <DialogTitle>{editTrimestreId ? "Modifier le trimestre" : "Ajouter un trimestre"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             {trimestreErrors._root && (
@@ -952,8 +992,10 @@ export default function AnneeScolairePage() {
           </div>
           <DialogFooter>
             <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
-            <Button onClick={handleCreateTrimestre} disabled={createTrimestreMutation.isPending}>
-              {createTrimestreMutation.isPending ? "Creation..." : "Ajouter"}
+            <Button onClick={handleSaveTrimestre} disabled={createTrimestreMutation.isPending || updateTrimestreMutation.isPending}>
+              {(createTrimestreMutation.isPending || updateTrimestreMutation.isPending)
+                ? (editTrimestreId ? "Enregistrement..." : "Creation...")
+                : (editTrimestreId ? "Enregistrer" : "Ajouter")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.document;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,15 +21,16 @@ import org.hibernate.annotations.SQLRestriction;
 public class DocumentGenere {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "type_document", nullable = false, length = 50)
     @Enumerated(EnumType.STRING)
     private TypeDocument typeDocument;
 
     @Column(name = "eleve_id")
-    private Long eleveId;
+    private UUID eleveId;
 
     @Column(name = "file_name", nullable = false, length = 300)
     private String fileName;

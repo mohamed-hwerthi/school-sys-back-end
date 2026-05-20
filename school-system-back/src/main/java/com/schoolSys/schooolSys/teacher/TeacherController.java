@@ -1,6 +1,9 @@
 package com.schoolSys.schooolSys.teacher;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
+import com.schoolSys.schooolSys.common.dto.PagedResponse;
 import com.schoolSys.schooolSys.teacher.dto.TeacherRequestDTO;
 import com.schoolSys.schooolSys.teacher.dto.TeacherResponseDTO;
 import jakarta.validation.Valid;
@@ -25,9 +28,19 @@ public class TeacherController {
         return ResponseEntity.ok(ApiResponse.ok(teacherService.findAll()));
     }
 
+    @GetMapping("/page")
+    @PreAuthorize("hasAuthority('READ_TEACHERS')")
+    public ResponseEntity<ApiResponse<PagedResponse<TeacherResponseDTO>>> getPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "30") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String statut) {
+        return ResponseEntity.ok(ApiResponse.ok(teacherService.findPage(search, statut, page, size)));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_TEACHERS')")
-    public ResponseEntity<ApiResponse<TeacherResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<TeacherResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(teacherService.findById(id)));
     }
 
@@ -42,14 +55,14 @@ public class TeacherController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_TEACHERS')")
     public ResponseEntity<ApiResponse<TeacherResponseDTO>> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody TeacherRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(teacherService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('DELETE_TEACHERS')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         teacherService.delete(id);
         return ResponseEntity.noContent().build();
     }

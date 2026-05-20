@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.transport;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.transport.dto.AffectationTransportDTO;
 import com.schoolSys.schooolSys.transport.dto.CreateAffectationRequest;
@@ -26,13 +28,13 @@ public class AffectationTransportService {
                 .collect(Collectors.toList());
     }
 
-    public List<AffectationTransportDTO> getByCircuit(Long circuitId) {
+    public List<AffectationTransportDTO> getByCircuit(UUID circuitId) {
         return affectationRepository.findByCircuitIdAndActifTrue(circuitId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
-    public List<AffectationTransportDTO> getByEleve(Long eleveId) {
+    public List<AffectationTransportDTO> getByEleve(UUID eleveId) {
         return affectationRepository.findByEleveIdAndActifTrue(eleveId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
@@ -59,7 +61,7 @@ public class AffectationTransportService {
     }
 
     @Transactional
-    public AffectationTransportDTO desaffecter(Long id) {
+    public AffectationTransportDTO desaffecter(UUID id) {
         AffectationTransport affectation = affectationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("AffectationTransport", id));
         affectation.setActif(false);
@@ -67,7 +69,7 @@ public class AffectationTransportService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!affectationRepository.existsById(id)) {
             throw new ResourceNotFoundException("AffectationTransport", id);
         }

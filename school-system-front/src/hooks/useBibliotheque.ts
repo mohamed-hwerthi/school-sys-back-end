@@ -45,7 +45,7 @@ export function useCreateLivre() {
 export function useUpdateLivre() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CreateLivreRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: CreateLivreRequest }) =>
       livresApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [LIVRES_KEY] });
@@ -56,7 +56,7 @@ export function useUpdateLivre() {
 export function useDeleteLivre() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => livresApi.delete(id),
+    mutationFn: (id: string) => livresApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [LIVRES_KEY] });
     },
@@ -86,7 +86,7 @@ export function useCreateEmprunt() {
 export function useRetourEmprunt() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => empruntsApi.retourner(id),
+    mutationFn: (id: string) => empruntsApi.retourner(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [EMPRUNTS_KEY] });
       qc.invalidateQueries({ queryKey: [LIVRES_KEY] });

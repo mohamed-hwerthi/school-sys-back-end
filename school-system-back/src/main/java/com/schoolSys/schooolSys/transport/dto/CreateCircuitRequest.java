@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.transport.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +20,7 @@ public class CreateCircuitRequest {
     @NotBlank
     private String nom;
     private String description;
-    private Long vehiculeId;
+    private UUID vehiculeId;
     private LocalTime heureDepart;
     private LocalTime heureRetour;
     private BigDecimal distanceKm;

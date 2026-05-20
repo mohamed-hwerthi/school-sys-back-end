@@ -33,7 +33,7 @@ export function useAllFactures() {
 /**
  * Single invoice by ID.
  */
-export function useFacture(id: number) {
+export function useFacture(id: string) {
   return useQuery<Facture>({
     queryKey: [FACTURES_KEY, id],
     queryFn: () => facturesApi.getById(id),
@@ -44,11 +44,11 @@ export function useFacture(id: number) {
 /**
  * Invoices by student.
  */
-export function useFacturesByEleve(eleveId: number) {
+export function useFacturesByEleve(eleveId: string) {
   return useQuery<Facture[]>({
     queryKey: [FACTURES_KEY, "eleve", eleveId],
     queryFn: () => facturesApi.getByEleve(eleveId),
-    enabled: eleveId > 0,
+    enabled: !!eleveId,
   });
 }
 
@@ -72,7 +72,7 @@ export function useCreateFacture() {
 export function useUpdateFacture() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Facture> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<Facture> }) =>
       facturesApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [FACTURES_KEY] });
@@ -86,7 +86,7 @@ export function useUpdateFacture() {
 export function useGenerateFacture() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (eleveId: number) => facturesApi.generate(eleveId),
+    mutationFn: (eleveId: string) => facturesApi.generate(eleveId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [FACTURES_KEY] });
     },
@@ -99,7 +99,7 @@ export function useGenerateFacture() {
 export function useCancelFacture() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => facturesApi.cancel(id),
+    mutationFn: (id: string) => facturesApi.cancel(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [FACTURES_KEY] });
     },
@@ -112,7 +112,7 @@ export function useCancelFacture() {
 export function useDeleteFacture() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => facturesApi.delete(id),
+    mutationFn: (id: string) => facturesApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [FACTURES_KEY] });
     },
@@ -124,7 +124,7 @@ export function useDeleteFacture() {
 /**
  * Payment schedules.
  */
-export function useEcheanciers(eleveId?: number) {
+export function useEcheanciers(eleveId?: string) {
   return useQuery<Echeancier[]>({
     queryKey: [ECHEANCIERS_KEY, eleveId],
     queryFn: () => facturesApi.getEcheanciers(eleveId),
@@ -134,7 +134,7 @@ export function useEcheanciers(eleveId?: number) {
 /**
  * Single payment schedule by ID.
  */
-export function useEcheancier(id: number) {
+export function useEcheancier(id: string) {
   return useQuery<Echeancier>({
     queryKey: [ECHEANCIERS_KEY, id],
     queryFn: () => facturesApi.getEcheancierById(id),
@@ -162,7 +162,7 @@ export function useCreateEcheancier() {
 export function useDeleteEcheancier() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => facturesApi.deleteEcheancier(id),
+    mutationFn: (id: string) => facturesApi.deleteEcheancier(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [ECHEANCIERS_KEY] });
     },

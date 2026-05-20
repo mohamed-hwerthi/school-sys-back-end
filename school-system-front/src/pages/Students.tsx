@@ -119,9 +119,15 @@ export default function Students() {
   const totalElements = pagedData?.totalElements ?? 0;
   const totalPages = pagedData?.totalPages ?? 1;
 
+  // Classes proposées dans le filtre : limitées au niveau sélectionné.
   const CLASSES = useMemo(
-    () => [...new Set(allStudents.map((s) => s.classe).filter(Boolean))].sort(),
-    [allStudents]
+    () => [...new Set(
+      allStudents
+        .filter((s) => filterNiveau === "all" || s.niveau === filterNiveau)
+        .map((s) => s.classe)
+        .filter(Boolean)
+    )].sort(),
+    [allStudents, filterNiveau]
   );
 
   // Stats from full list
@@ -165,7 +171,7 @@ export default function Students() {
 
 
   const getInitials = (s: Student) => `${s.prenom[0]}${s.nom[0]}`.toUpperCase();
-  const getAvatarColor = (id: number) => avatarColors[id % avatarColors.length];
+  const getAvatarColor = (id: string) => avatarColors[id % avatarColors.length];
 
   const statusConfig: Record<string, { bg: string; text: string }> = {
     Actif: { bg: "bg-emerald-100", text: "text-emerald-700" },
@@ -255,7 +261,7 @@ export default function Students() {
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Select value={filterNiveau} onValueChange={(v) => { setFilterNiveau(v); setCurrentPage(0); }}>
+            <Select value={filterNiveau} onValueChange={(v) => { setFilterNiveau(v); setFilterClasse("all"); setCurrentPage(0); }}>
               <SelectTrigger className="w-[150px]">
                 <Filter className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
                 <SelectValue placeholder="Niveau" />

@@ -44,7 +44,7 @@ public class FactureService {
                 .collect(Collectors.toList());
     }
 
-    public FactureResponseDTO getFactureById(Long id) {
+    public FactureResponseDTO getFactureById(UUID id) {
         Facture facture = factureRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Facture", id));
         if (facture.getStudent() != null) {
@@ -53,7 +53,7 @@ public class FactureService {
         return toFactureDto(facture);
     }
 
-    public List<FactureResponseDTO> getFacturesByStudent(Long studentId) {
+    public List<FactureResponseDTO> getFacturesByStudent(UUID studentId) {
         currentUser.assertCanAccessStudent(studentId);
         return factureRepository.findByStudentId(studentId).stream()
                 .map(this::toFactureDto)
@@ -96,7 +96,7 @@ public class FactureService {
     }
 
     @Transactional
-    public FactureResponseDTO updateFacture(Long id, FactureRequestDTO dto) {
+    public FactureResponseDTO updateFacture(UUID id, FactureRequestDTO dto) {
         Facture facture = factureRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Facture", id));
 
@@ -138,7 +138,7 @@ public class FactureService {
     }
 
     @Transactional
-    public void deleteFacture(Long id) {
+    public void deleteFacture(UUID id) {
         if (!factureRepository.existsById(id)) {
             throw new ResourceNotFoundException("Facture", id);
         }
@@ -153,13 +153,13 @@ public class FactureService {
                 .collect(Collectors.toList());
     }
 
-    public EcheancierResponseDTO getEcheancierById(Long id) {
+    public EcheancierResponseDTO getEcheancierById(UUID id) {
         Echeancier echeancier = echeancierRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Echeancier", id));
         return toEcheancierDto(echeancier);
     }
 
-    public List<EcheancierResponseDTO> getEcheanciersByStudent(Long studentId) {
+    public List<EcheancierResponseDTO> getEcheanciersByStudent(UUID studentId) {
         return echeancierRepository.findByStudentId(studentId).stream()
                 .map(this::toEcheancierDto)
                 .collect(Collectors.toList());
@@ -200,7 +200,7 @@ public class FactureService {
     }
 
     @Transactional
-    public EcheancierResponseDTO updateEcheancier(Long id, EcheancierRequestDTO dto) {
+    public EcheancierResponseDTO updateEcheancier(UUID id, EcheancierRequestDTO dto) {
         Echeancier echeancier = echeancierRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Echeancier", id));
 
@@ -222,7 +222,7 @@ public class FactureService {
     }
 
     @Transactional
-    public EcheanceDTO payerEcheance(Long echeanceId, BigDecimal montant) {
+    public EcheanceDTO payerEcheance(UUID echeanceId, BigDecimal montant) {
         Echeance echeance = echeanceRepository.findById(echeanceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Echeance", echeanceId));
 
@@ -239,7 +239,7 @@ public class FactureService {
     }
 
     @Transactional
-    public void deleteEcheancier(Long id) {
+    public void deleteEcheancier(UUID id) {
         if (!echeancierRepository.existsById(id)) {
             throw new ResourceNotFoundException("Echeancier", id);
         }

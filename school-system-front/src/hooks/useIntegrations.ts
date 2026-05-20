@@ -39,7 +39,7 @@ export function useCreateWebhook() {
 export function useDeleteWebhook() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => integrationsApi.deleteWebhook(id),
+    mutationFn: (id: string) => integrationsApi.deleteWebhook(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [INTEGRATIONS_KEY, "webhooks"] });
     },

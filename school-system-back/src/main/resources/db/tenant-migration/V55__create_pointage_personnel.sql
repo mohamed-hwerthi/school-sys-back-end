@@ -1,6 +1,6 @@
 CREATE TABLE pointage_personnel (
-    id BIGSERIAL PRIMARY KEY,
-    employe_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    employe_id UUID NOT NULL,
     employe_type VARCHAR(20) NOT NULL CHECK (employe_type IN ('ENSEIGNANT', 'ADMIN', 'PERSONNEL')),
     date_pointage DATE NOT NULL DEFAULT CURRENT_DATE,
     heure_arrivee TIME,

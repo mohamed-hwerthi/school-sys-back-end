@@ -14,45 +14,45 @@ const KEY = "bulletins";
 const TEMPLATES_KEY = "bulletin-templates";
 
 export function useBulletins(
-  classeId: number,
+  classeId: string,
   trimestre: number,
   version: string = "etatique"
 ) {
   return useQuery<BulletinDTO[]>({
     queryKey: [KEY, classeId, trimestre, version],
     queryFn: () => bulletinsApi.getAll(classeId, trimestre, version),
-    enabled: classeId > 0 && trimestre > 0,
+    enabled: !!classeId && trimestre > 0,
   });
 }
 
 // ANN-040: annual bulletin (3-trimestre synthesis)
-export function useBulletinsAnnuels(classeId: number, version: string = "etatique") {
+export function useBulletinsAnnuels(classeId: string, version: string = "etatique") {
   return useQuery<BulletinAnnuelDTO[]>({
     queryKey: [KEY, "annuel", classeId, version],
     queryFn: () => bulletinsApi.getAnnuels(classeId, version),
-    enabled: classeId > 0,
+    enabled: !!classeId,
   });
 }
 
 // ANN-025: annual success rate per subject
-export function useStatsMatieres(classeId: number, version: string = "etatique") {
+export function useStatsMatieres(classeId: string, version: string = "etatique") {
   return useQuery<MatiereStatDTO[]>({
     queryKey: [KEY, "stats-matieres", classeId, version],
     queryFn: () => bulletinsApi.getStatsMatieres(classeId, version),
-    enabled: classeId > 0,
+    enabled: !!classeId,
   });
 }
 
 export function useBulletin(
-  classeId: number,
-  studentId: number,
+  classeId: string,
+  studentId: string,
   trimestre: number,
   version: string = "etatique"
 ) {
   return useQuery<BulletinDTO>({
     queryKey: [KEY, "single", classeId, studentId, trimestre, version],
     queryFn: () => bulletinsApi.getOne(classeId, studentId, trimestre, version),
-    enabled: classeId > 0 && studentId > 0 && trimestre > 0,
+    enabled: !!classeId && !!studentId && trimestre > 0,
   });
 }
 
@@ -64,11 +64,11 @@ export function useBulletinTemplates() {
   });
 }
 
-export function useBulletinTemplate(id: number) {
+export function useBulletinTemplate(id: string) {
   return useQuery<BulletinTemplateDTO>({
     queryKey: [TEMPLATES_KEY, id],
     queryFn: () => bulletinsApi.getTemplate(id),
-    enabled: id > 0,
+    enabled: !!id,
   });
 }
 
@@ -91,7 +91,7 @@ export function useCreateTemplate() {
 export function useUpdateTemplate() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, dto }: { id: number; dto: BulletinTemplateDTO }) =>
+    mutationFn: ({ id, dto }: { id: string; dto: BulletinTemplateDTO }) =>
       bulletinsApi.updateTemplate(id, dto),
     onSuccess: () => qc.invalidateQueries({ queryKey: [TEMPLATES_KEY] }),
   });
@@ -100,7 +100,7 @@ export function useUpdateTemplate() {
 export function useActivateTemplate() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => bulletinsApi.activateTemplate(id),
+    mutationFn: (id: string) => bulletinsApi.activateTemplate(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [TEMPLATES_KEY] }),
   });
 }
@@ -108,15 +108,15 @@ export function useActivateTemplate() {
 export function useDeleteTemplate() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => bulletinsApi.deleteTemplate(id),
+    mutationFn: (id: string) => bulletinsApi.deleteTemplate(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [TEMPLATES_KEY] }),
   });
 }
 
 // BUL-004: Mass generate
 export function useMassGenerate(
-  classeId: number,
-  trimestreId: number
+  classeId: string,
+  trimestreId: string
 ) {
   return useQuery<BulletinDTO[]>({
     queryKey: [KEY, "mass", classeId, trimestreId],
@@ -127,19 +127,19 @@ export function useMassGenerate(
 
 // BUL-005: Stats
 export function useStatsReussite(
-  classeId: number,
-  trimestreId: number
+  classeId: string,
+  trimestreId: string
 ) {
   return useQuery<StatsReussiteDTO>({
     queryKey: [KEY, "stats", classeId, trimestreId],
     queryFn: () =>
       bulletinsApi.getStatsReussite(classeId, trimestreId),
-    enabled: classeId > 0 && trimestreId > 0,
+    enabled: !!classeId && !!trimestreId,
   });
 }
 
 // BUL-006: Attestation
-export function useAttestation(eleveId: number) {
+export function useAttestation(eleveId: string) {
   return useQuery<AttestationDTO>({
     queryKey: [KEY, "attestation", eleveId],
     queryFn: () => bulletinsApi.getAttestation(eleveId),
@@ -148,18 +148,18 @@ export function useAttestation(eleveId: number) {
 }
 
 // BUL-007: Comparatif
-export function useComparatifByNiveau(niveauId: number) {
+export function useComparatifByNiveau(niveauId: string) {
   return useQuery<ComparatifDTO>({
     queryKey: [KEY, "comparatif", niveauId],
     queryFn: () => bulletinsApi.getComparatifByNiveau(niveauId),
-    enabled: niveauId > 0,
+    enabled: !!niveauId,
   });
 }
 
-export function useComparatifEvolution(classeId: number) {
+export function useComparatifEvolution(classeId: string) {
   return useQuery<ComparatifDTO>({
     queryKey: [KEY, "comparatif-evolution", classeId],
     queryFn: () => bulletinsApi.getComparatifEvolution(classeId),
-    enabled: classeId > 0,
+    enabled: !!classeId,
   });
 }

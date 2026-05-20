@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.settings;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,8 +17,9 @@ import java.time.LocalDateTime;
 public class SchoolSettings {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "school_name", nullable = false)
     @Builder.Default
@@ -39,6 +43,13 @@ public class SchoolSettings {
 
     @Column(name = "directeur_name_ar")
     private String directeurNameAr;
+
+    /** Délégation régionale de l'éducation (ex : "Béja"). */
+    @Column(name = "delegation_regionale", length = 120)
+    private String delegationRegionale;
+
+    @Column(name = "delegation_regionale_ar", length = 120)
+    private String delegationRegionaleAr;
 
     @Column(columnDefinition = "TEXT")
     private String logo;

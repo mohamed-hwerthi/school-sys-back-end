@@ -35,7 +35,7 @@ export function useCreateVehicule() {
 export function useUpdateVehicule() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Vehicule> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<Vehicule> }) =>
       vehiculesApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [VEHICULES_KEY] });
@@ -46,7 +46,7 @@ export function useUpdateVehicule() {
 export function useDeleteVehicule() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => vehiculesApi.delete(id),
+    mutationFn: (id: string) => vehiculesApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [VEHICULES_KEY] });
     },
@@ -62,7 +62,7 @@ export function useCircuits() {
   });
 }
 
-export function useCircuit(id: number) {
+export function useCircuit(id: string) {
   return useQuery<Circuit>({
     queryKey: [CIRCUITS_KEY, id],
     queryFn: () => circuitsApi.getById(id),
@@ -83,7 +83,7 @@ export function useCreateCircuit() {
 export function useUpdateCircuit() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CreateCircuitRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: CreateCircuitRequest }) =>
       circuitsApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [CIRCUITS_KEY] });
@@ -94,7 +94,7 @@ export function useUpdateCircuit() {
 export function useDeleteCircuit() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => circuitsApi.delete(id),
+    mutationFn: (id: string) => circuitsApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [CIRCUITS_KEY] });
       qc.invalidateQueries({ queryKey: [AFFECTATIONS_TRANSPORT_KEY] });
@@ -111,11 +111,11 @@ export function useAffectationsTransport() {
   });
 }
 
-export function useAffectationsByCircuit(circuitId: number) {
+export function useAffectationsByCircuit(circuitId: string) {
   return useQuery<AffectationTransport[]>({
     queryKey: [AFFECTATIONS_TRANSPORT_KEY, "circuit", circuitId],
     queryFn: () => affectationsTransportApi.getByCircuit(circuitId),
-    enabled: circuitId > 0,
+    enabled: !!circuitId,
   });
 }
 
@@ -140,7 +140,7 @@ export function useAffecterTransport() {
 export function useDesaffecterTransport() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => affectationsTransportApi.desaffecter(id),
+    mutationFn: (id: string) => affectationsTransportApi.desaffecter(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [AFFECTATIONS_TRANSPORT_KEY] });
       qc.invalidateQueries({ queryKey: [CIRCUITS_KEY] });
@@ -151,7 +151,7 @@ export function useDesaffecterTransport() {
 export function useDeleteAffectation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => affectationsTransportApi.delete(id),
+    mutationFn: (id: string) => affectationsTransportApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [AFFECTATIONS_TRANSPORT_KEY] });
       qc.invalidateQueries({ queryKey: [CIRCUITS_KEY] });

@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.bulletin;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -11,8 +14,9 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("deleted = false")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class BulletinTemplate {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(nullable = false, length = 100)
     private String nom;

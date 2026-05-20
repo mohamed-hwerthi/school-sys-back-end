@@ -7,7 +7,7 @@ import {
 
 const KEY = "volume-horaire";
 
-export function useVolumeHoraire(params?: { classeId?: number; anneeScolaireId?: number }) {
+export function useVolumeHoraire(params?: { classeId?: string; anneeScolaireId?: string }) {
   return useQuery<VolumeHoraireDTO[]>({
     queryKey: [KEY, params ?? {}],
     queryFn: () => volumeHoraireApi.getAll(params),
@@ -25,7 +25,7 @@ export function useCreateVolumeHoraire() {
 export function useUpdateVolumeHoraire() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (vars: { id: number; data: VolumeHoraireRequest }) =>
+    mutationFn: (vars: { id: string; data: VolumeHoraireRequest }) =>
       volumeHoraireApi.update(vars.id, vars.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
@@ -34,7 +34,7 @@ export function useUpdateVolumeHoraire() {
 export function useDeleteVolumeHoraire() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => volumeHoraireApi.delete(id),
+    mutationFn: (id: string) => volumeHoraireApi.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.bibliotheque.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,10 +17,10 @@ import java.time.LocalDate;
 public class CreateEmpruntRequest {
 
     @NotNull(message = "L'ID du livre est obligatoire")
-    private Long livreId;
+    private UUID livreId;
 
     @NotNull(message = "L'ID de l'eleve est obligatoire")
-    private Long eleveId;
+    private UUID eleveId;
 
     @NotNull(message = "La date de retour prevue est obligatoire")
     private LocalDate dateRetourPrevue;

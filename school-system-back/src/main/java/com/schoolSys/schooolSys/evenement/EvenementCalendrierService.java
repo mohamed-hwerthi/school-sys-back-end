@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.evenement;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.evenement.dto.EvenementCalendrierRequestDTO;
 import com.schoolSys.schooolSys.evenement.dto.EvenementCalendrierResponseDTO;
@@ -31,7 +33,7 @@ public class EvenementCalendrierService {
         return mapper.toResponseDTOList(events);
     }
 
-    public EvenementCalendrierResponseDTO findById(Long id) {
+    public EvenementCalendrierResponseDTO findById(UUID id) {
         EvenementCalendrier ev = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("EvenementCalendrier", id));
         return mapper.toResponseDTO(ev);
@@ -46,7 +48,7 @@ public class EvenementCalendrierService {
     }
 
     @Transactional
-    public EvenementCalendrierResponseDTO update(Long id, EvenementCalendrierRequestDTO dto) {
+    public EvenementCalendrierResponseDTO update(UUID id, EvenementCalendrierRequestDTO dto) {
         EvenementCalendrier ev = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("EvenementCalendrier", id));
         mapper.updateEntity(dto, ev);
@@ -55,7 +57,7 @@ public class EvenementCalendrierService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("EvenementCalendrier", id);
         }

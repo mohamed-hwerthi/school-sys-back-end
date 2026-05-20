@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.scolarite;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.scolarite.dto.AttestationReussiteDTO;
 import com.schoolSys.schooolSys.scolarite.dto.ReinscriptionResultDTO;
@@ -36,7 +38,7 @@ public class ScolariteService {
     private final PassageRepository passageRepository;
 
     /** ANN-004 — a student's year-by-year schooling history. */
-    public List<ScolariteDTO> getHistorique(Long studentId) {
+    public List<ScolariteDTO> getHistorique(UUID studentId) {
         if (!studentRepository.existsById(studentId)) {
             throw new ResourceNotFoundException("Student", studentId);
         }
@@ -91,10 +93,10 @@ public class ScolariteService {
         String annee = anneeScolaire.trim();
         String precedente = previousLabel(annee);
 
-        Set<Long> actuels = scolariteRepository.findByAnneeScolaire(annee).stream()
+        Set<UUID> actuels = scolariteRepository.findByAnneeScolaire(annee).stream()
                 .map(Scolarite::getStudentId)
                 .collect(Collectors.toSet());
-        Set<Long> precedents = precedente == null ? Set.of()
+        Set<UUID> precedents = precedente == null ? Set.of()
                 : scolariteRepository.findByAnneeScolaire(precedente).stream()
                         .map(Scolarite::getStudentId)
                         .collect(Collectors.toSet());
@@ -113,7 +115,7 @@ public class ScolariteService {
     }
 
     /** ANN-042 — certificate of success: did the student pass that year? */
-    public AttestationReussiteDTO getAttestationReussite(Long studentId, String anneeScolaire) {
+    public AttestationReussiteDTO getAttestationReussite(UUID studentId, String anneeScolaire) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student", studentId));
         String annee = anneeScolaire.trim();
@@ -155,7 +157,7 @@ public class ScolariteService {
                 .build();
     }
 
-    private String studentName(Long studentId) {
+    private String studentName(UUID studentId) {
         return studentRepository.findById(studentId)
                 .map(s -> s.getFirstName() + " " + s.getLastName())
                 .orElse("Inconnu");

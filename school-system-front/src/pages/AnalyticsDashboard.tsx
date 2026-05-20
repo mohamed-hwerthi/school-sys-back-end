@@ -120,13 +120,13 @@ export default function AnalyticsDashboard() {
     }
   };
 
-  const handleDeleteKpi = (id: number) => {
+  const handleDeleteKpi = (id: string) => {
     deleteKpi.mutate(id, {
       onSuccess: () => notify.success("KPI supprime"),
     });
   };
 
-  const openEdit = (config: { id: number; nom: string; type: string; valeurCible: number; seuilAlerte: number; description?: string }) => {
+  const openEdit = (config: { id: string; nom: string; type: string; valeurCible: number; seuilAlerte: number; description?: string }) => {
     setEditId(config.id);
     setForm({
       nom: config.nom,

@@ -20,11 +20,11 @@ export function useContrats() {
 /**
  * Contracts by teacher.
  */
-export function useContratsByEnseignant(enseignantId: number) {
+export function useContratsByEnseignant(enseignantId: string) {
   return useQuery<ContratEnseignant[]>({
     queryKey: [CONTRATS_KEY, "enseignant", enseignantId],
     queryFn: () => contratsApi.getByEnseignant(enseignantId),
-    enabled: enseignantId > 0,
+    enabled: !!enseignantId,
   });
 }
 
@@ -47,7 +47,7 @@ export function useCreateContrat() {
 export function useUpdateContrat() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<ContratEnseignant> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<ContratEnseignant> }) =>
       contratsApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [CONTRATS_KEY] });
@@ -61,7 +61,7 @@ export function useUpdateContrat() {
 export function useDeleteContrat() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => contratsApi.delete(id),
+    mutationFn: (id: string) => contratsApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [CONTRATS_KEY] });
     },
@@ -83,11 +83,11 @@ export function useConges() {
 /**
  * Leaves by teacher.
  */
-export function useCongesByEnseignant(enseignantId: number) {
+export function useCongesByEnseignant(enseignantId: string) {
   return useQuery<Conge[]>({
     queryKey: [CONGES_KEY, "enseignant", enseignantId],
     queryFn: () => contratsApi.getCongesByEnseignant(enseignantId),
-    enabled: enseignantId > 0,
+    enabled: !!enseignantId,
   });
 }
 
@@ -111,7 +111,7 @@ export function useCreateConge() {
 export function useApprouverConge() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => contratsApi.approuverConge(id),
+    mutationFn: (id: string) => contratsApi.approuverConge(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [CONGES_KEY] });
     },
@@ -124,7 +124,7 @@ export function useApprouverConge() {
 export function useRefuserConge() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => contratsApi.refuserConge(id),
+    mutationFn: (id: string) => contratsApi.refuserConge(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [CONGES_KEY] });
     },
@@ -137,7 +137,7 @@ export function useRefuserConge() {
 export function useDeleteConge() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => contratsApi.deleteConge(id),
+    mutationFn: (id: string) => contratsApi.deleteConge(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [CONGES_KEY] });
     },

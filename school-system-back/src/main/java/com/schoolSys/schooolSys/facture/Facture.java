@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.facture;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import com.schoolSys.schooolSys.student.Student;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,8 +26,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class Facture {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(nullable = false, unique = true, length = 50)
     private String numero;

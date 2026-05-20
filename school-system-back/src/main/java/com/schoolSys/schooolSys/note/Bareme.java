@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.note;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -12,8 +15,9 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("deleted = false")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class Bareme {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(nullable = false, length = 100)
     private String label;

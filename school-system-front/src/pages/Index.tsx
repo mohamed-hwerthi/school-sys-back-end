@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, Lock, GraduationCap, ArrowRight, Sparkles, Loader2, AlertCircle, ShieldCheck, ArrowLeft, Crown, Briefcase, BookOpen, Calculator, Users } from "lucide-react";
+import { Mail, Lock, GraduationCap, ArrowRight, Sparkles, Loader2, AlertCircle, ShieldCheck, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { loginSchema } from "@/lib/auth-schema";
 import schoolHero from "@/assets/school-hero.png";
@@ -22,6 +22,7 @@ const Index = () => {
   const { login, verify2FA, cancelTwoFactor, isAuthenticated, twoFactorPending, user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,31 +97,6 @@ const Index = () => {
   const handleTotpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.replace(/\D/g, "").slice(0, 6);
     setTotpCode(val);
-  };
-
-  const demoAccounts = [
-    { email: "admin@school.dev", password: "admin123", role: "Super Admin", icon: Crown, color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
-    { email: "directeur@school.dev", password: "directeur123", role: "Directeur", icon: Briefcase, color: "bg-blue-100 text-blue-700 border-blue-200" },
-    { email: "prof@school.dev", password: "prof123", role: "Enseignant", icon: BookOpen, color: "bg-emerald-100 text-emerald-700 border-emerald-200" },
-    { email: "comptable@school.dev", password: "comptable123", role: "Comptable", icon: Calculator, color: "bg-orange-100 text-orange-700 border-orange-200" },
-    { email: "parent@school.dev", password: "parent123", role: "Parent", icon: Users, color: "bg-sky-100 text-sky-700 border-sky-200" },
-  ];
-
-  const handleQuickLogin = async (demoEmail: string, demoPassword: string) => {
-    setError(null);
-    setLoading(true);
-    setEmail(demoEmail);
-    setPassword(demoPassword);
-    try {
-      const response = await login({ email: demoEmail, password: demoPassword });
-      if (!response.twoFactorRequired) {
-        navigate(response.user.role === "SUPER_ADMIN" ? "/super-admin" : "/dashboard");
-      }
-    } catch (err: any) {
-      setError(err.message || "Identifiants incorrects");
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -365,14 +341,22 @@ const Index = () => {
                   <div className="relative">
                     <Lock className={`absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${focused === "pass" ? "text-primary" : "text-muted-foreground"}`} />
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={password}
                       onFocus={() => setFocused("pass")}
                       onBlur={() => setFocused(null)}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-muted/50 py-3 ps-10 pe-4 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:shadow-input-focus"
+                      className="w-full rounded-xl border border-border bg-muted/50 py-3 ps-10 pe-10 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 focus:border-primary focus:bg-card focus:outline-none focus:shadow-input-focus"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                      className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors duration-200 hover:text-primary focus:outline-none"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
                 </motion.div>
 
@@ -409,57 +393,7 @@ const Index = () => {
             </>
           )}
 
-          {/* Divider + stats */}
-          <motion.div variants={item} className="mt-10 w-full max-w-[280px]">
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-[10px] font-medium text-muted-foreground">STATISTIQUES</span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              {[
-                { value: "1.2K", label: "Élèves", color: "bg-primary/10 text-primary" },
-                { value: "48", label: "Classes", color: "bg-accent/10 text-accent" },
-                { value: "96", label: "Enseignants", color: "bg-primary/10 text-primary" },
-              ].map((stat) => (
-                <div key={stat.label} className={`rounded-xl ${stat.color} p-3 text-center`}>
-                  <p className="font-heading text-base font-bold">{stat.value}</p>
-                  <p className="text-[10px] font-medium opacity-70">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Demo accounts quick login */}
-          {!twoFactorPending && (
-            <motion.div variants={item} className="mt-6 w-full max-w-[280px]">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="h-px flex-1 bg-border" />
-                <span className="text-[10px] font-medium text-muted-foreground">COMPTES DEMO</span>
-                <div className="h-px flex-1 bg-border" />
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                {demoAccounts.map((acc) => {
-                  const Icon = acc.icon;
-                  return (
-                    <motion.button
-                      key={acc.email}
-                      whileHover={{ scale: 1.05, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleQuickLogin(acc.email, acc.password)}
-                      disabled={loading}
-                      className={`flex flex-col items-center gap-1 rounded-xl border p-2.5 transition-all hover:shadow-md disabled:opacity-50 cursor-pointer ${acc.color}`}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span className="text-[9px] font-bold leading-tight">{acc.role}</span>
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
-
-          <motion.p variants={item} className="mt-6 text-[10px] text-muted-foreground">
+          <motion.p variants={item} className="mt-10 text-[10px] text-muted-foreground">
             © 2026 EcoleNet — Tous droits réservés
           </motion.p>
         </motion.div>

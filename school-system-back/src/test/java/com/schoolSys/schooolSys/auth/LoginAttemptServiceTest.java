@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.auth;
 
+import java.util.UUID;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +28,7 @@ class LoginAttemptServiceTest {
 
     private User user() {
         return User.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .email("u@school.com")
                 .passwordHash("hash")
                 .firstName("U")
@@ -42,10 +44,10 @@ class LoginAttemptServiceTest {
     @DisplayName("recordFailedAttempt increments the counter")
     void recordFailedAttemptIncrements() {
         User user = user();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        int attempts = loginAttemptService.recordFailedAttempt(1L);
+        int attempts = loginAttemptService.recordFailedAttempt(new UUID(0, 1));
 
         assertThat(attempts).isEqualTo(1);
         assertThat(user.getFailedLoginAttempts()).isEqualTo(1);
@@ -57,10 +59,10 @@ class LoginAttemptServiceTest {
     void recordFailedAttemptLocksAtThreshold() {
         User user = user();
         user.setFailedLoginAttempts(LoginAttemptService.MAX_FAILED_ATTEMPTS - 1);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        int attempts = loginAttemptService.recordFailedAttempt(1L);
+        int attempts = loginAttemptService.recordFailedAttempt(new UUID(0, 1));
 
         assertThat(attempts).isEqualTo(LoginAttemptService.MAX_FAILED_ATTEMPTS);
         assertThat(user.getLockedUntil()).isNotNull();
@@ -70,9 +72,9 @@ class LoginAttemptServiceTest {
     @Test
     @DisplayName("recordFailedAttempt returns 0 for an unknown user")
     void recordFailedAttemptUnknownUser() {
-        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+        when(userRepository.findById(new UUID(0, 99))).thenReturn(Optional.empty());
 
-        assertThat(loginAttemptService.recordFailedAttempt(99L)).isZero();
+        assertThat(loginAttemptService.recordFailedAttempt(new UUID(0, 99))).isZero();
     }
 
     @Test
@@ -81,10 +83,10 @@ class LoginAttemptServiceTest {
         User user = user();
         user.setFailedLoginAttempts(3);
         user.setLockedUntil(LocalDateTime.now().plusMinutes(10));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        loginAttemptService.resetAttempts(1L);
+        loginAttemptService.resetAttempts(new UUID(0, 1));
 
         assertThat(user.getFailedLoginAttempts()).isZero();
         assertThat(user.getLockedUntil()).isNull();

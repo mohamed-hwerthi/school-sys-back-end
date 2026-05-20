@@ -35,7 +35,7 @@ export function useSuperAdminTenants() {
 /**
  * Single tenant usage.
  */
-export function useTenantUsage(id: number, enabled = true) {
+export function useTenantUsage(id: string, enabled = true) {
   return useQuery<TenantUsage>({
     queryKey: [USAGE_KEY, id],
     queryFn: () => saasApi.getTenantUsage(id),
@@ -58,7 +58,7 @@ export function useOnboard() {
 export function useChangePlan() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, plan }: { id: number; plan: string }) =>
+    mutationFn: ({ id, plan }: { id: string; plan: string }) =>
       saasApi.changePlan(id, plan),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [TENANTS_KEY] });
@@ -73,7 +73,7 @@ export function useChangePlan() {
 export function useActivateTenant() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => saasApi.activateTenant(id),
+    mutationFn: (id: string) => saasApi.activateTenant(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [TENANTS_KEY] });
       qc.invalidateQueries({ queryKey: [DASHBOARD_KEY] });
@@ -87,7 +87,7 @@ export function useActivateTenant() {
 export function useDeactivateTenant() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => saasApi.deactivateTenant(id),
+    mutationFn: (id: string) => saasApi.deactivateTenant(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [TENANTS_KEY] });
       qc.invalidateQueries({ queryKey: [DASHBOARD_KEY] });

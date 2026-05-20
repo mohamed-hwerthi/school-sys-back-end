@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.tenant;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.tenant.dto.SuperAdminDashboardDTO;
 import com.schoolSys.schooolSys.tenant.dto.TenantResponseDTO;
@@ -53,12 +55,12 @@ public class SuperAdminService {
                 .toList();
     }
 
-    public TenantUsageDTO getTenantUsage(Long tenantId) {
+    public TenantUsageDTO getTenantUsage(UUID tenantId) {
         return tenantBillingService.getUsage(tenantId);
     }
 
     @Transactional
-    public void activateTenant(Long id) {
+    public void activateTenant(UUID id) {
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant", id));
         tenant.setActive(true);
@@ -66,7 +68,7 @@ public class SuperAdminService {
     }
 
     @Transactional
-    public void deactivateTenant(Long id) {
+    public void deactivateTenant(UUID id) {
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant", id));
         tenant.setActive(false);

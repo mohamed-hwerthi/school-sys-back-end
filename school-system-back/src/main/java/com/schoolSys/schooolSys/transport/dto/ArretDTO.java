@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.transport.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +15,8 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ArretDTO {
-    private Long id;
-    private Long circuitId;
+    private UUID id;
+    private UUID circuitId;
     private String nom;
     private String adresse;
     private Integer ordre;

@@ -16,7 +16,7 @@ export const evenementsApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<EvenementCalendrier> => {
+  getById: async (id: string): Promise<EvenementCalendrier> => {
     const res = await api.get<EvenementCalendrier>(`${BASE}/${id}`);
     return res.data;
   },
@@ -29,14 +29,14 @@ export const evenementsApi = {
   },
 
   update: async (
-    id: number,
+    id: string,
     data: Partial<EvenementCalendrierInput>
   ): Promise<EvenementCalendrier> => {
     const res = await api.put<EvenementCalendrier>(`${BASE}/${id}`, data);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/${id}`);
   },
 };

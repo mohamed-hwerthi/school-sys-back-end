@@ -4,7 +4,7 @@ import type { Room } from "@/types/room";
  * Backend DTO shape (EN field names).
  */
 export interface ClassroomApiDTO {
-  id: number;
+  id: string;
   name: string;
   capacity: number | null;
   location: string | null;

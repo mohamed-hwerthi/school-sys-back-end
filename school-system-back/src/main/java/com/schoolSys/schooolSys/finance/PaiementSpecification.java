@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.domain.Specification;
 
 public final class PaiementSpecification {
@@ -26,12 +28,12 @@ public final class PaiementSpecification {
                 mode == null ? null : cb.equal(root.get("modePaiement"), mode);
     }
 
-    public static Specification<Paiement> hasStudentId(Long studentId) {
+    public static Specification<Paiement> hasStudentId(UUID studentId) {
         return (root, query, cb) ->
                 studentId == null ? null : cb.equal(root.get("student").get("id"), studentId);
     }
 
-    public static Specification<Paiement> hasTypeFraisId(Long typeFraisId) {
+    public static Specification<Paiement> hasTypeFraisId(UUID typeFraisId) {
         return (root, query, cb) ->
                 typeFraisId == null ? null : cb.equal(root.get("typeFrais").get("id"), typeFraisId);
     }

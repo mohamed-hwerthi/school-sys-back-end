@@ -62,7 +62,7 @@ function downloadBlob(blob: Blob, filename: string) {
 export function useGenerateCertificatScolarite() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (eleveId: number) =>
+    mutationFn: (eleveId: string) =>
       documentsApi.generateCertificatScolarite(eleveId),
     onSuccess: (blob, eleveId) => {
       downloadBlob(blob, `certificat_scolarite_${eleveId}.html`);
@@ -77,7 +77,7 @@ export function useGenerateCertificatScolarite() {
 export function useGenerateCarteScolaire() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (eleveId: number) =>
+    mutationFn: (eleveId: string) =>
       documentsApi.generateCarteScolaire(eleveId),
     onSuccess: (blob, eleveId) => {
       downloadBlob(blob, `carte_scolaire_${eleveId}.html`);
@@ -96,7 +96,7 @@ export function useGenerateAttestation() {
       eleveId,
       anneeScolaire,
     }: {
-      eleveId: number;
+      eleveId: string;
       anneeScolaire?: string;
     }) => documentsApi.generateAttestation(eleveId, anneeScolaire),
     onSuccess: (blob, { eleveId }) => {
@@ -116,7 +116,7 @@ export function useGenerateReleveNotes() {
       eleveId,
       trimestre,
     }: {
-      eleveId: number;
+      eleveId: string;
       trimestre?: number;
     }) => documentsApi.generateReleveNotes(eleveId, trimestre),
     onSuccess: (blob, { eleveId }) => {
@@ -132,7 +132,7 @@ export function useGenerateReleveNotes() {
 export function useGenerateRecuPaiement() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (paiementId: number) =>
+    mutationFn: (paiementId: string) =>
       documentsApi.generateRecuPaiement(paiementId),
     onSuccess: (blob, paiementId) => {
       downloadBlob(blob, `recu_paiement_${paiementId}.html`);

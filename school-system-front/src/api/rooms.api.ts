@@ -10,7 +10,7 @@ export const roomsApi = {
     return res.data.map(fromApi);
   },
 
-  getById: async (id: number): Promise<Room> => {
+  getById: async (id: string): Promise<Room> => {
     const res = await api.get<ClassroomApiDTO>(`${BASE}/${id}`);
     return fromApi(res.data);
   },
@@ -20,10 +20,10 @@ export const roomsApi = {
     return fromApi(res.data);
   },
 
-  update: async (id: number, data: Omit<Room, "id">): Promise<Room> => {
+  update: async (id: string, data: Omit<Room, "id">): Promise<Room> => {
     const res = await api.put<ClassroomApiDTO>(`${BASE}/${id}`, toApi(data));
     return fromApi(res.data);
   },
 
-  delete: (id: number) => api.delete(`${BASE}/${id}`),
+  delete: (id: string) => api.delete(`${BASE}/${id}`),
 };

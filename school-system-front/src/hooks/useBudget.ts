@@ -39,7 +39,7 @@ export function useCreateBudget() {
 export function useUpdateBudget() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: BudgetRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: BudgetRequest }) =>
       budgetsApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [BUDGETS_KEY] });
@@ -51,7 +51,7 @@ export function useUpdateBudget() {
 export function useDeleteBudget() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => budgetsApi.delete(id),
+    mutationFn: (id: string) => budgetsApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [BUDGETS_KEY] });
       qc.invalidateQueries({ queryKey: [PREVISIONS_KEY] });

@@ -39,8 +39,8 @@ public class PaiementService {
             String mois,
             Paiement.StatutPaiement statut,
             Paiement.ModePaiement modePaiement,
-            Long studentId,
-            Long typeFraisId,
+            UUID studentId,
+            UUID typeFraisId,
             Pageable pageable
     ) {
         Specification<Paiement> spec = Specification
@@ -57,17 +57,17 @@ public class PaiementService {
         return PagedResponse.from(page, content);
     }
 
-    public PaiementResponseDTO findById(Long id) {
+    public PaiementResponseDTO findById(UUID id) {
         Paiement paiement = paiementRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paiement", id));
         return paiementMapper.toResponseDTO(paiement);
     }
 
-    public List<PaiementResponseDTO> findByStudentId(Long studentId) {
+    public List<PaiementResponseDTO> findByStudentId(UUID studentId) {
         return paiementMapper.toResponseDTOList(paiementRepository.findByStudentId(studentId));
     }
 
-    public List<PaiementResponseDTO> findByStudentIdAndAnneeScolaire(Long studentId, String anneeScolaire) {
+    public List<PaiementResponseDTO> findByStudentIdAndAnneeScolaire(UUID studentId, String anneeScolaire) {
         return paiementMapper.toResponseDTOList(
                 paiementRepository.findByStudentIdAndAnneeScolaire(studentId, anneeScolaire));
     }
@@ -102,7 +102,7 @@ public class PaiementService {
     }
 
     @Transactional
-    public PaiementResponseDTO update(Long id, PaiementRequestDTO dto) {
+    public PaiementResponseDTO update(UUID id, PaiementRequestDTO dto) {
         Paiement paiement = paiementRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paiement", id));
 
@@ -133,7 +133,7 @@ public class PaiementService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!paiementRepository.existsById(id)) {
             throw new ResourceNotFoundException("Paiement", id);
         }

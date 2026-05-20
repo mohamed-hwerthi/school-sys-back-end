@@ -1,5 +1,5 @@
 CREATE TABLE inscriptions (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     nom VARCHAR(100) NOT NULL,
     prenom VARCHAR(100) NOT NULL,
     date_naissance DATE NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE inscriptions (
     email_parent VARCHAR(200),
     nom_parent VARCHAR(200),
     prenom_parent VARCHAR(200),
-    niveau_id BIGINT,
+    niveau_id UUID,
     annee_scolaire VARCHAR(20) NOT NULL,
     statut VARCHAR(20) NOT NULL DEFAULT 'SOUMISE' CHECK (statut IN ('SOUMISE', 'EN_REVISION', 'ACCEPTEE', 'REFUSEE', 'EN_ATTENTE', 'LISTE_ATTENTE')),
     commentaire TEXT,

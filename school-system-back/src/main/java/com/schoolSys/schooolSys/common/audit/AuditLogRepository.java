@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.common.audit;
 
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,7 +16,7 @@ import java.util.List;
  * Spring Data repository for {@link AuditLog} entities.
  */
 @Repository
-public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
+public interface AuditLogRepository extends JpaRepository<AuditLog, UUID> {
 
     Page<AuditLog> findByUsername(String username, Pageable pageable);
 
@@ -22,7 +24,7 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
 
     Page<AuditLog> findByAction(String action, Pageable pageable);
 
-    List<AuditLog> findByEntityTypeAndEntityId(String entityType, Long entityId);
+    List<AuditLog> findByEntityTypeAndEntityId(String entityType, UUID entityId);
 
     @Query("SELECT a FROM AuditLog a WHERE a.timestamp BETWEEN :from AND :to ORDER BY a.timestamp DESC")
     Page<AuditLog> findByDateRange(@Param("from") LocalDateTime from,
@@ -30,11 +32,11 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
                                    Pageable pageable);
 
     @Query("SELECT a FROM AuditLog a WHERE "
-            + "(:username IS NULL OR a.username = :username) "
-            + "AND (:action IS NULL OR a.action = :action) "
-            + "AND (:entityType IS NULL OR a.entityType = :entityType) "
-            + "AND (:from IS NULL OR a.timestamp >= :from) "
-            + "AND (:to IS NULL OR a.timestamp <= :to) "
+            + "(cast(:username as string) IS NULL OR a.username = :username) "
+            + "AND (cast(:action as string) IS NULL OR a.action = :action) "
+            + "AND (cast(:entityType as string) IS NULL OR a.entityType = :entityType) "
+            + "AND (cast(:from as timestamp) IS NULL OR a.timestamp >= :from) "
+            + "AND (cast(:to as timestamp) IS NULL OR a.timestamp <= :to) "
             + "ORDER BY a.timestamp DESC")
     Page<AuditLog> findFiltered(@Param("username") String username,
                                 @Param("action") String action,

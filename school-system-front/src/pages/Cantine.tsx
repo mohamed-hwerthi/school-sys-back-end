@@ -446,7 +446,7 @@ function AbonnementsTab() {
     students.forEach((s) => m.set(s.id, `${s.prenom} ${s.nom}`.trim()));
     return m;
   }, [students]);
-  const studentLabel = (id: number) => studentNameById.get(id) || `#${id}`;
+  const studentLabel = (id: string) => studentNameById.get(id) || `#${id}`;
 
   const createMutation = useCreateAbonnement();
   const updateMutation = useUpdateAbonnement();
@@ -669,7 +669,7 @@ function AbonnementsTab() {
               <Label>Élève</Label>
               <Select
                 value={form.eleveId ? String(form.eleveId) : ""}
-                onValueChange={(v) => setForm({ ...form, eleveId: Number(v) })}
+                onValueChange={(v) => setForm({ ...form, eleveId: v })}
                 disabled={!!editingAbonnement}
               >
                 <SelectTrigger>
@@ -787,7 +787,7 @@ function PointageTab() {
     students.forEach((s) => m.set(s.id, `${s.prenom} ${s.nom}`.trim()));
     return m;
   }, [students]);
-  const studentLabel = (id: number) => studentNameById.get(id) || `#${id}`;
+  const studentLabel = (id: string) => studentNameById.get(id) || `#${id}`;
   const pointerMutation = usePointerRepas();
 
   const [localPointages, setLocalPointages] = useState<Record<number, boolean>>({});
@@ -821,7 +821,7 @@ function PointageTab() {
   const pageEnd = Math.min(pageStart + pageSize, totalCount);
   const paginatedStudents = subscribedStudents.slice(pageStart, pageEnd);
 
-  const togglePresence = (eleveId: number) => {
+  const togglePresence = (eleveId: string) => {
     setLocalPointages((prev) => ({
       ...prev,
       [eleveId]: !(pointageMap[eleveId] ?? true),

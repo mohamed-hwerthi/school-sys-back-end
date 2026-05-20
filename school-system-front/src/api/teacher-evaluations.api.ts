@@ -4,12 +4,12 @@ import type { TeacherEvaluation, TeacherEvaluationStats } from "@/types/teacher-
 const BASE = "/teacher-evaluations";
 
 export const teacherEvaluationsApi = {
-  getAll: async (params?: { teacherId?: number; anneeScolaire?: string }): Promise<TeacherEvaluation[]> => {
+  getAll: async (params?: { teacherId?: string; anneeScolaire?: string }): Promise<TeacherEvaluation[]> => {
     const res = await api.get<TeacherEvaluation[]>(BASE, { params });
     return res.data;
   },
 
-  getById: async (id: number): Promise<TeacherEvaluation> => {
+  getById: async (id: string): Promise<TeacherEvaluation> => {
     const res = await api.get<TeacherEvaluation>(`${BASE}/${id}`);
     return res.data;
   },
@@ -19,16 +19,16 @@ export const teacherEvaluationsApi = {
     return res.data;
   },
 
-  update: async (id: number, data: Partial<TeacherEvaluation>): Promise<TeacherEvaluation> => {
+  update: async (id: string, data: Partial<TeacherEvaluation>): Promise<TeacherEvaluation> => {
     const res = await api.put<TeacherEvaluation>(`${BASE}/${id}`, data);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/${id}`);
   },
 
-  getStats: async (teacherId: number): Promise<TeacherEvaluationStats> => {
+  getStats: async (teacherId: string): Promise<TeacherEvaluationStats> => {
     const res = await api.get<TeacherEvaluationStats>(`${BASE}/stats/${teacherId}`);
     return res.data;
   },

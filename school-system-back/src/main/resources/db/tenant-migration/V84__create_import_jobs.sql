@@ -3,7 +3,7 @@
 -- per-row outcome is stored as a JSON blob so we don't need a child table.
 
 CREATE TABLE IF NOT EXISTS import_jobs (
-    id              BIGSERIAL PRIMARY KEY,
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     type            VARCHAR(40)  NOT NULL,                 -- "STUDENTS", "TEACHERS", ...
     status          VARCHAR(20)  NOT NULL DEFAULT 'PENDING'
                     CHECK (status IN ('PENDING', 'RUNNING', 'DONE', 'FAILED')),

@@ -1,7 +1,7 @@
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'DIRECTEUR' | 'ENSEIGNANT' | 'COMPTABLE' | 'PARENT';
 
 export interface AuthUser {
-  id: number;
+  id: string;
   email: string;
   firstName: string;
   lastName: string;
@@ -12,17 +12,17 @@ export interface AuthUser {
   /** Granted permissions (populated by /auth/me; empty for cached login response). */
   permissions?: string[];
   /** Class IDs the user can see — for ENSEIGNANT row-level scoping. */
-  scopedClasseIds?: number[];
+  scopedClasseIds?: string[];
   /** Student IDs the user can see — for PARENT row-level scoping. */
-  scopedStudentIds?: number[];
+  scopedStudentIds?: string[];
 }
 
 /** Raw shape returned by GET /api/auth/me (data field of ApiResponse). */
 export interface MeResponse {
   user: Omit<AuthUser, "permissions" | "scopedClasseIds" | "scopedStudentIds">;
   permissions: string[];
-  scopedClasseIds: number[];
-  scopedStudentIds: number[];
+  scopedClasseIds: string[];
+  scopedStudentIds: string[];
 }
 
 export interface LoginRequest {
@@ -38,7 +38,7 @@ export interface LoginResponse {
   user: AuthUser;
   // 2FA fields
   twoFactorRequired: boolean;
-  twoFactorUserId: number | null;
+  twoFactorUserId: string | null;
 }
 
 export interface RefreshTokenRequest {
@@ -56,13 +56,13 @@ export interface Verify2FARequest {
 }
 
 export interface Verify2FALoginRequest {
-  userId: number;
+  userId: string;
   code: string;
 }
 
 // Session management types
 export interface Session {
-  id: number;
+  id: string;
   deviceName: string;
   ipAddress: string;
   lastUsedAt: string;

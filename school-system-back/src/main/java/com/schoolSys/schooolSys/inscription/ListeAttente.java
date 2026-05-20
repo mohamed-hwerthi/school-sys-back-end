@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.inscription;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,11 +21,12 @@ import org.hibernate.annotations.SQLRestriction;
 public class ListeAttente {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "inscription_id", nullable = false)
-    private Long inscriptionId;
+    private UUID inscriptionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inscription_id", insertable = false, updatable = false)
@@ -31,7 +35,7 @@ public class ListeAttente {
     private Inscription inscription;
 
     @Column(name = "niveau_id", nullable = false)
-    private Long niveauId;
+    private UUID niveauId;
 
     @Column(nullable = false)
     private Integer position;

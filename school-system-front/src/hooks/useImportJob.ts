@@ -12,7 +12,7 @@ const KEY = "import-jobs";
  * a terminal status (DONE or FAILED). Once terminal, polling stops to
  * avoid unnecessary requests.
  */
-export function useImportJob(id: number | null) {
+export function useImportJob(id: string | null) {
   return useQuery<ImportJob>({
     queryKey: [KEY, id],
     queryFn: () => importJobsApi.getById(id!),

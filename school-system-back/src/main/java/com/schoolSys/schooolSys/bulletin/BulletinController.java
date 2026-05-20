@@ -1,13 +1,19 @@
 package com.schoolSys.schooolSys.bulletin;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.bulletin.dto.*;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
+import com.schoolSys.schooolSys.common.multitenancy.TenantContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.util.List;
 
@@ -17,11 +23,12 @@ import java.util.List;
 public class BulletinController {
 
     private final BulletinService bulletinService;
+    private final BulletinZipService bulletinZipService;
 
     @GetMapping
     @PreAuthorize("hasAuthority('GENERATE_BULLETINS')")
     public ResponseEntity<ApiResponse<List<BulletinDTO>>> getBulletins(
-            @RequestParam Long classeId,
+            @RequestParam UUID classeId,
             @RequestParam Integer trimestre,
             @RequestParam(defaultValue = "etatique") String version) {
         return ResponseEntity.ok(ApiResponse.ok(
@@ -31,12 +38,44 @@ public class BulletinController {
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasAuthority('READ_BULLETINS')")
     public ResponseEntity<ApiResponse<BulletinDTO>> getBulletin(
-            @RequestParam Long classeId,
-            @PathVariable Long studentId,
+            @RequestParam UUID classeId,
+            @PathVariable UUID studentId,
             @RequestParam Integer trimestre,
             @RequestParam(defaultValue = "etatique") String version) {
         return ResponseEntity.ok(ApiResponse.ok(
                 bulletinService.getBulletin(classeId, studentId, trimestre, version)));
+    }
+
+    /**
+     * Génère un ZIP contenant un PDF par bulletin de la classe. Le rendu PDF
+     * est server-side (OpenHTMLToPDF + Amiri) — beaucoup plus rapide que
+     * l'ancien rendu html2canvas côté navigateur pour 30+ bulletins.
+     */
+    @GetMapping("/zip")
+    @PreAuthorize("hasAuthority('GENERATE_BULLETINS')")
+    public ResponseEntity<StreamingResponseBody> downloadBulletinsZip(
+            @RequestParam UUID classeId,
+            @RequestParam Integer trimestre,
+            @RequestParam(defaultValue = "etatique") String version) {
+        String filename = "Bulletins_T" + trimestre + "_" + version + ".zip";
+
+        // TenantContext est un ThreadLocal — il faut le capturer ici puis le
+        // réinjecter dans le thread async du StreamingResponseBody.
+        String tenant = TenantContext.getCurrentTenant();
+        StreamingResponseBody body = out -> {
+            TenantContext.setCurrentTenant(tenant);
+            try {
+                bulletinZipService.writeZip(classeId, trimestre, version, out);
+            } finally {
+                TenantContext.clear();
+            }
+        };
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + filename + "\"")
+                .body(body);
     }
 
     // --- ANN-040: Bulletin annuel ---
@@ -44,7 +83,7 @@ public class BulletinController {
     @GetMapping("/annuel")
     @PreAuthorize("hasAuthority('GENERATE_BULLETINS')")
     public ResponseEntity<ApiResponse<List<BulletinAnnuelDTO>>> getBulletinsAnnuels(
-            @RequestParam Long classeId,
+            @RequestParam UUID classeId,
             @RequestParam(defaultValue = "etatique") String version) {
         return ResponseEntity.ok(ApiResponse.ok(
                 bulletinService.getBulletinsAnnuels(classeId, version)));
@@ -55,7 +94,7 @@ public class BulletinController {
     @GetMapping("/stats-matieres")
     @PreAuthorize("hasAuthority('READ_BULLETINS')")
     public ResponseEntity<ApiResponse<List<MatiereStatDTO>>> getStatsMatieres(
-            @RequestParam Long classeId,
+            @RequestParam UUID classeId,
             @RequestParam(defaultValue = "etatique") String version) {
         return ResponseEntity.ok(ApiResponse.ok(
                 bulletinService.getStatsMatieresAnnuelles(classeId, version)));
@@ -71,7 +110,7 @@ public class BulletinController {
 
     @GetMapping("/templates/{id}")
     @PreAuthorize("hasAuthority('GENERATE_BULLETINS')")
-    public ResponseEntity<ApiResponse<BulletinTemplateDTO>> getTemplate(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<BulletinTemplateDTO>> getTemplate(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(bulletinService.getTemplate(id)));
     }
 
@@ -92,19 +131,19 @@ public class BulletinController {
     @PutMapping("/templates/{id}")
     @PreAuthorize("hasAuthority('GENERATE_BULLETINS')")
     public ResponseEntity<ApiResponse<BulletinTemplateDTO>> updateTemplate(
-            @PathVariable Long id, @Valid @RequestBody BulletinTemplateDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody BulletinTemplateDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(bulletinService.updateTemplate(id, dto)));
     }
 
     @PutMapping("/templates/{id}/activate")
     @PreAuthorize("hasAuthority('GENERATE_BULLETINS')")
-    public ResponseEntity<ApiResponse<BulletinTemplateDTO>> activateTemplate(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<BulletinTemplateDTO>> activateTemplate(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(bulletinService.activateTemplate(id)));
     }
 
     @DeleteMapping("/templates/{id}")
     @PreAuthorize("hasAuthority('GENERATE_BULLETINS')")
-    public ResponseEntity<Void> deleteTemplate(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteTemplate(@PathVariable UUID id) {
         bulletinService.deleteTemplate(id);
         return ResponseEntity.noContent().build();
     }
@@ -114,7 +153,7 @@ public class BulletinController {
     @GetMapping("/classe/{classeId}/trimestre/{trimestre}/mass-generate")
     @PreAuthorize("hasAuthority('GENERATE_BULLETINS')")
     public ResponseEntity<ApiResponse<List<BulletinDTO>>> massGenerate(
-            @PathVariable Long classeId, @PathVariable Integer trimestre) {
+            @PathVariable UUID classeId, @PathVariable Integer trimestre) {
         return ResponseEntity.ok(ApiResponse.ok(
                 bulletinService.generateBulletinsForClasse(classeId, trimestre)));
     }
@@ -124,7 +163,7 @@ public class BulletinController {
     @GetMapping("/stats/classe/{classeId}/trimestre/{trimestre}")
     @PreAuthorize("hasAuthority('READ_BULLETINS')")
     public ResponseEntity<ApiResponse<StatsReussiteDTO>> getStatsReussite(
-            @PathVariable Long classeId, @PathVariable Integer trimestre) {
+            @PathVariable UUID classeId, @PathVariable Integer trimestre) {
         return ResponseEntity.ok(ApiResponse.ok(
                 bulletinService.getStatsReussite(classeId, trimestre)));
     }
@@ -133,7 +172,7 @@ public class BulletinController {
 
     @GetMapping("/attestation/{eleveId}")
     @PreAuthorize("hasAuthority('READ_BULLETINS')")
-    public ResponseEntity<ApiResponse<AttestationDTO>> getAttestation(@PathVariable Long eleveId) {
+    public ResponseEntity<ApiResponse<AttestationDTO>> getAttestation(@PathVariable UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(bulletinService.getAttestation(eleveId)));
     }
 
@@ -142,14 +181,14 @@ public class BulletinController {
     @GetMapping("/comparatif")
     @PreAuthorize("hasAuthority('READ_BULLETINS')")
     public ResponseEntity<ApiResponse<ComparatifDTO>> getComparatifByNiveau(
-            @RequestParam Long niveauId) {
+            @RequestParam UUID niveauId) {
         return ResponseEntity.ok(ApiResponse.ok(bulletinService.getComparatifByNiveau(niveauId)));
     }
 
     @GetMapping("/comparatif/evolution")
     @PreAuthorize("hasAuthority('READ_BULLETINS')")
     public ResponseEntity<ApiResponse<ComparatifDTO>> getComparatifEvolution(
-            @RequestParam Long classeId) {
+            @RequestParam UUID classeId) {
         return ResponseEntity.ok(ApiResponse.ok(bulletinService.getComparatifEvolution(classeId)));
     }
 }

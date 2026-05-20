@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.finance.Remise;
 import lombok.Builder;
 import lombok.Data;
@@ -11,11 +13,11 @@ import java.time.LocalDateTime;
 @Builder
 public class RemiseResponseDTO {
 
-    private Long id;
-    private Long studentId;
+    private UUID id;
+    private UUID studentId;
     private String studentFirstName;
     private String studentLastName;
-    private Long typeFraisId;
+    private UUID typeFraisId;
     private String typeFraisNom;
     private Remise.TypeRemise type;
     private BigDecimal valeur;

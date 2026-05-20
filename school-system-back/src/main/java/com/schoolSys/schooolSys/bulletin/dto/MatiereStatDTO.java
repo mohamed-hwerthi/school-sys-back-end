@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.bulletin.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MatiereStatDTO {
 
-    private Long moduleId;
+    private UUID moduleId;
     private String moduleName;
 
     /** Class average of the annual module averages. */

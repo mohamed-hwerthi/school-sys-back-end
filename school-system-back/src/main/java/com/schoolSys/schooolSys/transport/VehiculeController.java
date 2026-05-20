@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.transport;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.transport.dto.VehiculeDTO;
 import jakarta.validation.Valid;
@@ -26,7 +28,7 @@ public class VehiculeController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TRANSPORT')")
-    public ResponseEntity<ApiResponse<VehiculeDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<VehiculeDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(vehiculeService.getById(id)));
     }
 
@@ -39,13 +41,13 @@ public class VehiculeController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TRANSPORT')")
-    public ResponseEntity<ApiResponse<VehiculeDTO>> update(@PathVariable Long id, @Valid @RequestBody VehiculeDTO dto) {
+    public ResponseEntity<ApiResponse<VehiculeDTO>> update(@PathVariable UUID id, @Valid @RequestBody VehiculeDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(vehiculeService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TRANSPORT')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         vehiculeService.delete(id);
         return ResponseEntity.noContent().build();
     }

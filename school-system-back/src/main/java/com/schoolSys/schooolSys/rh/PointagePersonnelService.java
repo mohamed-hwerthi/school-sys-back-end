@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rh;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.rh.dto.CreatePointageRequest;
 import com.schoolSys.schooolSys.rh.dto.PointageDTO;
@@ -23,7 +25,7 @@ public class PointagePersonnelService {
                 .collect(Collectors.toList());
     }
 
-    public PointageDTO getById(Long id) {
+    public PointageDTO getById(UUID id) {
         PointagePersonnel p = pointageRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("PointagePersonnel", id));
         return toDto(p);
@@ -35,7 +37,7 @@ public class PointagePersonnelService {
                 .collect(Collectors.toList());
     }
 
-    public List<PointageDTO> getByEmploye(Long employeId, String employeType) {
+    public List<PointageDTO> getByEmploye(UUID employeId, String employeType) {
         return pointageRepository.findByEmployeIdAndEmployeType(employeId, employeType).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
@@ -58,7 +60,7 @@ public class PointagePersonnelService {
     }
 
     @Transactional
-    public PointageDTO update(Long id, CreatePointageRequest dto) {
+    public PointageDTO update(UUID id, CreatePointageRequest dto) {
         PointagePersonnel pointage = pointageRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("PointagePersonnel", id));
 
@@ -79,7 +81,7 @@ public class PointagePersonnelService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!pointageRepository.existsById(id)) {
             throw new ResourceNotFoundException("PointagePersonnel", id);
         }

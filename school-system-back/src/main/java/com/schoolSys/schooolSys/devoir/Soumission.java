@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.devoir;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,8 +22,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class Soumission {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "devoir_id", nullable = false)
@@ -29,7 +33,7 @@ public class Soumission {
     private Devoir devoir;
 
     @Column(name = "eleve_id", nullable = false)
-    private Long eleveId;
+    private UUID eleveId;
 
     @Column(columnDefinition = "TEXT")
     private String contenu;

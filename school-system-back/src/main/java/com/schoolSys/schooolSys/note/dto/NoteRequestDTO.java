@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.note.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -15,10 +17,10 @@ import lombok.NoArgsConstructor;
 public class NoteRequestDTO {
 
     @NotNull(message = "L'élève est obligatoire")
-    private Long studentId;
+    private UUID studentId;
 
     @NotNull(message = "L'examen est obligatoire")
-    private Long examenId;
+    private UUID examenId;
 
     @NotNull(message = "Le trimestre est obligatoire")
     @Min(1)

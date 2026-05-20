@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.inscription;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.inscription.dto.CreateInscriptionRequest;
 import com.schoolSys.schooolSys.inscription.dto.InscriptionDTO;
@@ -58,12 +60,12 @@ class InscriptionServiceTest {
                 .emailParent("parent@email.com")
                 .nomParent("Benali")
                 .prenomParent("Mohamed")
-                .niveauId(1L)
+                .niveauId(new UUID(0, 1))
                 .anneeScolaire("2025-2026")
                 .build();
 
         sampleInscription = Inscription.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .nom("Benali")
                 .prenom("Ahmed")
                 .dateNaissance(LocalDate.of(2015, 9, 15))
@@ -74,7 +76,7 @@ class InscriptionServiceTest {
                 .emailParent("parent@email.com")
                 .nomParent("Benali")
                 .prenomParent("Mohamed")
-                .niveauId(1L)
+                .niveauId(new UUID(0, 1))
                 .anneeScolaire("2025-2026")
                 .statut("SOUMISE")
                 .numeroDossier("INS-2026-ABC12345")
@@ -92,7 +94,7 @@ class InscriptionServiceTest {
         void shouldCreateInscriptionWithNumeroDossier() {
             when(inscriptionRepository.save(any(Inscription.class))).thenAnswer(invocation -> {
                 Inscription saved = invocation.getArgument(0);
-                saved.setId(1L);
+                saved.setId(new UUID(0, 1));
                 return saved;
             });
 
@@ -117,7 +119,7 @@ class InscriptionServiceTest {
         void shouldSetDefaultStatut() {
             when(inscriptionRepository.save(any(Inscription.class))).thenAnswer(invocation -> {
                 Inscription saved = invocation.getArgument(0);
-                saved.setId(1L);
+                saved.setId(new UUID(0, 1));
                 return saved;
             });
 
@@ -134,20 +136,20 @@ class InscriptionServiceTest {
         @Test
         @DisplayName("should return inscription when found")
         void shouldReturnInscriptionWhenFound() {
-            when(inscriptionRepository.findById(1L)).thenReturn(Optional.of(sampleInscription));
+            when(inscriptionRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleInscription));
 
-            InscriptionDTO result = inscriptionService.findById(1L);
+            InscriptionDTO result = inscriptionService.findById(new UUID(0, 1));
 
-            assertThat(result.getId()).isEqualTo(1L);
+            assertThat(result.getId()).isEqualTo(new UUID(0, 1));
             assertThat(result.getNom()).isEqualTo("Benali");
         }
 
         @Test
         @DisplayName("should throw ResourceNotFoundException when not found")
         void shouldThrowWhenNotFound() {
-            when(inscriptionRepository.findById(999L)).thenReturn(Optional.empty());
+            when(inscriptionRepository.findById(new UUID(0, 999))).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> inscriptionService.findById(999L))
+            assertThatThrownBy(() -> inscriptionService.findById(new UUID(0, 999)))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Inscription");
         }
@@ -188,10 +190,10 @@ class InscriptionServiceTest {
         void shouldUpdateStatut() {
             UpdateStatutRequest request = new UpdateStatutRequest("ACCEPTEE", "Dossier complet");
 
-            when(inscriptionRepository.findById(1L)).thenReturn(Optional.of(sampleInscription));
+            when(inscriptionRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleInscription));
             when(inscriptionRepository.save(any(Inscription.class))).thenReturn(sampleInscription);
 
-            InscriptionDTO result = inscriptionService.updateStatut(1L, request);
+            InscriptionDTO result = inscriptionService.updateStatut(new UUID(0, 1), request);
 
             assertThat(sampleInscription.getStatut()).isEqualTo("ACCEPTEE");
             assertThat(sampleInscription.getCommentaire()).isEqualTo("Dossier complet");
@@ -202,13 +204,13 @@ class InscriptionServiceTest {
         void shouldAddToListeAttenteWhenStatutIsListeAttente() {
             UpdateStatutRequest request = new UpdateStatutRequest("LISTE_ATTENTE", null);
 
-            when(inscriptionRepository.findById(1L)).thenReturn(Optional.of(sampleInscription));
+            when(inscriptionRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleInscription));
             when(inscriptionRepository.save(any(Inscription.class))).thenReturn(sampleInscription);
-            when(listeAttenteRepository.findByInscriptionId(1L)).thenReturn(Optional.empty());
-            when(listeAttenteRepository.findMaxPositionByNiveauIdAndAnneeScolaire(1L, "2025-2026")).thenReturn(0);
+            when(listeAttenteRepository.findByInscriptionId(new UUID(0, 1))).thenReturn(Optional.empty());
+            when(listeAttenteRepository.findMaxPositionByNiveauIdAndAnneeScolaire(new UUID(0, 1), "2025-2026")).thenReturn(0);
             when(listeAttenteRepository.save(any(ListeAttente.class))).thenAnswer(inv -> inv.getArgument(0));
 
-            inscriptionService.updateStatut(1L, request);
+            inscriptionService.updateStatut(new UUID(0, 1), request);
 
             verify(listeAttenteRepository).save(any(ListeAttente.class));
         }
@@ -218,9 +220,9 @@ class InscriptionServiceTest {
         void shouldThrowWhenInscriptionNotFound() {
             UpdateStatutRequest request = new UpdateStatutRequest("ACCEPTEE", null);
 
-            when(inscriptionRepository.findById(999L)).thenReturn(Optional.empty());
+            when(inscriptionRepository.findById(new UUID(0, 999))).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> inscriptionService.updateStatut(999L, request))
+            assertThatThrownBy(() -> inscriptionService.updateStatut(new UUID(0, 999), request))
                     .isInstanceOf(ResourceNotFoundException.class);
         }
     }
@@ -288,13 +290,13 @@ class InscriptionServiceTest {
         @Test
         @DisplayName("should add inscription to waiting list")
         void shouldAddToWaitingList() {
-            when(inscriptionRepository.findById(1L)).thenReturn(Optional.of(sampleInscription));
+            when(inscriptionRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleInscription));
             when(inscriptionRepository.save(any(Inscription.class))).thenReturn(sampleInscription);
-            when(listeAttenteRepository.findByInscriptionId(1L)).thenReturn(Optional.empty());
-            when(listeAttenteRepository.findMaxPositionByNiveauIdAndAnneeScolaire(1L, "2025-2026")).thenReturn(3);
+            when(listeAttenteRepository.findByInscriptionId(new UUID(0, 1))).thenReturn(Optional.empty());
+            when(listeAttenteRepository.findMaxPositionByNiveauIdAndAnneeScolaire(new UUID(0, 1), "2025-2026")).thenReturn(3);
             when(listeAttenteRepository.save(any(ListeAttente.class))).thenAnswer(inv -> inv.getArgument(0));
 
-            inscriptionService.addToListeAttente(1L);
+            inscriptionService.addToListeAttente(new UUID(0, 1));
 
             assertThat(sampleInscription.getStatut()).isEqualTo("LISTE_ATTENTE");
 
@@ -303,16 +305,16 @@ class InscriptionServiceTest {
 
             ListeAttente saved = captor.getValue();
             assertThat(saved.getPosition()).isEqualTo(4); // maxPosition + 1
-            assertThat(saved.getNiveauId()).isEqualTo(1L);
+            assertThat(saved.getNiveauId()).isEqualTo(new UUID(0, 1));
         }
 
         @Test
         @DisplayName("should throw when inscription has no niveauId")
         void shouldThrowWhenNoNiveauId() {
             sampleInscription.setNiveauId(null);
-            when(inscriptionRepository.findById(1L)).thenReturn(Optional.of(sampleInscription));
+            when(inscriptionRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleInscription));
 
-            assertThatThrownBy(() -> inscriptionService.addToListeAttente(1L))
+            assertThatThrownBy(() -> inscriptionService.addToListeAttente(new UUID(0, 1)))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("niveau");
         }
@@ -320,12 +322,12 @@ class InscriptionServiceTest {
         @Test
         @DisplayName("should not duplicate on waiting list")
         void shouldNotDuplicateOnWaitingList() {
-            when(inscriptionRepository.findById(1L)).thenReturn(Optional.of(sampleInscription));
+            when(inscriptionRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleInscription));
             when(inscriptionRepository.save(any(Inscription.class))).thenReturn(sampleInscription);
-            when(listeAttenteRepository.findByInscriptionId(1L))
-                    .thenReturn(Optional.of(ListeAttente.builder().id(1L).build()));
+            when(listeAttenteRepository.findByInscriptionId(new UUID(0, 1)))
+                    .thenReturn(Optional.of(ListeAttente.builder().id(new UUID(0, 1)).build()));
 
-            inscriptionService.addToListeAttente(1L);
+            inscriptionService.addToListeAttente(new UUID(0, 1));
 
             verify(listeAttenteRepository, never()).save(any(ListeAttente.class));
         }

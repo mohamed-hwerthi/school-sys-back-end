@@ -1,10 +1,13 @@
 package com.schoolSys.schooolSys.tenant;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.auth.User;
 import com.schoolSys.schooolSys.auth.UserRepository;
 import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.multitenancy.TenantFlywayConfig;
+import com.schoolSys.schooolSys.tenant.dto.PublicSchoolDTO;
 import com.schoolSys.schooolSys.tenant.dto.TenantRequestDTO;
 import com.schoolSys.schooolSys.tenant.dto.TenantResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -54,13 +57,32 @@ public class TenantService {
     }
 
     /**
+     * Returns the list of active schools as a minimal, safe-to-expose projection.
+     * <p>
+     * Used by the public school picker (mobile app) before authentication, so it
+     * never exposes contact email, billing data or quotas.
+     * </p>
+     *
+     * @return active schools (id, name, slug), sorted alphabetically by name
+     */
+    public List<PublicSchoolDTO> findActivePublicSchools() {
+        return tenantRepository.findByActiveTrueOrderByNameAsc().stream()
+                .map(tenant -> PublicSchoolDTO.builder()
+                        .id(tenant.getId())
+                        .name(tenant.getName())
+                        .slug(tenant.getSlug())
+                        .build())
+                .toList();
+    }
+
+    /**
      * Finds a tenant by its ID.
      *
      * @param id the tenant ID
      * @return the tenant DTO
      * @throws ResourceNotFoundException if the tenant does not exist
      */
-    public TenantResponseDTO findById(Long id) {
+    public TenantResponseDTO findById(UUID id) {
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant", id));
         return tenantMapper.toResponseDTO(tenant);
@@ -167,7 +189,7 @@ public class TenantService {
      * @return the updated tenant DTO
      */
     @Transactional
-    public TenantResponseDTO update(Long id, TenantRequestDTO dto) {
+    public TenantResponseDTO update(UUID id, TenantRequestDTO dto) {
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant", id));
         tenant.setName(dto.getName());
@@ -181,7 +203,7 @@ public class TenantService {
      * @param id the tenant ID
      */
     @Transactional
-    public void deactivate(Long id) {
+    public void deactivate(UUID id) {
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant", id));
         tenant.setActive(false);

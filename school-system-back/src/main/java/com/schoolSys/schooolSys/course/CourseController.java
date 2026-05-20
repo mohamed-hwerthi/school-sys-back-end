@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.course;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.course.dto.CourseRequestDTO;
 import com.schoolSys.schooolSys.course.dto.CourseResponseDTO;
@@ -34,7 +36,7 @@ public class CourseController {
     /** Gets a course by ID. */
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<CourseResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CourseResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(courseService.findById(id)));
     }
 
@@ -49,7 +51,7 @@ public class CourseController {
     /** Updates an existing course. */
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
-    public ResponseEntity<ApiResponse<CourseResponseDTO>> update(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<CourseResponseDTO>> update(@PathVariable UUID id,
                                                                   @RequestBody CourseRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(courseService.update(id, dto)));
     }
@@ -57,7 +59,7 @@ public class CourseController {
     /** Deletes a course. */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         courseService.delete(id);
         return ResponseEntity.noContent().build();
     }

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.finance.dto.TypeFraisRequestDTO;
 import com.schoolSys.schooolSys.finance.dto.TypeFraisResponseDTO;
@@ -33,7 +35,7 @@ public class TypeFraisController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
-    public ResponseEntity<ApiResponse<TypeFraisResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<TypeFraisResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(typeFraisService.findById(id)));
     }
 
@@ -48,13 +50,13 @@ public class TypeFraisController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<TypeFraisResponseDTO>> update(
-            @PathVariable Long id, @Valid @RequestBody TypeFraisRequestDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody TypeFraisRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(typeFraisService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         typeFraisService.delete(id);
         return ResponseEntity.noContent().build();
     }

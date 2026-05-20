@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rh.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,8 +17,8 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PointageDTO {
-    private Long id;
-    private Long employeId;
+    private UUID id;
+    private UUID employeId;
     private String employeType;
     private LocalDate datePointage;
     private LocalTime heureArrivee;

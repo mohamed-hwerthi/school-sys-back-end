@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.affectation;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.affectation.dto.AffectationDTO;
 import com.schoolSys.schooolSys.affectation.dto.AffectationRequestDTO;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
@@ -26,12 +28,12 @@ public class AffectationService {
     private final ClasseRepository classeRepository;
     private final ModuleRepository moduleRepository;
 
-    public List<AffectationDTO> search(Long teacherId, Long classeId, Long moduleId, String anneeScolaire) {
+    public List<AffectationDTO> search(UUID teacherId, UUID classeId, UUID moduleId, String anneeScolaire) {
         List<Affectation> rows = affectationRepository.search(teacherId, classeId, moduleId, anneeScolaire);
         return hydrate(rows);
     }
 
-    public AffectationDTO findById(Long id) {
+    public AffectationDTO findById(UUID id) {
         Affectation a = affectationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Affectation", id));
         return hydrate(List.of(a)).get(0);
@@ -54,7 +56,7 @@ public class AffectationService {
     }
 
     @Transactional
-    public AffectationDTO update(Long id, AffectationRequestDTO req) {
+    public AffectationDTO update(UUID id, AffectationRequestDTO req) {
         Affectation existing = affectationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Affectation", id));
         validate(req, id);
@@ -70,7 +72,7 @@ public class AffectationService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!affectationRepository.existsById(id)) {
             throw new ResourceNotFoundException("Affectation", id);
         }
@@ -81,7 +83,7 @@ public class AffectationService {
      * Validates referenced entities exist, dates are coherent, and the (teacher, classe,
      * module, annee) tuple is unique.
      */
-    private void validate(AffectationRequestDTO req, Long excludeId) {
+    private void validate(AffectationRequestDTO req, UUID excludeId) {
         if (!teacherRepository.existsById(req.getTeacherId())) {
             throw new ResourceNotFoundException("Teacher", req.getTeacherId());
         }
@@ -118,15 +120,15 @@ public class AffectationService {
     private List<AffectationDTO> hydrate(List<Affectation> rows) {
         if (rows.isEmpty()) return List.of();
 
-        Map<Long, String> teacherNames = new HashMap<>();
+        Map<UUID, String> teacherNames = new HashMap<>();
         teacherRepository.findAllById(rows.stream().map(Affectation::getTeacherId).distinct().toList())
                 .forEach(t -> teacherNames.put(t.getId(), buildTeacherName(t)));
 
-        Map<Long, String> classeNames = new HashMap<>();
+        Map<UUID, String> classeNames = new HashMap<>();
         classeRepository.findAllById(rows.stream().map(Affectation::getClasseId).distinct().toList())
                 .forEach(c -> classeNames.put(c.getId(), buildClasseName(c)));
 
-        Map<Long, String> moduleNames = new HashMap<>();
+        Map<UUID, String> moduleNames = new HashMap<>();
         moduleRepository.findAllById(
                 rows.stream().map(Affectation::getModuleId).filter(java.util.Objects::nonNull).distinct().toList()
         ).forEach(m -> moduleNames.put(m.getId(), m.getName()));

@@ -4,7 +4,7 @@ import type { PagedResult } from "./students.api";
 // ─── Backend DTOs ────────────────────────────────────────
 
 export interface TypeFraisDTO {
-  id: number;
+  id: string;
   nom: string;
   montant: number;
   frequence: "MENSUEL" | "TRIMESTRIEL" | "ANNUEL" | "UNIQUE";
@@ -22,11 +22,11 @@ export interface TypeFraisRequest {
 }
 
 export interface PaiementDTO {
-  id: number;
-  studentId: number;
+  id: string;
+  studentId: string;
   studentFirstName: string;
   studentLastName: string;
-  typeFraisId: number;
+  typeFraisId: string;
   typeFraisNom: string;
   mois: string;
   anneeScolaire: string;
@@ -42,8 +42,8 @@ export interface PaiementDTO {
 }
 
 export interface PaiementRequest {
-  studentId: number;
-  typeFraisId: number;
+  studentId: string;
+  typeFraisId: string;
   mois: string;
   anneeScolaire: string;
   montantDu: number;
@@ -75,8 +75,8 @@ export interface PaiementFilters {
   mois?: string;
   statut?: string;
   modePaiement?: string;
-  studentId?: number;
-  typeFraisId?: number;
+  studentId?: string;
+  typeFraisId?: string;
   sortBy?: string;
   sortDir?: "asc" | "desc";
 }
@@ -94,7 +94,7 @@ export const typesFraisApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<TypeFraisDTO> => {
+  getById: async (id: string): Promise<TypeFraisDTO> => {
     const res = await api.get<TypeFraisDTO>(`/types-frais/${id}`);
     return res.data;
   },
@@ -104,12 +104,12 @@ export const typesFraisApi = {
     return res.data;
   },
 
-  update: async (id: number, data: TypeFraisRequest): Promise<TypeFraisDTO> => {
+  update: async (id: string, data: TypeFraisRequest): Promise<TypeFraisDTO> => {
     const res = await api.put<TypeFraisDTO>(`/types-frais/${id}`, data);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`/types-frais/${id}`),
+  delete: (id: string) => api.delete(`/types-frais/${id}`),
 };
 
 export const paiementsApi = {
@@ -131,12 +131,12 @@ export const paiementsApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<PaiementDTO> => {
+  getById: async (id: string): Promise<PaiementDTO> => {
     const res = await api.get<PaiementDTO>(`/paiements/${id}`);
     return res.data;
   },
 
-  getByStudentId: async (studentId: number, anneeScolaire?: string): Promise<PaiementDTO[]> => {
+  getByStudentId: async (studentId: string, anneeScolaire?: string): Promise<PaiementDTO[]> => {
     const params = anneeScolaire ? `?anneeScolaire=${anneeScolaire}` : "";
     const res = await api.get<PaiementDTO[]>(`/paiements/eleve/${studentId}${params}`);
     return res.data;
@@ -147,12 +147,12 @@ export const paiementsApi = {
     return res.data;
   },
 
-  update: async (id: number, data: PaiementRequest): Promise<PaiementDTO> => {
+  update: async (id: string, data: PaiementRequest): Promise<PaiementDTO> => {
     const res = await api.put<PaiementDTO>(`/paiements/${id}`, data);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`/paiements/${id}`),
+  delete: (id: string) => api.delete(`/paiements/${id}`),
 
   getDashboard: async (anneeScolaire: string): Promise<FinanceDashboardDTO> => {
     const res = await api.get<FinanceDashboardDTO>(

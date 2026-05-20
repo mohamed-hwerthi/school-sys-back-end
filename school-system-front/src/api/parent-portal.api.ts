@@ -4,10 +4,10 @@ import type { Child } from "@/types/notification";
 const BASE = "/parent-portal";
 
 export interface ParentNote {
-  id: number;
-  studentId: number;
+  id: string;
+  studentId: string;
   studentName: string;
-  examenId: number;
+  examenId: string;
   examenName: string;
   trimestre: number;
   valeur: number;
@@ -15,21 +15,21 @@ export interface ParentNote {
 }
 
 export interface ParentAbsence {
-  id: number;
-  eleveId: number;
+  id: string;
+  eleveId: string;
   date: string;
   type: string;
   seance: string;
   heureArrivee?: string;
   justifie: boolean;
   motif?: string;
-  enseignantId?: number;
+  enseignantId?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ParentBulletin {
-  studentId: number;
+  studentId: string;
   studentName: string;
   classe: string;
   niveau: string;
@@ -43,12 +43,12 @@ export interface ParentBulletin {
 }
 
 export interface ParentEmploiDuTemps {
-  id: number;
-  classeId: number;
-  creneauId: number;
+  id: string;
+  classeId: string;
+  creneauId: string;
   jourSemaine: number;
-  moduleId?: number;
-  enseignantId?: number;
+  moduleId?: string;
+  enseignantId?: string;
   salle?: string;
   createdAt: string;
   updatedAt: string;
@@ -60,21 +60,21 @@ export const parentPortalApi = {
     return res.data;
   },
 
-  getChildNotes: async (studentId: number, trimestre = 1): Promise<ParentNote[]> => {
+  getChildNotes: async (studentId: string, trimestre = 1): Promise<ParentNote[]> => {
     const res = await api.get<ParentNote[]>(`${BASE}/children/${studentId}/notes`, {
       params: { trimestre },
     });
     return res.data;
   },
 
-  getChildAbsences: async (studentId: number): Promise<ParentAbsence[]> => {
+  getChildAbsences: async (studentId: string): Promise<ParentAbsence[]> => {
     const res = await api.get<ParentAbsence[]>(`${BASE}/children/${studentId}/absences`);
     return res.data;
   },
 
   getChildBulletin: async (
-    studentId: number,
-    classeId: number,
+    studentId: string,
+    classeId: string,
     trimestre = 1
   ): Promise<ParentBulletin> => {
     const res = await api.get<ParentBulletin>(`${BASE}/children/${studentId}/bulletin`, {
@@ -83,7 +83,7 @@ export const parentPortalApi = {
     return res.data;
   },
 
-  getChildEmploiDuTemps: async (studentId: number): Promise<ParentEmploiDuTemps[]> => {
+  getChildEmploiDuTemps: async (studentId: string): Promise<ParentEmploiDuTemps[]> => {
     const res = await api.get<ParentEmploiDuTemps[]>(
       `${BASE}/children/${studentId}/emploi-du-temps`
     );

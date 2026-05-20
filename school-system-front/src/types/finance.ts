@@ -1,5 +1,5 @@
 export type TypeFrais = {
-  id: number;
+  id: string;
   nom: string;
   montantMensuel: number;
   description: string;
@@ -11,9 +11,9 @@ export type ModePaiement = "Espèces" | "Virement" | "Chèque" | "Carte bancaire
 export type TypeCommunication = "SMS" | "Email" | "Appel";
 
 export type Paiement = {
-  id: number;
-  eleveId: number;
-  typeFraisId: number;
+  id: string;
+  eleveId: string;
+  typeFraisId: string;
   mois: string;
   montantDu: number;
   montantPaye: number;
@@ -25,8 +25,8 @@ export type Paiement = {
 };
 
 export type Communication = {
-  id: number;
-  eleveId: number;
+  id: string;
+  eleveId: string;
   type: TypeCommunication;
   objet: string;
   contenu: string;

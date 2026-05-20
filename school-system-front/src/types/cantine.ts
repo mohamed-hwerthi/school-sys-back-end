@@ -3,7 +3,7 @@ export type TypeAbonnement = 'JOURNALIER' | 'HEBDOMADAIRE' | 'MENSUEL' | 'ANNUEL
 export type TypeRepas = 'PETIT_DEJEUNER' | 'DEJEUNER' | 'GOUTER';
 
 export interface Menu {
-  id: number;
+  id: string;
   dateMenu: string;
   jourSemaine: string;
   entree?: string;
@@ -30,8 +30,8 @@ export interface CreateMenuRequest {
 }
 
 export interface AbonnementCantine {
-  id: number;
-  eleveId: number;
+  id: string;
+  eleveId: string;
   typeAbonnement: TypeAbonnement;
   dateDebut: string;
   dateFin?: string;
@@ -44,7 +44,7 @@ export interface AbonnementCantine {
 }
 
 export interface CreateAbonnementRequest {
-  eleveId: number;
+  eleveId: string;
   typeAbonnement: TypeAbonnement;
   dateDebut: string;
   dateFin?: string;
@@ -54,8 +54,8 @@ export interface CreateAbonnementRequest {
 }
 
 export interface PointageRepas {
-  id: number;
-  eleveId: number;
+  id: string;
+  eleveId: string;
   dateRepas: string;
   typeRepas: TypeRepas;
   present: boolean;
@@ -66,7 +66,7 @@ export interface PointageBatchRequest {
   dateRepas: string;
   typeRepas?: TypeRepas;
   pointages: Array<{
-    eleveId: number;
+    eleveId: string;
     present: boolean;
   }>;
 }

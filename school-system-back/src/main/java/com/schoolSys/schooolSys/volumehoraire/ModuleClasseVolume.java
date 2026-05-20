@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.volumehoraire;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -18,20 +21,21 @@ import java.time.LocalDateTime;
 public class ModuleClasseVolume {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "module_id", nullable = false)
-    private Long moduleId;
+    private UUID moduleId;
 
     @Column(name = "classe_id", nullable = false)
-    private Long classeId;
+    private UUID classeId;
 
     @Column(name = "enseignant_id")
-    private Long enseignantId;
+    private UUID enseignantId;
 
     @Column(name = "annee_scolaire_id")
-    private Long anneeScolaireId;
+    private UUID anneeScolaireId;
 
     @Column(name = "nb_heures_hebdo", nullable = false)
     private Integer nbHeuresHebdo;

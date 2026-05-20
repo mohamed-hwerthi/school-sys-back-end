@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,20 +21,21 @@ import org.hibernate.annotations.SQLRestriction;
 public class AuditFinancier {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "entity_type", nullable = false)
     private String entityType;
 
     @Column(name = "entity_id", nullable = false)
-    private Long entityId;
+    private UUID entityId;
 
     @Column(nullable = false, length = 20)
     private String action; // CREATE, UPDATE, DELETE
 
     @Column(name = "user_id")
-    private Long userId;
+    private UUID userId;
 
     @Column(name = "user_name")
     private String userName;

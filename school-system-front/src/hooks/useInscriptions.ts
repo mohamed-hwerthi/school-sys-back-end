@@ -16,7 +16,7 @@ const INSCRIPTIONS_KEY = "inscriptions";
 export function useInscriptions(params: {
   statut?: string;
   anneeScolaire?: string;
-  niveauId?: number;
+  niveauId?: string;
   page?: number;
   size?: number;
   sortBy?: string;
@@ -31,7 +31,7 @@ export function useInscriptions(params: {
 /**
  * Get a single inscription by ID (admin).
  */
-export function useInscription(id: number) {
+export function useInscription(id: string) {
   return useQuery<Inscription>({
     queryKey: [INSCRIPTIONS_KEY, id],
     queryFn: () => inscriptionsApi.getById(id),
@@ -59,7 +59,7 @@ export function useCreateInscription() {
 export function useUpdateStatut() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateStatutRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateStatutRequest }) =>
       inscriptionsApi.updateStatut(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [INSCRIPTIONS_KEY] });
@@ -80,11 +80,11 @@ export function useInscriptionStats(anneeScolaire?: string) {
 /**
  * Get waiting list for a niveau (admin).
  */
-export function useListeAttente(niveauId: number, anneeScolaire?: string) {
+export function useListeAttente(niveauId: string, anneeScolaire?: string) {
   return useQuery<Inscription[]>({
     queryKey: [INSCRIPTIONS_KEY, "liste-attente", niveauId, anneeScolaire],
     queryFn: () => inscriptionsApi.getListeAttente(niveauId, anneeScolaire),
-    enabled: niveauId > 0,
+    enabled: !!niveauId,
   });
 }
 

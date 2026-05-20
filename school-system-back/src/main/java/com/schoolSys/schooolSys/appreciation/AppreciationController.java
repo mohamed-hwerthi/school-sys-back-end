@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.appreciation;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.appreciation.dto.*;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -22,7 +24,7 @@ public class AppreciationController {
     @GetMapping("/recommandations")
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<RecommandationDTO>>> getRecommandations(
-            @RequestParam List<Long> studentIds,
+            @RequestParam List<UUID> studentIds,
             @RequestParam Integer trimestre) {
         return ResponseEntity.ok(ApiResponse.ok(
                 appreciationService.getRecommandations(studentIds, trimestre)));
@@ -41,7 +43,7 @@ public class AppreciationController {
     @GetMapping("/observations")
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<ObservationDTO>>> getObservations(
-            @RequestParam List<Long> studentIds,
+            @RequestParam List<UUID> studentIds,
             @RequestParam Integer trimestre) {
         return ResponseEntity.ok(ApiResponse.ok(
                 appreciationService.getObservations(studentIds, trimestre)));

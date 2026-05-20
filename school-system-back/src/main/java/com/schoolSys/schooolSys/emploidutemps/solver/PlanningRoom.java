@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.emploidutemps.solver;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +17,7 @@ public class PlanningRoom {
     private String name;
 
     /** Optional FK to classroom DB row (null when room is a free-form string from legacy mode). */
-    private Long classroomId;
+    private UUID classroomId;
 
     /** Capacity in students; null = unlimited (legacy free-form rooms). */
     private Integer capacite;

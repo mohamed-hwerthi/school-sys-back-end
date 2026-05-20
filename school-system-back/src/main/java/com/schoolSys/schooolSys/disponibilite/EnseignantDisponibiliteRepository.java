@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.disponibilite;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -8,15 +10,15 @@ import java.util.Optional;
 
 @Repository
 public interface EnseignantDisponibiliteRepository
-        extends JpaRepository<EnseignantDisponibilite, Long> {
+        extends JpaRepository<EnseignantDisponibilite, UUID> {
 
-    List<EnseignantDisponibilite> findByEnseignantId(Long enseignantId);
+    List<EnseignantDisponibilite> findByEnseignantId(UUID enseignantId);
 
-    List<EnseignantDisponibilite> findByEnseignantIdAndType(Long enseignantId, String type);
+    List<EnseignantDisponibilite> findByEnseignantIdAndType(UUID enseignantId, String type);
 
     Optional<EnseignantDisponibilite> findByEnseignantIdAndJourSemaineAndCreneauId(
-            Long enseignantId, Integer jourSemaine, Long creneauId);
+            UUID enseignantId, Integer jourSemaine, UUID creneauId);
 
     void deleteByEnseignantIdAndJourSemaineAndCreneauId(
-            Long enseignantId, Integer jourSemaine, Long creneauId);
+            UUID enseignantId, Integer jourSemaine, UUID creneauId);
 }

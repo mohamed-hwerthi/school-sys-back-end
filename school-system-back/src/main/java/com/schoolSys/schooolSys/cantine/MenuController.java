@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.cantine;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.cantine.dto.CreateMenuRequest;
 import com.schoolSys.schooolSys.cantine.dto.MenuDTO;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
@@ -29,7 +31,7 @@ public class MenuController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_CANTINE')")
-    public ResponseEntity<ApiResponse<MenuDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<MenuDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(menuService.getById(id)));
     }
 
@@ -56,13 +58,13 @@ public class MenuController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_CANTINE')")
-    public ResponseEntity<ApiResponse<MenuDTO>> update(@PathVariable Long id, @Valid @RequestBody CreateMenuRequest request) {
+    public ResponseEntity<ApiResponse<MenuDTO>> update(@PathVariable UUID id, @Valid @RequestBody CreateMenuRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(menuService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_CANTINE')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         menuService.delete(id);
         return ResponseEntity.noContent().build();
     }

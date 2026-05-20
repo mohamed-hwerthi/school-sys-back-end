@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.emploidutemps.solver;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.anneescolaire.AnneeScolaireRepository;
 import com.schoolSys.schooolSys.classroom.Classroom;
 import com.schoolSys.schooolSys.classroom.ClassroomRepository;
@@ -90,14 +92,14 @@ public class TimetableSolverService {
         }
 
         // 5. Pre-load module attributes & class size lookups
-        Set<Long> moduleIds = assignments.stream()
+        Set<UUID> moduleIds = assignments.stream()
             .map(TeachingAssignmentDTO::getModuleId).collect(Collectors.toSet());
-        Map<Long, Module> moduleById = moduleRepository.findAllById(moduleIds).stream()
+        Map<UUID, Module> moduleById = moduleRepository.findAllById(moduleIds).stream()
             .collect(Collectors.toMap(Module::getId, m -> m));
 
-        Set<Long> classeIds = assignments.stream()
+        Set<UUID> classeIds = assignments.stream()
             .map(TeachingAssignmentDTO::getClasseId).collect(Collectors.toSet());
-        Map<Long, Integer> effectifByClasseId = computeEffectifByClasse(classeIds);
+        Map<UUID, Integer> effectifByClasseId = computeEffectifByClasse(classeIds);
 
         // 6. Build PlanningLesson list — one per (assignment × hour)
         List<PlanningLesson> lessons = new ArrayList<>();
@@ -135,7 +137,7 @@ public class TimetableSolverService {
         }
 
         // 8. Load teacher unavailabilities into the constraint context (problem facts on the solution)
-        Set<Long> enseignantIds = assignments.stream()
+        Set<UUID> enseignantIds = assignments.stream()
             .map(TeachingAssignmentDTO::getEnseignantId).collect(Collectors.toSet());
         List<EnseignantDisponibilite> dispos = enseignantIds.isEmpty()
             ? List.of()
@@ -171,7 +173,7 @@ public class TimetableSolverService {
                 solution.getScore().hardScore()));
         }
 
-        for (Long classeId : classeIds) {
+        for (UUID classeId : classeIds) {
             emploiDuTempsRepository.deleteByClasseId(classeId);
         }
 
@@ -228,7 +230,7 @@ public class TimetableSolverService {
             return request.getAssignments();
         }
         // Auto mode: pull volume horaire for the resolved année
-        Long anneeId = request.getAnneeScolaireId();
+        UUID anneeId = request.getAnneeScolaireId();
         if (anneeId == null) {
             anneeId = anneeScolaireRepository.findByActiveTrue()
                 .map(a -> a.getId())
@@ -242,7 +244,7 @@ public class TimetableSolverService {
 
         // Optional niveau filter — only keep volumes whose classe belongs to the niveau
         if (request.getNiveauId() != null) {
-            Set<Long> classesInNiveau = classeRepository.findByNiveauId(request.getNiveauId())
+            Set<UUID> classesInNiveau = classeRepository.findByNiveauId(request.getNiveauId())
                 .stream().map(Classe::getId).collect(Collectors.toSet());
             volumes = volumes.stream()
                 .filter(v -> classesInNiveau.contains(v.getClasseId()))
@@ -279,9 +281,10 @@ public class TimetableSolverService {
             .filter(c -> c.getStatus() == null || "Disponible".equalsIgnoreCase(c.getStatus()))
             .toList();
         List<PlanningRoom> rooms = new ArrayList<>();
+        long roomIdSeq = 1;
         for (Classroom c : available) {
             rooms.add(PlanningRoom.builder()
-                .id(c.getId())
+                .id(roomIdSeq++)
                 .name(c.getName())
                 .classroomId(c.getId())
                 .capacite(c.getCapacity())
@@ -295,8 +298,8 @@ public class TimetableSolverService {
      * Build a (classeId → studentCount) map. We rely on the fullName scheme used by the rest of
      * the app (digits of niveau name + class letter, e.g. "1ère année A" → "1A").
      */
-    private Map<Long, Integer> computeEffectifByClasse(Set<Long> classeIds) {
-        Map<Long, Integer> result = new HashMap<>();
+    private Map<UUID, Integer> computeEffectifByClasse(Set<UUID> classeIds) {
+        Map<UUID, Integer> result = new HashMap<>();
         for (Classe c : classeRepository.findAllById(classeIds)) {
             String fullName = buildFullName(c);
             long count = studentRepository.countByClasse(fullName);
@@ -337,7 +340,7 @@ public class TimetableSolverService {
      * describing what would happen if {@link #generate} were called now.
      */
     @Transactional(readOnly = true)
-    public TimetablePreviewCheckDTO previewCheck(Long niveauId, Long anneeScolaireId) {
+    public TimetablePreviewCheckDTO previewCheck(UUID niveauId, UUID anneeScolaireId) {
         List<String> blockers = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
 
@@ -379,14 +382,14 @@ public class TimetableSolverService {
         // 4. Volumes for the année (filtered to niveau via classes lookup if needed)
         List<ModuleClasseVolume> volumes = volumeRepository.findByAnneeScolaireId(annee.getId());
         if (niveauId != null) {
-            Set<Long> classesInNiveau = classeRepository.findByNiveauId(niveauId)
+            Set<UUID> classesInNiveau = classeRepository.findByNiveauId(niveauId)
                 .stream().map(Classe::getId).collect(Collectors.toSet());
             volumes = volumes.stream()
                 .filter(v -> classesInNiveau.contains(v.getClasseId()))
                 .toList();
         }
 
-        Set<Long> moduleIdsWithVolume = volumes.stream()
+        Set<UUID> moduleIdsWithVolume = volumes.stream()
             .map(ModuleClasseVolume::getModuleId).collect(Collectors.toSet());
         int modulesWithVolume = (int) modules.stream()
             .filter(m -> moduleIdsWithVolume.contains(m.getId())).count();
@@ -415,17 +418,17 @@ public class TimetableSolverService {
         }
 
         // 5. Teachers — those involved in the volumes
-        Set<Long> teacherIds = volumes.stream()
+        Set<UUID> teacherIds = volumes.stream()
             .map(ModuleClasseVolume::getEnseignantId)
             .filter(Objects::nonNull)
             .collect(Collectors.toSet());
-        Set<Long> teacherIdsWithDispos = teacherIds.isEmpty()
+        Set<UUID> teacherIdsWithDispos = teacherIds.isEmpty()
             ? Collections.emptySet()
             : disponibiliteRepository.findAll().stream()
                 .map(EnseignantDisponibilite::getEnseignantId)
                 .filter(teacherIds::contains)
                 .collect(Collectors.toSet());
-        Set<Long> teacherIdsWithoutDispos = new HashSet<>(teacherIds);
+        Set<UUID> teacherIdsWithoutDispos = new HashSet<>(teacherIds);
         teacherIdsWithoutDispos.removeAll(teacherIdsWithDispos);
         List<TimetablePreviewCheckDTO.TeacherSummary> teachersWithoutDisposList =
             teacherIdsWithoutDispos.isEmpty()

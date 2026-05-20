@@ -318,7 +318,7 @@ export default function BilanAnnuel() {
                   <Select
                     value={selectedNiveau ? String(selectedNiveau) : ""}
                     onValueChange={(v) => {
-                      setSelectedNiveau(Number(v));
+                      setSelectedNiveau(v);
                       setSelectedClasse(0);
                     }}
                   >
@@ -338,7 +338,7 @@ export default function BilanAnnuel() {
                   <Label>Classe</Label>
                   <Select
                     value={selectedClasse ? String(selectedClasse) : ""}
-                    onValueChange={(v) => setSelectedClasse(Number(v))}
+                    onValueChange={(v) => setSelectedClasse(v)}
                     disabled={!selectedNiveau}
                   >
                     <SelectTrigger>
@@ -476,7 +476,7 @@ export default function BilanAnnuel() {
                   <Select
                     value={selectedNiveau ? String(selectedNiveau) : ""}
                     onValueChange={(v) => {
-                      setSelectedNiveau(Number(v));
+                      setSelectedNiveau(v);
                       setSelectedClasse(0);
                     }}
                   >
@@ -496,7 +496,7 @@ export default function BilanAnnuel() {
                   <Label>Classe</Label>
                   <Select
                     value={selectedClasse ? String(selectedClasse) : ""}
-                    onValueChange={(v) => setSelectedClasse(Number(v))}
+                    onValueChange={(v) => setSelectedClasse(v)}
                     disabled={!selectedNiveau}
                   >
                     <SelectTrigger>

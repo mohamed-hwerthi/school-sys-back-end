@@ -11,7 +11,7 @@ export interface SmsRequest {
 }
 
 export interface WebhookConfig {
-  id?: number;
+  id?: string;
   url: string;
   events: string[];
   secret: string;

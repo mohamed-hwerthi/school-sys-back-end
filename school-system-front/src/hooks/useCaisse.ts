@@ -5,7 +5,7 @@ import { notify } from "@/lib/toast";
 const KEYS = {
   all: (annee: string) => ["caisse", annee] as const,
   ouverte: (annee: string) => ["caisse", "ouverte", annee] as const,
-  mouvements: (id: number) => ["caisse", "mouvements", id] as const,
+  mouvements: (id: string) => ["caisse", "mouvements", id] as const,
 };
 
 export function useCaisses(anneeScolaire = "2025-2026") {
@@ -22,7 +22,7 @@ export function useCaisseOuverte(anneeScolaire = "2025-2026") {
   });
 }
 
-export function useMouvements(caisseId: number) {
+export function useMouvements(caisseId: string) {
   return useQuery({
     queryKey: KEYS.mouvements(caisseId),
     queryFn: () => caisseApi.getMouvements(caisseId),
@@ -45,7 +45,7 @@ export function useOuvrirCaisse() {
 export function useFermerCaisse() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, fermePar }: { id: number; fermePar?: string }) => caisseApi.fermer(id, fermePar),
+    mutationFn: ({ id, fermePar }: { id: string; fermePar?: string }) => caisseApi.fermer(id, fermePar),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["caisse"] });
       notify.success("Caisse fermee avec succes");
@@ -69,7 +69,7 @@ export function useAddMouvement() {
 export function useDeleteMouvement() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => caisseApi.deleteMouvement(id),
+    mutationFn: (id: string) => caisseApi.deleteMouvement(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["caisse"] });
       notify.success("Mouvement supprime");

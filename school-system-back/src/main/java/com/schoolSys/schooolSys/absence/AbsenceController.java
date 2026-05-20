@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.absence;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.absence.dto.*;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -30,7 +32,7 @@ public class AbsenceController {
     @GetMapping
     @PreAuthorize("hasAuthority('READ_ABSENCES')")
     public ResponseEntity<ApiResponse<List<AbsenceResponseDTO>>> getByClasseAndDate(
-            @RequestParam(required = false) Long classeId,
+            @RequestParam(required = false) UUID classeId,
             @RequestParam LocalDate date,
             @RequestParam(required = false) String type) {
         return ResponseEntity.ok(ApiResponse.ok(absenceService.getByClasseAndDate(classeId, date, type)));
@@ -45,14 +47,14 @@ public class AbsenceController {
 
     @GetMapping("/eleve/{eleveId}")
     @PreAuthorize("hasAuthority('READ_ABSENCES')")
-    public ResponseEntity<ApiResponse<List<AbsenceResponseDTO>>> getByEleve(@PathVariable Long eleveId) {
+    public ResponseEntity<ApiResponse<List<AbsenceResponseDTO>>> getByEleve(@PathVariable UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(absenceService.getByEleve(eleveId)));
     }
 
     @GetMapping("/stats")
     @PreAuthorize("hasAuthority('READ_ABSENCES')")
     public ResponseEntity<ApiResponse<AbsenceStatsDTO>> getStats(
-            @RequestParam Long classeId,
+            @RequestParam UUID classeId,
             @RequestParam int mois,
             @RequestParam int annee) {
         return ResponseEntity.ok(ApiResponse.ok(absenceService.getStats(classeId, mois, annee)));
@@ -60,7 +62,7 @@ public class AbsenceController {
 
     @PutMapping("/{id}/justifier")
     @PreAuthorize("hasAuthority('WRITE_ABSENCES')")
-    public ResponseEntity<ApiResponse<AbsenceResponseDTO>> justifier(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<AbsenceResponseDTO>> justifier(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(absenceService.justifier(id)));
     }
 
@@ -70,14 +72,14 @@ public class AbsenceController {
     @PostMapping("/{id}/justifier")
     @PreAuthorize("hasAuthority('READ_ABSENCES')")
     public ResponseEntity<ApiResponse<AbsenceResponseDTO>> submitJustification(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody JustificationRequestDTO request) {
         return ResponseEntity.ok(ApiResponse.ok(absenceService.submitJustification(id, request)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_ABSENCES')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         absenceService.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -102,7 +104,7 @@ public class AbsenceController {
     @GetMapping("/rapport")
     @PreAuthorize("hasAuthority('READ_ABSENCES')")
     public ResponseEntity<ApiResponse<RapportPresenceDTO>> getRapport(
-            @RequestParam Long classeId,
+            @RequestParam UUID classeId,
             @RequestParam int mois,
             @RequestParam int annee) {
         return ResponseEntity.ok(ApiResponse.ok(absenceService.getRapportMensuel(classeId, mois, annee)));
@@ -112,7 +114,7 @@ public class AbsenceController {
 
     @GetMapping("/historique/{eleveId}")
     @PreAuthorize("hasAuthority('READ_ABSENCES')")
-    public ResponseEntity<ApiResponse<HistoriquePresenceDTO>> getHistorique(@PathVariable Long eleveId) {
+    public ResponseEntity<ApiResponse<HistoriquePresenceDTO>> getHistorique(@PathVariable UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(absenceService.getHistorique(eleveId)));
     }
 }

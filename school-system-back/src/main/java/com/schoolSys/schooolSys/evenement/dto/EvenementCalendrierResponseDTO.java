@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.evenement.dto;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 public class EvenementCalendrierResponseDTO {
 
-    private Long id;
+    private UUID id;
     private String titre;
     private String description;
     private LocalDate dateDebut;

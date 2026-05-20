@@ -3,11 +3,11 @@
 -- for a given (classe, module) pair, replacing the legacy per-request input.
 
 CREATE TABLE IF NOT EXISTS module_classe_volume (
-    id                  BIGSERIAL PRIMARY KEY,
-    module_id           BIGINT  NOT NULL REFERENCES modules(id)           ON DELETE CASCADE,
-    classe_id           BIGINT  NOT NULL REFERENCES classes(id)           ON DELETE CASCADE,
-    enseignant_id       BIGINT           REFERENCES teachers(id)          ON DELETE SET NULL,
-    annee_scolaire_id   BIGINT           REFERENCES annees_scolaires(id)  ON DELETE CASCADE,
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    module_id           UUID  NOT NULL REFERENCES modules(id)           ON DELETE CASCADE,
+    classe_id           UUID  NOT NULL REFERENCES classes(id)           ON DELETE CASCADE,
+    enseignant_id       UUID           REFERENCES teachers(id)          ON DELETE SET NULL,
+    annee_scolaire_id   UUID           REFERENCES annees_scolaires(id)  ON DELETE CASCADE,
     nb_heures_hebdo     INTEGER NOT NULL CHECK (nb_heures_hebdo >= 1 AND nb_heures_hebdo <= 20),
     created_at          TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMP NOT NULL DEFAULT NOW(),

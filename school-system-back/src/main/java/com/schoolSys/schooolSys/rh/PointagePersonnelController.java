@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rh;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.rh.dto.CreatePointageRequest;
 import com.schoolSys.schooolSys.rh.dto.PointageDTO;
@@ -28,7 +30,7 @@ public class PointagePersonnelController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PointageDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<PointageDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(pointageService.getById(id)));
     }
 
@@ -40,7 +42,7 @@ public class PointagePersonnelController {
 
     @GetMapping("/employe/{employeId}")
     public ResponseEntity<ApiResponse<List<PointageDTO>>> getByEmploye(
-            @PathVariable Long employeId,
+            @PathVariable UUID employeId,
             @RequestParam(defaultValue = "ENSEIGNANT") String employeType) {
         return ResponseEntity.ok(ApiResponse.ok(pointageService.getByEmploye(employeId, employeType)));
     }
@@ -54,12 +56,12 @@ public class PointagePersonnelController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PointageDTO>> update(
-            @PathVariable Long id, @Valid @RequestBody CreatePointageRequest dto) {
+            @PathVariable UUID id, @Valid @RequestBody CreatePointageRequest dto) {
         return ResponseEntity.ok(ApiResponse.ok(pointageService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         pointageService.delete(id);
         return ResponseEntity.noContent().build();
     }

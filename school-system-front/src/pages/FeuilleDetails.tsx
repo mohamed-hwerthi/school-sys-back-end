@@ -39,7 +39,7 @@ export default function FeuilleDetailsPage() {
     return m;
   }, [absences]);
 
-  const getStatut = (eleveId: number): { statut: Statut; seance?: string; heure?: string; justifie?: boolean; motif?: string } => {
+  const getStatut = (eleveId: string): { statut: Statut; seance?: string; heure?: string; justifie?: boolean; motif?: string } => {
     const list = absencesByEleve.get(eleveId);
     if (!list || list.length === 0) return { statut: "PRESENT" };
     const abs = list.find((a) => a.type === "ABSENCE");

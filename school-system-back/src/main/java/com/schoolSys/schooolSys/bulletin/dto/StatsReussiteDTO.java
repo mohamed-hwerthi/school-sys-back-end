@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.bulletin.dto;
 
+import java.util.UUID;
+
 import lombok.*;
 import java.util.List;
 
@@ -19,7 +21,7 @@ public class StatsReussiteDTO {
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class ModuleStatsDTO {
-        private Long moduleId;
+        private UUID moduleId;
         private String moduleName;
         private double moyenne;
         private double min;

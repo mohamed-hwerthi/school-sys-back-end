@@ -7,7 +7,7 @@ export type InscriptionStatut =
   | "LISTE_ATTENTE";
 
 export interface Inscription {
-  id: number;
+  id: string;
   nom: string;
   prenom: string;
   dateNaissance: string;
@@ -18,7 +18,7 @@ export interface Inscription {
   emailParent?: string;
   nomParent?: string;
   prenomParent?: string;
-  niveauId?: number;
+  niveauId?: string;
   niveauNom?: string;
   anneeScolaire: string;
   statut: InscriptionStatut;
@@ -42,7 +42,7 @@ export interface CreateInscriptionRequest {
   emailParent?: string;
   nomParent?: string;
   prenomParent?: string;
-  niveauId?: number;
+  niveauId?: string;
   anneeScolaire: string;
 }
 

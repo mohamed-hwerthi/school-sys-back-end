@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.websocket;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class NotificationMessage {
 
-    private Long id;
+    private UUID id;
 
     private NotificationType type;
 

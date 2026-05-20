@@ -151,7 +151,7 @@ export default function ContratsPage() {
   const refuserCongeMutation = useRefuserConge();
   const deleteCongeMutation = useDeleteConge();
 
-  const getTeacherName = (id: number) => {
+  const getTeacherName = (id: string) => {
     const t = teachers.find((t) => t.id === id);
     return t ? `${t.prenom} ${t.nom}` : `#${id}`;
   };
@@ -530,7 +530,7 @@ export default function ContratsPage() {
             )}
             <div className="space-y-1.5">
               <Label>{t("common.teacher")}</Label>
-              <Select value={contratForm.enseignantId ? String(contratForm.enseignantId) : ""} onValueChange={(v) => setContratForm({ ...contratForm, enseignantId: Number(v) })}>
+              <Select value={contratForm.enseignantId ? String(contratForm.enseignantId) : ""} onValueChange={(v) => setContratForm({ ...contratForm, enseignantId: v })}>
                 <SelectTrigger><SelectValue placeholder={t("common.select")} /></SelectTrigger>
                 <SelectContent>
                   {teachers.map((t) => (
@@ -589,7 +589,7 @@ export default function ContratsPage() {
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
               <Label>{t("common.teacher")}</Label>
-              <Select value={congeForm.enseignantId ? String(congeForm.enseignantId) : ""} onValueChange={(v) => setCongeForm({ ...congeForm, enseignantId: Number(v) })}>
+              <Select value={congeForm.enseignantId ? String(congeForm.enseignantId) : ""} onValueChange={(v) => setCongeForm({ ...congeForm, enseignantId: v })}>
                 <SelectTrigger><SelectValue placeholder={t("common.select")} /></SelectTrigger>
                 <SelectContent>
                   {teachers.map((t) => (

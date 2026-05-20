@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.examenonline;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.examenonline.dto.CreateQuestionRequest;
 import com.schoolSys.schooolSys.examenonline.dto.QuestionDTO;
@@ -21,20 +23,20 @@ public class QuestionController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
-    public ResponseEntity<ApiResponse<List<QuestionDTO>>> getByQuiz(@PathVariable Long quizId) {
+    public ResponseEntity<ApiResponse<List<QuestionDTO>>> getByQuiz(@PathVariable UUID quizId) {
         return ResponseEntity.ok(ApiResponse.ok(questionService.findByQuiz(quizId)));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
-    public ResponseEntity<ApiResponse<QuestionDTO>> getById(@PathVariable Long quizId, @PathVariable Long id) {
+    public ResponseEntity<ApiResponse<QuestionDTO>> getById(@PathVariable UUID quizId, @PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(questionService.findById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<ApiResponse<QuestionDTO>> create(
-            @PathVariable Long quizId,
+            @PathVariable UUID quizId,
             @Valid @RequestBody CreateQuestionRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(questionService.create(quizId, request)));
@@ -43,15 +45,15 @@ public class QuestionController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<ApiResponse<QuestionDTO>> update(
-            @PathVariable Long quizId,
-            @PathVariable Long id,
+            @PathVariable UUID quizId,
+            @PathVariable UUID id,
             @Valid @RequestBody CreateQuestionRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(questionService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
-    public ResponseEntity<Void> delete(@PathVariable Long quizId, @PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID quizId, @PathVariable UUID id) {
         questionService.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -59,8 +61,8 @@ public class QuestionController {
     @PutMapping("/reorder")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<ApiResponse<List<QuestionDTO>>> reorder(
-            @PathVariable Long quizId,
-            @RequestBody List<Long> questionIds) {
+            @PathVariable UUID quizId,
+            @RequestBody List<UUID> questionIds) {
         return ResponseEntity.ok(ApiResponse.ok(questionService.reorder(quizId, questionIds)));
     }
 }

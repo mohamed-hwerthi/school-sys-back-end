@@ -22,7 +22,7 @@ export function useUnreadCount() {
 export function useMarkAsRead() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => notificationsApi.markAsRead(id),
+    mutationFn: (id: string) => notificationsApi.markAsRead(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [NOTIFICATIONS_KEY] });
     },
@@ -42,7 +42,7 @@ export function useMarkAllAsRead() {
 export function useDeleteNotification() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => notificationsApi.delete(id),
+    mutationFn: (id: string) => notificationsApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [NOTIFICATIONS_KEY] });
     },

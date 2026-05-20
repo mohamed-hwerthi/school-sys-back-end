@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.module;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import com.schoolSys.schooolSys.domaine.Domaine;
 import com.schoolSys.schooolSys.domaine.SousDomaine;
 import com.schoolSys.schooolSys.niveau.Niveau;
@@ -21,8 +24,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class Module {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(nullable = false)
     private String name;

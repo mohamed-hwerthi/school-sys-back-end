@@ -27,7 +27,7 @@ public class DocumentService {
     private String uploadDir;
 
     @Transactional
-    public DocumentEleve upload(Long studentId, MultipartFile file, DocumentEleve.DocumentType type) {
+    public DocumentEleve upload(UUID studentId, MultipartFile file, DocumentEleve.DocumentType type) {
         if (!studentRepository.existsById(studentId)) {
             throw new ResourceNotFoundException("Student", studentId);
         }
@@ -63,18 +63,18 @@ public class DocumentService {
     }
 
     @Transactional(readOnly = true)
-    public List<DocumentEleve> listByStudent(Long studentId) {
+    public List<DocumentEleve> listByStudent(UUID studentId) {
         return documentRepository.findByStudentIdOrderByUploadedAtDesc(studentId);
     }
 
     @Transactional(readOnly = true)
-    public DocumentEleve findById(Long docId) {
+    public DocumentEleve findById(UUID docId) {
         return documentRepository.findById(docId)
                 .orElseThrow(() -> new ResourceNotFoundException("Document", docId));
     }
 
     @Transactional
-    public void delete(Long docId) {
+    public void delete(UUID docId) {
         DocumentEleve doc = documentRepository.findById(docId)
                 .orElseThrow(() -> new ResourceNotFoundException("Document", docId));
 

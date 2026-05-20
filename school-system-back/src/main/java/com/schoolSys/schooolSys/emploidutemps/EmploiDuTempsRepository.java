@@ -1,20 +1,22 @@
 package com.schoolSys.schooolSys.emploidutemps;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface EmploiDuTempsRepository extends JpaRepository<EmploiDuTemps, Long> {
+public interface EmploiDuTempsRepository extends JpaRepository<EmploiDuTemps, UUID> {
 
-    List<EmploiDuTemps> findByClasseId(Long classeId);
+    List<EmploiDuTemps> findByClasseId(UUID classeId);
 
-    List<EmploiDuTemps> findByEnseignantId(Long enseignantId);
+    List<EmploiDuTemps> findByEnseignantId(UUID enseignantId);
 
-    List<EmploiDuTemps> findByEnseignantIdAndJourSemaineAndCreneauId(Long enseignantId, Integer jourSemaine, Long creneauId);
+    List<EmploiDuTemps> findByEnseignantIdAndJourSemaineAndCreneauId(UUID enseignantId, Integer jourSemaine, UUID creneauId);
 
-    List<EmploiDuTemps> findBySalleAndJourSemaineAndCreneauId(String salle, Integer jourSemaine, Long creneauId);
+    List<EmploiDuTemps> findBySalleAndJourSemaineAndCreneauId(String salle, Integer jourSemaine, UUID creneauId);
 
-    void deleteByClasseId(Long classeId);
+    void deleteByClasseId(UUID classeId);
 }

@@ -6,7 +6,7 @@ import { notify } from "@/lib/toast";
 import { uploadFile, getFileUrl } from "@/api/storage.api";
 
 interface PhotoUploadProps {
-  studentId?: number;
+  studentId?: string;
   studentName: string;
   currentPhotoUrl?: string | null;
   onPhotoUploaded?: (url: string) => void;
@@ -30,7 +30,7 @@ const iconSizes = {
  * This serves as a lightweight client-side cache since the Student entity
  * does not have a photoUrl field yet.
  */
-export function getStudentPhotoUrl(studentId: number): string | null {
+export function getStudentPhotoUrl(studentId: string): string | null {
   try {
     return localStorage.getItem(`student-photo-${studentId}`);
   } catch {
@@ -41,7 +41,7 @@ export function getStudentPhotoUrl(studentId: number): string | null {
 /**
  * Store a photo URL for a student in localStorage.
  */
-function setStudentPhotoUrl(studentId: number, url: string) {
+function setStudentPhotoUrl(studentId: string, url: string) {
   try {
     localStorage.setItem(`student-photo-${studentId}`, url);
   } catch {
@@ -52,7 +52,7 @@ function setStudentPhotoUrl(studentId: number, url: string) {
 /**
  * Remove stored photo URL for a student.
  */
-function removeStudentPhotoUrl(studentId: number) {
+function removeStudentPhotoUrl(studentId: string) {
   try {
     localStorage.removeItem(`student-photo-${studentId}`);
   } catch {

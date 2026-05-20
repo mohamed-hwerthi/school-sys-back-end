@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.note;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -33,20 +35,20 @@ public class NoteService {
     private final CurrentUserContext currentUser;
     private final AuditService auditService;
 
-    public List<NoteResponseDTO> findByExamen(Long examenId, Integer trimestre) {
+    public List<NoteResponseDTO> findByExamen(UUID examenId, Integer trimestre) {
         return noteRepository.findByExamenIdAndTrimestre(examenId, trimestre).stream()
                 .filter(n -> isInScope(n.getStudent().getId()))
                 .map(this::toResponse).toList();
     }
 
-    public List<NoteResponseDTO> findByStudent(Long studentId, Integer trimestre) {
+    public List<NoteResponseDTO> findByStudent(UUID studentId, Integer trimestre) {
         currentUser.assertCanAccessStudent(studentId);
         return noteRepository.findByStudentIdAndTrimestre(studentId, trimestre).stream()
                 .map(this::toResponse).toList();
     }
 
     /** Silent filter for list endpoints — filtered out rows are simply not returned. */
-    private boolean isInScope(Long studentId) {
+    private boolean isInScope(UUID studentId) {
         try {
             currentUser.assertCanAccessStudent(studentId);
             return true;
@@ -116,13 +118,13 @@ public class NoteService {
         return saved.stream().map(this::toResponse).toList();
     }
 
-    public List<MoyenneDTO> getMoyennes(Long classeId, Integer trimestre) {
+    public List<MoyenneDTO> getMoyennes(UUID classeId, Integer trimestre) {
         List<Note> notes = noteRepository.findByExamenClasseIdAndTrimestre(classeId, trimestre);
-        Map<Long, List<Note>> byStudent = notes.stream()
+        Map<UUID, List<Note>> byStudent = notes.stream()
                 .collect(Collectors.groupingBy(n -> n.getStudent().getId()));
 
         List<MoyenneDTO> result = new ArrayList<>();
-        for (Map.Entry<Long, List<Note>> entry : byStudent.entrySet()) {
+        for (Map.Entry<UUID, List<Note>> entry : byStudent.entrySet()) {
             List<Note> studentNotes = entry.getValue();
             Student student = studentNotes.get(0).getStudent();
             Map<String, List<Note>> byModule = studentNotes.stream()
@@ -162,7 +164,7 @@ public class NoteService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!noteRepository.existsById(id)) throw new ResourceNotFoundException("Note", id);
         noteRepository.deleteById(id);
         auditService.log("DELETE", "NOTE", id, "Suppression d'une note");
@@ -185,7 +187,7 @@ public class NoteService {
     }
 
     @Transactional
-    public BaremeDTO updateBareme(Long id, BaremeDTO dto) {
+    public BaremeDTO updateBareme(UUID id, BaremeDTO dto) {
         Bareme b = baremeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Bareme", id));
         b.setLabel(dto.getLabel()); b.setNoteMax(dto.getNoteMax()); b.setNoteMin(dto.getNoteMin());
         b.setNotePassage(dto.getNotePassage()); b.setActif(dto.getActif());
@@ -195,7 +197,7 @@ public class NoteService {
     }
 
     // --- Compétences ---
-    public List<CompetenceDTO> getCompetences(Long moduleId) {
+    public List<CompetenceDTO> getCompetences(UUID moduleId) {
         List<Competence> list = moduleId != null ? competenceRepository.findByModuleId(moduleId) : competenceRepository.findAll();
         return list.stream().map(c -> CompetenceDTO.builder()
                 .id(c.getId()).moduleId(c.getModuleId()).label(c.getLabel()).description(c.getDescription()).build()).toList();
@@ -209,12 +211,12 @@ public class NoteService {
     }
 
     @Transactional
-    public void deleteCompetence(Long id) {
+    public void deleteCompetence(UUID id) {
         if (!competenceRepository.existsById(id)) throw new ResourceNotFoundException("Competence", id);
         competenceRepository.deleteById(id);
     }
 
-    public List<EvaluationCompetenceDTO> getEvaluationsCompetences(Long examenId, Long eleveId) {
+    public List<EvaluationCompetenceDTO> getEvaluationsCompetences(UUID examenId, UUID eleveId) {
         List<EvaluationCompetence> list = eleveId != null ?
                 evaluationCompetenceRepository.findByEleveIdAndExamenId(eleveId, examenId) :
                 evaluationCompetenceRepository.findByExamenId(examenId);

@@ -19,11 +19,11 @@ const KPI_CONFIG_KEY = "analytics-kpi-config";
 /**
  * 360-degree student tracking.
  */
-export function useSuiviEleve(eleveId: number) {
+export function useSuiviEleve(eleveId: string) {
   return useQuery<SuiviEleve>({
     queryKey: [SUIVI_KEY, eleveId],
     queryFn: () => analyticsApi.getSuiviEleve(eleveId),
-    enabled: eleveId > 0,
+    enabled: !!eleveId,
   });
 }
 
@@ -60,7 +60,7 @@ export function useKpis() {
 /**
  * Cohort tracking.
  */
-export function useCohortes(niveauId?: number) {
+export function useCohortes(niveauId?: string) {
   return useQuery<Cohorte[]>({
     queryKey: [COHORTES_KEY, niveauId],
     queryFn: () => analyticsApi.getCohortes(niveauId),
@@ -90,7 +90,7 @@ export function useCreateKpiConfig() {
 export function useUpdateKpiConfig() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: KpiConfigRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: KpiConfigRequest }) =>
       analyticsApi.updateKpiConfig(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KPI_CONFIG_KEY] });
@@ -102,7 +102,7 @@ export function useUpdateKpiConfig() {
 export function useDeleteKpiConfig() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => analyticsApi.deleteKpiConfig(id),
+    mutationFn: (id: string) => analyticsApi.deleteKpiConfig(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KPI_CONFIG_KEY] });
       qc.invalidateQueries({ queryKey: [KPI_KEY] });

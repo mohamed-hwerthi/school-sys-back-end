@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rh;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.rh.dto.*;
 import jakarta.validation.Valid;
@@ -25,7 +27,7 @@ public class FormationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<FormationDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<FormationDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(formationService.getById(id)));
     }
 
@@ -38,25 +40,25 @@ public class FormationController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<FormationDTO>> update(
-            @PathVariable Long id, @Valid @RequestBody CreateFormationRequest dto) {
+            @PathVariable UUID id, @Valid @RequestBody CreateFormationRequest dto) {
         return ResponseEntity.ok(ApiResponse.ok(formationService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         formationService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/participants")
     public ResponseEntity<ApiResponse<FormationParticipantDTO>> addParticipant(
-            @PathVariable Long id, @Valid @RequestBody AddParticipantRequest dto) {
+            @PathVariable UUID id, @Valid @RequestBody AddParticipantRequest dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(formationService.addParticipant(id, dto)));
     }
 
     @DeleteMapping("/participants/{participantId}")
-    public ResponseEntity<Void> removeParticipant(@PathVariable Long participantId) {
+    public ResponseEntity<Void> removeParticipant(@PathVariable UUID participantId) {
         formationService.removeParticipant(participantId);
         return ResponseEntity.noContent().build();
     }

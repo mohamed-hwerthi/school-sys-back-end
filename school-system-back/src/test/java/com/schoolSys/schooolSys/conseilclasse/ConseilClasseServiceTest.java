@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.conseilclasse;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.anneescolaire.AnneeScolaire;
 import com.schoolSys.schooolSys.anneescolaire.AnneeScolaireRepository;
 import com.schoolSys.schooolSys.bulletin.BulletinService;
@@ -45,11 +47,11 @@ class ConseilClasseServiceTest {
 
     @BeforeEach
     void setUp() {
-        Niveau niveau1 = Niveau.builder().id(1L).name("1AP").build();
-        classe = Classe.builder().id(1L).letter("A").niveau(niveau1).build();
+        Niveau niveau1 = Niveau.builder().id(new UUID(0, 1)).name("1AP").build();
+        classe = Classe.builder().id(new UUID(0, 1)).letter("A").niveau(niveau1).build();
     }
 
-    private BulletinDTO bulletin(long studentId, String name, double moyenne) {
+    private BulletinDTO bulletin(UUID studentId, String name, double moyenne) {
         return BulletinDTO.builder()
                 .studentId(studentId).studentName(name)
                 .classe("1A").niveau("1AP")
@@ -61,28 +63,28 @@ class ConseilClasseServiceTest {
     @DisplayName("computes annual averages, ranks and proposes PASSAGE / REDOUBLEMENT")
     void computesAnnualAveragesAndProposals() {
         Niveau niveau1 = classe.getNiveau();
-        Niveau niveau2 = Niveau.builder().id(2L).name("2AP").build();
+        Niveau niveau2 = Niveau.builder().id(new UUID(0, 2)).name("2AP").build();
 
-        when(classeRepository.findById(1L)).thenReturn(Optional.of(classe));
+        when(classeRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(classe));
         when(niveauRepository.findAll()).thenReturn(List.of(niveau1, niveau2));
         when(baremeRepository.findByActifTrue())
                 .thenReturn(Optional.of(Bareme.builder().notePassage(new BigDecimal("10.0")).build()));
         when(anneeScolaireRepository.findByActiveTrue())
                 .thenReturn(Optional.of(AnneeScolaire.builder().label("2025-2026").build()));
 
-        when(bulletinService.getBulletins(1L, 1, "etatique")).thenReturn(List.of(
-                bulletin(1L, "Amine Ziani", 14.0),
-                bulletin(2L, "Sara Bennani", 8.0)));
-        when(bulletinService.getBulletins(1L, 2, "etatique")).thenReturn(List.of(
-                bulletin(1L, "Amine Ziani", 16.0),
-                bulletin(2L, "Sara Bennani", 9.0)));
-        when(bulletinService.getBulletins(1L, 3, "etatique")).thenReturn(List.of(
-                bulletin(1L, "Amine Ziani", 12.0),
-                bulletin(2L, "Sara Bennani", 7.0)));
+        when(bulletinService.getBulletins(new UUID(0, 1), 1, "etatique")).thenReturn(List.of(
+                bulletin(new UUID(0, 1), "Amine Ziani", 14.0),
+                bulletin(new UUID(0, 2), "Sara Bennani", 8.0)));
+        when(bulletinService.getBulletins(new UUID(0, 1), 2, "etatique")).thenReturn(List.of(
+                bulletin(new UUID(0, 1), "Amine Ziani", 16.0),
+                bulletin(new UUID(0, 2), "Sara Bennani", 9.0)));
+        when(bulletinService.getBulletins(new UUID(0, 1), 3, "etatique")).thenReturn(List.of(
+                bulletin(new UUID(0, 1), "Amine Ziani", 12.0),
+                bulletin(new UUID(0, 2), "Sara Bennani", 7.0)));
 
-        ConseilClasseDTO result = service.getConseilClasse(1L);
+        ConseilClasseDTO result = service.getConseilClasse(new UUID(0, 1));
 
-        assertThat(result.getClasseId()).isEqualTo(1L);
+        assertThat(result.getClasseId()).isEqualTo(new UUID(0, 1));
         assertThat(result.getClasseNom()).isEqualTo("1A");
         assertThat(result.getNiveauNom()).isEqualTo("1AP");
         assertThat(result.getNiveauSuivant()).isEqualTo("2AP");
@@ -92,7 +94,7 @@ class ConseilClasseServiceTest {
 
         // Ranked first: annual average (14 + 16 + 12) / 3 = 14.0 → PASSAGE
         PropositionPassageDTO first = result.getPropositions().get(0);
-        assertThat(first.getStudentId()).isEqualTo(1L);
+        assertThat(first.getStudentId()).isEqualTo(new UUID(0, 1));
         assertThat(first.getMoyenneAnnuelle()).isEqualTo(14.0);
         assertThat(first.getRang()).isEqualTo(1);
         assertThat(first.getDecisionProposee()).isEqualTo("PASSAGE");
@@ -100,7 +102,7 @@ class ConseilClasseServiceTest {
 
         // Ranked second: annual average (8 + 9 + 7) / 3 = 8.0 → REDOUBLEMENT
         PropositionPassageDTO second = result.getPropositions().get(1);
-        assertThat(second.getStudentId()).isEqualTo(2L);
+        assertThat(second.getStudentId()).isEqualTo(new UUID(0, 2));
         assertThat(second.getMoyenneAnnuelle()).isEqualTo(8.0);
         assertThat(second.getRang()).isEqualTo(2);
         assertThat(second.getDecisionProposee()).isEqualTo("REDOUBLEMENT");
@@ -109,18 +111,18 @@ class ConseilClasseServiceTest {
     @Test
     @DisplayName("annual average uses only the trimestres that have grades")
     void annualAverageIgnoresMissingTrimestres() {
-        when(classeRepository.findById(1L)).thenReturn(Optional.of(classe));
+        when(classeRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(classe));
         when(niveauRepository.findAll()).thenReturn(List.of(classe.getNiveau()));
         when(baremeRepository.findByActifTrue()).thenReturn(Optional.empty());
         when(anneeScolaireRepository.findByActiveTrue()).thenReturn(Optional.empty());
 
         // The student only has grades in the first trimestre.
-        when(bulletinService.getBulletins(1L, 1, "etatique"))
-                .thenReturn(List.of(bulletin(7L, "Yassine Alami", 11.0)));
-        when(bulletinService.getBulletins(1L, 2, "etatique")).thenReturn(List.of());
-        when(bulletinService.getBulletins(1L, 3, "etatique")).thenReturn(List.of());
+        when(bulletinService.getBulletins(new UUID(0, 1), 1, "etatique"))
+                .thenReturn(List.of(bulletin(new UUID(0, 7), "Yassine Alami", 11.0)));
+        when(bulletinService.getBulletins(new UUID(0, 1), 2, "etatique")).thenReturn(List.of());
+        when(bulletinService.getBulletins(new UUID(0, 1), 3, "etatique")).thenReturn(List.of());
 
-        ConseilClasseDTO result = service.getConseilClasse(1L);
+        ConseilClasseDTO result = service.getConseilClasse(new UUID(0, 1));
 
         assertThat(result.getSeuilPassage()).isEqualTo(10.0); // default when no active barème
         assertThat(result.getPropositions()).hasSize(1);
@@ -136,9 +138,9 @@ class ConseilClasseServiceTest {
     @Test
     @DisplayName("throws ResourceNotFoundException when the class does not exist")
     void throwsWhenClasseNotFound() {
-        when(classeRepository.findById(404L)).thenReturn(Optional.empty());
+        when(classeRepository.findById(new UUID(0, 404))).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.getConseilClasse(404L))
+        assertThatThrownBy(() -> service.getConseilClasse(new UUID(0, 404)))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 }

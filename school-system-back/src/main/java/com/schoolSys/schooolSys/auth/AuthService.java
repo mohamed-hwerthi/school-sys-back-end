@@ -114,7 +114,7 @@ public class AuthService {
     }
 
     @Transactional
-    public LoginResponseDTO verifyTwoFactor(Long userId, String code, String deviceName, String ipAddress) {
+    public LoginResponseDTO verifyTwoFactor(UUID userId, String code, String deviceName, String ipAddress) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -132,7 +132,7 @@ public class AuthService {
     }
 
     @Transactional
-    public Enable2FAResponseDTO enable2FA(Long userId) {
+    public Enable2FAResponseDTO enable2FA(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -153,7 +153,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void confirm2FA(Long userId, String code) {
+    public void confirm2FA(UUID userId, String code) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -170,7 +170,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void disable2FA(Long userId, String code) {
+    public void disable2FA(UUID userId, String code) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -241,7 +241,7 @@ public class AuthService {
         }
     }
 
-    public UserResponseDTO getCurrentUser(Long userId) {
+    public UserResponseDTO getCurrentUser(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         return toUserResponse(user);
@@ -249,7 +249,7 @@ public class AuthService {
 
     // ─── Session management ─────────────────────────────────────
 
-    public List<SessionDTO> getActiveSessions(Long userId, String currentToken) {
+    public List<SessionDTO> getActiveSessions(UUID userId, String currentToken) {
         List<RefreshToken> tokens = refreshTokenRepository.findActiveByUserId(userId);
         return tokens.stream()
                 .map(rt -> SessionDTO.builder()
@@ -264,7 +264,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void revokeSession(Long userId, Long sessionId) {
+    public void revokeSession(UUID userId, UUID sessionId) {
         RefreshToken token = refreshTokenRepository.findById(sessionId)
                 .orElseThrow(() -> new IllegalArgumentException("Session not found"));
 
@@ -277,7 +277,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void revokeAllOtherSessions(Long userId, String currentToken) {
+    public void revokeAllOtherSessions(UUID userId, String currentToken) {
         refreshTokenRepository.revokeAllOthersByUserId(userId, currentToken);
     }
 

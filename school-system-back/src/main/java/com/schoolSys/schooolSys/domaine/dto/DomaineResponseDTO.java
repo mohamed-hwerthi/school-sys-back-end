@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.domaine.dto;
 
+import java.util.UUID;
+
 import lombok.*;
 
 import java.util.List;
@@ -9,11 +11,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DomaineResponseDTO {
-    private Long id;
+    private UUID id;
     private String name;
     private String nameAr;
     private Integer ordre;
-    private Long niveauId;
+    private UUID niveauId;
     private String niveauName;
     private List<SousDomaineDTO> sousDomaines;
 }

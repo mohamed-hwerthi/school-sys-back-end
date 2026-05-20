@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.volumehoraire;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.volumehoraire.dto.ModuleClasseVolumeRequestDTO;
 import com.schoolSys.schooolSys.volumehoraire.dto.ModuleClasseVolumeResponseDTO;
@@ -18,7 +20,7 @@ public class ModuleClasseVolumeService {
     private final ModuleClasseVolumeRepository repository;
     private final ModuleClasseVolumeMapper mapper;
 
-    public List<ModuleClasseVolumeResponseDTO> findAll(Long classeId, Long anneeScolaireId) {
+    public List<ModuleClasseVolumeResponseDTO> findAll(UUID classeId, UUID anneeScolaireId) {
         List<ModuleClasseVolume> rows;
         if (classeId != null && anneeScolaireId != null) {
             rows = repository.findByClasseIdAndAnneeScolaireId(classeId, anneeScolaireId);
@@ -32,7 +34,7 @@ public class ModuleClasseVolumeService {
         return mapper.toResponseDTOList(rows);
     }
 
-    public ModuleClasseVolumeResponseDTO findById(Long id) {
+    public ModuleClasseVolumeResponseDTO findById(UUID id) {
         return mapper.toResponseDTO(load(id));
     }
 
@@ -48,21 +50,21 @@ public class ModuleClasseVolumeService {
     }
 
     @Transactional
-    public ModuleClasseVolumeResponseDTO update(Long id, ModuleClasseVolumeRequestDTO dto) {
+    public ModuleClasseVolumeResponseDTO update(UUID id, ModuleClasseVolumeRequestDTO dto) {
         ModuleClasseVolume entity = load(id);
         mapper.updateEntity(dto, entity);
         return mapper.toResponseDTO(repository.save(entity));
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("ModuleClasseVolume", id);
         }
         repository.deleteById(id);
     }
 
-    private ModuleClasseVolume load(Long id) {
+    private ModuleClasseVolume load(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ModuleClasseVolume", id));
     }

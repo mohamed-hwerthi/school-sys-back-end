@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.student;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.PagedResponse;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -76,7 +78,7 @@ public class StudentService {
         return PagedResponse.from(page, content);
     }
 
-    public StudentResponseDTO findById(Long id) {
+    public StudentResponseDTO findById(UUID id) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Student", id));
         assertCurrentUserCanRead(student);
@@ -94,7 +96,7 @@ public class StudentService {
             return (r, q, cb) -> cb.conjunction();
         }
         if (currentUser.hasRole(com.schoolSys.schooolSys.auth.UserRole.ENSEIGNANT)) {
-            Set<Long> classeIds = currentUser.getScopedClasseIdsForTeacher();
+            Set<UUID> classeIds = currentUser.getScopedClasseIdsForTeacher();
             List<StudentSpecification.NiveauClasse> tuples = classeRepository.findAllById(classeIds)
                     .stream()
                     .map(c -> new StudentSpecification.NiveauClasse(
@@ -117,7 +119,7 @@ public class StudentService {
             throw new AccessDeniedException("Cet enfant n'est pas dans votre périmètre.");
         }
         if (currentUser.hasRole(com.schoolSys.schooolSys.auth.UserRole.ENSEIGNANT)) {
-            Set<Long> classeIds = currentUser.getScopedClasseIdsForTeacher();
+            Set<UUID> classeIds = currentUser.getScopedClasseIdsForTeacher();
             List<Classe> myClasses = classeRepository.findAllById(classeIds);
             boolean inScope = myClasses.stream().anyMatch(c ->
                     c.getNiveau().getName().equals(student.getNiveau())
@@ -143,7 +145,7 @@ public class StudentService {
     }
 
     @Transactional
-    public StudentResponseDTO update(Long id, StudentRequestDTO dto) {
+    public StudentResponseDTO update(UUID id, StudentRequestDTO dto) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Student", id));
         String existingMatricule = student.getMatricule();
@@ -156,7 +158,7 @@ public class StudentService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!studentRepository.existsById(id)) {
             throw new ResourceNotFoundException("Student", id);
         }
@@ -204,7 +206,7 @@ public class StudentService {
             StudentRequestDTO dto = dtos.get(i);
 
             try {
-                Long existingId = null;
+                UUID existingId = null;
                 if (dto.getEmail() != null && !dto.getEmail().isBlank()
                         && studentRepository.existsByEmail(dto.getEmail())) {
                     if (!updateOnConflict) {
@@ -295,7 +297,7 @@ public class StudentService {
 
     // ===================== ELV-012: Fiche eleve PDF (HTML) =====================
 
-    public String generateFicheHtml(Long id) {
+    public String generateFicheHtml(UUID id) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Student", id));
 

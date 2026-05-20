@@ -1,6 +1,7 @@
 package com.schoolSys.schooolSys.reporting;
 
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
+import com.schoolSys.schooolSys.reporting.dto.ClassStatsDTO;
 import com.schoolSys.schooolSys.reporting.dto.DashboardStatsDTO;
 import com.schoolSys.schooolSys.reporting.dto.MonthlyTrendDTO;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,13 @@ public class ReportingController {
     public ResponseEntity<ApiResponse<DashboardStatsDTO>> getDashboard(
             @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(reportingService.getDashboardStats(anneeScolaire)));
+    }
+
+    @GetMapping("/admin/class-stats")
+    @PreAuthorize("hasAuthority('VIEW_REPORTS')")
+    public ResponseEntity<ApiResponse<List<ClassStatsDTO>>> getClassStats(
+            @RequestParam(defaultValue = "1") int trimestre) {
+        return ResponseEntity.ok(ApiResponse.ok(reportingService.getClassStats(trimestre)));
     }
 
     @GetMapping("/trends")

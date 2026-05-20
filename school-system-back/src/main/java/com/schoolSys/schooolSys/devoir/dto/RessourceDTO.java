@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.devoir.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,14 +15,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class RessourceDTO {
 
-    private Long id;
+    private UUID id;
     private String titre;
     private String description;
-    private Long moduleId;
+    private UUID moduleId;
     private String type;
     private String fichierUrl;
     private String lienExterne;
-    private Long enseignantId;
+    private UUID enseignantId;
     private Long tailleFichier;
     private LocalDateTime createdAt;
 }

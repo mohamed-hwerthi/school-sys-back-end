@@ -143,7 +143,7 @@ export default function Teachers() {
   };
 
   const getInitials = (t: Teacher) => `${t.prenom[0]}${t.nom[0]}`.toUpperCase();
-  const getAvatarColor = (id: number) => avatarColors[id % avatarColors.length];
+  const getAvatarColor = (id: string) => avatarColors[id % avatarColors.length];
 
   const statusConfig: Record<string, { bg: string; text: string }> = {
     Actif: { bg: "bg-emerald-100", text: "text-emerald-700" },

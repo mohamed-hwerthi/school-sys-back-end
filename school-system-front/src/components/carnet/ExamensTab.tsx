@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useCarnetSelection } from "./CarnetSelectionContext";
 import {
@@ -44,6 +44,7 @@ import {
   useDeleteExamensBulk,
 } from "@/hooks/useExamens";
 import { useTeachers } from "@/hooks/useTeachers";
+import { useCurrentTrimestre } from "@/hooks/useAnneeScolaire";
 import type { ExamenDTO, ExamenRequest } from "@/api/examens.api";
 
 const emptyForm: ExamenRequest = {
@@ -71,6 +72,15 @@ export default function ExamensTab() {
   const { niveauId: filterNiveauId, classeId: filterClasseId, setNiveauId: setFilterNiveauId, setClasseId: setFilterClasseId, goToTab } = useCarnetSelection();
   const [filterModuleId, setFilterModuleId] = useState<number>(0);
   const [filterTrimestre, setFilterTrimestre] = useState<number>(0);
+  const [trimestreTouched, setTrimestreTouched] = useState(false);
+  const currentTrimestre = useCurrentTrimestre();
+  // Préselectionne le trimestre courant tant que l'utilisateur n'a pas
+  // explicitement changé le filtre.
+  useEffect(() => {
+    if (!trimestreTouched && currentTrimestre && filterTrimestre === 0) {
+      setFilterTrimestre(currentTrimestre);
+    }
+  }, [currentTrimestre, trimestreTouched, filterTrimestre]);
   const [filterStatut, setFilterStatut] = useState<"all" | "complete" | "partial" | "empty">("all");
   const [search, setSearch] = useState("");
 
@@ -130,7 +140,7 @@ export default function ExamensTab() {
     });
   }, [examens, search, filterStatut]);
 
-  const toggleSelect = (id: number) => {
+  const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -242,7 +252,7 @@ export default function ExamensTab() {
   };
 
   const handleNiveauChange = (v: string) => {
-    setFilterNiveauId(Number(v));
+    setFilterNiveauId(v);
     setFilterClasseId(0);
     setFilterModuleId(0);
     setFilterTrimestre(0);
@@ -279,7 +289,7 @@ export default function ExamensTab() {
           <Select
             value={filterClasseId ? String(filterClasseId) : ""}
             onValueChange={(v) => {
-              setFilterClasseId(Number(v));
+              setFilterClasseId(v);
               setSelectedIds(new Set());
             }}
             disabled={!filterNiveauId}
@@ -300,7 +310,7 @@ export default function ExamensTab() {
           <Select
             value={filterModuleId ? String(filterModuleId) : ""}
             onValueChange={(v) => {
-              setFilterModuleId(Number(v));
+              setFilterModuleId(v);
               setSelectedIds(new Set());
             }}
             disabled={!filterNiveauId}
@@ -322,6 +332,7 @@ export default function ExamensTab() {
             value={filterTrimestre ? String(filterTrimestre) : "0"}
             onValueChange={(v) => {
               setFilterTrimestre(Number(v));
+              setTrimestreTouched(true);
               setSelectedIds(new Set());
             }}
           >
@@ -625,7 +636,7 @@ export default function ExamensTab() {
               <Select
                 value={formNiveauId ? String(formNiveauId) : ""}
                 onValueChange={(v) => {
-                  setFormNiveauId(Number(v));
+                  setFormNiveauId(v);
                   setForm({ ...form, classeId: 0, moduleId: 0 });
                 }}
               >
@@ -648,7 +659,7 @@ export default function ExamensTab() {
                 <Select
                   value={form.classeId ? String(form.classeId) : ""}
                   onValueChange={(v) =>
-                    setForm({ ...form, classeId: Number(v) })
+                    setForm({ ...form, classeId: v })
                   }
                   disabled={!formNiveauId}
                 >
@@ -669,7 +680,7 @@ export default function ExamensTab() {
                 <Select
                   value={form.moduleId ? String(form.moduleId) : ""}
                   onValueChange={(v) =>
-                    setForm({ ...form, moduleId: Number(v) })
+                    setForm({ ...form, moduleId: v })
                   }
                   disabled={!formNiveauId}
                 >

@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { devoirsApi } from "@/api/devoirs.api";
 import { ChildSelector } from "@/components/ChildSelector";
 import { EmptyState } from "@/components/EmptyState";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 type FilterType = "upcoming" | "past";
@@ -75,6 +76,7 @@ function isUpcoming(homework: Homework): boolean {
 }
 
 export default function HomeworkScreen() {
+  const { colors } = useTheme();
   const { selectedChild, isLoading: childrenLoading } = useChild();
   const navigation = useNavigation<any>();
   const [filter, setFilter] = useState<FilterType>("upcoming");

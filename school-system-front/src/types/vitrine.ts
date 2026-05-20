@@ -1,7 +1,7 @@
 // Vitrine (showcase website) types
 
 export interface VitrineConfig {
-  id: number;
+  id: string;
   schoolDisplayName: string;
   slogan: string;
   logoUrl: string | null;
@@ -21,7 +21,7 @@ export interface VitrineConfig {
 }
 
 export interface VitrinePage {
-  id: number;
+  id: string;
   title: string;
   slug: string;
   displayOrder: number;
@@ -30,8 +30,8 @@ export interface VitrinePage {
 }
 
 export interface VitrineSection {
-  id: number;
-  pageId: number;
+  id: string;
+  pageId: string;
   sectionType: "hero" | "text" | "gallery" | "stats" | "cta" | "testimonials" | "map" | "announcements";
   title: string | null;
   content: Record<string, unknown>;
@@ -40,7 +40,7 @@ export interface VitrineSection {
 }
 
 export interface VitrineGalleryItem {
-  id: number;
+  id: string;
   imageUrl: string;
   caption: string | null;
   category: string | null;
@@ -48,7 +48,7 @@ export interface VitrineGalleryItem {
 }
 
 export interface VitrineAnnouncement {
-  id: number;
+  id: string;
   title: string;
   body: string | null;
   pinned: boolean;
@@ -66,7 +66,7 @@ export interface VitrineAnalytics {
 }
 
 export interface VitrineContact {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phone: string | null;

@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.disponibilite;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -18,17 +21,18 @@ import java.time.LocalDateTime;
 public class EnseignantDisponibilite {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "enseignant_id", nullable = false)
-    private Long enseignantId;
+    private UUID enseignantId;
 
     @Column(name = "jour_semaine", nullable = false)
     private Integer jourSemaine;
 
     @Column(name = "creneau_id", nullable = false)
-    private Long creneauId;
+    private UUID creneauId;
 
     @Column(nullable = false, length = 20)
     private String type;

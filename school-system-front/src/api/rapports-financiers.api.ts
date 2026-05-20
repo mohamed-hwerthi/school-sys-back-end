@@ -38,7 +38,7 @@ export interface LigneParClasse {
 }
 
 export interface LigneParEleve {
-  studentId: number;
+  studentId: string;
   nom: string;
   prenom: string;
   classe: string;

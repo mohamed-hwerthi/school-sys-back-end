@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.finance.Remise;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -11,9 +13,9 @@ import java.math.BigDecimal;
 public class RemiseRequestDTO {
 
     @NotNull(message = "L'élève est requis")
-    private Long studentId;
+    private UUID studentId;
 
-    private Long typeFraisId;
+    private UUID typeFraisId;
 
     @NotNull(message = "Le type est requis")
     private Remise.TypeRemise type;

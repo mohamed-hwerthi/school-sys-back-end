@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.discipline;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import com.schoolSys.schooolSys.common.audit.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,8 +25,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class Incident extends AuditableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(nullable = false)
     private String titre;
@@ -44,7 +48,7 @@ public class Incident extends AuditableEntity {
     private String lieu;
 
     @Column(name = "signale_par_id")
-    private Long signaleParId;
+    private UUID signaleParId;
 
     @OneToMany(mappedBy = "incident", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

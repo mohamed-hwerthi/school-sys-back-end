@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.volumehoraire.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -15,14 +17,14 @@ import lombok.NoArgsConstructor;
 public class ModuleClasseVolumeRequestDTO {
 
     @NotNull(message = "Le module est obligatoire")
-    private Long moduleId;
+    private UUID moduleId;
 
     @NotNull(message = "La classe est obligatoire")
-    private Long classeId;
+    private UUID classeId;
 
-    private Long enseignantId;
+    private UUID enseignantId;
 
-    private Long anneeScolaireId;
+    private UUID anneeScolaireId;
 
     @NotNull(message = "Le nombre d'heures hebdomadaires est obligatoire")
     @Min(value = 1, message = "Au moins 1 heure par semaine")

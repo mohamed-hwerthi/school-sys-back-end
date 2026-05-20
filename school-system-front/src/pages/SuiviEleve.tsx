@@ -88,7 +88,7 @@ export default function SuiviEleve() {
 
   const handleSearch = () => {
     const id = parseInt(searchInput, 10);
-    if (!isNaN(id) && id > 0) {
+    if (!isNaN(id) && id) {
       setEleveId(id);
     }
   };

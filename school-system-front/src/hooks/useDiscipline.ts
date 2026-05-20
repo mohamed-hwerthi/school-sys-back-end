@@ -19,7 +19,7 @@ export function useIncidents() {
 /**
  * Single incident by ID.
  */
-export function useIncident(id: number) {
+export function useIncident(id: string) {
   return useQuery<Incident>({
     queryKey: [INCIDENTS_KEY, id],
     queryFn: () => disciplineApi.getIncidentById(id),
@@ -47,7 +47,7 @@ export function useCreateIncident() {
 export function useUpdateIncident() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Incident> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<Incident> }) =>
       disciplineApi.updateIncident(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [INCIDENTS_KEY] });
@@ -61,7 +61,7 @@ export function useUpdateIncident() {
 export function useDeleteIncident() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => disciplineApi.deleteIncident(id),
+    mutationFn: (id: string) => disciplineApi.deleteIncident(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [INCIDENTS_KEY] });
     },
@@ -81,11 +81,11 @@ export function useSanctions() {
 /**
  * Sanctions by student.
  */
-export function useSanctionsByEleve(eleveId: number) {
+export function useSanctionsByEleve(eleveId: string) {
   return useQuery<Sanction[]>({
     queryKey: [SANCTIONS_KEY, "eleve", eleveId],
     queryFn: () => disciplineApi.getSanctionsByEleve(eleveId),
-    enabled: eleveId > 0,
+    enabled: !!eleveId,
   });
 }
 
@@ -110,7 +110,7 @@ export function useCreateSanction() {
 export function useUpdateSanction() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Sanction> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<Sanction> }) =>
       disciplineApi.updateSanction(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [SANCTIONS_KEY] });
@@ -124,7 +124,7 @@ export function useUpdateSanction() {
 export function useDeleteSanction() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => disciplineApi.deleteSanction(id),
+    mutationFn: (id: string) => disciplineApi.deleteSanction(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [SANCTIONS_KEY] });
     },
@@ -134,11 +134,11 @@ export function useDeleteSanction() {
 /**
  * Discipline data by student (incidents + sanctions).
  */
-export function useDisciplineByEleve(eleveId: number) {
+export function useDisciplineByEleve(eleveId: string) {
   return useQuery<{ incidents: Incident[]; sanctions: Sanction[] }>({
     queryKey: ["discipline", "eleve", eleveId],
     queryFn: () => disciplineApi.getByEleve(eleveId),
-    enabled: eleveId > 0,
+    enabled: !!eleveId,
   });
 }
 
@@ -147,11 +147,11 @@ export function useDisciplineByEleve(eleveId: number) {
 /**
  * Get sanction suggestion for escalation.
  */
-export function useSanctionSuggestion(eleveId: number, enabled = false) {
+export function useSanctionSuggestion(eleveId: string, enabled = false) {
   return useQuery<SanctionSuggestion>({
     queryKey: [SANCTIONS_KEY, "suggestion", eleveId],
     queryFn: () => disciplineApi.getSanctionSuggestion(eleveId),
-    enabled: enabled && eleveId > 0,
+    enabled: enabled && !!eleveId,
   });
 }
 
@@ -161,7 +161,7 @@ export function useSanctionSuggestion(eleveId: number, enabled = false) {
 export function useApproveSanction() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, approuveParId, commentaire }: { id: number; approuveParId: number; commentaire?: string }) =>
+    mutationFn: ({ id, approuveParId, commentaire }: { id: string; approuveParId: string; commentaire?: string }) =>
       disciplineApi.approveSanction(id, approuveParId, commentaire),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [SANCTIONS_KEY] });
@@ -175,7 +175,7 @@ export function useApproveSanction() {
 export function useLeverSanction() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => disciplineApi.leverSanction(id),
+    mutationFn: (id: string) => disciplineApi.leverSanction(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [SANCTIONS_KEY] });
     },
@@ -187,10 +187,10 @@ export function useLeverSanction() {
 /**
  * Get full discipline record for a student.
  */
-export function useDossierDisciplinaire(eleveId: number, enabled = true) {
+export function useDossierDisciplinaire(eleveId: string, enabled = true) {
   return useQuery<DossierDisciplinaire>({
     queryKey: [DOSSIER_KEY, eleveId],
     queryFn: () => disciplineApi.getDossierDisciplinaire(eleveId),
-    enabled: enabled && eleveId > 0,
+    enabled: enabled && !!eleveId,
   });
 }

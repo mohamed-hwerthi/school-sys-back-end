@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.examenonline.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,8 +16,8 @@ import java.util.List;
 @AllArgsConstructor
 public class QuestionDTO {
 
-    private Long id;
-    private Long quizId;
+    private UUID id;
+    private UUID quizId;
     private String texte;
     private String typeQuestion;
     private BigDecimal points;

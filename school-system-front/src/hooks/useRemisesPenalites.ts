@@ -21,11 +21,11 @@ export function useRemises(anneeScolaire = DEFAULT_ANNEE) {
   });
 }
 
-export function useRemisesByStudent(studentId: number, anneeScolaire = DEFAULT_ANNEE) {
+export function useRemisesByStudent(studentId: string, anneeScolaire = DEFAULT_ANNEE) {
   return useQuery<RemiseDTO[]>({
     queryKey: [REMISES_KEY, "student", studentId, anneeScolaire],
     queryFn: () => remisesApi.getByStudent(studentId, anneeScolaire),
-    enabled: studentId > 0,
+    enabled: !!studentId,
   });
 }
 
@@ -42,7 +42,7 @@ export function useCreateRemise() {
 export function useUpdateRemise() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: RemiseRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: RemiseRequest }) =>
       remisesApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [REMISES_KEY] });
@@ -53,7 +53,7 @@ export function useUpdateRemise() {
 export function useDeleteRemise() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => remisesApi.delete(id),
+    mutationFn: (id: string) => remisesApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [REMISES_KEY] });
     },
@@ -69,11 +69,11 @@ export function usePenalites(anneeScolaire = DEFAULT_ANNEE) {
   });
 }
 
-export function usePenalitesByStudent(studentId: number, anneeScolaire = DEFAULT_ANNEE) {
+export function usePenalitesByStudent(studentId: string, anneeScolaire = DEFAULT_ANNEE) {
   return useQuery<PenaliteDTO[]>({
     queryKey: [PENALITES_KEY, "student", studentId, anneeScolaire],
     queryFn: () => penalitesApi.getByStudent(studentId, anneeScolaire),
-    enabled: studentId > 0,
+    enabled: !!studentId,
   });
 }
 
@@ -90,7 +90,7 @@ export function useCreatePenalite() {
 export function useUpdatePenalite() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: PenaliteRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: PenaliteRequest }) =>
       penalitesApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [PENALITES_KEY] });
@@ -101,7 +101,7 @@ export function useUpdatePenalite() {
 export function useTogglePenalitePayee() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => penalitesApi.togglePayee(id),
+    mutationFn: (id: string) => penalitesApi.togglePayee(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [PENALITES_KEY] });
     },
@@ -111,7 +111,7 @@ export function useTogglePenalitePayee() {
 export function useDeletePenalite() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => penalitesApi.delete(id),
+    mutationFn: (id: string) => penalitesApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [PENALITES_KEY] });
     },

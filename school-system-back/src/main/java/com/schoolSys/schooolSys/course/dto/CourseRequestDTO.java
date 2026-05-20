@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.course.dto;
 
+import java.util.UUID;
+
 import lombok.Data;
 
 /**
@@ -11,5 +13,5 @@ public class CourseRequestDTO {
     private String description;
     private String code;
     /** Optional — the ID of the teacher to assign. */
-    private Long teacherId;
+    private UUID teacherId;
 }

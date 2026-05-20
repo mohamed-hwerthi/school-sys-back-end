@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.teacher.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TeacherEvaluationStatsDTO {
 
-    private Long teacherId;
+    private UUID teacherId;
     private String teacherName;
     private double avgPonctualite;
     private double avgPedagogie;

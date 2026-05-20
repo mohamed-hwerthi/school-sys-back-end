@@ -5,13 +5,13 @@ const BASE = "/cloture";
 
 export const clotureApi = {
   /** Pre-closure verifications for a school year. */
-  getPreChecks: async (anneeId: number): Promise<PreChecksResponse> => {
+  getPreChecks: async (anneeId: string): Promise<PreChecksResponse> => {
     const res = await api.get<PreChecksResponse>(`${BASE}/${anneeId}/pre-checks`);
     return res.data;
   },
 
   /** Close a school year, optionally creating the next one. */
-  cloturer: async (anneeId: number, request: ClotureRequest): Promise<ClotureResult> => {
+  cloturer: async (anneeId: string, request: ClotureRequest): Promise<ClotureResult> => {
     const res = await api.post<ClotureResult>(`${BASE}/${anneeId}`, request);
     return res.data;
   },

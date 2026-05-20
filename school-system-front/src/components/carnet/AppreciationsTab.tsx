@@ -51,13 +51,13 @@ function recoFromMoyenne(moyenne: number | null | undefined): string {
 type ViewMode = "recommandations" | "observations";
 
 interface LocalReco {
-  studentId: number;
+  studentId: string;
   studentName: string;
   texte: string;
 }
 
 interface LocalObs {
-  studentId: number;
+  studentId: string;
   studentName: string;
   comportement: string;
   certificatType: string;
@@ -65,8 +65,8 @@ interface LocalObs {
 
 export default function AppreciationsTab() {
   const { niveaux } = useNiveaux();
-  const { niveauId, classeId, trimestre, setNiveauId, setClasseId, setTrimestre } = useCarnetSelection();
-  const [domaineId, setDomaineId] = useState<number>(0);
+  const { niveauId, classeId, trimestre, setNiveauId, setClasseId, setTrimestre, goToTab } = useCarnetSelection();
+  const [domaineId, setDomaineId] = useState<string>("");
   const [viewMode, setViewMode] = useState<ViewMode>("recommandations");
 
   const { data: classes = [] } = useClasses(niveauId || undefined);
@@ -94,7 +94,7 @@ export default function AppreciationsTab() {
 
   // Map studentId -> moyenne du domaine sélectionné
   const moyenneDomaineByStudent = useMemo(() => {
-    const map = new Map<number, number>();
+    const map = new Map<string, number>();
     if (!domaineId) return map;
     bulletins.forEach((b) => {
       const d = b.domaines.find((dd) => dd.domaineId === domaineId);
@@ -114,7 +114,9 @@ export default function AppreciationsTab() {
     [existingRecos, domaineId]
   );
 
-  // Merge students + existing recommendations for selected domaine
+  // Merge students + existing recommendations for selected domaine.
+  // Si aucune reco saisie pour un élève, on pré-remplit avec la phrase arabe
+  // déduite de sa moyenne dans le domaine (excellent / bon / passable / faible).
   useEffect(() => {
     if (!domaineId || !trimestre || students.length === 0) {
       setLocalRecos([]);
@@ -122,13 +124,17 @@ export default function AppreciationsTab() {
     }
     const recoMap = new Map(filteredRecos.map((r) => [r.studentId, r]));
     setLocalRecos(
-      students.map((s) => ({
-        studentId: s.id,
-        studentName: `${s.prenom} ${s.nom}`,
-        texte: recoMap.get(s.id)?.texte ?? "",
-      }))
+      students.map((s) => {
+        const existing = recoMap.get(s.id)?.texte ?? "";
+        const auto = recoFromMoyenne(moyenneDomaineByStudent.get(s.id));
+        return {
+          studentId: s.id,
+          studentName: `${s.prenom} ${s.nom}`,
+          texte: existing || auto,
+        };
+      })
     );
-  }, [students, filteredRecos, domaineId, trimestre]);
+  }, [students, filteredRecos, domaineId, trimestre, moyenneDomaineByStudent]);
 
   // Merge students + existing observations
   useEffect(() => {
@@ -147,7 +153,7 @@ export default function AppreciationsTab() {
     );
   }, [students, existingObs, trimestre]);
 
-  const handleRecoChange = (studentId: number, texte: string) => {
+  const handleRecoChange = (studentId: string, texte: string) => {
     setLocalRecos((prev) =>
       prev.map((r) => (r.studentId === studentId ? { ...r, texte } : r))
     );
@@ -184,13 +190,17 @@ export default function AppreciationsTab() {
       return;
     }
     upsertRecos.mutate(items, {
-      onSuccess: () => notify.success("Recommandations sauvegardées"),
+      onSuccess: () => {
+        notify.success("Recommandations sauvegardées");
+        // Étape suivante naturelle : générer les carnets avec les recos.
+        goToTab("carnets");
+      },
       onError: () => notify.error("Erreur lors de la sauvegarde"),
     });
   };
 
   const handleObsChange = (
-    studentId: number,
+    studentId: string,
     field: "comportement" | "certificatType",
     value: string
   ) => {
@@ -215,12 +225,15 @@ export default function AppreciationsTab() {
       return;
     }
     upsertObs.mutate(items, {
-      onSuccess: () => notify.success("Observations sauvegardées"),
+      onSuccess: () => {
+        notify.success("Observations sauvegardées");
+        goToTab("carnets");
+      },
       onError: () => notify.error("Erreur lors de la sauvegarde"),
     });
   };
 
-  const ready = trimestre > 0 && classeId > 0 && students.length > 0;
+  const ready = trimestre > 0 && classeId && students.length > 0;
 
   return (
     <div className="space-y-4">
@@ -251,9 +264,9 @@ export default function AppreciationsTab() {
           <Select
             value={niveauId ? String(niveauId) : ""}
             onValueChange={(v) => {
-              setNiveauId(Number(v));
-              setClasseId(0);
-              setDomaineId(0);
+              setNiveauId(v);
+              setClasseId("");
+              setDomaineId("");
             }}
           >
             <SelectTrigger className="w-[180px]">
@@ -271,7 +284,7 @@ export default function AppreciationsTab() {
 
           <Select
             value={classeId ? String(classeId) : ""}
-            onValueChange={(v) => setClasseId(Number(v))}
+            onValueChange={(v) => setClasseId(v)}
             disabled={!niveauId}
           >
             <SelectTrigger className="w-[140px]">
@@ -333,7 +346,7 @@ export default function AppreciationsTab() {
               <Label className="text-xs text-muted-foreground">Domaine</Label>
               <Select
                 value={domaineId ? String(domaineId) : ""}
-                onValueChange={(v) => setDomaineId(Number(v))}
+                onValueChange={(v) => setDomaineId(v)}
               >
                 <SelectTrigger className="w-[250px]">
                   <SelectValue placeholder="Sélectionner un domaine" />
@@ -347,7 +360,7 @@ export default function AppreciationsTab() {
                 </SelectContent>
               </Select>
             </div>
-            {domaineId > 0 && (
+            {domaineId && (
               <>
                 <div className="sm:ms-auto flex items-center gap-2 flex-wrap">
                   <Button
@@ -379,7 +392,7 @@ export default function AppreciationsTab() {
           </div>
 
           {/* Reco grid */}
-          {domaineId > 0 && (
+          {domaineId && (
             <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -391,6 +404,9 @@ export default function AppreciationsTab() {
                       <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground w-48">
                         Élève
                       </th>
+                      <th className="py-3 px-4 text-center text-xs font-semibold text-muted-foreground w-24">
+                        Moy. domaine
+                      </th>
                       <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
                         Recommandation (توصيات المدرس)
                       </th>
@@ -400,7 +416,7 @@ export default function AppreciationsTab() {
                     {localRecos.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={3}
+                          colSpan={4}
                           className="py-16 text-center text-muted-foreground"
                         >
                           <Users className="h-10 w-10 mx-auto mb-3 opacity-30" />
@@ -410,29 +426,47 @@ export default function AppreciationsTab() {
                         </td>
                       </tr>
                     ) : (
-                      localRecos.map((r, idx) => (
-                        <tr
-                          key={r.studentId}
-                          className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors"
-                        >
-                          <td className="py-2 px-4 text-muted-foreground text-xs">
-                            {idx + 1}
-                          </td>
-                          <td className="py-2 px-4 font-medium text-foreground">
-                            {r.studentName}
-                          </td>
-                          <td className="py-2 px-4">
-                            <Input
-                              value={r.texte}
-                              onChange={(e) =>
-                                handleRecoChange(r.studentId, e.target.value)
-                              }
-                              placeholder="Saisir la recommandation..."
-                              dir="rtl"
-                            />
-                          </td>
-                        </tr>
-                      ))
+                      localRecos.map((r, idx) => {
+                        const moy = moyenneDomaineByStudent.get(r.studentId);
+                        const moyColor =
+                          moy == null
+                            ? "text-muted-foreground"
+                            : moy >= 16
+                            ? "text-emerald-600"
+                            : moy >= 12
+                            ? "text-green-600"
+                            : moy >= 10
+                            ? "text-foreground"
+                            : moy >= 8
+                            ? "text-orange-600"
+                            : "text-red-600";
+                        return (
+                          <tr
+                            key={r.studentId}
+                            className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors"
+                          >
+                            <td className="py-2 px-4 text-muted-foreground text-xs">
+                              {idx + 1}
+                            </td>
+                            <td className="py-2 px-4 font-medium text-foreground">
+                              {r.studentName}
+                            </td>
+                            <td className={`py-2 px-4 text-center font-semibold tabular-nums ${moyColor}`}>
+                              {moy != null ? moy.toFixed(2) : "—"}
+                            </td>
+                            <td className="py-2 px-4">
+                              <Input
+                                value={r.texte}
+                                onChange={(e) =>
+                                  handleRecoChange(r.studentId, e.target.value)
+                                }
+                                placeholder="Saisir la recommandation..."
+                                dir="rtl"
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>

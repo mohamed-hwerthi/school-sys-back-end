@@ -1,6 +1,7 @@
 import axios from "axios";
 import { storage } from "@/utils/storage";
 import { API_BASE_URL } from "@/constants/api";
+import { emitForceLogout } from "@/api/authBus";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -82,7 +83,9 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         await storage.deleteItem(TOKEN_KEY);
         await storage.deleteItem(REFRESH_TOKEN_KEY);
-        // Auth context will detect missing token and redirect to login
+        // Tell AuthContext to drop in-memory state too — otherwise the UI
+        // stays on an authenticated screen with every query 401-ing.
+        emitForceLogout();
       } finally {
         isRefreshing = false;
       }

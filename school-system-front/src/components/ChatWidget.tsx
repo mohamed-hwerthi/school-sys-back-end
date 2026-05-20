@@ -4,7 +4,7 @@ import { useChat, ChatMessageData } from "@/hooks/useChat";
 import { cn } from "@/lib/utils";
 
 interface Contact {
-  id: number;
+  id: string;
   name: string;
   role?: string;
   online?: boolean;

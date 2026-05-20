@@ -1,7 +1,7 @@
 export type VehiculeStatut = 'ACTIF' | 'EN_PANNE' | 'EN_MAINTENANCE';
 
 export interface Vehicule {
-  id: number;
+  id: string;
   immatriculation: string;
   marque?: string;
   modele?: string;
@@ -16,8 +16,8 @@ export interface Vehicule {
 }
 
 export interface Arret {
-  id?: number;
-  circuitId?: number;
+  id?: string;
+  circuitId?: string;
   nom: string;
   adresse?: string;
   ordre: number;
@@ -27,10 +27,10 @@ export interface Arret {
 }
 
 export interface Circuit {
-  id: number;
+  id: string;
   nom: string;
   description?: string;
-  vehiculeId?: number;
+  vehiculeId?: string;
   vehiculeImmatriculation?: string;
   heureDepart?: string;
   heureRetour?: string;
@@ -44,11 +44,11 @@ export interface Circuit {
 }
 
 export interface AffectationTransport {
-  id: number;
-  eleveId: number;
-  circuitId: number;
+  id: string;
+  eleveId: string;
+  circuitId: string;
   circuitNom?: string;
-  arretId?: number;
+  arretId?: string;
   arretNom?: string;
   anneeScolaire: string;
   actif: boolean;
@@ -65,7 +65,7 @@ export interface TransportStats {
 export interface CreateCircuitRequest {
   nom: string;
   description?: string;
-  vehiculeId?: number;
+  vehiculeId?: string;
   heureDepart?: string;
   heureRetour?: string;
   distanceKm?: number;
@@ -74,8 +74,8 @@ export interface CreateCircuitRequest {
 }
 
 export interface CreateAffectationRequest {
-  eleveId: number;
-  circuitId: number;
-  arretId?: number;
+  eleveId: string;
+  circuitId: string;
+  arretId?: string;
   anneeScolaire: string;
 }

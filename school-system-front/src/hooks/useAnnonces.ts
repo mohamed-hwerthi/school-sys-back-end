@@ -11,7 +11,7 @@ export function useAnnonces(activeOnly = true) {
   });
 }
 
-export function useAnnonceById(id: number) {
+export function useAnnonceById(id: string) {
   return useQuery<Annonce>({
     queryKey: [ANNONCES_KEY, id],
     queryFn: () => annoncesApi.getById(id),
@@ -33,7 +33,7 @@ export function useCreateAnnonce() {
 export function useUpdateAnnonce() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Annonce> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<Annonce> }) =>
       annoncesApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [ANNONCES_KEY] });
@@ -44,7 +44,7 @@ export function useUpdateAnnonce() {
 export function useDeleteAnnonce() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => annoncesApi.delete(id),
+    mutationFn: (id: string) => annoncesApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [ANNONCES_KEY] });
     },

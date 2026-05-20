@@ -3,11 +3,11 @@ import api from "./axios";
 // ─── Backend DTOs ────────────────────────────────────────
 
 export interface AuditFinancierDTO {
-  id: number;
+  id: string;
   entityType: string;
-  entityId: number;
+  entityId: string;
   action: "CREATE" | "UPDATE" | "DELETE";
-  userId: number | null;
+  userId: string | null;
   userName: string | null;
   oldValues: string | null;
   newValues: string | null;
@@ -23,7 +23,7 @@ export const auditFinancierApi = {
     return res.data;
   },
 
-  getByEntity: async (entityType: string, entityId: number): Promise<AuditFinancierDTO[]> => {
+  getByEntity: async (entityType: string, entityId: string): Promise<AuditFinancierDTO[]> => {
     const res = await api.get<AuditFinancierDTO[]>(
       `/audit-financier/${entityType}/${entityId}`
     );

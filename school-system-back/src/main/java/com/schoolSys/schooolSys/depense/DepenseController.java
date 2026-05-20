@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.depense;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.common.dto.PagedResponse;
 import com.schoolSys.schooolSys.depense.dto.DepenseRequestDTO;
@@ -29,7 +31,7 @@ public class DepenseController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String anneeScolaire,
-            @RequestParam(required = false) Long categorieId,
+            @RequestParam(required = false) UUID categorieId,
             @RequestParam(required = false) Depense.ModePaiement modePaiement,
             @RequestParam(required = false) Boolean recurrente,
             @RequestParam(defaultValue = "dateDepense") String sortBy,
@@ -47,7 +49,7 @@ public class DepenseController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
-    public ResponseEntity<ApiResponse<DepenseResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<DepenseResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(depenseService.findById(id)));
     }
 
@@ -62,13 +64,13 @@ public class DepenseController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<DepenseResponseDTO>> update(
-            @PathVariable Long id, @Valid @RequestBody DepenseRequestDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody DepenseRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(depenseService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         depenseService.delete(id);
         return ResponseEntity.noContent().build();
     }

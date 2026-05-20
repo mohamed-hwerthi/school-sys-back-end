@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.affectation;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.affectation.dto.AffectationDTO;
 import com.schoolSys.schooolSys.affectation.dto.AffectationRequestDTO;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
@@ -22,9 +24,9 @@ public class AffectationController {
     @GetMapping
     @PreAuthorize("hasAuthority('MANAGE_TEACHERS')")
     public ResponseEntity<ApiResponse<List<AffectationDTO>>> search(
-            @RequestParam(required = false) Long teacherId,
-            @RequestParam(required = false) Long classeId,
-            @RequestParam(required = false) Long moduleId,
+            @RequestParam(required = false) UUID teacherId,
+            @RequestParam(required = false) UUID classeId,
+            @RequestParam(required = false) UUID moduleId,
             @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(
                 affectationService.search(teacherId, classeId, moduleId, anneeScolaire)
@@ -33,7 +35,7 @@ public class AffectationController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TEACHERS')")
-    public ResponseEntity<ApiResponse<AffectationDTO>> getOne(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<AffectationDTO>> getOne(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(affectationService.findById(id)));
     }
 
@@ -48,14 +50,14 @@ public class AffectationController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TEACHERS')")
     public ResponseEntity<ApiResponse<AffectationDTO>> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody AffectationRequestDTO request) {
         return ResponseEntity.ok(ApiResponse.ok(affectationService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TEACHERS')")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
         affectationService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }

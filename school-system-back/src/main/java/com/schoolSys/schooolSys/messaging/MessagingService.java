@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.messaging;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.messaging.dto.*;
@@ -23,7 +25,7 @@ public class MessagingService {
     @Transactional
     public MessageResponseDTO sendMessage(MessageRequestDTO request) {
         // The sender is always the authenticated user, never trusted from the body.
-        Long senderId = currentUserContext.getUserId()
+        UUID senderId = currentUserContext.getUserId()
             .orElseThrow(() -> new AccessDeniedException("Utilisateur non authentifié."));
         Message message = Message.builder()
             .senderId(senderId)
@@ -43,7 +45,7 @@ public class MessagingService {
         return toDto(messageRepository.save(message));
     }
 
-    public List<MessageResponseDTO> getInbox(Long recipientId) {
+    public List<MessageResponseDTO> getInbox(UUID recipientId) {
         assertSelfOrAdmin(recipientId);
         return messageRecipientRepository
             .findByRecipientIdAndDeletedFalseOrderByMessageCreatedAtDesc(recipientId)
@@ -52,14 +54,14 @@ public class MessagingService {
             .collect(Collectors.toList());
     }
 
-    public List<MessageResponseDTO> getSent(Long senderId) {
+    public List<MessageResponseDTO> getSent(UUID senderId) {
         assertSelfOrAdmin(senderId);
         return messageRepository.findBySenderIdOrderByCreatedAtDesc(senderId).stream()
             .map(this::toDto)
             .collect(Collectors.toList());
     }
 
-    public MessageResponseDTO getMessageById(Long id) {
+    public MessageResponseDTO getMessageById(UUID id) {
         Message message = messageRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Message", id));
         assertParticipant(message);
@@ -67,7 +69,7 @@ public class MessagingService {
     }
 
     @Transactional
-    public void markAsRead(Long messageId, Long recipientId) {
+    public void markAsRead(UUID messageId, UUID recipientId) {
         assertSelfOrAdmin(recipientId);
         MessageRecipient mr = messageRecipientRepository
             .findByMessageIdAndRecipientId(messageId, recipientId)
@@ -79,7 +81,7 @@ public class MessagingService {
     }
 
     @Transactional
-    public void deleteForRecipient(Long messageId, Long recipientId) {
+    public void deleteForRecipient(UUID messageId, UUID recipientId) {
         assertSelfOrAdmin(recipientId);
         MessageRecipient mr = messageRecipientRepository
             .findByMessageIdAndRecipientId(messageId, recipientId)
@@ -92,11 +94,11 @@ public class MessagingService {
      * Ensures the caller is acting on their own mailbox — unless they are an
      * administrator. Prevents reading or modifying another user's messages.
      */
-    private void assertSelfOrAdmin(Long targetUserId) {
+    private void assertSelfOrAdmin(UUID targetUserId) {
         if (currentUserContext.hasUnrestrictedAccess()) {
             return;
         }
-        Long currentUserId = currentUserContext.getUserId().orElse(null);
+        UUID currentUserId = currentUserContext.getUserId().orElse(null);
         if (currentUserId == null || !currentUserId.equals(targetUserId)) {
             throw new AccessDeniedException("Vous ne pouvez accéder qu'à vos propres messages.");
         }
@@ -107,7 +109,7 @@ public class MessagingService {
         if (currentUserContext.hasUnrestrictedAccess()) {
             return;
         }
-        Long currentUserId = currentUserContext.getUserId().orElse(null);
+        UUID currentUserId = currentUserContext.getUserId().orElse(null);
         boolean participant = currentUserId != null
             && (currentUserId.equals(message.getSenderId())
                 || message.getRecipients().stream()

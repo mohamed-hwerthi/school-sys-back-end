@@ -2,8 +2,8 @@ export type AbsenceType = 'ABSENCE' | 'RETARD';
 export type AlertLevel = 'NORMAL' | 'JAUNE' | 'ROUGE';
 
 export interface Absence {
-  id: number;
-  eleveId: number;
+  id: string;
+  eleveId: string;
   eleveNom?: string;
   elevePrenom?: string;
   date: string;
@@ -12,12 +12,12 @@ export interface Absence {
   heureArrivee?: string;
   justifie: boolean;
   motif?: string;
-  enseignantId?: number;
+  enseignantId?: string;
   createdAt: string;
 }
 
 export interface AbsenceBatchItem {
-  eleveId: number;
+  eleveId: string;
   type: AbsenceType;
   seance: string;
   heureArrivee?: string;
@@ -25,13 +25,13 @@ export interface AbsenceBatchItem {
 
 export interface AbsenceBatchRequest {
   date: string;
-  classeId: number;
-  enseignantId?: number;
+  classeId: string;
+  enseignantId?: string;
   absences: AbsenceBatchItem[];
 }
 
 export interface EleveAlert {
-  eleveId: number;
+  eleveId: string;
   nom: string;
   prenom: string;
   absences: number;
@@ -45,7 +45,7 @@ export interface AbsenceStats {
   alertLevel?: AlertLevel;
   elevesEnAlerte?: EleveAlert[];
   parEleve: Array<{
-    eleveId: number;
+    eleveId: string;
     nom: string;
     prenom: string;
     absences: number;
@@ -54,7 +54,7 @@ export interface AbsenceStats {
 }
 
 export interface AbsenceSettings {
-  id?: number;
+  id?: string;
   seuilAlerteJaune: number;
   seuilAlerteRouge: number;
   notificationAuto: boolean;
@@ -71,7 +71,7 @@ export interface RapportPresence {
   totalRetards: number;
   tauxPresenceGlobal: number;
   eleves: Array<{
-    eleveId: number;
+    eleveId: string;
     nom: string;
     prenom: string;
     totalAbsences: number;
@@ -91,7 +91,7 @@ export interface MonthlyBreakdown {
 }
 
 export interface RecentAbsence {
-  id: number;
+  id: string;
   date: string;
   type: AbsenceType;
   seance: string;
@@ -101,7 +101,7 @@ export interface RecentAbsence {
 }
 
 export interface FeuilleJour {
-  classeId: number;
+  classeId: string;
   classeLabel: string;
   niveauName?: string;
   date: string;
@@ -112,7 +112,7 @@ export interface FeuilleJour {
 }
 
 export interface HistoriquePresence {
-  eleveId: number;
+  eleveId: string;
   studentName: string;
   totalAbsences: number;
   totalRetards: number;

@@ -52,7 +52,7 @@ export function useCreateMenu() {
 export function useUpdateMenu() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CreateMenuRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: CreateMenuRequest }) =>
       menusApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [MENUS_KEY] });
@@ -63,7 +63,7 @@ export function useUpdateMenu() {
 export function useDeleteMenu() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => menusApi.delete(id),
+    mutationFn: (id: string) => menusApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [MENUS_KEY] });
     },
@@ -100,7 +100,7 @@ export function useCreateAbonnement() {
 export function useUpdateAbonnement() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CreateAbonnementRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: CreateAbonnementRequest }) =>
       abonnementsCantineApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [ABONNEMENTS_KEY] });
@@ -111,7 +111,7 @@ export function useUpdateAbonnement() {
 export function useDeactivateAbonnement() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => abonnementsCantineApi.deactivate(id),
+    mutationFn: (id: string) => abonnementsCantineApi.deactivate(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [ABONNEMENTS_KEY] });
     },
@@ -121,7 +121,7 @@ export function useDeactivateAbonnement() {
 export function useDeleteAbonnement() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => abonnementsCantineApi.delete(id),
+    mutationFn: (id: string) => abonnementsCantineApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [ABONNEMENTS_KEY] });
     },

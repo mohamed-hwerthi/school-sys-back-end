@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.inscription;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.schoolSys.schooolSys.auth.JwtAuthenticationFilter;
@@ -57,7 +59,7 @@ class InscriptionControllerTest {
                 .when(jwtAuthenticationFilter).doFilter(any(), any(), any());
 
         sampleDTO = InscriptionDTO.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .nom("Benali")
                 .prenom("Ahmed")
                 .dateNaissance(LocalDate.of(2015, 9, 15))
@@ -68,7 +70,7 @@ class InscriptionControllerTest {
                 .emailParent("parent@email.com")
                 .nomParent("Benali")
                 .prenomParent("Mohamed")
-                .niveauId(1L)
+                .niveauId(new UUID(0, 1))
                 .niveauNom("3ème année")
                 .anneeScolaire("2025-2026")
                 .statut("SOUMISE")
@@ -88,7 +90,7 @@ class InscriptionControllerTest {
                 .emailParent("parent@email.com")
                 .nomParent("Benali")
                 .prenomParent("Mohamed")
-                .niveauId(1L)
+                .niveauId(new UUID(0, 1))
                 .anneeScolaire("2025-2026")
                 .build();
     }
@@ -255,11 +257,11 @@ class InscriptionControllerTest {
         @WithMockUser(authorities = "MANAGE_INSCRIPTIONS")
         @DisplayName("should return 200 with inscription when found")
         void shouldReturn200WhenFound() throws Exception {
-            when(inscriptionService.findById(1L)).thenReturn(sampleDTO);
+            when(inscriptionService.findById(new UUID(0, 1))).thenReturn(sampleDTO);
 
-            mockMvc.perform(get("/api/inscriptions/1"))
+            mockMvc.perform(get("/api/inscriptions/00000000-0000-0000-0000-000000000001"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.id").value(1))
+                    .andExpect(jsonPath("$.data.id").value("00000000-0000-0000-0000-000000000001"))
                     .andExpect(jsonPath("$.data.nom").value("Benali"))
                     .andExpect(jsonPath("$.data.numeroDossier").value("INS-2026-ABC12345"));
         }
@@ -268,10 +270,10 @@ class InscriptionControllerTest {
         @WithMockUser(authorities = "MANAGE_INSCRIPTIONS")
         @DisplayName("should return 404 when not found")
         void shouldReturn404WhenNotFound() throws Exception {
-            when(inscriptionService.findById(999L))
-                    .thenThrow(new ResourceNotFoundException("Inscription", 999L));
+            when(inscriptionService.findById(new UUID(0, 999)))
+                    .thenThrow(new ResourceNotFoundException("Inscription", new UUID(0, 999)));
 
-            mockMvc.perform(get("/api/inscriptions/999"))
+            mockMvc.perform(get("/api/inscriptions/00000000-0000-0000-0000-0000000003e7"))
                     .andExpect(status().isNotFound());
         }
     }
@@ -289,7 +291,7 @@ class InscriptionControllerTest {
         @DisplayName("should update inscription to ACCEPTEE")
         void shouldUpdateToAcceptee() throws Exception {
             InscriptionDTO accepted = InscriptionDTO.builder()
-                    .id(1L)
+                    .id(new UUID(0, 1))
                     .nom("Benali")
                     .prenom("Ahmed")
                     .statut("ACCEPTEE")
@@ -299,10 +301,10 @@ class InscriptionControllerTest {
 
             UpdateStatutRequest request = new UpdateStatutRequest("ACCEPTEE", "Dossier complet");
 
-            when(inscriptionService.updateStatut(eq(1L), any(UpdateStatutRequest.class)))
+            when(inscriptionService.updateStatut(eq(new UUID(0, 1)), any(UpdateStatutRequest.class)))
                     .thenReturn(accepted);
 
-            mockMvc.perform(put("/api/inscriptions/1/statut")
+            mockMvc.perform(put("/api/inscriptions/00000000-0000-0000-0000-000000000001/statut")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -316,7 +318,7 @@ class InscriptionControllerTest {
         @DisplayName("should update inscription to REFUSEE")
         void shouldUpdateToRefusee() throws Exception {
             InscriptionDTO refused = InscriptionDTO.builder()
-                    .id(1L)
+                    .id(new UUID(0, 1))
                     .nom("Benali")
                     .prenom("Ahmed")
                     .statut("REFUSEE")
@@ -325,10 +327,10 @@ class InscriptionControllerTest {
 
             UpdateStatutRequest request = new UpdateStatutRequest("REFUSEE", "Places épuisées");
 
-            when(inscriptionService.updateStatut(eq(1L), any(UpdateStatutRequest.class)))
+            when(inscriptionService.updateStatut(eq(new UUID(0, 1)), any(UpdateStatutRequest.class)))
                     .thenReturn(refused);
 
-            mockMvc.perform(put("/api/inscriptions/1/statut")
+            mockMvc.perform(put("/api/inscriptions/00000000-0000-0000-0000-000000000001/statut")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -341,7 +343,7 @@ class InscriptionControllerTest {
         @DisplayName("should update inscription to LISTE_ATTENTE")
         void shouldUpdateToListeAttente() throws Exception {
             InscriptionDTO waitlisted = InscriptionDTO.builder()
-                    .id(1L)
+                    .id(new UUID(0, 1))
                     .nom("Benali")
                     .prenom("Ahmed")
                     .statut("LISTE_ATTENTE")
@@ -349,10 +351,10 @@ class InscriptionControllerTest {
 
             UpdateStatutRequest request = new UpdateStatutRequest("LISTE_ATTENTE", null);
 
-            when(inscriptionService.updateStatut(eq(1L), any(UpdateStatutRequest.class)))
+            when(inscriptionService.updateStatut(eq(new UUID(0, 1)), any(UpdateStatutRequest.class)))
                     .thenReturn(waitlisted);
 
-            mockMvc.perform(put("/api/inscriptions/1/statut")
+            mockMvc.perform(put("/api/inscriptions/00000000-0000-0000-0000-000000000001/statut")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -366,7 +368,7 @@ class InscriptionControllerTest {
         void shouldReturn400WhenStatutBlank() throws Exception {
             UpdateStatutRequest invalid = new UpdateStatutRequest("", null);
 
-            mockMvc.perform(put("/api/inscriptions/1/statut")
+            mockMvc.perform(put("/api/inscriptions/00000000-0000-0000-0000-000000000001/statut")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(invalid)))
@@ -379,10 +381,10 @@ class InscriptionControllerTest {
         void shouldReturn404WhenNotFound() throws Exception {
             UpdateStatutRequest request = new UpdateStatutRequest("ACCEPTEE", null);
 
-            when(inscriptionService.updateStatut(eq(999L), any(UpdateStatutRequest.class)))
-                    .thenThrow(new ResourceNotFoundException("Inscription", 999L));
+            when(inscriptionService.updateStatut(eq(new UUID(0, 999)), any(UpdateStatutRequest.class)))
+                    .thenThrow(new ResourceNotFoundException("Inscription", new UUID(0, 999)));
 
-            mockMvc.perform(put("/api/inscriptions/999/statut")
+            mockMvc.perform(put("/api/inscriptions/00000000-0000-0000-0000-0000000003e7/statut")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -458,17 +460,17 @@ class InscriptionControllerTest {
         @DisplayName("should return waiting list for a niveau")
         void shouldReturnWaitingList() throws Exception {
             InscriptionDTO waitlisted = InscriptionDTO.builder()
-                    .id(1L)
+                    .id(new UUID(0, 1))
                     .nom("Benali")
                     .prenom("Ahmed")
                     .statut("LISTE_ATTENTE")
-                    .niveauId(1L)
+                    .niveauId(new UUID(0, 1))
                     .niveauNom("3ème année")
                     .build();
 
-            when(inscriptionService.getListeAttente(eq(1L), any())).thenReturn(List.of(waitlisted));
+            when(inscriptionService.getListeAttente(eq(new UUID(0, 1)), any())).thenReturn(List.of(waitlisted));
 
-            mockMvc.perform(get("/api/inscriptions/liste-attente/1"))
+            mockMvc.perform(get("/api/inscriptions/liste-attente/00000000-0000-0000-0000-000000000001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data").isArray())
                     .andExpect(jsonPath("$.data[0].statut").value("LISTE_ATTENTE"))
@@ -479,9 +481,9 @@ class InscriptionControllerTest {
         @WithMockUser(authorities = "MANAGE_INSCRIPTIONS")
         @DisplayName("should return empty list when no one is on waiting list")
         void shouldReturnEmptyWaitingList() throws Exception {
-            when(inscriptionService.getListeAttente(eq(1L), any())).thenReturn(List.of());
+            when(inscriptionService.getListeAttente(eq(new UUID(0, 1)), any())).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/inscriptions/liste-attente/1"))
+            mockMvc.perform(get("/api/inscriptions/liste-attente/00000000-0000-0000-0000-000000000001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data").isEmpty());
         }
@@ -517,7 +519,7 @@ class InscriptionControllerTest {
 
             // Step 3: Admin reviews and accepts
             InscriptionDTO accepted = InscriptionDTO.builder()
-                    .id(1L)
+                    .id(new UUID(0, 1))
                     .nom("Benali")
                     .prenom("Ahmed")
                     .statut("ACCEPTEE")
@@ -525,10 +527,10 @@ class InscriptionControllerTest {
                     .numeroDossier("INS-2026-ABC12345")
                     .build();
 
-            when(inscriptionService.updateStatut(eq(1L), any(UpdateStatutRequest.class)))
+            when(inscriptionService.updateStatut(eq(new UUID(0, 1)), any(UpdateStatutRequest.class)))
                     .thenReturn(accepted);
 
-            mockMvc.perform(put("/api/inscriptions/1/statut")
+            mockMvc.perform(put("/api/inscriptions/00000000-0000-0000-0000-000000000001/statut")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
@@ -550,17 +552,17 @@ class InscriptionControllerTest {
 
             // Step 2: Admin puts on waiting list
             InscriptionDTO waitlisted = InscriptionDTO.builder()
-                    .id(1L)
+                    .id(new UUID(0, 1))
                     .nom("Benali")
                     .prenom("Ahmed")
                     .statut("LISTE_ATTENTE")
                     .numeroDossier("INS-2026-ABC12345")
                     .build();
 
-            when(inscriptionService.updateStatut(eq(1L), any(UpdateStatutRequest.class)))
+            when(inscriptionService.updateStatut(eq(new UUID(0, 1)), any(UpdateStatutRequest.class)))
                     .thenReturn(waitlisted);
 
-            mockMvc.perform(put("/api/inscriptions/1/statut")
+            mockMvc.perform(put("/api/inscriptions/00000000-0000-0000-0000-000000000001/statut")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(

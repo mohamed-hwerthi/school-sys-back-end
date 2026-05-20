@@ -29,7 +29,7 @@ public class DepenseService {
     public PagedResponse<DepenseResponseDTO> findAll(
             String search,
             String anneeScolaire,
-            Long categorieId,
+            UUID categorieId,
             Depense.ModePaiement modePaiement,
             Boolean recurrente,
             Pageable pageable
@@ -46,7 +46,7 @@ public class DepenseService {
         return PagedResponse.from(page, content);
     }
 
-    public DepenseResponseDTO findById(Long id) {
+    public DepenseResponseDTO findById(UUID id) {
         Depense depense = depenseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Depense", id));
         return depenseMapper.toResponseDTO(depense);
@@ -76,7 +76,7 @@ public class DepenseService {
     }
 
     @Transactional
-    public DepenseResponseDTO update(Long id, DepenseRequestDTO dto) {
+    public DepenseResponseDTO update(UUID id, DepenseRequestDTO dto) {
         Depense depense = depenseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Depense", id));
 
@@ -99,7 +99,7 @@ public class DepenseService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!depenseRepository.existsById(id)) {
             throw new ResourceNotFoundException("Depense", id);
         }

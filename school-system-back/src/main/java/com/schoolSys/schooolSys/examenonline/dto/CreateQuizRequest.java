@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.examenonline.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -21,11 +23,11 @@ public class CreateQuizRequest {
 
     private String description;
 
-    private Long moduleId;
+    private UUID moduleId;
 
-    private Long classeId;
+    private UUID classeId;
 
-    private Long enseignantId;
+    private UUID enseignantId;
 
     @NotNull(message = "La duree est obligatoire")
     @Builder.Default

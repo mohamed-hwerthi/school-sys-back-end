@@ -1,6 +1,6 @@
 CREATE TABLE abonnements_cantine (
-    id BIGSERIAL PRIMARY KEY,
-    eleve_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    eleve_id UUID NOT NULL,
     type_abonnement VARCHAR(20) NOT NULL CHECK (type_abonnement IN ('JOURNALIER', 'HEBDOMADAIRE', 'MENSUEL', 'ANNUEL')),
     date_debut DATE NOT NULL,
     date_fin DATE,
@@ -13,8 +13,8 @@ CREATE TABLE abonnements_cantine (
 );
 
 CREATE TABLE pointages_repas (
-    id BIGSERIAL PRIMARY KEY,
-    eleve_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    eleve_id UUID NOT NULL,
     date_repas DATE NOT NULL DEFAULT CURRENT_DATE,
     type_repas VARCHAR(20) DEFAULT 'DEJEUNER' CHECK (type_repas IN ('PETIT_DEJEUNER', 'DEJEUNER', 'GOUTER')),
     present BOOLEAN DEFAULT true,

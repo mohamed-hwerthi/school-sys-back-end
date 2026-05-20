@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.parentnotif;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.examen.Examen;
 import com.schoolSys.schooolSys.examen.ExamenRepository;
@@ -51,7 +53,7 @@ public class ParentNotificationService {
      */
     @Async
     @Transactional
-    public void notifyNoteSaved(Long noteId) {
+    public void notifyNoteSaved(UUID noteId) {
         Note note = noteRepository.findById(noteId).orElse(null);
         if (note == null) {
             log.warn("[notif] Note {} introuvable, skip notification", noteId);
@@ -67,7 +69,7 @@ public class ParentNotificationService {
      * Trigger manuel via API : envoi pour une note spécifique avec choix du canal.
      */
     @Transactional
-    public List<NotificationLog> sendForNote(Long noteId, Set<Channel> channels, Long triggeredByUserId) {
+    public List<NotificationLog> sendForNote(UUID noteId, Set<Channel> channels, UUID triggeredByUserId) {
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new ResourceNotFoundException("Note", noteId));
         return sendNoteAlert(note, channels, triggeredByUserId);
@@ -77,7 +79,7 @@ public class ParentNotificationService {
      * Trigger broadcast : pour TOUTES les notes d'un examen → un envoi par parent.
      */
     @Transactional
-    public int sendForExamen(Long examenId, Set<Channel> channels, Long triggeredByUserId) {
+    public int sendForExamen(UUID examenId, Set<Channel> channels, UUID triggeredByUserId) {
         Examen examen = examenRepository.findById(examenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Examen", examenId));
         List<Note> notes = noteRepository.findByExamenIdAndTrimestre(examen.getId(), examen.getTrimestre());
@@ -95,8 +97,8 @@ public class ParentNotificationService {
      * Envoi libre (texte custom) à un parent — utilisé par le bouton "Notifier".
      */
     @Transactional
-    public List<NotificationLog> sendManualToParent(Long studentId, String message,
-                                                     Set<Channel> channels, Long triggeredByUserId) {
+    public List<NotificationLog> sendManualToParent(UUID studentId, String message,
+                                                     Set<Channel> channels, UUID triggeredByUserId) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student", studentId));
         ParentNotificationTemplates.Rendered tpl = ParentNotificationTemplates.manual(message);
@@ -118,7 +120,7 @@ public class ParentNotificationService {
 
     // ───────────────────────────────────── core dispatch ─────────────────────────────────────
 
-    private List<NotificationLog> sendNoteAlert(Note note, Set<Channel> channels, Long triggeredByUserId) {
+    private List<NotificationLog> sendNoteAlert(Note note, Set<Channel> channels, UUID triggeredByUserId) {
         Student student = note.getStudent();
         String moduleName = note.getExamen() != null && note.getExamen().getModule() != null
                 ? note.getExamen().getModule().getName() : null;
@@ -146,8 +148,8 @@ public class ParentNotificationService {
                                       ParentNotificationEvent event,
                                       ParentNotificationTemplates.Rendered tpl,
                                       String address,
-                                      String relatedType, Long relatedId,
-                                      Long triggeredByUserId) {
+                                      String relatedType, UUID relatedId,
+                                      UUID triggeredByUserId) {
         // 1. Log PENDING
         NotificationLog row = logRepo.save(NotificationLog.builder()
                 .recipientType(RecipientType.PARENT)
@@ -186,8 +188,8 @@ public class ParentNotificationService {
     private NotificationLog persistAndSkip(Student student, Channel channel,
                                             ParentNotificationEvent event,
                                             String subject, String body, String reason,
-                                            String relatedType, Long relatedId,
-                                            Long triggeredByUserId) {
+                                            String relatedType, UUID relatedId,
+                                            UUID triggeredByUserId) {
         return logRepo.save(NotificationLog.builder()
                 .recipientType(RecipientType.PARENT)
                 .recipientId(student.getId())

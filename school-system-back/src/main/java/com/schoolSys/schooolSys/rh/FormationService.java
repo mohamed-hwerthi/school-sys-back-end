@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rh;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.rh.dto.*;
 import com.schoolSys.schooolSys.teacher.TeacherRepository;
@@ -29,7 +31,7 @@ public class FormationService {
                 .collect(Collectors.toList());
     }
 
-    public FormationDTO getById(Long id) {
+    public FormationDTO getById(UUID id) {
         Formation f = formationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Formation", id));
         return toDto(f);
@@ -53,7 +55,7 @@ public class FormationService {
     }
 
     @Transactional
-    public FormationDTO update(Long id, CreateFormationRequest dto) {
+    public FormationDTO update(UUID id, CreateFormationRequest dto) {
         Formation formation = formationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Formation", id));
 
@@ -73,7 +75,7 @@ public class FormationService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!formationRepository.existsById(id)) {
             throw new ResourceNotFoundException("Formation", id);
         }
@@ -81,7 +83,7 @@ public class FormationService {
     }
 
     @Transactional
-    public FormationParticipantDTO addParticipant(Long formationId, AddParticipantRequest dto) {
+    public FormationParticipantDTO addParticipant(UUID formationId, AddParticipantRequest dto) {
         Formation formation = formationRepository.findById(formationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Formation", formationId));
 
@@ -97,7 +99,7 @@ public class FormationService {
     }
 
     @Transactional
-    public void removeParticipant(Long participantId) {
+    public void removeParticipant(UUID participantId) {
         if (!participantRepository.existsById(participantId)) {
             throw new ResourceNotFoundException("FormationParticipant", participantId);
         }

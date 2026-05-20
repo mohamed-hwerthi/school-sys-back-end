@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.finance.dto.RemiseRequestDTO;
 import com.schoolSys.schooolSys.finance.dto.RemiseResponseDTO;
@@ -26,12 +28,12 @@ public class RemiseService {
         return remiseMapper.toResponseDTOList(remiseRepository.findByAnneeScolaire(anneeScolaire));
     }
 
-    public List<RemiseResponseDTO> findByStudentId(Long studentId, String anneeScolaire) {
+    public List<RemiseResponseDTO> findByStudentId(UUID studentId, String anneeScolaire) {
         return remiseMapper.toResponseDTOList(
                 remiseRepository.findByStudentIdAndAnneeScolaire(studentId, anneeScolaire));
     }
 
-    public RemiseResponseDTO findById(Long id) {
+    public RemiseResponseDTO findById(UUID id) {
         Remise remise = remiseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Remise", id));
         return remiseMapper.toResponseDTO(remise);
@@ -64,7 +66,7 @@ public class RemiseService {
     }
 
     @Transactional
-    public RemiseResponseDTO update(Long id, RemiseRequestDTO dto) {
+    public RemiseResponseDTO update(UUID id, RemiseRequestDTO dto) {
         Remise remise = remiseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Remise", id));
 
@@ -91,7 +93,7 @@ public class RemiseService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!remiseRepository.existsById(id)) {
             throw new ResourceNotFoundException("Remise", id);
         }

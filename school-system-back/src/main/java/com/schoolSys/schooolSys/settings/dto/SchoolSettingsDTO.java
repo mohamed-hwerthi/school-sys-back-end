@@ -14,6 +14,8 @@ public class SchoolSettingsDTO {
     private String telephone;
     private String directeurName;
     private String directeurNameAr;
+    private String delegationRegionale;
+    private String delegationRegionaleAr;
     private String logo;
     private String ville;
     private String villeAr;

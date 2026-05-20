@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.domaine;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.domaine.dto.*;
 import jakarta.validation.Valid;
@@ -22,12 +24,12 @@ public class DomaineController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<DomaineResponseDTO>>> getAll(
-            @RequestParam(required = false) Long niveauId) {
+            @RequestParam(required = false) UUID niveauId) {
         return ResponseEntity.ok(ApiResponse.ok(domaineService.findAll(niveauId)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<DomaineResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<DomaineResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(domaineService.findById(id)));
     }
 
@@ -42,14 +44,14 @@ public class DomaineController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<ApiResponse<DomaineResponseDTO>> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody DomaineRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(domaineService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         domaineService.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -58,7 +60,7 @@ public class DomaineController {
 
     @GetMapping("/{domaineId}/sous-domaines")
     public ResponseEntity<ApiResponse<List<SousDomaineDTO>>> getSousDomaines(
-            @PathVariable Long domaineId) {
+            @PathVariable UUID domaineId) {
         return ResponseEntity.ok(ApiResponse.ok(domaineService.findSousDomaines(domaineId)));
     }
 
@@ -73,14 +75,14 @@ public class DomaineController {
     @PutMapping("/sous-domaines/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<ApiResponse<SousDomaineDTO>> updateSousDomaine(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody SousDomaineRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(domaineService.updateSousDomaine(id, dto)));
     }
 
     @DeleteMapping("/sous-domaines/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
-    public ResponseEntity<Void> deleteSousDomaine(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteSousDomaine(@PathVariable UUID id) {
         domaineService.deleteSousDomaine(id);
         return ResponseEntity.noContent().build();
     }

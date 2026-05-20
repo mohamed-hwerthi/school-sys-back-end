@@ -21,7 +21,7 @@ export interface AiPerformanceRequest {
 }
 
 export interface AiDetectAnomaliesRequest {
-  studentId: number;
+  studentId: string;
   notes: number[];
   absences: number[];
 }
@@ -32,7 +32,7 @@ export interface Anomaly {
   type: AnomalyType;
   description: string;
   severity: "LOW" | "MEDIUM" | "HIGH";
-  studentId: number;
+  studentId: string;
 }
 
 export interface AiChatRequest {

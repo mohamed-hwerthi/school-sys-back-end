@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.affectation.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,15 +15,15 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class AffectationDTO {
 
-    private Long id;
+    private UUID id;
 
-    private Long teacherId;
+    private UUID teacherId;
     private String teacherName;
 
-    private Long classeId;
+    private UUID classeId;
     private String classeName;
 
-    private Long moduleId;
+    private UUID moduleId;
     private String moduleName;
 
     private String anneeScolaire;

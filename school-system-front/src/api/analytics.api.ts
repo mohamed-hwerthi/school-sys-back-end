@@ -11,7 +11,7 @@ import type {
 const BASE = "/analytics";
 
 export const analyticsApi = {
-  getSuiviEleve: async (eleveId: number): Promise<SuiviEleve> => {
+  getSuiviEleve: async (eleveId: string): Promise<SuiviEleve> => {
     const res = await api.get<SuiviEleve>(`${BASE}/suivi-eleve/${eleveId}`);
     return res.data;
   },
@@ -33,7 +33,7 @@ export const analyticsApi = {
     return res.data;
   },
 
-  getCohortes: async (niveauId?: number): Promise<Cohorte[]> => {
+  getCohortes: async (niveauId?: string): Promise<Cohorte[]> => {
     const res = await api.get<Cohorte[]>(`${BASE}/cohortes`, {
       params: niveauId ? { niveauId } : {},
     });
@@ -46,7 +46,7 @@ export const analyticsApi = {
     return res.data;
   },
 
-  getKpiConfig: async (id: number): Promise<KpiConfig> => {
+  getKpiConfig: async (id: string): Promise<KpiConfig> => {
     const res = await api.get<KpiConfig>(`${BASE}/kpi-config/${id}`);
     return res.data;
   },
@@ -56,12 +56,12 @@ export const analyticsApi = {
     return res.data;
   },
 
-  updateKpiConfig: async (id: number, data: KpiConfigRequest): Promise<KpiConfig> => {
+  updateKpiConfig: async (id: string, data: KpiConfigRequest): Promise<KpiConfig> => {
     const res = await api.put<KpiConfig>(`${BASE}/kpi-config/${id}`, data);
     return res.data;
   },
 
-  deleteKpiConfig: async (id: number): Promise<void> => {
+  deleteKpiConfig: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/kpi-config/${id}`);
   },
 };

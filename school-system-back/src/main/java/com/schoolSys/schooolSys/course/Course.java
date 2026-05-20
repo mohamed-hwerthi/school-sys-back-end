@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.course;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import com.schoolSys.schooolSys.teacher.Teacher;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,8 +25,9 @@ import java.time.LocalDateTime;
 public class Course {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(nullable = false)
     private String name;

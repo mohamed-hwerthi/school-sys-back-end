@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.student;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,11 +21,12 @@ import org.hibernate.annotations.SQLRestriction;
 public class DocumentEleve {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "student_id", nullable = false)
-    private Long studentId;
+    private UUID studentId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.circulaire;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.circulaire.dto.CirculaireRequestDTO;
 import com.schoolSys.schooolSys.circulaire.dto.CirculaireResponseDTO;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
@@ -36,7 +38,7 @@ public class CirculaireService {
         return circulaireMapper.toResponseDTOList(circulaires);
     }
 
-    public CirculaireResponseDTO findById(Long id) {
+    public CirculaireResponseDTO findById(UUID id) {
         Circulaire circulaire = circulaireRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Circulaire", id));
         return circulaireMapper.toResponseDTO(circulaire);
@@ -53,7 +55,7 @@ public class CirculaireService {
     }
 
     @Transactional
-    public CirculaireResponseDTO update(Long id, CirculaireRequestDTO dto) {
+    public CirculaireResponseDTO update(UUID id, CirculaireRequestDTO dto) {
         Circulaire circulaire = circulaireRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Circulaire", id));
         circulaireMapper.updateEntity(dto, circulaire);
@@ -62,7 +64,7 @@ public class CirculaireService {
     }
 
     @Transactional
-    public CirculaireResponseDTO publish(Long id) {
+    public CirculaireResponseDTO publish(UUID id) {
         Circulaire circulaire = circulaireRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Circulaire", id));
         circulaire.setStatut("Publiée");
@@ -72,7 +74,7 @@ public class CirculaireService {
     }
 
     @Transactional
-    public CirculaireResponseDTO archive(Long id) {
+    public CirculaireResponseDTO archive(UUID id) {
         Circulaire circulaire = circulaireRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Circulaire", id));
         circulaire.setStatut("Archivée");
@@ -81,7 +83,7 @@ public class CirculaireService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!circulaireRepository.existsById(id)) {
             throw new ResourceNotFoundException("Circulaire", id);
         }

@@ -9,7 +9,7 @@ export interface PreCheck {
 
 /** Result of the pre-closure verifications for a school year. */
 export interface PreChecksResponse {
-  anneeId: number;
+  anneeId: string;
   anneeScolaire: string;
   cloturable: boolean;
   checks: PreCheck[];
@@ -26,9 +26,9 @@ export interface ClotureRequest {
 
 /** Outcome of a school-year closure. */
 export interface ClotureResult {
-  anneeClotureeId: number;
+  anneeClotureeId: string;
   anneeClotureeLabel: string;
-  nouvelleAnneeId: number | null;
+  nouvelleAnneeId: string | null;
   nouvelleAnneeLabel: string | null;
   trimestresCrees: number;
   message: string;

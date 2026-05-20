@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.common.audit;
 
+import java.util.UUID;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +42,7 @@ public class AuditService {
      * @param details    JSON-formatted change details (nullable)
      */
     @Transactional
-    public void log(String action, String entityType, Long entityId, String details) {
+    public void log(String action, String entityType, UUID entityId, String details) {
         AuditLog entry = AuditLog.builder()
                 .username(currentUsername())
                 .action(action)

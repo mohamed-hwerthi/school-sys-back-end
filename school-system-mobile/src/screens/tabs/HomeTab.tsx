@@ -7,6 +7,7 @@ import { ChildSelector } from "@/components/ChildSelector";
 import { StatCard } from "@/components/StatCard";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorView } from "@/components/ErrorView";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 import { useQuery } from "@tanstack/react-query";
 import { notificationsApi } from "@/api/notifications.api";
@@ -14,6 +15,7 @@ import { notesApi } from "@/api/notes.api";
 import { parentPortalApi } from "@/api/parent-portal.api";
 
 export default function HomeTab() {
+  const { colors } = useTheme();
   const { user } = useAuth();
   const { selectedChild, isLoading: childrenLoading, refetch: refetchChildren } = useChild();
   const navigation = useNavigation<any>();

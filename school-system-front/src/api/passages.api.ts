@@ -21,7 +21,7 @@ export const passagesApi = {
     return res.data;
   },
 
-  getByStudent: async (studentId: number): Promise<Passage[]> => {
+  getByStudent: async (studentId: string): Promise<Passage[]> => {
     const res = await api.get<Passage[]>(`${BASE}/student/${studentId}`);
     return res.data;
   },

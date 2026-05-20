@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.meeting.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MeetingResponseDTO {
 
-    private Long id;
+    private UUID id;
 
     private String title;
 
@@ -25,15 +27,15 @@ public class MeetingResponseDTO {
 
     private LocalTime heureFin;
 
-    private Long enseignantId;
+    private UUID enseignantId;
 
     private String enseignantName;
 
-    private Long parentId;
+    private UUID parentId;
 
     private String parentName;
 
-    private Long studentId;
+    private UUID studentId;
 
     private String studentName;
 

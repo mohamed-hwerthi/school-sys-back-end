@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.notification;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.notification.dto.AnnonceDTO;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +32,7 @@ public class AnnonceService {
                 .collect(Collectors.toList());
     }
 
-    public AnnonceDTO getById(Long id) {
+    public AnnonceDTO getById(UUID id) {
         return toDto(annonceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Annonce", id)));
     }
@@ -68,7 +70,7 @@ public class AnnonceService {
     }
 
     @Transactional
-    public AnnonceDTO update(Long id, AnnonceDTO dto) {
+    public AnnonceDTO update(UUID id, AnnonceDTO dto) {
         Annonce annonce = annonceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Annonce", id));
 
@@ -83,7 +85,7 @@ public class AnnonceService {
     }
 
     @Transactional
-    public void softDelete(Long id) {
+    public void softDelete(UUID id) {
         Annonce annonce = annonceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Annonce", id));
         annonce.setActif(false);

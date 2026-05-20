@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.devoir;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,8 +21,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class RessourcePedagogique {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(nullable = false, length = 300)
     private String titre;
@@ -28,7 +32,7 @@ public class RessourcePedagogique {
     private String description;
 
     @Column(name = "module_id")
-    private Long moduleId;
+    private UUID moduleId;
 
     @Column(length = 20)
     @Builder.Default
@@ -41,7 +45,7 @@ public class RessourcePedagogique {
     private String lienExterne;
 
     @Column(name = "enseignant_id")
-    private Long enseignantId;
+    private UUID enseignantId;
 
     @Column(name = "taille_fichier")
     private Long tailleFichier;

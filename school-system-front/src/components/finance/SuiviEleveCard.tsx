@@ -41,7 +41,7 @@ export function SuiviEleveCard({ student, onAppel, onSMS, onEmail }: SuiviEleveC
 
   const grid = useMemo(() => {
     const rows: {
-      typeFrais: { id: number; nom: string };
+      typeFrais: { id: string; nom: string };
       cells: Record<string, { statut: string; montantPaye: number; montantDu: number }>;
     }[] = [];
 

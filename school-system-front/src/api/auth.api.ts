@@ -76,7 +76,7 @@ export const authApi = {
     return response.data;
   },
 
-  revokeSession: async (sessionId: number): Promise<void> => {
+  revokeSession: async (sessionId: string): Promise<void> => {
     await api.delete(`/auth/sessions/${sessionId}`);
   },
 

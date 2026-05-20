@@ -11,6 +11,7 @@ import { quizApi } from "@/api/quiz.api";
 import { EmptyState } from "@/components/EmptyState";
 import { Badge } from "@/components/ui/Badge";
 import { SectionHeader } from "@/components/ui/SectionHeader";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 interface Attempt {
@@ -42,6 +43,7 @@ function getScoreColor(score: number, max: number): string {
 }
 
 export default function QuizDetailScreen() {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const quizId = route.params?.quizId as number;

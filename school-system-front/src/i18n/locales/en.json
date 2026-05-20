@@ -320,6 +320,7 @@
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Hello",
+    "schoolYear": "School year",
     "totalStudents": "Total Students",
     "teachers": "Teachers",
     "attendanceRate": "Attendance rate",
@@ -339,6 +340,7 @@
     "semesterEvolution": "Semester evolution",
     "loadingTrends": "Loading trends...",
     "noTrendData": "No trend data available",
+    "noData": "No data available",
     "noEvents": "No upcoming events",
     "noRecentStudents": "No recently enrolled students",
     "upcomingEvents": "Upcoming events",

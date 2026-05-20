@@ -3,10 +3,10 @@
 -- soft constraints (PREFERE / EVITER).
 
 CREATE TABLE IF NOT EXISTS enseignant_disponibilites (
-    id              BIGSERIAL PRIMARY KEY,
-    enseignant_id   BIGINT       NOT NULL REFERENCES teachers(id)  ON DELETE CASCADE,
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    enseignant_id   UUID       NOT NULL REFERENCES teachers(id)  ON DELETE CASCADE,
     jour_semaine    INTEGER      NOT NULL CHECK (jour_semaine BETWEEN 1 AND 6),
-    creneau_id      BIGINT       NOT NULL REFERENCES creneaux(id)  ON DELETE CASCADE,
+    creneau_id      UUID       NOT NULL REFERENCES creneaux(id)  ON DELETE CASCADE,
     type            VARCHAR(20)  NOT NULL CHECK (type IN ('INDISPONIBLE', 'PREFERE', 'EVITER')),
     motif           VARCHAR(200),
     created_at      TIMESTAMP    NOT NULL DEFAULT NOW(),

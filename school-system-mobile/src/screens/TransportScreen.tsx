@@ -15,6 +15,7 @@ import { ChildSelector } from "@/components/ChildSelector";
 import { EmptyState } from "@/components/EmptyState";
 import { Badge } from "@/components/ui/Badge";
 import { SectionHeader } from "@/components/ui/SectionHeader";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 interface Affectation {
@@ -36,6 +37,7 @@ interface Arret {
 }
 
 export default function TransportScreen() {
+  const { colors } = useTheme();
   const { selectedChild, isLoading: childrenLoading } = useChild();
   const navigation = useNavigation();
 

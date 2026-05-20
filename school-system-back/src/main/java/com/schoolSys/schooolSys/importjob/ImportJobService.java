@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.importjob;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
@@ -51,7 +53,7 @@ public class ImportJobService {
         return repository.save(job);
     }
 
-    public ImportJob findById(Long id) {
+    public ImportJob findById(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ImportJob", id));
     }
@@ -67,7 +69,7 @@ public class ImportJobService {
      * @param tenantId tenant captured by the caller before scheduling
      */
     @Async
-    public void runStudentsImport(Long jobId, List<StudentRequestDTO> rows, String strategy, String tenantId) {
+    public void runStudentsImport(UUID jobId, List<StudentRequestDTO> rows, String strategy, String tenantId) {
         TenantContext.setCurrentTenant(tenantId);
         try {
             markRunning(jobId);
@@ -88,7 +90,7 @@ public class ImportJobService {
     /* ─── Internal status updates (each in its own tx so the UI sees progress) ─── */
 
     @Transactional
-    void markRunning(Long jobId) {
+    void markRunning(UUID jobId) {
         ImportJob job = repository.findById(jobId).orElseThrow();
         job.setStatus("RUNNING");
         job.setStartedAt(LocalDateTime.now());
@@ -96,7 +98,7 @@ public class ImportJobService {
     }
 
     @Transactional
-    void markDone(Long jobId, StudentBulkImportResultDTO result) {
+    void markDone(UUID jobId, StudentBulkImportResultDTO result) {
         ImportJob job = repository.findById(jobId).orElseThrow();
         job.setStatus("DONE");
         job.setProcessed(result.getCreated() + result.getSkipped() + result.getFailed());
@@ -109,7 +111,7 @@ public class ImportJobService {
     }
 
     @Transactional
-    void markFailed(Long jobId, String reason) {
+    void markFailed(UUID jobId, String reason) {
         ImportJob job = repository.findById(jobId).orElseThrow();
         job.setStatus("FAILED");
         job.setErrorsJson(serialize(List.of(StudentBulkImportResultDTO.RowError.builder()

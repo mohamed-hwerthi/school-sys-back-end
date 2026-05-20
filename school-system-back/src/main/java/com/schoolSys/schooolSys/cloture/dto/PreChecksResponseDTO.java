@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.cloture.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PreChecksResponseDTO {
 
-    private Long anneeId;
+    private UUID anneeId;
     private String anneeScolaire;
 
     /** {@code true} when no blocking check failed — the year can be closed. */

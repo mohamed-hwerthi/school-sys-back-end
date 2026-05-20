@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.classroom;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.classroom.dto.ClassroomRequestDTO;
 import com.schoolSys.schooolSys.classroom.dto.ClassroomResponseDTO;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
@@ -41,7 +43,7 @@ public class ClassroomService {
      * @return the classroom DTO
      * @throws ResourceNotFoundException if the classroom does not exist
      */
-    public ClassroomResponseDTO findById(Long id) {
+    public ClassroomResponseDTO findById(UUID id) {
         Classroom classroom = classroomRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Classroom", id));
         return classroomMapper.toResponseDTO(classroom);
@@ -68,7 +70,7 @@ public class ClassroomService {
      * @throws ResourceNotFoundException if the classroom does not exist
      */
     @Transactional
-    public ClassroomResponseDTO update(Long id, ClassroomRequestDTO dto) {
+    public ClassroomResponseDTO update(UUID id, ClassroomRequestDTO dto) {
         Classroom classroom = classroomRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Classroom", id));
         classroomMapper.updateEntity(dto, classroom);
@@ -82,7 +84,7 @@ public class ClassroomService {
      * @throws ResourceNotFoundException if the classroom does not exist
      */
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!classroomRepository.existsById(id)) {
             throw new ResourceNotFoundException("Classroom", id);
         }

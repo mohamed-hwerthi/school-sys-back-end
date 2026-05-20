@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.bibliotheque;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.bibliotheque.dto.BibliothequeStatsDTO;
 import com.schoolSys.schooolSys.bibliotheque.dto.CreateEmpruntRequest;
 import com.schoolSys.schooolSys.bibliotheque.dto.EmpruntDTO;
@@ -38,20 +40,20 @@ public class EmpruntService {
                 .map(this::toDTO);
     }
 
-    public EmpruntDTO findById(Long id) {
+    public EmpruntDTO findById(UUID id) {
         Emprunt emprunt = empruntRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Emprunt", id));
         return toDTO(emprunt);
     }
 
-    public List<EmpruntDTO> findByEleve(Long eleveId) {
+    public List<EmpruntDTO> findByEleve(UUID eleveId) {
         currentUserContext.assertCanAccessStudent(eleveId);
         return empruntRepository.findByEleveId(eleveId).stream()
                 .map(this::toDTO)
                 .toList();
     }
 
-    public List<EmpruntDTO> findByLivre(Long livreId) {
+    public List<EmpruntDTO> findByLivre(UUID livreId) {
         return empruntRepository.findByLivreId(livreId).stream()
                 .map(this::toDTO)
                 .toList();
@@ -65,7 +67,7 @@ public class EmpruntService {
         List<Emprunt> enRetard = empruntRepository.findByStatut(Emprunt.StatutEmprunt.EN_RETARD);
 
         // Merge, avoiding duplicates by id
-        java.util.Map<Long, Emprunt> map = new java.util.LinkedHashMap<>();
+        java.util.Map<UUID, Emprunt> map = new java.util.LinkedHashMap<>();
         overdue.forEach(e -> map.put(e.getId(), e));
         enRetard.forEach(e -> map.put(e.getId(), e));
 
@@ -105,7 +107,7 @@ public class EmpruntService {
     }
 
     @Transactional
-    public EmpruntDTO retourner(Long empruntId) {
+    public EmpruntDTO retourner(UUID empruntId) {
         Emprunt emprunt = empruntRepository.findById(empruntId)
                 .orElseThrow(() -> new ResourceNotFoundException("Emprunt", empruntId));
 
@@ -141,7 +143,7 @@ public class EmpruntService {
         List<Object[]> topBooks = empruntRepository.findLivresLesPlusEmpruntes(PageRequest.of(0, 10));
         List<BibliothequeStatsDTO.LivreEmprunteDTO> topList = topBooks.stream()
                 .map(row -> BibliothequeStatsDTO.LivreEmprunteDTO.builder()
-                        .livreId((Long) row[0])
+                        .livreId((UUID) row[0])
                         .titre((String) row[1])
                         .count((Long) row[2])
                         .build())

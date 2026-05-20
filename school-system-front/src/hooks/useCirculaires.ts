@@ -26,7 +26,7 @@ export function useCreateCirculaire() {
 export function useUpdateCirculaire() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<CirculaireRequest> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<CirculaireRequest> }) =>
       circulairesApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [CIRCULAIRES_KEY] });
@@ -39,7 +39,7 @@ export function useUpdateCirculaire() {
 export function usePublishCirculaire() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => circulairesApi.publish(id),
+    mutationFn: (id: string) => circulairesApi.publish(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [CIRCULAIRES_KEY] });
       notify.success("Circulaire publiee");
@@ -51,7 +51,7 @@ export function usePublishCirculaire() {
 export function useArchiveCirculaire() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => circulairesApi.archive(id),
+    mutationFn: (id: string) => circulairesApi.archive(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [CIRCULAIRES_KEY] });
       notify.success("Circulaire archivee");
@@ -63,7 +63,7 @@ export function useArchiveCirculaire() {
 export function useDeleteCirculaire() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => circulairesApi.delete(id),
+    mutationFn: (id: string) => circulairesApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [CIRCULAIRES_KEY] });
       notify.success("Circulaire supprimee");

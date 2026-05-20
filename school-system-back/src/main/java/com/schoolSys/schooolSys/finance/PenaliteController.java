@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.finance.dto.PenaliteRequestDTO;
 import com.schoolSys.schooolSys.finance.dto.PenaliteResponseDTO;
@@ -29,14 +31,14 @@ public class PenaliteController {
     @GetMapping("/eleve/{studentId}")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<PenaliteResponseDTO>>> getByStudent(
-            @PathVariable Long studentId,
+            @PathVariable UUID studentId,
             @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(penaliteService.findByStudentId(studentId, anneeScolaire)));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
-    public ResponseEntity<ApiResponse<PenaliteResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<PenaliteResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(penaliteService.findById(id)));
     }
 
@@ -51,19 +53,19 @@ public class PenaliteController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<PenaliteResponseDTO>> update(
-            @PathVariable Long id, @Valid @RequestBody PenaliteRequestDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody PenaliteRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(penaliteService.update(id, dto)));
     }
 
     @PatchMapping("/{id}/toggle-payee")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
-    public ResponseEntity<ApiResponse<PenaliteResponseDTO>> togglePayee(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<PenaliteResponseDTO>> togglePayee(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(penaliteService.togglePayee(id)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         penaliteService.delete(id);
         return ResponseEntity.noContent().build();
     }

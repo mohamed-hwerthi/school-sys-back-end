@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.finance.Paiement;
 import lombok.Builder;
 import lombok.Data;
@@ -12,11 +14,11 @@ import java.time.LocalDateTime;
 @Builder
 public class PaiementResponseDTO {
 
-    private Long id;
-    private Long studentId;
+    private UUID id;
+    private UUID studentId;
     private String studentFirstName;
     private String studentLastName;
-    private Long typeFraisId;
+    private UUID typeFraisId;
     private String typeFraisNom;
     private String mois;
     private String anneeScolaire;

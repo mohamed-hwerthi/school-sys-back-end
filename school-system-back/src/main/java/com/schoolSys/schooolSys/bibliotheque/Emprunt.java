@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.bibliotheque;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,15 +23,16 @@ import org.hibernate.annotations.SQLRestriction;
 public class Emprunt {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "livre_id", nullable = false)
     private Livre livre;
 
     @Column(name = "eleve_id", nullable = false)
-    private Long eleveId;
+    private UUID eleveId;
 
     @Column(name = "date_emprunt", nullable = false)
     @Builder.Default

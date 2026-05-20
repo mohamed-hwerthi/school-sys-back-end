@@ -506,7 +506,7 @@ function EmpruntsTab() {
     });
   };
 
-  const handleRetour = (id: number) => {
+  const handleRetour = (id: string) => {
     retourEmprunt.mutate(id, {
       onSuccess: () => notify.success("Livre retourne avec succes"),
       onError: (err) => notify.error(err.message),
@@ -633,7 +633,7 @@ function EmpruntsTab() {
               <Input
                 type="number"
                 value={form.livreId || ""}
-                onChange={(e) => setForm({ ...form, livreId: Number(e.target.value) })}
+                onChange={(e) => setForm({ ...form, livreId: e.target.value })}
                 placeholder="ID du livre"
               />
             </div>
@@ -642,7 +642,7 @@ function EmpruntsTab() {
               <Input
                 type="number"
                 value={form.eleveId || ""}
-                onChange={(e) => setForm({ ...form, eleveId: Number(e.target.value) })}
+                onChange={(e) => setForm({ ...form, eleveId: e.target.value })}
                 placeholder="ID de l'eleve"
               />
             </div>
@@ -685,7 +685,7 @@ function RetardsTab() {
   const { data: retards = [], isLoading } = useEmpruntsEnRetard();
   const retourEmprunt = useRetourEmprunt();
 
-  const handleRetour = (id: number) => {
+  const handleRetour = (id: string) => {
     retourEmprunt.mutate(id, {
       onSuccess: () => notify.success("Livre retourne avec succes"),
       onError: (err) => notify.error(err.message),

@@ -2,7 +2,7 @@ import type { Rapport } from "@/types/rapport";
 
 export const MOCK_RAPPORTS: Rapport[] = [
   {
-    id: 1,
+    id: "1",
     titre: "Bulletin 1er Trimestre - 3A",
     type: "Bulletin trimestriel",
     periode: "Trimestre 1 (Sep-Nov 2025)",
@@ -14,7 +14,7 @@ export const MOCK_RAPPORTS: Rapport[] = [
     fichier: "bulletin_3A_T1.pdf",
   },
   {
-    id: 2,
+    id: "2",
     titre: "Bulletin 1er Trimestre - 5B",
     type: "Bulletin trimestriel",
     periode: "Trimestre 1 (Sep-Nov 2025)",
@@ -26,7 +26,7 @@ export const MOCK_RAPPORTS: Rapport[] = [
     fichier: "bulletin_5B_T1.pdf",
   },
   {
-    id: 3,
+    id: "3",
     titre: "Rapport de discipline - Décembre 2025",
     type: "Rapport de discipline",
     periode: "Décembre 2025",
@@ -38,7 +38,7 @@ export const MOCK_RAPPORTS: Rapport[] = [
     fichier: "discipline_dec2025.pdf",
   },
   {
-    id: 4,
+    id: "4",
     titre: "Rapport d'absences - Janvier 2026",
     type: "Rapport d'absence",
     periode: "Janvier 2026",
@@ -50,7 +50,7 @@ export const MOCK_RAPPORTS: Rapport[] = [
     fichier: "absences_jan2026.pdf",
   },
   {
-    id: 5,
+    id: "5",
     titre: "Rapport financier - 1er Semestre",
     type: "Rapport financier",
     periode: "Sep 2025 - Fév 2026",
@@ -62,7 +62,7 @@ export const MOCK_RAPPORTS: Rapport[] = [
     fichier: "",
   },
   {
-    id: 6,
+    id: "6",
     titre: "PV Conseil de classe - 3ème année",
     type: "PV de conseil",
     periode: "Trimestre 1",
@@ -74,7 +74,7 @@ export const MOCK_RAPPORTS: Rapport[] = [
     fichier: "pv_conseil_3eme_T1.pdf",
   },
   {
-    id: 7,
+    id: "7",
     titre: "Bulletin 1er Trimestre - 1A",
     type: "Bulletin trimestriel",
     periode: "Trimestre 1 (Sep-Nov 2025)",
@@ -86,7 +86,7 @@ export const MOCK_RAPPORTS: Rapport[] = [
     fichier: "bulletin_1A_T1.pdf",
   },
   {
-    id: 8,
+    id: "8",
     titre: "Rapport annuel 2024-2025",
     type: "Rapport annuel",
     periode: "Année scolaire 2024-2025",
@@ -98,7 +98,7 @@ export const MOCK_RAPPORTS: Rapport[] = [
     fichier: "rapport_annuel_2024_2025.pdf",
   },
   {
-    id: 9,
+    id: "9",
     titre: "Rapport d'absences - Février 2026",
     type: "Rapport d'absence",
     periode: "Février 2026",
@@ -110,7 +110,7 @@ export const MOCK_RAPPORTS: Rapport[] = [
     fichier: "",
   },
   {
-    id: 10,
+    id: "10",
     titre: "PV Conseil de classe - 6ème année",
     type: "PV de conseil",
     periode: "Trimestre 1",

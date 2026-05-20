@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.facture;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.facture.dto.*;
 import jakarta.validation.Valid;
@@ -25,13 +27,13 @@ public class FactureController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<FactureResponseDTO>> getFactureById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<FactureResponseDTO>> getFactureById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(factureService.getFactureById(id)));
     }
 
     @GetMapping("/student/{studentId}")
     public ResponseEntity<ApiResponse<List<FactureResponseDTO>>> getFacturesByStudent(
-            @PathVariable Long studentId) {
+            @PathVariable UUID studentId) {
         return ResponseEntity.ok(ApiResponse.ok(factureService.getFacturesByStudent(studentId)));
     }
 
@@ -44,12 +46,12 @@ public class FactureController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<FactureResponseDTO>> updateFacture(
-            @PathVariable Long id, @Valid @RequestBody FactureRequestDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody FactureRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(factureService.updateFacture(id, dto)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFacture(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteFacture(@PathVariable UUID id) {
         factureService.deleteFacture(id);
         return ResponseEntity.noContent().build();
     }

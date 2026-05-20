@@ -193,7 +193,7 @@ export default function ModulesTab() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <Select
             value={selectedNiveauId ? String(selectedNiveauId) : ""}
-            onValueChange={(v) => setSelectedNiveauId(Number(v))}
+            onValueChange={(v) => setSelectedNiveauId(v)}
           >
             <SelectTrigger className="w-[220px]">
               <GraduationCap className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
@@ -209,9 +209,9 @@ export default function ModulesTab() {
           </Select>
 
           <Select
-            value={filterDomaineId ? String(filterDomaineId) : "all"}
+            value={filterDomaineId ? filterDomaineId : "all"}
             onValueChange={(v) =>
-              setFilterDomaineId(v === "all" ? 0 : Number(v))
+              setFilterDomaineId(v === "all" ? "" : v)
             }
             disabled={!selectedNiveauId || domaines.length === 0}
           >
@@ -242,7 +242,7 @@ export default function ModulesTab() {
             </div>
           )}
         </div>
-        {selectedNiveauId > 0 && (
+        {selectedNiveauId && (
           <div className="mt-2 text-xs text-muted-foreground">
             {filteredModules.length} module
             {filteredModules.length !== 1 ? "s" : ""}
@@ -251,7 +251,7 @@ export default function ModulesTab() {
       </motion.div>
 
       {/* Table */}
-      {selectedNiveauId > 0 && (
+      {selectedNiveauId && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -263,7 +263,7 @@ export default function ModulesTab() {
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">
-                    Nom du module
+                    Nom de la matière
                   </th>
                   <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden sm:table-cell">
                     Domaine
@@ -402,7 +402,7 @@ export default function ModulesTab() {
           <div className="space-y-4 mt-2">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Nom du module *</Label>
+                <Label>Nom de la matière *</Label>
                 <Input
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -410,7 +410,7 @@ export default function ModulesTab() {
                 />
               </div>
               <div>
-                <Label>Nom module VP</Label>
+                <Label>Nom matière VP</Label>
                 <Input
                   value={form.nameVp || ""}
                   onChange={(e) => setForm({ ...form, nameVp: e.target.value })}
@@ -426,7 +426,7 @@ export default function ModulesTab() {
                   onValueChange={(v) =>
                     setForm({
                       ...form,
-                      domaineId: Number(v),
+                      domaineId: v,
                       sousDomaineId: undefined,
                     })
                   }
@@ -457,7 +457,7 @@ export default function ModulesTab() {
                   onValueChange={(v) =>
                     setForm({
                       ...form,
-                      sousDomaineId: v === "none" ? undefined : Number(v),
+                      sousDomaineId: v === "none" ? undefined : v,
                     })
                   }
                   disabled={!form.domaineId || formSousDomaines.length === 0}

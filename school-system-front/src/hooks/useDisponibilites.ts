@@ -7,11 +7,11 @@ import {
 
 const KEY = "disponibilites";
 
-export function useDisponibilites(enseignantId?: number) {
+export function useDisponibilites(enseignantId?: string) {
   return useQuery<DisponibiliteDTO[]>({
     queryKey: [KEY, enseignantId ?? "all"],
     queryFn: () => disponibilitesApi.getAll(enseignantId),
-    enabled: enseignantId === undefined || enseignantId > 0,
+    enabled: enseignantId === undefined || !!enseignantId,
   });
 }
 
@@ -26,7 +26,7 @@ export function useCreateDisponibilite() {
 export function useUpdateDisponibilite() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (vars: { id: number; data: DisponibiliteRequest }) =>
+    mutationFn: (vars: { id: string; data: DisponibiliteRequest }) =>
       disponibilitesApi.update(vars.id, vars.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
@@ -35,7 +35,7 @@ export function useUpdateDisponibilite() {
 export function useDeleteDisponibilite() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => disponibilitesApi.delete(id),
+    mutationFn: (id: string) => disponibilitesApi.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }

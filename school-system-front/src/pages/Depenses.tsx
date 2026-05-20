@@ -105,7 +105,7 @@ export default function Depenses() {
     size: ITEMS_PER_PAGE,
     search: search || undefined,
     anneeScolaire: ANNEE,
-    categorieId: filterCategorie !== "all" ? Number(filterCategorie) : undefined,
+    categorieId: filterCategorie !== "all" ? filterCategorie : undefined,
     sortBy: "dateDepense",
     sortDir: "desc",
   });
@@ -237,7 +237,7 @@ export default function Depenses() {
           <Label>Catégorie *</Label>
           <Select
             value={form.categorieId ? String(form.categorieId) : ""}
-            onValueChange={(v) => setForm({ ...form, categorieId: Number(v) })}
+            onValueChange={(v) => setForm({ ...form, categorieId: v })}
           >
             <SelectTrigger className={formErrors.categorieId ? "border-red-500" : ""}><SelectValue placeholder="Choisir" /></SelectTrigger>
             <SelectContent>

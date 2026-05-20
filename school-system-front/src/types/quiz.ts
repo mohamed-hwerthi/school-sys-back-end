@@ -3,12 +3,12 @@ export type TypeQuestion = 'QCM' | 'VRAI_FAUX' | 'TEXTE_LIBRE' | 'REPONSE_COURTE
 export type StatutTentative = 'EN_COURS' | 'SOUMISE' | 'CORRIGEE';
 
 export interface Quiz {
-  id: number;
+  id: string;
   titre: string;
   description: string | null;
-  moduleId: number | null;
-  classeId: number | null;
-  enseignantId: number | null;
+  moduleId: string | null;
+  classeId: string | null;
+  enseignantId: string | null;
   dureeMinutes: number;
   noteTotale: number;
   melangerQuestions: boolean;
@@ -31,9 +31,9 @@ export interface QuizDetail extends Quiz {
 export interface CreateQuizRequest {
   titre: string;
   description?: string;
-  moduleId?: number;
-  classeId?: number;
-  enseignantId?: number;
+  moduleId?: string;
+  classeId?: string;
+  enseignantId?: string;
   dureeMinutes?: number;
   noteTotale?: number;
   melangerQuestions?: boolean;
@@ -46,15 +46,15 @@ export interface CreateQuizRequest {
 }
 
 export interface ChoixReponseDTO {
-  id?: number;
+  id?: string;
   texte: string;
   correct: boolean;
   ordre: number;
 }
 
 export interface QuestionDTO {
-  id: number;
-  quizId: number;
+  id: string;
+  quizId: string;
   texte: string;
   typeQuestion: TypeQuestion;
   points: number;
@@ -77,10 +77,10 @@ export interface CreateQuestionRequest {
 }
 
 export interface Tentative {
-  id: number;
-  quizId: number;
+  id: string;
+  quizId: string;
   quizTitre: string;
-  eleveId: number;
+  eleveId: string;
   dateDebut: string;
   dateFin: string | null;
   score: number | null;
@@ -92,29 +92,29 @@ export interface Tentative {
 }
 
 export interface CreateTentativeRequest {
-  quizId: number;
-  eleveId: number;
+  quizId: string;
+  eleveId: string;
 }
 
 export interface ReponseEleveDTO {
-  id: number;
-  tentativeId: number;
-  questionId: number;
+  id: string;
+  tentativeId: string;
+  questionId: string;
   questionTexte: string;
-  choixId: number | null;
+  choixId: string | null;
   reponseTexte: string | null;
   correct: boolean | null;
   pointsObtenus: number;
 }
 
 export interface ReponseItem {
-  questionId: number;
-  choixId?: number;
+  questionId: string;
+  choixId?: string;
   reponseTexte?: string;
 }
 
 export interface SubmitReponseRequest {
-  tentativeId: number;
+  tentativeId: string;
   reponses: ReponseItem[];
 }
 

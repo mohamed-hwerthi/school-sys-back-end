@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.common.audit;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,8 +22,9 @@ import java.time.LocalDateTime;
 public class AuditLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     /** Username of the actor (from SecurityContext). */
     @Column(name = "username", length = 200)
@@ -36,7 +40,7 @@ public class AuditLog {
 
     /** Primary key of the affected entity. */
     @Column(name = "entity_id")
-    private Long entityId;
+    private UUID entityId;
 
     /** JSON description of the changes or additional context. */
     @Column(name = "details", columnDefinition = "TEXT")

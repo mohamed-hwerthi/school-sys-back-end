@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.volumehoraire;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.volumehoraire.dto.ModuleClasseVolumeRequestDTO;
 import com.schoolSys.schooolSys.volumehoraire.dto.ModuleClasseVolumeResponseDTO;
@@ -21,13 +23,13 @@ public class ModuleClasseVolumeController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<ModuleClasseVolumeResponseDTO>>> getAll(
-            @RequestParam(required = false) Long classeId,
-            @RequestParam(required = false) Long anneeScolaireId) {
+            @RequestParam(required = false) UUID classeId,
+            @RequestParam(required = false) UUID anneeScolaireId) {
         return ResponseEntity.ok(ApiResponse.ok(service.findAll(classeId, anneeScolaireId)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ModuleClasseVolumeResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ModuleClasseVolumeResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(service.findById(id)));
     }
 
@@ -42,14 +44,14 @@ public class ModuleClasseVolumeController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_EMPLOI_DU_TEMPS')")
     public ResponseEntity<ApiResponse<ModuleClasseVolumeResponseDTO>> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody ModuleClasseVolumeRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_EMPLOI_DU_TEMPS')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

@@ -26,7 +26,7 @@ export function useCreateAffectation() {
 export function useUpdateAffectation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, req }: { id: number; req: AffectationRequest }) =>
+    mutationFn: ({ id, req }: { id: string; req: AffectationRequest }) =>
       affectationsApi.update(id, req),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
@@ -35,7 +35,7 @@ export function useUpdateAffectation() {
 export function useDeleteAffectation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => affectationsApi.delete(id),
+    mutationFn: (id: string) => affectationsApi.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }

@@ -9,7 +9,7 @@ export type CategorieMouvement =
   | "FOURNITURES" | "SALAIRE" | "FACTURE" | "MAINTENANCE" | "AUTRE";
 
 export interface CaisseDTO {
-  id: number;
+  id: string;
   dateOuverture: string;
   dateFermeture: string | null;
   statut: StatutCaisse;
@@ -33,8 +33,8 @@ export interface CaisseRequest {
 }
 
 export interface MouvementDTO {
-  id: number;
-  caisseId: number;
+  id: string;
+  caisseId: string;
   type: TypeMouvement;
   categorie: CategorieMouvement;
   montant: number;
@@ -45,7 +45,7 @@ export interface MouvementDTO {
 }
 
 export interface MouvementRequest {
-  caisseId: number;
+  caisseId: string;
   type: TypeMouvement;
   categorie: CategorieMouvement;
   montant: number;
@@ -67,7 +67,7 @@ export const caisseApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<CaisseDTO> => {
+  getById: async (id: string): Promise<CaisseDTO> => {
     const res = await api.get<CaisseDTO>(`/caisse/${id}`);
     return res.data;
   },
@@ -77,12 +77,12 @@ export const caisseApi = {
     return res.data;
   },
 
-  fermer: async (id: number, fermePar?: string): Promise<CaisseDTO> => {
+  fermer: async (id: string, fermePar?: string): Promise<CaisseDTO> => {
     const res = await api.patch<CaisseDTO>(`/caisse/${id}/fermer${fermePar ? `?fermePar=${fermePar}` : ""}`);
     return res.data;
   },
 
-  getMouvements: async (caisseId: number): Promise<MouvementDTO[]> => {
+  getMouvements: async (caisseId: string): Promise<MouvementDTO[]> => {
     const res = await api.get<MouvementDTO[]>(`/caisse/${caisseId}/mouvements`);
     return res.data;
   },
@@ -92,5 +92,5 @@ export const caisseApi = {
     return res.data;
   },
 
-  deleteMouvement: async (id: number) => api.delete(`/caisse/mouvements/${id}`),
+  deleteMouvement: async (id: string) => api.delete(`/caisse/mouvements/${id}`),
 };

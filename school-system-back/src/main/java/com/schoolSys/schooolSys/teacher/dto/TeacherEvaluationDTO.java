@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.teacher.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,10 +15,10 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class TeacherEvaluationDTO {
 
-    private Long id;
-    private Long teacherId;
+    private UUID id;
+    private UUID teacherId;
     private String teacherName;
-    private Long evaluatorId;
+    private UUID evaluatorId;
     private String evaluatorName;
     private String anneeScolaire;
     private Integer trimestre;

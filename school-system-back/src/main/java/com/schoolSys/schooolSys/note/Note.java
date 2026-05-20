@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.note;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import com.schoolSys.schooolSys.common.audit.AuditableEntity;
 import com.schoolSys.schooolSys.examen.Examen;
 import com.schoolSys.schooolSys.student.Student;
@@ -21,8 +24,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class Note extends AuditableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)

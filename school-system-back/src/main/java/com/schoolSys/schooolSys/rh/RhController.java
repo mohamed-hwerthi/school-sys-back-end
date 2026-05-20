@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rh;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.rh.dto.*;
 import jakarta.validation.Valid;
@@ -27,13 +29,13 @@ public class RhController {
     }
 
     @GetMapping("/contrats/{id}")
-    public ResponseEntity<ApiResponse<ContratResponseDTO>> getContratById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ContratResponseDTO>> getContratById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(rhService.getContratById(id)));
     }
 
     @GetMapping("/contrats/enseignant/{enseignantId}")
     public ResponseEntity<ApiResponse<List<ContratResponseDTO>>> getContratsByEnseignant(
-            @PathVariable Long enseignantId) {
+            @PathVariable UUID enseignantId) {
         return ResponseEntity.ok(ApiResponse.ok(rhService.getContratsByEnseignant(enseignantId)));
     }
 
@@ -46,12 +48,12 @@ public class RhController {
 
     @PutMapping("/contrats/{id}")
     public ResponseEntity<ApiResponse<ContratResponseDTO>> updateContrat(
-            @PathVariable Long id, @Valid @RequestBody ContratRequestDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody ContratRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(rhService.updateContrat(id, dto)));
     }
 
     @DeleteMapping("/contrats/{id}")
-    public ResponseEntity<Void> deleteContrat(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteContrat(@PathVariable UUID id) {
         rhService.deleteContrat(id);
         return ResponseEntity.noContent().build();
     }
@@ -68,13 +70,13 @@ public class RhController {
     }
 
     @GetMapping("/conges/{id}")
-    public ResponseEntity<ApiResponse<CongeResponseDTO>> getCongeById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CongeResponseDTO>> getCongeById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(rhService.getCongeById(id)));
     }
 
     @GetMapping("/conges/enseignant/{enseignantId}")
     public ResponseEntity<ApiResponse<List<CongeResponseDTO>>> getCongesByEnseignant(
-            @PathVariable Long enseignantId) {
+            @PathVariable UUID enseignantId) {
         return ResponseEntity.ok(ApiResponse.ok(rhService.getCongesByEnseignant(enseignantId)));
     }
 
@@ -87,22 +89,22 @@ public class RhController {
 
     @PutMapping("/conges/{id}")
     public ResponseEntity<ApiResponse<CongeResponseDTO>> updateConge(
-            @PathVariable Long id, @Valid @RequestBody CongeRequestDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody CongeRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(rhService.updateConge(id, dto)));
     }
 
     @PutMapping("/conges/{id}/approuver")
-    public ResponseEntity<ApiResponse<CongeResponseDTO>> approuverConge(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CongeResponseDTO>> approuverConge(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(rhService.approuverConge(id)));
     }
 
     @PutMapping("/conges/{id}/refuser")
-    public ResponseEntity<ApiResponse<CongeResponseDTO>> refuserConge(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CongeResponseDTO>> refuserConge(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(rhService.refuserConge(id)));
     }
 
     @DeleteMapping("/conges/{id}")
-    public ResponseEntity<Void> deleteConge(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteConge(@PathVariable UUID id) {
         rhService.deleteConge(id);
         return ResponseEntity.noContent().build();
     }

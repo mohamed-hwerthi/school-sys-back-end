@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.absence.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FeuilleJourDTO {
-    private Long classeId;
+    private UUID classeId;
     private String classeLabel;
     private String niveauName;
     private LocalDate date;

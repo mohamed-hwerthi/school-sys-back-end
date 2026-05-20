@@ -17,34 +17,34 @@ export function useChildren() {
   });
 }
 
-export function useChildNotes(studentId: number, trimestre = 1) {
+export function useChildNotes(studentId: string, trimestre = 1) {
   return useQuery<ParentNote[]>({
     queryKey: [PARENT_KEY, "notes", studentId, trimestre],
     queryFn: () => parentPortalApi.getChildNotes(studentId, trimestre),
-    enabled: studentId > 0,
+    enabled: !!studentId,
   });
 }
 
-export function useChildAbsences(studentId: number) {
+export function useChildAbsences(studentId: string) {
   return useQuery<ParentAbsence[]>({
     queryKey: [PARENT_KEY, "absences", studentId],
     queryFn: () => parentPortalApi.getChildAbsences(studentId),
-    enabled: studentId > 0,
+    enabled: !!studentId,
   });
 }
 
-export function useChildBulletin(studentId: number, classeId: number, trimestre = 1) {
+export function useChildBulletin(studentId: string, classeId: string, trimestre = 1) {
   return useQuery<ParentBulletin>({
     queryKey: [PARENT_KEY, "bulletin", studentId, classeId, trimestre],
     queryFn: () => parentPortalApi.getChildBulletin(studentId, classeId, trimestre),
-    enabled: studentId > 0 && classeId > 0,
+    enabled: !!studentId && !!classeId,
   });
 }
 
-export function useChildEmploiDuTemps(studentId: number) {
+export function useChildEmploiDuTemps(studentId: string) {
   return useQuery<ParentEmploiDuTemps[]>({
     queryKey: [PARENT_KEY, "emploi-du-temps", studentId],
     queryFn: () => parentPortalApi.getChildEmploiDuTemps(studentId),
-    enabled: studentId > 0,
+    enabled: !!studentId,
   });
 }

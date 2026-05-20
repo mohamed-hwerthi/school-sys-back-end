@@ -3,7 +3,7 @@
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS caisses (
-    id                BIGSERIAL PRIMARY KEY,
+    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     date_ouverture    DATE          NOT NULL,
     date_fermeture    DATE,
     statut            VARCHAR(10)   NOT NULL CHECK (statut IN ('OUVERTE','FERMEE')),
@@ -22,8 +22,8 @@ CREATE INDEX idx_caisses_annee  ON caisses(annee_scolaire);
 CREATE INDEX idx_caisses_statut ON caisses(statut);
 
 CREATE TABLE IF NOT EXISTS mouvements_caisse (
-    id                  BIGSERIAL PRIMARY KEY,
-    caisse_id           BIGINT        NOT NULL REFERENCES caisses(id) ON DELETE CASCADE,
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    caisse_id           UUID        NOT NULL REFERENCES caisses(id) ON DELETE CASCADE,
     type                VARCHAR(10)   NOT NULL CHECK (type IN ('ENTREE','SORTIE')),
     categorie           VARCHAR(25)   NOT NULL,
     montant             NUMERIC(10,2) NOT NULL CHECK (montant > 0),

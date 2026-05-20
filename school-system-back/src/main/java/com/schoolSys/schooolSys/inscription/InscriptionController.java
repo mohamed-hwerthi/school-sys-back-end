@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.inscription;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.common.dto.PagedResponse;
 import com.schoolSys.schooolSys.inscription.dto.*;
@@ -30,7 +32,7 @@ public class InscriptionController {
     public ResponseEntity<ApiResponse<PagedResponse<InscriptionDTO>>> getAll(
             @RequestParam(required = false) String statut,
             @RequestParam(required = false) String anneeScolaire,
-            @RequestParam(required = false) Long niveauId,
+            @RequestParam(required = false) UUID niveauId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -50,7 +52,7 @@ public class InscriptionController {
      */
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_INSCRIPTIONS')")
-    public ResponseEntity<ApiResponse<InscriptionDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<InscriptionDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(inscriptionService.findById(id)));
     }
 
@@ -60,7 +62,7 @@ public class InscriptionController {
     @PutMapping("/{id}/statut")
     @PreAuthorize("hasAuthority('MANAGE_INSCRIPTIONS')")
     public ResponseEntity<ApiResponse<InscriptionDTO>> updateStatut(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody UpdateStatutRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(inscriptionService.updateStatut(id, request)));
     }
@@ -81,7 +83,7 @@ public class InscriptionController {
     @GetMapping("/liste-attente/{niveauId}")
     @PreAuthorize("hasAuthority('MANAGE_INSCRIPTIONS')")
     public ResponseEntity<ApiResponse<List<InscriptionDTO>>> getListeAttente(
-            @PathVariable Long niveauId,
+            @PathVariable UUID niveauId,
             @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(inscriptionService.getListeAttente(niveauId, anneeScolaire)));
     }

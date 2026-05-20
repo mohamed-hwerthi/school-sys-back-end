@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.vitrine;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.vitrine.dto.*;
 import lombok.RequiredArgsConstructor;
@@ -69,7 +71,7 @@ public class VitrineService {
     }
 
     @Transactional
-    public VitrinePageDTO updatePage(Long id, VitrinePageDTO dto) {
+    public VitrinePageDTO updatePage(UUID id, VitrinePageDTO dto) {
         VitrinePage page = pageRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("VitrinePage", id));
         page.setTitle(dto.getTitle());
@@ -80,18 +82,18 @@ public class VitrineService {
     }
 
     @Transactional
-    public void deletePage(Long id) {
+    public void deletePage(UUID id) {
         pageRepository.deleteById(id);
     }
 
     // ======================== SECTIONS ========================
 
-    public List<VitrineSectionDTO> getSectionsByPage(Long pageId) {
+    public List<VitrineSectionDTO> getSectionsByPage(UUID pageId) {
         return mapper.toSectionDTOList(sectionRepository.findByPageIdOrderByDisplayOrderAsc(pageId));
     }
 
     @Transactional
-    public VitrineSectionDTO createSection(Long pageId, VitrineSectionDTO dto) {
+    public VitrineSectionDTO createSection(UUID pageId, VitrineSectionDTO dto) {
         VitrinePage page = pageRepository.findById(pageId)
                 .orElseThrow(() -> new ResourceNotFoundException("VitrinePage", pageId));
         VitrineSection section = mapper.toSectionEntity(dto);
@@ -100,7 +102,7 @@ public class VitrineService {
     }
 
     @Transactional
-    public VitrineSectionDTO updateSection(Long id, VitrineSectionDTO dto) {
+    public VitrineSectionDTO updateSection(UUID id, VitrineSectionDTO dto) {
         VitrineSection section = sectionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("VitrineSection", id));
         section.setSectionType(dto.getSectionType());
@@ -112,7 +114,7 @@ public class VitrineService {
     }
 
     @Transactional
-    public void deleteSection(Long id) {
+    public void deleteSection(UUID id) {
         sectionRepository.deleteById(id);
     }
 
@@ -129,7 +131,7 @@ public class VitrineService {
     }
 
     @Transactional
-    public void deleteGalleryItem(Long id) {
+    public void deleteGalleryItem(UUID id) {
         galleryRepository.deleteById(id);
     }
 
@@ -151,7 +153,7 @@ public class VitrineService {
     }
 
     @Transactional
-    public VitrineAnnouncementDTO updateAnnouncement(Long id, VitrineAnnouncementDTO dto) {
+    public VitrineAnnouncementDTO updateAnnouncement(UUID id, VitrineAnnouncementDTO dto) {
         VitrineAnnouncement ann = announcementRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("VitrineAnnouncement", id));
         ann.setTitle(dto.getTitle());
@@ -163,7 +165,7 @@ public class VitrineService {
     }
 
     @Transactional
-    public void deleteAnnouncement(Long id) {
+    public void deleteAnnouncement(UUID id) {
         announcementRepository.deleteById(id);
     }
 
@@ -231,7 +233,7 @@ public class VitrineService {
     }
 
     @Transactional
-    public void markAsRead(Long id) {
+    public void markAsRead(UUID id) {
         VitrineContact contact = contactRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("VitrineContact", id));
         contact.setRead(true);
@@ -239,7 +241,7 @@ public class VitrineService {
     }
 
     @Transactional
-    public void replyToContact(Long id, String replyText) {
+    public void replyToContact(UUID id, String replyText) {
         VitrineContact contact = contactRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("VitrineContact", id));
         contact.setReplied(true);

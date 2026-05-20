@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.emploidutemps.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +14,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreneauDTO {
-    private Long id;
+    private UUID id;
     private String label;
     private LocalTime heureDebut;
     private LocalTime heureFin;

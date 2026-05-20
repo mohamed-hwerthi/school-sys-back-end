@@ -1,13 +1,22 @@
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'DIRECTEUR' | 'ENSEIGNANT' | 'COMPTABLE' | 'PARENT';
 
 export interface AuthUser {
-  id: number;
+  id: string;
   email: string;
   firstName: string;
   lastName: string;
   role: UserRole;
   tenantId: string;
+  tenantSlug?: string;
   isActive: boolean;
+}
+
+/** Response of `GET /auth/me` — the user plus permissions and access scope. */
+export interface MeResponse {
+  user: AuthUser;
+  permissions: string[];
+  scopedClasseIds: string[];
+  scopedStudentIds: string[];
 }
 
 export interface LoginRequest {
@@ -47,7 +56,7 @@ export interface Verify2FALoginRequest {
 
 // Session management types
 export interface Session {
-  id: number;
+  id: string;
   deviceName: string;
   ipAddress: string;
   lastUsedAt: string;

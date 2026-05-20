@@ -1,9 +1,9 @@
 import api from "./axios";
 
 export interface ClasseDTO {
-  id: number;
+  id: string;
   letter: string;
-  niveauId: number;
+  niveauId: string;
   niveauName: string;
   fullName: string;
 }
@@ -11,7 +11,7 @@ export interface ClasseDTO {
 const BASE = "/classes";
 
 export const classesApi = {
-  getAll: async (niveauId?: number): Promise<ClasseDTO[]> => {
+  getAll: async (niveauId?: string): Promise<ClasseDTO[]> => {
     const params = niveauId ? `?niveauId=${niveauId}` : "";
     const res = await api.get<ClasseDTO[]>(`${BASE}${params}`);
     return res.data;

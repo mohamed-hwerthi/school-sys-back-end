@@ -1,7 +1,7 @@
 CREATE TABLE emprunts (
-    id BIGSERIAL PRIMARY KEY,
-    livre_id BIGINT NOT NULL REFERENCES livres(id),
-    eleve_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    livre_id UUID NOT NULL REFERENCES livres(id),
+    eleve_id UUID NOT NULL,
     date_emprunt DATE NOT NULL DEFAULT CURRENT_DATE,
     date_retour_prevue DATE NOT NULL,
     date_retour_effective DATE,

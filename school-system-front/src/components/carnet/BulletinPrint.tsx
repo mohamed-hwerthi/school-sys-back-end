@@ -186,11 +186,13 @@ export default function BulletinPrint({
 
           {/* SIDE PANEL (left visually) */}
           <div style={{ width: "55mm", display: "flex", flexDirection: "column", gap: "2.5mm" }}>
-            {/* Three stat boxes side-by-side */}
+            {/* Three stat boxes side-by-side. RTL : la première carte du DOM
+                apparaît à droite. Ordre conforme au modèle officiel :
+                معدل الثلاثي (droite) · أعلى · أدنى (gauche). */}
             <div style={{ display: "flex", gap: "1.5mm" }}>
-              <MiniStatCard label="أدنى معدل بالقسم" value={formatNote(b.moyenneMin)} tone="bad" />
-              <MiniStatCard label="أعلى معدل بالقسم" value={formatNote(b.moyenneMax)} tone="good" />
               <MiniStatCard label="معدل الثلاثي" value={formatNote(b.moyenneGenerale)} tone="primary" />
+              <MiniStatCard label="أعلى معدل بالقسم" value={formatNote(b.moyenneMax)} tone="good" />
+              <MiniStatCard label="أدنى معدل بالقسم" value={formatNote(b.moyenneMin)} tone="bad" />
             </div>
 
             {/* Observation comportement */}

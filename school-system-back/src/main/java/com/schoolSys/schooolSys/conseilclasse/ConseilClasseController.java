@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.conseilclasse;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.conseilclasse.dto.ConseilClasseDTO;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +26,7 @@ public class ConseilClasseController {
 
     @GetMapping("/{classeId}")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
-    public ResponseEntity<ApiResponse<ConseilClasseDTO>> getConseilClasse(@PathVariable Long classeId) {
+    public ResponseEntity<ApiResponse<ConseilClasseDTO>> getConseilClasse(@PathVariable UUID classeId) {
         return ResponseEntity.ok(ApiResponse.ok(conseilClasseService.getConseilClasse(classeId)));
     }
 }

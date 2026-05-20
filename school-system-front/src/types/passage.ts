@@ -1,6 +1,6 @@
 export interface Passage {
-  id: number;
-  studentId: number;
+  id: string;
+  studentId: string;
   studentName: string;
   ancienNiveau: string;
   nouveauNiveau: string;

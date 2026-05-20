@@ -28,7 +28,7 @@ ALTER TABLE sanctions DROP CONSTRAINT IF EXISTS sanctions_type_sanction_check;
 ALTER TABLE sanctions RENAME COLUMN type_sanction TO type;
 ALTER TABLE sanctions RENAME COLUMN notifie_parent TO notifie_parents;
 
-ALTER TABLE sanctions ADD COLUMN IF NOT EXISTS decide_par_id BIGINT;
+ALTER TABLE sanctions ADD COLUMN IF NOT EXISTS decide_par_id UUID;
 ALTER TABLE sanctions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT NOW();
 ALTER TABLE sanctions ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE sanctions ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;

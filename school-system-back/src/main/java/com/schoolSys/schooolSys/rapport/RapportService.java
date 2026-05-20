@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rapport;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.rapport.dto.RapportRequestDTO;
 import com.schoolSys.schooolSys.rapport.dto.RapportResponseDTO;
@@ -32,7 +34,7 @@ public class RapportService {
         return rapportMapper.toResponseDTOList(rapports);
     }
 
-    public RapportResponseDTO findById(Long id) {
+    public RapportResponseDTO findById(UUID id) {
         Rapport rapport = rapportRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Rapport", id));
         return rapportMapper.toResponseDTO(rapport);
@@ -51,7 +53,7 @@ public class RapportService {
     }
 
     @Transactional
-    public RapportResponseDTO update(Long id, RapportRequestDTO dto) {
+    public RapportResponseDTO update(UUID id, RapportRequestDTO dto) {
         Rapport rapport = rapportRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Rapport", id));
         rapportMapper.updateEntity(dto, rapport);
@@ -60,7 +62,7 @@ public class RapportService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!rapportRepository.existsById(id)) {
             throw new ResourceNotFoundException("Rapport", id);
         }

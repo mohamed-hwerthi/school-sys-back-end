@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.discipline;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import com.schoolSys.schooolSys.common.audit.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,11 +23,12 @@ import org.hibernate.annotations.SQLRestriction;
 public class Sanction extends AuditableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "eleve_id", nullable = false)
-    private Long eleveId;
+    private UUID eleveId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "incident_id")
@@ -45,7 +49,7 @@ public class Sanction extends AuditableEntity {
     private LocalDate dateFin;
 
     @Column(name = "decide_par_id")
-    private Long decideParId;
+    private UUID decideParId;
 
     @Column(name = "notifie_parents")
     @Builder.Default
@@ -60,7 +64,7 @@ public class Sanction extends AuditableEntity {
     private String statut = "ACTIVE"; // ACTIVE, LEVEE, EXPIREE
 
     @Column(name = "approuve_par")
-    private Long approuvePar;
+    private UUID approuvePar;
 
     @Column(name = "commentaire_approbation", columnDefinition = "TEXT")
     private String commentaireApprobation;

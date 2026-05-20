@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.rh;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import com.schoolSys.schooolSys.teacher.Teacher;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,8 +23,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class Conge {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enseignant_id", nullable = false)

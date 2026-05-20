@@ -676,7 +676,7 @@ export default function InscriptionPubliquePage() {
                               : ""
                           }
                           onValueChange={(v) =>
-                            step3Form.setValue("niveauId", Number(v), {
+                            step3Form.setValue("niveauId", v, {
                               shouldValidate: true,
                             })
                           }

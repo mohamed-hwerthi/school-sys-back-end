@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.anneescolaire.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -14,7 +16,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TrimestreDTO {
-    private Long id;
+    private UUID id;
     @NotNull
     private Integer numero;
     @NotBlank

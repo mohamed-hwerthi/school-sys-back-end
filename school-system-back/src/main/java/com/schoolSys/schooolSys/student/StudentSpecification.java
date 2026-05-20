@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.student;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
@@ -37,7 +39,7 @@ public final class StudentSpecification {
      * Restricts students to a list of IDs.
      * Empty list → matches NOTHING (safe default for a parent with no children linked).
      */
-    public static Specification<Student> hasIdIn(java.util.Collection<Long> ids) {
+    public static Specification<Student> hasIdIn(java.util.Collection<UUID> ids) {
         if (ids == null || ids.isEmpty()) {
             return (root, cq, cb) -> cb.disjunction();
         }

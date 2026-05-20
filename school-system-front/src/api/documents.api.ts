@@ -8,14 +8,14 @@ import type {
 const BASE = "/documents";
 
 export const documentsApi = {
-  generateCertificatScolarite: async (eleveId: number): Promise<Blob> => {
+  generateCertificatScolarite: async (eleveId: string): Promise<Blob> => {
     const res = await api.post(`${BASE}/certificat-scolarite/${eleveId}`, null, {
       responseType: "blob",
     });
     return res.data;
   },
 
-  generateCarteScolaire: async (eleveId: number): Promise<Blob> => {
+  generateCarteScolaire: async (eleveId: string): Promise<Blob> => {
     const res = await api.post(`${BASE}/carte-scolaire/${eleveId}`, null, {
       responseType: "blob",
     });
@@ -23,7 +23,7 @@ export const documentsApi = {
   },
 
   generateAttestation: async (
-    eleveId: number,
+    eleveId: string,
     anneeScolaire?: string
   ): Promise<Blob> => {
     const params = anneeScolaire ? { anneeScolaire } : {};
@@ -35,7 +35,7 @@ export const documentsApi = {
   },
 
   generateReleveNotes: async (
-    eleveId: number,
+    eleveId: string,
     trimestre?: number
   ): Promise<Blob> => {
     const params = trimestre ? { trimestre } : {};
@@ -46,7 +46,7 @@ export const documentsApi = {
     return res.data;
   },
 
-  generateRecuPaiement: async (paiementId: number): Promise<Blob> => {
+  generateRecuPaiement: async (paiementId: string): Promise<Blob> => {
     const res = await api.post(`${BASE}/recu-paiement/${paiementId}`, null, {
       responseType: "blob",
     });

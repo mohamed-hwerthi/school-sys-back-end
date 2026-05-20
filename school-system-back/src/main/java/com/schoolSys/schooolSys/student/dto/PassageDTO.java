@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.student.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,8 +13,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PassageDTO {
 
-    private Long id;
-    private Long studentId;
+    private UUID id;
+    private UUID studentId;
     private String studentName;
     private String ancienNiveau;
     private String nouveauNiveau;

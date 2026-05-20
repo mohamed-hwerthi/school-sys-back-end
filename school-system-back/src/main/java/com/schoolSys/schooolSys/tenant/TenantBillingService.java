@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.tenant;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.tenant.dto.TenantBillingDTO;
 import com.schoolSys.schooolSys.tenant.dto.TenantPlanDTO;
@@ -29,7 +31,7 @@ public class TenantBillingService {
                     List.of("Eleves illimites", "Enseignants illimites", "Tous les modules", "Support dedie 24/7", "Analytics BI", "API illimitee", "Personnalisation"))
     );
 
-    public TenantPlanDTO getPlanDetails(Long tenantId) {
+    public TenantPlanDTO getPlanDetails(UUID tenantId) {
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant", tenantId));
 
@@ -46,7 +48,7 @@ public class TenantBillingService {
     }
 
     @Transactional
-    public TenantPlanDTO changePlan(Long tenantId, String newPlan) {
+    public TenantPlanDTO changePlan(UUID tenantId, String newPlan) {
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant", tenantId));
 
@@ -73,7 +75,7 @@ public class TenantBillingService {
     }
 
     @Transactional
-    public TenantBillingDTO updateBilling(Long tenantId, TenantBillingDTO dto) {
+    public TenantBillingDTO updateBilling(UUID tenantId, TenantBillingDTO dto) {
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant", tenantId));
 
@@ -90,7 +92,7 @@ public class TenantBillingService {
                 .build();
     }
 
-    public TenantUsageDTO getUsage(Long tenantId) {
+    public TenantUsageDTO getUsage(UUID tenantId) {
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant", tenantId));
 

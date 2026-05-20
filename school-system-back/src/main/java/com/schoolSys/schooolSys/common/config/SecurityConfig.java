@@ -2,9 +2,11 @@ package com.schoolSys.schooolSys.common.config;
 
 import com.schoolSys.schooolSys.auth.JwtAuthenticationFilter;
 import com.schoolSys.schooolSys.common.security.AuditingAccessDeniedHandler;
+import com.schoolSys.schooolSys.common.security.RestAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -26,6 +28,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CorsConfigurationSource corsConfigurationSource;
     private final AuditingAccessDeniedHandler accessDeniedHandler;
+    private final RestAuthenticationEntryPoint authenticationEntryPoint;
 
     /**
      * Endpoints accessible without authentication.
@@ -69,9 +72,16 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_PATHS).permitAll()
+                        // Serving uploaded files (logo, documents…) must be public:
+                        // an <img src> / <a href> cannot carry the JWT header.
+                        // Paths contain a UUID, so they are not guessable.
+                        // Upload/delete stay authenticated.
+                        .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

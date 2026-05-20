@@ -33,7 +33,7 @@ export const usersApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<UserItem> => {
+  getById: async (id: string): Promise<UserItem> => {
     const res = await api.get<UserItem>(`${BASE}/${id}`);
     return res.data;
   },
@@ -43,17 +43,17 @@ export const usersApi = {
     return res.data;
   },
 
-  update: async (id: number, data: Partial<CreateUserRequest>): Promise<UserItem> => {
+  update: async (id: string, data: Partial<CreateUserRequest>): Promise<UserItem> => {
     const res = await api.put<UserItem>(`${BASE}/${id}`, data);
     return res.data;
   },
 
-  toggleActive: async (id: number): Promise<UserItem> => {
+  toggleActive: async (id: string): Promise<UserItem> => {
     const res = await api.patch<UserItem>(`${BASE}/${id}/toggle-active`);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/${id}`);
   },
 };

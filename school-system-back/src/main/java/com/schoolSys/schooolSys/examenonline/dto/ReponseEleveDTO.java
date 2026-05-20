@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.examenonline.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,11 +15,11 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class ReponseEleveDTO {
 
-    private Long id;
-    private Long tentativeId;
-    private Long questionId;
+    private UUID id;
+    private UUID tentativeId;
+    private UUID questionId;
     private String questionTexte;
-    private Long choixId;
+    private UUID choixId;
     private String reponseTexte;
     private Boolean correct;
     private BigDecimal pointsObtenus;

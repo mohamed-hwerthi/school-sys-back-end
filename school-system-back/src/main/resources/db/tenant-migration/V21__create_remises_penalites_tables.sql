@@ -4,9 +4,9 @@
 
 -- Remises (discounts)
 CREATE TABLE IF NOT EXISTS remises (
-    id              BIGSERIAL PRIMARY KEY,
-    student_id      BIGINT       NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-    type_frais_id   BIGINT       REFERENCES types_frais(id) ON DELETE SET NULL,
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id      UUID       NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    type_frais_id   UUID       REFERENCES types_frais(id) ON DELETE SET NULL,
     type            VARCHAR(20)  NOT NULL CHECK (type IN ('FRATRIE','BOURSE','PERSONNEL','ANTICIPATION','COMMERCIAL')),
     valeur          NUMERIC(10,2) NOT NULL CHECK (valeur > 0),
     est_pourcentage BOOLEAN      NOT NULL DEFAULT FALSE,
@@ -21,9 +21,9 @@ CREATE INDEX idx_remises_annee     ON remises(annee_scolaire);
 
 -- Pénalités (late fees)
 CREATE TABLE IF NOT EXISTS penalites (
-    id               BIGSERIAL PRIMARY KEY,
-    student_id       BIGINT       NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-    paiement_id      BIGINT       REFERENCES paiements(id) ON DELETE SET NULL,
+    id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id       UUID       NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    paiement_id      UUID       REFERENCES paiements(id) ON DELETE SET NULL,
     montant          NUMERIC(10,2) NOT NULL CHECK (montant > 0),
     motif            VARCHAR(255) NOT NULL,
     date_application DATE         NOT NULL DEFAULT CURRENT_DATE,

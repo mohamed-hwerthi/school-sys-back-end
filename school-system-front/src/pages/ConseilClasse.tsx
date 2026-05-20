@@ -99,14 +99,14 @@ export default function ConseilClasse() {
     return c;
   }, [propositions, edits]);
 
-  const setDecision = (studentId: number, decision: DecisionType) => {
+  const setDecision = (studentId: string, decision: DecisionType) => {
     setEdits((prev) => ({
       ...prev,
       [studentId]: { decision, motif: prev[studentId]?.motif ?? "" },
     }));
   };
 
-  const setMotif = (studentId: number, motif: string) => {
+  const setMotif = (studentId: string, motif: string) => {
     setEdits((prev) => ({
       ...prev,
       [studentId]: { decision: prev[studentId]?.decision ?? "REDOUBLEMENT", motif },
@@ -226,7 +226,7 @@ export default function ConseilClasse() {
               <Select
                 value={selectedNiveau ? String(selectedNiveau) : ""}
                 onValueChange={(v) => {
-                  setSelectedNiveau(Number(v));
+                  setSelectedNiveau(v);
                   setSelectedClasse(0);
                 }}
               >
@@ -248,7 +248,7 @@ export default function ConseilClasse() {
               <Label>Classe</Label>
               <Select
                 value={selectedClasse ? String(selectedClasse) : ""}
-                onValueChange={(v) => setSelectedClasse(Number(v))}
+                onValueChange={(v) => setSelectedClasse(v)}
                 disabled={!selectedNiveau}
               >
                 <SelectTrigger>

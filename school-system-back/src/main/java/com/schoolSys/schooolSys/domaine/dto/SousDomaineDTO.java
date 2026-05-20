@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.domaine.dto;
 
+import java.util.UUID;
+
 import lombok.*;
 
 @Data
@@ -7,9 +9,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SousDomaineDTO {
-    private Long id;
+    private UUID id;
     private String name;
     private String nameAr;
     private Integer ordre;
-    private Long domaineId;
+    private UUID domaineId;
 }

@@ -4,7 +4,7 @@ import type { AuthUser, LoginRequest, LoginResponse } from "@/types/auth";
 import { notify } from "@/lib/toast";
 
 interface TwoFactorPending {
-  userId: number;
+  userId: string;
 }
 
 interface AuthContextType {
@@ -13,7 +13,7 @@ interface AuthContextType {
   isLoading: boolean;
   twoFactorPending: TwoFactorPending | null;
   login: (data: LoginRequest) => Promise<LoginResponse>;
-  verify2FA: (userId: number, code: string) => Promise<void>;
+  verify2FA: (userId: string, code: string) => Promise<void>;
   cancelTwoFactor: () => void;
   logout: () => Promise<void>;
 }
@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return response;
   }, [storeTokens]);
 
-  const verify2FA = useCallback(async (userId: number, code: string) => {
+  const verify2FA = useCallback(async (userId: string, code: string) => {
     const response = await authApi.verify2FA({ userId, code });
     storeTokens(response);
   }, [storeTokens]);

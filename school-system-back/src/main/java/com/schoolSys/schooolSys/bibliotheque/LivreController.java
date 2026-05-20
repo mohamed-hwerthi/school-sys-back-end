@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.bibliotheque;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.bibliotheque.dto.CreateLivreRequest;
 import com.schoolSys.schooolSys.bibliotheque.dto.LivreDTO;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
@@ -44,7 +46,7 @@ public class LivreController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_BIBLIOTHEQUE')")
-    public ResponseEntity<ApiResponse<LivreDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<LivreDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(livreService.findById(id)));
     }
 
@@ -63,14 +65,14 @@ public class LivreController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_BIBLIOTHEQUE')")
-    public ResponseEntity<ApiResponse<LivreDTO>> update(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<LivreDTO>> update(@PathVariable UUID id,
                                                          @Valid @RequestBody CreateLivreRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(livreService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_BIBLIOTHEQUE')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         livreService.delete(id);
         return ResponseEntity.noContent().build();
     }

@@ -5,7 +5,7 @@ export type StatutCirculaire = "Brouillon" | "Publiée" | "Archivée";
 export type CibleCirculaire = "Tous" | "Enseignants" | "Parents" | "Élèves" | "Administration";
 
 export type Circulaire = {
-  id: number;
+  id: string;
   titre: string;
   type: TypeCirculaire;
   contenu: string;

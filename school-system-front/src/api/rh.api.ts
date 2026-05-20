@@ -25,7 +25,7 @@ export const rhApi = {
     return res.data;
   },
 
-  getPointagesByEmploye: async (employeId: number, employeType?: string): Promise<Pointage[]> => {
+  getPointagesByEmploye: async (employeId: string, employeType?: string): Promise<Pointage[]> => {
     const res = await api.get<Pointage[]>(`${BASE}/pointage/employe/${employeId}`, {
       params: { employeType: employeType || "ENSEIGNANT" },
     });
@@ -37,12 +37,12 @@ export const rhApi = {
     return res.data;
   },
 
-  updatePointage: async (id: number, data: CreatePointageRequest): Promise<Pointage> => {
+  updatePointage: async (id: string, data: CreatePointageRequest): Promise<Pointage> => {
     const res = await api.put<Pointage>(`${BASE}/pointage/${id}`, data);
     return res.data;
   },
 
-  deletePointage: async (id: number): Promise<void> => {
+  deletePointage: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/pointage/${id}`);
   },
 
@@ -52,12 +52,12 @@ export const rhApi = {
     return res.data;
   },
 
-  getFichePaieById: async (id: number): Promise<FichePaie> => {
+  getFichePaieById: async (id: string): Promise<FichePaie> => {
     const res = await api.get<FichePaie>(`${BASE}/paie/${id}`);
     return res.data;
   },
 
-  getFichesPaieByEmploye: async (employeId: number): Promise<FichePaie[]> => {
+  getFichesPaieByEmploye: async (employeId: string): Promise<FichePaie[]> => {
     const res = await api.get<FichePaie[]>(`${BASE}/paie/employe/${employeId}`);
     return res.data;
   },
@@ -74,12 +74,12 @@ export const rhApi = {
     return res.data;
   },
 
-  updateFichePaie: async (id: number, data: CreateFichePaieRequest): Promise<FichePaie> => {
+  updateFichePaie: async (id: string, data: CreateFichePaieRequest): Promise<FichePaie> => {
     const res = await api.put<FichePaie>(`${BASE}/paie/${id}`, data);
     return res.data;
   },
 
-  deleteFichePaie: async (id: number): Promise<void> => {
+  deleteFichePaie: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/paie/${id}`);
   },
 
@@ -89,7 +89,7 @@ export const rhApi = {
     return res.data;
   },
 
-  getFormationById: async (id: number): Promise<Formation> => {
+  getFormationById: async (id: string): Promise<Formation> => {
     const res = await api.get<Formation>(`${BASE}/formations/${id}`);
     return res.data;
   },
@@ -99,21 +99,21 @@ export const rhApi = {
     return res.data;
   },
 
-  updateFormation: async (id: number, data: CreateFormationRequest): Promise<Formation> => {
+  updateFormation: async (id: string, data: CreateFormationRequest): Promise<Formation> => {
     const res = await api.put<Formation>(`${BASE}/formations/${id}`, data);
     return res.data;
   },
 
-  deleteFormation: async (id: number): Promise<void> => {
+  deleteFormation: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/formations/${id}`);
   },
 
-  addParticipant: async (formationId: number, data: AddParticipantRequest): Promise<FormationParticipant> => {
+  addParticipant: async (formationId: string, data: AddParticipantRequest): Promise<FormationParticipant> => {
     const res = await api.post<FormationParticipant>(`${BASE}/formations/${formationId}/participants`, data);
     return res.data;
   },
 
-  removeParticipant: async (participantId: number): Promise<void> => {
+  removeParticipant: async (participantId: string): Promise<void> => {
     await api.delete(`${BASE}/formations/participants/${participantId}`);
   },
 

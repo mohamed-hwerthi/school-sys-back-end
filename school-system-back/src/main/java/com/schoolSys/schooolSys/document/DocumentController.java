@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.document;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.document.dto.DocumentGenerationRequest;
 import com.schoolSys.schooolSys.document.dto.DocumentHistoryDTO;
@@ -23,7 +25,7 @@ public class DocumentController {
 
     @PostMapping("/certificat-scolarite/{eleveId}")
     @PreAuthorize("hasAuthority('MANAGE_SETTINGS')")
-    public ResponseEntity<byte[]> generateCertificatScolarite(@PathVariable Long eleveId) {
+    public ResponseEntity<byte[]> generateCertificatScolarite(@PathVariable UUID eleveId) {
         byte[] content = generationService.generateCertificatScolarite(eleveId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=certificat_scolarite_" + eleveId + ".html")
@@ -33,7 +35,7 @@ public class DocumentController {
 
     @PostMapping("/carte-scolaire/{eleveId}")
     @PreAuthorize("hasAuthority('MANAGE_SETTINGS')")
-    public ResponseEntity<byte[]> generateCarteScolaire(@PathVariable Long eleveId) {
+    public ResponseEntity<byte[]> generateCarteScolaire(@PathVariable UUID eleveId) {
         byte[] content = generationService.generateCarteScolaire(eleveId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=carte_scolaire_" + eleveId + ".html")
@@ -44,7 +46,7 @@ public class DocumentController {
     @PostMapping("/attestation/{eleveId}")
     @PreAuthorize("hasAuthority('MANAGE_SETTINGS')")
     public ResponseEntity<byte[]> generateAttestation(
-            @PathVariable Long eleveId,
+            @PathVariable UUID eleveId,
             @RequestParam(required = false) String anneeScolaire) {
         byte[] content = generationService.generateAttestationReussite(eleveId, anneeScolaire);
         return ResponseEntity.ok()
@@ -56,7 +58,7 @@ public class DocumentController {
     @PostMapping("/releve-notes/{eleveId}")
     @PreAuthorize("hasAuthority('MANAGE_SETTINGS')")
     public ResponseEntity<byte[]> generateReleveNotes(
-            @PathVariable Long eleveId,
+            @PathVariable UUID eleveId,
             @RequestParam(required = false) Integer trimestre) {
         byte[] content = generationService.generateReleveNotes(eleveId, trimestre);
         return ResponseEntity.ok()
@@ -67,7 +69,7 @@ public class DocumentController {
 
     @PostMapping("/recu-paiement/{paiementId}")
     @PreAuthorize("hasAuthority('MANAGE_SETTINGS')")
-    public ResponseEntity<byte[]> generateRecuPaiement(@PathVariable Long paiementId) {
+    public ResponseEntity<byte[]> generateRecuPaiement(@PathVariable UUID paiementId) {
         byte[] content = generationService.generateRecuPaiement(paiementId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=recu_paiement_" + paiementId + ".html")

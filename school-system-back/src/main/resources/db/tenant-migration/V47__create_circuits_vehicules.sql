@@ -1,5 +1,5 @@
 CREATE TABLE vehicules (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     immatriculation VARCHAR(20) NOT NULL UNIQUE,
     marque VARCHAR(100),
     modele VARCHAR(100),
@@ -14,10 +14,10 @@ CREATE TABLE vehicules (
 );
 
 CREATE TABLE circuits (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     nom VARCHAR(200) NOT NULL,
     description TEXT,
-    vehicule_id BIGINT REFERENCES vehicules(id),
+    vehicule_id UUID REFERENCES vehicules(id),
     heure_depart TIME,
     heure_retour TIME,
     distance_km NUMERIC(6,2),
@@ -28,8 +28,8 @@ CREATE TABLE circuits (
 );
 
 CREATE TABLE arrets (
-    id BIGSERIAL PRIMARY KEY,
-    circuit_id BIGINT NOT NULL REFERENCES circuits(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    circuit_id UUID NOT NULL REFERENCES circuits(id) ON DELETE CASCADE,
     nom VARCHAR(200) NOT NULL,
     adresse TEXT,
     ordre INTEGER NOT NULL,

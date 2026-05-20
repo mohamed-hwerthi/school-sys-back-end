@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.finance.Relance;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,9 +16,9 @@ import java.time.LocalDate;
 public class RelanceRequestDTO {
 
     @NotNull
-    private Long studentId;
+    private UUID studentId;
 
-    private Long paiementId;
+    private UUID paiementId;
 
     @NotNull
     private Relance.TypeRelance type;

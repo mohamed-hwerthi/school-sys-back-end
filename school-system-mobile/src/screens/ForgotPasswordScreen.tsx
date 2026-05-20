@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { authApi } from "@/api/auth.api";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 export default function ForgotPasswordScreen({ onBack }: { onBack: () => void }) {
+  const { colors } = useTheme();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);

@@ -27,7 +27,7 @@ export default function StudentMessages() {
   const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const studentId = Number(id);
+  const studentId = id;
   const { data: student, isLoading } = useStudent(studentId);
   const { sendMessage, getConversation, markAsRead } = useMessages();
 

@@ -127,7 +127,7 @@ export default function PaiePage() {
   const { school } = useSchool();
 
   /** Resolve a display name from an employeId + employeType pair, with a graceful fallback. */
-  const employeNameById = (employeId: number, employeType: string): string => {
+  const employeNameById = (employeId: string, employeType: string): string => {
     if (employeType === "ENSEIGNANT") {
       const teacher = teachers.find((t) => t.id === employeId);
       if (teacher) return `${teacher.prenom} ${teacher.nom}`;
@@ -175,7 +175,7 @@ export default function PaiePage() {
     if (search) {
       // search holds the chosen employeId (as string) when set
       const empId = Number(search);
-      if (!Number.isNaN(empId) && empId > 0) {
+      if (!Number.isNaN(empId) && empId) {
         list = list.filter((f) => f.employeId === empId);
       }
     }
@@ -712,7 +712,7 @@ export default function PaiePage() {
                     <Select
                       value={form.employeId ? String(form.employeId) : ""}
                       onValueChange={(v) =>
-                        setForm({ ...form, employeId: Number(v) })
+                        setForm({ ...form, employeId: v })
                       }
                     >
                       <SelectTrigger id="paieEmployeId">

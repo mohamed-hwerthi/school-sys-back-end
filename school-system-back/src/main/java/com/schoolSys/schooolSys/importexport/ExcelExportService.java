@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.importexport;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.absence.Absence;
 import com.schoolSys.schooolSys.absence.AbsenceRepository;
 import com.schoolSys.schooolSys.finance.Paiement;
@@ -108,7 +110,7 @@ public class ExcelExportService {
         }
     }
 
-    public void exportNotes(Long classeId, Integer trimestre, OutputStream out) throws IOException {
+    public void exportNotes(UUID classeId, Integer trimestre, OutputStream out) throws IOException {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Notes");
             CellStyle headerStyle = createHeaderStyle(workbook);

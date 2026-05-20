@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.student;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.student.dto.BulkPassageDTO;
 import com.schoolSys.schooolSys.student.dto.PassageDTO;
@@ -41,7 +43,7 @@ public class PassageController {
 
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
-    public ResponseEntity<ApiResponse<List<PassageDTO>>> getByStudent(@PathVariable Long studentId) {
+    public ResponseEntity<ApiResponse<List<PassageDTO>>> getByStudent(@PathVariable UUID studentId) {
         return ResponseEntity.ok(ApiResponse.ok(passageService.findByStudentId(studentId)));
     }
 }

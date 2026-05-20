@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -12,9 +14,9 @@ import java.time.LocalDate;
 public class PenaliteRequestDTO {
 
     @NotNull(message = "L'élève est requis")
-    private Long studentId;
+    private UUID studentId;
 
-    private Long paiementId;
+    private UUID paiementId;
 
     @NotNull(message = "Le montant est requis")
     @Positive(message = "Le montant doit être positif")

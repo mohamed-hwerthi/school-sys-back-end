@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.transport.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VehiculeDTO {
-    private Long id;
+    private UUID id;
     private String immatriculation;
     private String marque;
     private String modele;

@@ -1,5 +1,10 @@
 package com.schoolSys.schooolSys.examen;
 
+import java.util.UUID;
+
+import com.schoolSys.schooolSys.anneescolaire.AnneeScolaireRepository;
+import com.schoolSys.schooolSys.anneescolaire.Trimestre;
+import com.schoolSys.schooolSys.anneescolaire.TrimestreRepository;
 import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -17,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -31,14 +37,16 @@ public class ExamenService {
     private final TeacherRepository teacherRepository;
     private final NoteRepository noteRepository;
     private final StudentRepository studentRepository;
+    private final AnneeScolaireRepository anneeScolaireRepository;
+    private final TrimestreRepository trimestreRepository;
     private final CurrentUserContext currentUser;
 
-    public List<ExamenResponseDTO> findAll(Long moduleId, Long classeId, Integer trimestre) {
+    public List<ExamenResponseDTO> findAll(UUID moduleId, UUID classeId, Integer trimestre) {
         List<Examen> list = examenRepository.findFiltered(moduleId, classeId, trimestre);
         // Row-level scoping: an ENSEIGNANT only sees exams in his own classes and subjects.
         if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
-            Set<Long> scopedClasses = currentUser.getScopedClasseIdsForTeacher();
-            Set<Long> scopedModules = currentUser.getScopedModuleIdsForTeacher();
+            Set<UUID> scopedClasses = currentUser.getScopedClasseIdsForTeacher();
+            Set<UUID> scopedModules = currentUser.getScopedModuleIdsForTeacher();
             list = list.stream()
                     .filter(e -> e.getClasse() != null && scopedClasses.contains(e.getClasse().getId()))
                     .filter(e -> e.getModule() != null && scopedModules.contains(e.getModule().getId()))
@@ -49,7 +57,7 @@ public class ExamenService {
                 .toList();
     }
 
-    public ExamenResponseDTO findById(Long id) {
+    public ExamenResponseDTO findById(UUID id) {
         Examen examen = examenRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Examen", id));
         return toResponse(examen);
@@ -86,8 +94,65 @@ public class ExamenService {
         return toResponse(examenRepository.save(examen));
     }
 
+    /**
+     * Builds the default exam grid for a freshly created matière: one exam per
+     * (classe of the matière's niveau × trimestre). Idempotent — skips any
+     * (classe, trimestre) pair that already has an exam for this module.
+     *
+     * @return the number of exams created
+     */
     @Transactional
-    public ExamenResponseDTO update(Long id, ExamenRequestDTO dto) {
+    public int createDefaultsForModule(Module module) {
+        List<Classe> classes = classeRepository.findByNiveauId(module.getNiveau().getId());
+        if (classes.isEmpty()) {
+            return 0;
+        }
+        List<Integer> trimestres = resolveTrimestreNumeros();
+
+        List<Examen> toCreate = new ArrayList<>();
+        for (Classe classe : classes) {
+            for (Integer trimestre : trimestres) {
+                boolean alreadyThere = examenRepository
+                        .existsByModuleIdAndClasseIdAndTrimestre(module.getId(), classe.getId(), trimestre);
+                if (alreadyThere) {
+                    continue;
+                }
+                toCreate.add(Examen.builder()
+                        .name("Examen")
+                        .namePrive("Examen")
+                        .coeffEtatique(1.0)
+                        .coeffPrive(1.0)
+                        .ordreEtatique(1)
+                        .ordrePrive(1)
+                        .trimestre(trimestre)
+                        .classe(classe)
+                        .module(module)
+                        .versionEtatique(module.getVersionEtatique())
+                        .versionPrivee(module.getVersionPrivee())
+                        .build());
+            }
+        }
+        examenRepository.saveAll(toCreate);
+        return toCreate.size();
+    }
+
+    /**
+     * Trimestre numbers to seed exams for: those configured on the active
+     * school year, or the standard {1, 2, 3} when none are set up yet.
+     */
+    private List<Integer> resolveTrimestreNumeros() {
+        List<Integer> configured = anneeScolaireRepository.findByActiveTrue()
+                .map(annee -> trimestreRepository.findByAnneeScolaireId(annee.getId()).stream()
+                        .map(Trimestre::getNumero)
+                        .distinct()
+                        .sorted()
+                        .toList())
+                .orElse(List.of());
+        return configured.isEmpty() ? List.of(1, 2, 3) : configured;
+    }
+
+    @Transactional
+    public ExamenResponseDTO update(UUID id, ExamenRequestDTO dto) {
         Examen examen = examenRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Examen", id));
 
@@ -119,7 +184,7 @@ public class ExamenService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!examenRepository.existsById(id)) {
             throw new ResourceNotFoundException("Examen", id);
         }
@@ -127,15 +192,26 @@ public class ExamenService {
     }
 
     @Transactional
-    public void deleteBulk(List<Long> ids) {
+    public void deleteBulk(List<UUID> ids) {
         examenRepository.deleteAllByIdInBatch(ids);
     }
 
     private ExamenResponseDTO toResponse(Examen examen) {
         String classeName = "";
+        // `classeShortName` doit correspondre au format produit par
+        // ClasseController.toResponse ("1A") sinon studentRepository.countByClasse
+        // ne trouve aucun élève et nbEleves vaut 0 (Aperçu affichait "30/0").
+        String classeShortName = "";
         if (examen.getClasse() != null && examen.getClasse().getNiveau() != null) {
-            String prefix = examen.getClasse().getNiveau().getName().replaceAll("[^0-9]", "");
+            String niveauName = examen.getClasse().getNiveau().getName();
+            String prefix = niveauName.replaceAll("[^0-9]", "");
             classeName = prefix + "ème " + examen.getClasse().getLetter();
+            StringBuilder digits = new StringBuilder();
+            for (char ch : niveauName.toCharArray()) {
+                if (Character.isDigit(ch)) digits.append(ch);
+                else break;
+            }
+            classeShortName = digits.toString() + examen.getClasse().getLetter();
         }
 
         String teacherName = "";
@@ -144,7 +220,7 @@ public class ExamenService {
         }
 
         long nbNotes = noteRepository.countByExamenIdAndTrimestre(examen.getId(), examen.getTrimestre());
-        long nbEleves = classeName.isEmpty() ? 0 : studentRepository.countByClasse(classeName);
+        long nbEleves = classeShortName.isEmpty() ? 0 : studentRepository.countByClasse(classeShortName);
 
         return ExamenResponseDTO.builder()
                 .id(examen.getId())

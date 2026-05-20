@@ -67,8 +67,9 @@ app:
   cors:
     allowed-origins: "*"
   tenant:
-    # dev: new tenant schemas are pre-filled with demo data (db/tenant-seed)
-    flyway-locations: classpath:db/tenant-migration,classpath:db/tenant-seed
+    # A new school starts EMPTY: schema/tables only, no demo data.
+    # (Add classpath:db/tenant-seed back to pre-fill demo data if needed.)
+    flyway-locations: classpath:db/tenant-migration
 
 # Actuator — expose everything in dev
 management:

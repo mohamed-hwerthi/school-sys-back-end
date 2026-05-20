@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rh;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.rh.dto.*;
 import com.schoolSys.schooolSys.teacher.Teacher;
@@ -28,13 +30,13 @@ public class RhService {
                 .collect(Collectors.toList());
     }
 
-    public ContratResponseDTO getContratById(Long id) {
+    public ContratResponseDTO getContratById(UUID id) {
         ContratEnseignant contrat = contratRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ContratEnseignant", id));
         return toContratDto(contrat);
     }
 
-    public List<ContratResponseDTO> getContratsByEnseignant(Long enseignantId) {
+    public List<ContratResponseDTO> getContratsByEnseignant(UUID enseignantId) {
         return contratRepository.findByEnseignantId(enseignantId).stream()
                 .map(this::toContratDto)
                 .collect(Collectors.toList());
@@ -59,7 +61,7 @@ public class RhService {
     }
 
     @Transactional
-    public ContratResponseDTO updateContrat(Long id, ContratRequestDTO dto) {
+    public ContratResponseDTO updateContrat(UUID id, ContratRequestDTO dto) {
         ContratEnseignant contrat = contratRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ContratEnseignant", id));
 
@@ -82,7 +84,7 @@ public class RhService {
     }
 
     @Transactional
-    public void deleteContrat(Long id) {
+    public void deleteContrat(UUID id) {
         if (!contratRepository.existsById(id)) {
             throw new ResourceNotFoundException("ContratEnseignant", id);
         }
@@ -97,13 +99,13 @@ public class RhService {
                 .collect(Collectors.toList());
     }
 
-    public CongeResponseDTO getCongeById(Long id) {
+    public CongeResponseDTO getCongeById(UUID id) {
         Conge conge = congeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Conge", id));
         return toCongeDto(conge);
     }
 
-    public List<CongeResponseDTO> getCongesByEnseignant(Long enseignantId) {
+    public List<CongeResponseDTO> getCongesByEnseignant(UUID enseignantId) {
         return congeRepository.findByEnseignantId(enseignantId).stream()
                 .map(this::toCongeDto)
                 .collect(Collectors.toList());
@@ -133,7 +135,7 @@ public class RhService {
     }
 
     @Transactional
-    public CongeResponseDTO updateConge(Long id, CongeRequestDTO dto) {
+    public CongeResponseDTO updateConge(UUID id, CongeRequestDTO dto) {
         Conge conge = congeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Conge", id));
 
@@ -155,7 +157,7 @@ public class RhService {
     }
 
     @Transactional
-    public CongeResponseDTO approuverConge(Long id) {
+    public CongeResponseDTO approuverConge(UUID id) {
         Conge conge = congeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Conge", id));
         conge.setStatut("APPROUVE");
@@ -163,7 +165,7 @@ public class RhService {
     }
 
     @Transactional
-    public CongeResponseDTO refuserConge(Long id) {
+    public CongeResponseDTO refuserConge(UUID id) {
         Conge conge = congeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Conge", id));
         conge.setStatut("REFUSE");
@@ -171,7 +173,7 @@ public class RhService {
     }
 
     @Transactional
-    public void deleteConge(Long id) {
+    public void deleteConge(UUID id) {
         if (!congeRepository.existsById(id)) {
             throw new ResourceNotFoundException("Conge", id);
         }

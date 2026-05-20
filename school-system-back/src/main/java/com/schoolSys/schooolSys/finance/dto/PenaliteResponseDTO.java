@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,11 +13,11 @@ import java.time.LocalDateTime;
 @Builder
 public class PenaliteResponseDTO {
 
-    private Long id;
-    private Long studentId;
+    private UUID id;
+    private UUID studentId;
     private String studentFirstName;
     private String studentLastName;
-    private Long paiementId;
+    private UUID paiementId;
     private String paiementReference;
     private BigDecimal montant;
     private String motif;

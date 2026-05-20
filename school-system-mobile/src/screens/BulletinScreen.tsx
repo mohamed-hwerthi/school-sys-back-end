@@ -6,9 +6,11 @@ import { useNavigation } from "@react-navigation/native";
 import { bulletinsApi } from "@/api/bulletins.api";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorView } from "@/components/ErrorView";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 export default function BulletinScreen() {
+  const { colors } = useTheme();
   const { selectedChild } = useChild();
   const navigation = useNavigation();
   const [trimestre, setTrimestre] = useState(1);

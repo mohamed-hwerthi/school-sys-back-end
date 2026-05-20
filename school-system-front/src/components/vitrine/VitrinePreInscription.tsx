@@ -103,7 +103,7 @@ export default function VitrinePreInscription({ config }: Props) {
         prenomParent: form.prenomParent || undefined,
         telephoneParent: form.telephoneParent || undefined,
         emailParent: form.emailParent || undefined,
-        niveauId: form.niveauId ? Number(form.niveauId) : undefined,
+        niveauId: form.niveauId ? form.niveauId : undefined,
         anneeScolaire: form.anneeScolaire,
       };
       const res = await axios.post(

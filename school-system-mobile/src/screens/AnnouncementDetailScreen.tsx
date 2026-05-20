@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { annoncesApi } from "@/api/annonces.api";
 import { EmptyState } from "@/components/EmptyState";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 function getAnnonceTypeColor(type: string): string {
@@ -34,6 +35,7 @@ function formatFullDate(dateStr: string): string {
 }
 
 export default function AnnouncementDetailScreen() {
+  const { colors } = useTheme();
   const navigation = useNavigation();
   const route = useRoute<any>();
   const announcementId = route.params?.announcementId as number;

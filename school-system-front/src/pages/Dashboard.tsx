@@ -16,6 +16,7 @@ import {
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import { useDashboardStats, useMonthlyTrends } from "@/hooks/useReporting";
+import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { useLanguage } from "@/hooks/useLanguage";
 import {
   AreaChart,
@@ -62,23 +63,6 @@ const STAT_META_STYLES = [
     bg: "bg-amber-50",
     ring: "ring-amber-100",
   },
-];
-
-const FALLBACK_ATTENDANCE = [
-  { jour: "Lun", présents: 1180, absents: 67 },
-  { jour: "Mar", présents: 1195, absents: 52 },
-  { jour: "Mer", présents: 1140, absents: 107 },
-  { jour: "Jeu", présents: 1200, absents: 47 },
-  { jour: "Ven", présents: 1170, absents: 77 },
-];
-
-const FALLBACK_LEVEL_DISTRIBUTION = [
-  { name: "1ère année", value: 210, color: "#8b5cf6" },
-  { name: "2ème année", value: 195, color: "#3b82f6" },
-  { name: "3ème année", value: 220, color: "#06b6d4" },
-  { name: "4ème année", value: 205, color: "#10b981" },
-  { name: "5ème année", value: 198, color: "#f59e0b" },
-  { name: "6ème année", value: 219, color: "#ef4444" },
 ];
 
 const NIVEAU_COLORS = ["#8b5cf6", "#3b82f6", "#06b6d4", "#10b981", "#f59e0b", "#ef4444", "#ec4899", "#6366f1"];
@@ -144,6 +128,7 @@ export default function Dashboard() {
   const loading = useSimulatedLoading(800);
   const { data: dashboardStats, isLoading: statsLoading } = useDashboardStats("2025-2026");
   const { data: monthlyTrends } = useMonthlyTrends("2025-2026");
+  const { data: schoolSettings } = useSchoolSettings();
 
   const STAT_META = useMemo(() => [
     { ...STAT_META_STYLES[0], label: t("dashboard.totalStudents") },
@@ -181,9 +166,8 @@ export default function Dashboard() {
       ]
     : FALLBACK_QUICK_STATS;
 
-  const weeklyAttendanceData = dashboardStats?.weeklyAttendance?.length
-    ? dashboardStats.weeklyAttendance.map((d) => ({ jour: d.jour, présents: d.presents, absents: d.absents }))
-    : FALLBACK_ATTENDANCE;
+  const weeklyAttendanceData = (dashboardStats?.weeklyAttendance ?? [])
+    .map((d) => ({ jour: d.jour, présents: d.presents, absents: d.absents }));
 
   const upcomingEvents = (dashboardStats?.upcomingEvents ?? []).map((e, i) => {
     const { day, month } = eventDateParts(e.dateDebut);
@@ -204,18 +188,22 @@ export default function Dashboard() {
     avatar: initials(s.fullName),
   }));
 
-  const dynamicAttendanceRadial = dashboardStats
-    ? [{ name: "Presents", value: Math.round((100 - dashboardStats.tauxAbsence) * 10) / 10, fill: "#10b981" }]
-    : [{ name: "Presents", value: 94.2, fill: "#10b981" }];
+  const dynamicAttendanceRadial = [
+    {
+      name: "Presents",
+      value: dashboardStats ? Math.round((100 - dashboardStats.tauxAbsence) * 10) / 10 : 0,
+      fill: "#10b981",
+    },
+  ];
 
-  // Build level distribution from real studentsByNiveau or fallback
-  const levelDistribution = dashboardStats?.studentsByNiveau
-    ? Object.entries(dashboardStats.studentsByNiveau).map(([name, value], i) => ({
-        name,
-        value,
-        color: NIVEAU_COLORS[i % NIVEAU_COLORS.length],
-      }))
-    : FALLBACK_LEVEL_DISTRIBUTION;
+  // Level distribution — strictly from the API's real studentsByNiveau.
+  const levelDistribution = Object.entries(dashboardStats?.studentsByNiveau ?? {}).map(
+    ([name, value], i) => ({
+      name,
+      value,
+      color: NIVEAU_COLORS[i % NIVEAU_COLORS.length],
+    }),
+  );
 
   const totalStudentsForPie = levelDistribution.reduce((s, l) => s + l.value, 0);
 
@@ -248,7 +236,11 @@ export default function Dashboard() {
               {t("dashboard.welcome")}, {t("common.admin")}
             </h1>
             <p className="mt-1.5 text-sm text-white/70 max-w-md">
-              École Manarat Al Malika — Année scolaire 2025/2026
+              {[schoolSettings?.schoolName, schoolSettings?.anneeScolaire
+                ? `${t("dashboard.schoolYear")} ${schoolSettings.anneeScolaire}`
+                : null]
+                .filter(Boolean)
+                .join(" — ")}
             </p>
           </div>
           <div className="flex gap-3">
@@ -315,26 +307,32 @@ export default function Dashboard() {
               <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-400" />{t("dashboard.absent")}</span>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={weeklyAttendanceData} barGap={8} barSize={32}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 15% 93%)" vertical={false} />
-              <XAxis dataKey="jour" tick={{ fontSize: 12, fill: "hsl(220 10% 55%)" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "hsl(220 10% 55%)" }} axisLine={false} tickLine={false} />
-              <RechartsTooltip content={<ChartTooltip />} />
-              <Bar dataKey="présents" fill="url(#greenGrad)" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="absents" fill="url(#redGrad)" radius={[6, 6, 0, 0]} />
-              <defs>
-                <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" />
-                  <stop offset="100%" stopColor="#059669" />
-                </linearGradient>
-                <linearGradient id="redGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f87171" />
-                  <stop offset="100%" stopColor="#ef4444" />
-                </linearGradient>
-              </defs>
-            </BarChart>
-          </ResponsiveContainer>
+          {weeklyAttendanceData.length === 0 ? (
+            <div className="flex items-center justify-center h-[280px] text-sm text-muted-foreground">
+              {statsLoading ? t("dashboard.loadingTrends") : t("dashboard.noData")}
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={weeklyAttendanceData} barGap={8} barSize={32}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 15% 93%)" vertical={false} />
+                <XAxis dataKey="jour" tick={{ fontSize: 12, fill: "hsl(220 10% 55%)" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "hsl(220 10% 55%)" }} axisLine={false} tickLine={false} />
+                <RechartsTooltip content={<ChartTooltip />} />
+                <Bar dataKey="présents" fill="url(#greenGrad)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="absents" fill="url(#redGrad)" radius={[6, 6, 0, 0]} />
+                <defs>
+                  <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="100%" stopColor="#059669" />
+                  </linearGradient>
+                  <linearGradient id="redGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#f87171" />
+                    <stop offset="100%" stopColor="#ef4444" />
+                  </linearGradient>
+                </defs>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </motion.div>
 
         {/* Donut + Radial gauge */}
@@ -342,25 +340,31 @@ export default function Dashboard() {
           <h3 className="font-heading text-sm font-semibold text-foreground">{t("dashboard.levelDistribution")}</h3>
           <p className="text-xs text-muted-foreground mt-0.5 mb-3">{totalStudentsForPie.toLocaleString()} {t("dashboard.studentsTotal")}</p>
           <div className="flex-1 flex items-center justify-center">
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie
-                  data={levelDistribution}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={55}
-                  outerRadius={85}
-                  dataKey="value"
-                  strokeWidth={3}
-                  stroke="hsl(0 0% 100%)"
-                >
-                  {levelDistribution.map((entry) => (
-                    <Cell key={entry.name} fill={entry.color} />
-                  ))}
-                </Pie>
-                <RechartsTooltip content={<ChartTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
+            {levelDistribution.length === 0 ? (
+              <div className="flex items-center justify-center h-[200px] text-sm text-muted-foreground">
+                {statsLoading ? t("dashboard.loadingTrends") : t("dashboard.noData")}
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={levelDistribution}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={55}
+                    outerRadius={85}
+                    dataKey="value"
+                    strokeWidth={3}
+                    stroke="hsl(0 0% 100%)"
+                  >
+                    {levelDistribution.map((entry) => (
+                      <Cell key={entry.name} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip content={<ChartTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-auto pt-3 border-t border-border/40">
             {levelDistribution.map((level) => (

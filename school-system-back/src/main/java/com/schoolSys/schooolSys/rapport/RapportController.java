@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rapport;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.rapport.dto.RapportRequestDTO;
 import com.schoolSys.schooolSys.rapport.dto.RapportResponseDTO;
@@ -31,7 +33,7 @@ public class RapportController {
     // non-numériques (ex: /rapports/dashboard) qui doivent donner 404, pas 500.
     @GetMapping("/{id:\\d+}")
     @PreAuthorize("hasAuthority('READ_RAPPORTS')")
-    public ResponseEntity<ApiResponse<RapportResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<RapportResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(rapportService.findById(id)));
     }
 
@@ -46,13 +48,13 @@ public class RapportController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('VIEW_REPORTS')")
     public ResponseEntity<ApiResponse<RapportResponseDTO>> update(
-            @PathVariable Long id, @Valid @RequestBody RapportRequestDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody RapportRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(rapportService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('VIEW_REPORTS')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         rapportService.delete(id);
         return ResponseEntity.noContent().build();
     }

@@ -123,8 +123,8 @@ export default function FinancePaiement() {
   const createPaiement = useCreatePaiement();
   const updatePaiementMutation = useUpdatePaiement();
   const deletePaiementMutation = useDeletePaiement();
-  const getTypeFrais = (id: number) => typesFrais.find((t) => t.id === id);
-  const getStudent = (id: number) => students.find((s) => s.id === id);
+  const getTypeFrais = (id: string) => typesFrais.find((t) => t.id === id);
+  const getStudent = (id: string) => students.find((s) => s.id === id);
 
   const handleDownloadRecu = (p: Paiement) => {
     const student = getStudent(p.eleveId);
@@ -347,7 +347,7 @@ export default function FinancePaiement() {
     });
   };
 
-  const toggleRelanceSelection = (eleveId: number) => {
+  const toggleRelanceSelection = (eleveId: string) => {
     setSelectedRelanceIds((prev) =>
       prev.includes(eleveId) ? prev.filter((id) => id !== eleveId) : [...prev, eleveId]
     );
@@ -375,7 +375,7 @@ export default function FinancePaiement() {
   const openEmail = (student: Student, solde: number) => setEmailTarget({ student, solde });
   const openAppel = (student: Student) => setAppelTarget(student);
 
-  const selectedSuiviStudent = selectedEleveId ? getStudent(Number(selectedEleveId)) : undefined;
+  const selectedSuiviStudent = selectedEleveId ? getStudent(selectedEleveId) : undefined;
   const selectedSuiviSolde = selectedSuiviStudent
     ? (eleveSoldes[selectedSuiviStudent.id]?.du ?? 0) - (eleveSoldes[selectedSuiviStudent.id]?.paye ?? 0)
     : 0;

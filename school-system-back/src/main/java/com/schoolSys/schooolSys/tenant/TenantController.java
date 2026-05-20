@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.tenant;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.tenant.dto.TenantRequestDTO;
 import com.schoolSys.schooolSys.tenant.dto.TenantResponseDTO;
@@ -44,7 +46,7 @@ public class TenantController {
      */
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TENANTS')")
-    public ResponseEntity<ApiResponse<TenantResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<TenantResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(tenantService.findById(id)));
     }
 
@@ -70,7 +72,7 @@ public class TenantController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TENANTS')")
-    public ResponseEntity<ApiResponse<TenantResponseDTO>> update(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<TenantResponseDTO>> update(@PathVariable UUID id,
                                                                   @RequestBody TenantRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(tenantService.update(id, dto)));
     }
@@ -82,7 +84,7 @@ public class TenantController {
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TENANTS')")
-    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
+    public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         tenantService.deactivate(id);
         return ResponseEntity.noContent().build();
     }

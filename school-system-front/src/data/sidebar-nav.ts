@@ -42,7 +42,6 @@ import {
   Banknote,
   Award,
   FileDown,
-  Plug,
   Target,
   Lock,
 } from "lucide-react";
@@ -121,16 +120,46 @@ export const sidebarSections: NavSection[] = [
     icon: BookOpen,
     color: "text-purple-500",
     items: [
-      { title: "Année scolaire", titleKey: "nav.schoolYear", icon: CalendarClock, url: "/dashboard/annee-scolaire", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
-      { title: "Clôture d'année", titleKey: "nav.yearClosure", icon: Lock, url: "/dashboard/cloture", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
-      { title: "Réinscriptions", titleKey: "nav.reEnrollment", icon: UserPlus, url: "/dashboard/reinscriptions", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
+      { title: "Devoirs", titleKey: "nav.homework", icon: PenTool, url: "/dashboard/devoirs", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT"] },
+      { title: "Carnets de notes", titleKey: "nav.gradeBooks", icon: BookOpen, url: "/dashboard/carnets", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT", "PARENT"] },
+    ],
+  },
+  {
+    label: "Bulletins",
+    labelKey: "nav.bulletins",
+    icon: Printer,
+    color: "text-indigo-500",
+    roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"],
+    items: [
+      { title: "Impression masse", titleKey: "nav.bulkPrint", icon: Printer, url: "/dashboard/bulletins-masse" },
+      { title: "Stats réussite", titleKey: "nav.successStats", icon: TrendingUp, url: "/dashboard/stats-reussite" },
+      { title: "Comparatif", titleKey: "nav.comparative", icon: Activity, url: "/dashboard/comparatif" },
+    ],
+  },
+  {
+    label: "Année scolaire",
+    labelKey: "nav.schoolYear",
+    icon: CalendarClock,
+    color: "text-orange-500",
+    roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"],
+    items: [
+      { title: "Année scolaire", titleKey: "nav.schoolYear", icon: CalendarClock, url: "/dashboard/annee-scolaire" },
+      { title: "Réinscriptions", titleKey: "nav.reEnrollment", icon: UserPlus, url: "/dashboard/reinscriptions" },
+      { title: "Conseil de classe", titleKey: "nav.classCouncil", icon: GraduationCap, url: "/dashboard/conseil-classe" },
+      { title: "Bulletins annuels", titleKey: "nav.annualBulletins", icon: FileText, url: "/dashboard/bulletins-annuels" },
+      { title: "Clôture d'année", titleKey: "nav.yearClosure", icon: Lock, url: "/dashboard/cloture" },
+      { title: "Bilan annuel", titleKey: "nav.annualReview", icon: BarChart3, url: "/dashboard/bilan-annuel" },
+    ],
+  },
+  {
+    label: "Emploi du temps",
+    labelKey: "nav.schedule",
+    icon: CalendarDays,
+    color: "text-sky-500",
+    items: [
       { title: "Emploi du temps", titleKey: "nav.schedule", icon: Clock, url: "/dashboard/emploi-du-temps", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT", "PARENT"] },
       { title: "Volume horaire", titleKey: "nav.weeklyVolume", icon: Clock, url: "/dashboard/volume-horaire", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
       { title: "Salles", titleKey: "nav.rooms", icon: Calendar, url: "/dashboard/emploi-salles", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
-      { title: "Devoirs", titleKey: "nav.homework", icon: PenTool, url: "/dashboard/devoirs", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT"] },
-      { title: "Carnets de notes", titleKey: "nav.gradeBooks", icon: BookOpen, url: "/dashboard/carnets", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT", "PARENT"] },
-      { title: "Conseil de classe", titleKey: "nav.classCouncil", icon: GraduationCap, url: "/dashboard/conseil-classe", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
-      { title: "Bilan annuel", titleKey: "nav.annualReview", icon: BarChart3, url: "/dashboard/bilan-annuel", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
     ],
   },
   {
@@ -143,19 +172,6 @@ export const sidebarSections: NavSection[] = [
       { title: "Tous les Quiz", titleKey: "nav.allQuizzes", icon: ClipboardList, url: "/dashboard/quiz?tab=quizzes" },
       { title: "Constructeur", titleKey: "nav.quizBuilder", icon: PenTool, url: "/dashboard/quiz?tab=builder" },
       { title: "Résultats", titleKey: "nav.quizResults", icon: BarChart3, url: "/dashboard/quiz?tab=results" },
-    ],
-  },
-  {
-    label: "Bulletins",
-    labelKey: "nav.bulletins",
-    icon: Printer,
-    color: "text-indigo-500",
-    roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"],
-    items: [
-      { title: "Impression masse", titleKey: "nav.bulkPrint", icon: Printer, url: "/dashboard/bulletins-masse" },
-      { title: "Bulletins annuels", titleKey: "nav.annualBulletins", icon: FileText, url: "/dashboard/bulletins-annuels" },
-      { title: "Stats réussite", titleKey: "nav.successStats", icon: TrendingUp, url: "/dashboard/stats-reussite" },
-      { title: "Comparatif", titleKey: "nav.comparative", icon: Activity, url: "/dashboard/comparatif" },
     ],
   },
   {
@@ -233,8 +249,6 @@ export const sidebarSections: NavSection[] = [
     items: [
       { title: "Utilisateurs", titleKey: "nav.users", icon: ShieldCheck, url: "/dashboard/utilisateurs" },
       { title: "Configuration", titleKey: "nav.configuration", icon: Settings, url: "/dashboard/configuration", roles: ["SUPER_ADMIN", "ADMIN"] },
-      { title: "Intégrations", titleKey: "nav.integrations", icon: Plug, url: "/dashboard/integrations", roles: ["SUPER_ADMIN", "ADMIN"] },
-      { title: "Traçabilité", titleKey: "nav.traceability", icon: Eye, url: "/dashboard/tracabilite", roles: ["SUPER_ADMIN", "ADMIN"] },
     ],
   },
 ];

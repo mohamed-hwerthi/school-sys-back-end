@@ -44,7 +44,7 @@ export const integrationsApi = {
     return res.data;
   },
 
-  deleteWebhook: async (id: number): Promise<void> => {
+  deleteWebhook: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/webhooks/${id}`);
   },
 

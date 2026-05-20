@@ -8,6 +8,8 @@ export interface SchoolSettingsDTO {
   telephone: string | null;
   directeurName: string | null;
   directeurNameAr: string | null;
+  delegationRegionale: string | null;
+  delegationRegionaleAr: string | null;
   logo: string | null;
   ville: string | null;
   villeAr: string | null;

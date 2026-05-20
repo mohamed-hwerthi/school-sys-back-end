@@ -8,7 +8,7 @@ import {
 
 const DOMAINES_KEY = "domaines";
 
-export function useDomaines(niveauId?: number) {
+export function useDomaines(niveauId?: string) {
   return useQuery<DomaineDTO[]>({
     queryKey: [DOMAINES_KEY, niveauId],
     queryFn: () => domainesApi.getAll(niveauId),
@@ -26,7 +26,7 @@ export function useCreateDomaine() {
 export function useUpdateDomaine() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: DomaineRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: DomaineRequest }) =>
       domainesApi.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [DOMAINES_KEY] }),
   });
@@ -35,7 +35,7 @@ export function useUpdateDomaine() {
 export function useDeleteDomaine() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => domainesApi.delete(id),
+    mutationFn: (id: string) => domainesApi.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [DOMAINES_KEY] }),
   });
 }
@@ -51,7 +51,7 @@ export function useCreateSousDomaine() {
 export function useUpdateSousDomaine() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: SousDomaineRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: SousDomaineRequest }) =>
       domainesApi.updateSousDomaine(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [DOMAINES_KEY] }),
   });
@@ -60,7 +60,7 @@ export function useUpdateSousDomaine() {
 export function useDeleteSousDomaine() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => domainesApi.deleteSousDomaine(id),
+    mutationFn: (id: string) => domainesApi.deleteSousDomaine(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [DOMAINES_KEY] }),
   });
 }

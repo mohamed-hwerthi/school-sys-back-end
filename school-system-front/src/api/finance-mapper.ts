@@ -67,8 +67,8 @@ export function paiementFromApi(dto: PaiementDTO): Paiement {
 
 export function paiementToApi(
   data: {
-    eleveId: number;
-    typeFraisId: number;
+    eleveId: string;
+    typeFraisId: string;
     mois: string;
     montantDu: number;
     montantPaye: number;

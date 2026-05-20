@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.importjob;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.common.multitenancy.TenantContext;
 import com.schoolSys.schooolSys.importjob.dto.ImportJobDTO;
@@ -42,7 +44,7 @@ public class ImportJobController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_STUDENTS')")
-    public ResponseEntity<ApiResponse<ImportJobDTO>> get(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ImportJobDTO>> get(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(toDto(service.findById(id))));
     }
 

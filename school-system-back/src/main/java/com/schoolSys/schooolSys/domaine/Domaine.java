@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.domaine;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import com.schoolSys.schooolSys.niveau.Niveau;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,8 +24,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class Domaine {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(nullable = false)
     private String name;

@@ -15,18 +15,18 @@ export const PREFERENCES_HORAIRES = ["MATIN", "APRES_MIDI", "INDIFFERENT"] as co
 export type PreferenceHoraire = (typeof PREFERENCES_HORAIRES)[number];
 
 export interface ModuleDTO {
-  id: number;
+  id: string;
   name: string;
   nameVp: string | null;
   coeffEtatique: number;
   coeffPrive: number;
   ordreEtatique: number;
   ordrePrive: number;
-  niveauId: number;
+  niveauId: string;
   niveauName: string;
-  domaineId: number | null;
+  domaineId: string | null;
   domaineName: string | null;
-  sousDomaineId: number | null;
+  sousDomaineId: string | null;
   sousDomaineName: string | null;
   versionEtatique: boolean;
   versionPrivee: boolean;
@@ -43,9 +43,9 @@ export interface ModuleRequest {
   coeffPrive: number;
   ordreEtatique: number;
   ordrePrive: number;
-  niveauId: number;
-  domaineId?: number;
-  sousDomaineId?: number;
+  niveauId: string;
+  domaineId?: string;
+  sousDomaineId?: string;
   versionEtatique: boolean;
   versionPrivee: boolean;
   salleTypeRequise?: SalleType;
@@ -57,13 +57,13 @@ export interface ModuleRequest {
 const BASE = "/modules";
 
 export const modulesApi = {
-  getAll: async (niveauId?: number): Promise<ModuleDTO[]> => {
+  getAll: async (niveauId?: string): Promise<ModuleDTO[]> => {
     const params = niveauId ? `?niveauId=${niveauId}` : "";
     const res = await api.get<ModuleDTO[]>(`${BASE}${params}`);
     return res.data;
   },
 
-  getById: async (id: number): Promise<ModuleDTO> => {
+  getById: async (id: string): Promise<ModuleDTO> => {
     const res = await api.get<ModuleDTO>(`${BASE}/${id}`);
     return res.data;
   },
@@ -73,10 +73,10 @@ export const modulesApi = {
     return res.data;
   },
 
-  update: async (id: number, data: ModuleRequest): Promise<ModuleDTO> => {
+  update: async (id: string, data: ModuleRequest): Promise<ModuleDTO> => {
     const res = await api.put<ModuleDTO>(`${BASE}/${id}`, data);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`${BASE}/${id}`),
+  delete: (id: string) => api.delete(`${BASE}/${id}`),
 };

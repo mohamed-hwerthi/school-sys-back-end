@@ -23,9 +23,9 @@ interface TeachersContextValue {
   teachers: Teacher[];
   isLoading: boolean;
   addTeacher: (teacher: Omit<Teacher, "id" | "dateEmbauche">) => void;
-  updateTeacher: (id: number, data: Partial<Teacher>) => void;
-  deleteTeacher: (id: number) => void;
-  getTeacher: (id: number) => Teacher | undefined;
+  updateTeacher: (id: string, data: Partial<Teacher>) => void;
+  deleteTeacher: (id: string) => void;
+  getTeacher: (id: string) => Teacher | undefined;
   importTeachers: (newTeachers: Omit<Teacher, "id" | "dateEmbauche">[]) => void;
 }
 
@@ -50,18 +50,18 @@ function MockTeachersProvider({ children }: { children: ReactNode }) {
     []
   );
 
-  const updateTeacher = useCallback((id: number, data: Partial<Teacher>) => {
+  const updateTeacher = useCallback((id: string, data: Partial<Teacher>) => {
     setTeachers((prev) =>
       prev.map((t) => (t.id === id ? ({ ...t, ...data } as Teacher) : t))
     );
   }, []);
 
-  const deleteTeacher = useCallback((id: number) => {
+  const deleteTeacher = useCallback((id: string) => {
     setTeachers((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   const getTeacher = useCallback(
-    (id: number) => teachers.find((t) => t.id === id),
+    (id: string) => teachers.find((t) => t.id === id),
     [teachers]
   );
 
@@ -115,7 +115,7 @@ function ApiTeachersProvider({ children }: { children: ReactNode }) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Teacher> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<Teacher> }) =>
       teachersApi.update(id, data),
     onSuccess: () => {
       invalidate();
@@ -150,21 +150,21 @@ function ApiTeachersProvider({ children }: { children: ReactNode }) {
   );
 
   const updateTeacher = useCallback(
-    (id: number, data: Partial<Teacher>) => {
+    (id: string, data: Partial<Teacher>) => {
       updateMutation.mutate({ id, data });
     },
     [updateMutation]
   );
 
   const deleteTeacher = useCallback(
-    (id: number) => {
+    (id: string) => {
       deleteMutation.mutate(id);
     },
     [deleteMutation]
   );
 
   const getTeacher = useCallback(
-    (id: number) => teachers.find((t) => t.id === id),
+    (id: string) => teachers.find((t) => t.id === id),
     [teachers]
   );
 

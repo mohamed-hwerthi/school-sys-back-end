@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.niveau;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.niveau.dto.ClasseRequestDTO;
 import com.schoolSys.schooolSys.niveau.dto.NiveauRequestDTO;
@@ -26,7 +28,7 @@ public class NiveauController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<NiveauResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<NiveauResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(niveauService.findById(id)));
     }
 
@@ -40,7 +42,7 @@ public class NiveauController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         niveauService.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -48,7 +50,7 @@ public class NiveauController {
     @PostMapping("/{id}/classes")
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<ApiResponse<NiveauResponseDTO>> addClasse(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody ClasseRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(niveauService.addClasse(id, dto.getLetter())));
@@ -57,7 +59,7 @@ public class NiveauController {
     @DeleteMapping("/{id}/classes/{letter}")
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<Void> removeClasse(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @PathVariable String letter) {
         niveauService.removeClasse(id, letter);
         return ResponseEntity.noContent().build();

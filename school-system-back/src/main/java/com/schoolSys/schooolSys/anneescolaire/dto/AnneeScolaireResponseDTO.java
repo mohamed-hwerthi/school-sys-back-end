@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.anneescolaire.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AnneeScolaireResponseDTO {
-    private Long id;
+    private UUID id;
     private String label;
     private LocalDate dateDebut;
     private LocalDate dateFin;

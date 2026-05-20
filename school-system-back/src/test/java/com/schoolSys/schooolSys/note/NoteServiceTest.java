@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.note;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -73,20 +75,20 @@ class NoteServiceTest {
     @BeforeEach
     void setUp() {
         sampleStudent = Student.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .firstName("Ahmed")
                 .lastName("Benali")
                 .classe("3A")
                 .build();
 
         sampleModule = Module.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .name("Mathématiques")
                 .coeffEtatique(2.0)
                 .build();
 
         sampleExamen = Examen.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .name("Contrôle 1")
                 .coeffEtatique(1.0)
                 .dateLimiteSaisie(LocalDate.now().plusDays(7))
@@ -94,7 +96,7 @@ class NoteServiceTest {
                 .build();
 
         sampleNote = Note.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .student(sampleStudent)
                 .examen(sampleExamen)
                 .trimestre(1)
@@ -112,12 +114,12 @@ class NoteServiceTest {
         @Test
         @DisplayName("should return notes for a given examen and trimestre")
         void shouldReturnNotesForExamen() {
-            when(noteRepository.findByExamenIdAndTrimestre(1L, 1)).thenReturn(List.of(sampleNote));
+            when(noteRepository.findByExamenIdAndTrimestre(new UUID(0, 1), 1)).thenReturn(List.of(sampleNote));
 
-            List<NoteResponseDTO> result = noteService.findByExamen(1L, 1);
+            List<NoteResponseDTO> result = noteService.findByExamen(new UUID(0, 1), 1);
 
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).getStudentId()).isEqualTo(1L);
+            assertThat(result.get(0).getStudentId()).isEqualTo(new UUID(0, 1));
             assertThat(result.get(0).getValeur()).isEqualTo(15.0);
             assertThat(result.get(0).getExamenName()).isEqualTo("Contrôle 1");
         }
@@ -125,9 +127,9 @@ class NoteServiceTest {
         @Test
         @DisplayName("should return empty list when no notes exist")
         void shouldReturnEmptyListWhenNoNotes() {
-            when(noteRepository.findByExamenIdAndTrimestre(1L, 1)).thenReturn(List.of());
+            when(noteRepository.findByExamenIdAndTrimestre(new UUID(0, 1), 1)).thenReturn(List.of());
 
-            List<NoteResponseDTO> result = noteService.findByExamen(1L, 1);
+            List<NoteResponseDTO> result = noteService.findByExamen(new UUID(0, 1), 1);
 
             assertThat(result).isEmpty();
         }
@@ -140,9 +142,9 @@ class NoteServiceTest {
         @Test
         @DisplayName("should return notes for a given student and trimestre")
         void shouldReturnNotesForStudent() {
-            when(noteRepository.findByStudentIdAndTrimestre(1L, 1)).thenReturn(List.of(sampleNote));
+            when(noteRepository.findByStudentIdAndTrimestre(new UUID(0, 1), 1)).thenReturn(List.of(sampleNote));
 
-            List<NoteResponseDTO> result = noteService.findByStudent(1L, 1);
+            List<NoteResponseDTO> result = noteService.findByStudent(new UUID(0, 1), 1);
 
             assertThat(result).hasSize(1);
             assertThat(result.get(0).getStudentName()).isEqualTo("Ahmed Benali");
@@ -157,18 +159,18 @@ class NoteServiceTest {
         @DisplayName("should create new note when not existing")
         void shouldCreateNewNote() {
             NoteRequestDTO request = NoteRequestDTO.builder()
-                    .studentId(1L)
-                    .examenId(1L)
+                    .studentId(new UUID(0, 1))
+                    .examenId(new UUID(0, 1))
                     .trimestre(1)
                     .valeur(14.5)
                     .observation("Assez bien")
                     .build();
 
-            when(examenRepository.findById(1L)).thenReturn(Optional.of(sampleExamen));
+            when(examenRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleExamen));
             when(baremeRepository.findByActifTrue()).thenReturn(Optional.empty());
-            when(noteRepository.findByStudentIdAndExamenIdAndTrimestre(1L, 1L, 1))
+            when(noteRepository.findByStudentIdAndExamenIdAndTrimestre(new UUID(0, 1), new UUID(0, 1), 1))
                     .thenReturn(Optional.empty());
-            when(studentRepository.findById(1L)).thenReturn(Optional.of(sampleStudent));
+            when(studentRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleStudent));
             when(noteRepository.save(any(Note.class))).thenReturn(sampleNote);
 
             List<NoteResponseDTO> result = noteService.upsertBulk(List.of(request));
@@ -181,16 +183,16 @@ class NoteServiceTest {
         @DisplayName("should update existing note")
         void shouldUpdateExistingNote() {
             NoteRequestDTO request = NoteRequestDTO.builder()
-                    .studentId(1L)
-                    .examenId(1L)
+                    .studentId(new UUID(0, 1))
+                    .examenId(new UUID(0, 1))
                     .trimestre(1)
                     .valeur(16.0)
                     .observation("Amélioré")
                     .build();
 
-            when(examenRepository.findById(1L)).thenReturn(Optional.of(sampleExamen));
+            when(examenRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleExamen));
             when(baremeRepository.findByActifTrue()).thenReturn(Optional.empty());
-            when(noteRepository.findByStudentIdAndExamenIdAndTrimestre(1L, 1L, 1))
+            when(noteRepository.findByStudentIdAndExamenIdAndTrimestre(new UUID(0, 1), new UUID(0, 1), 1))
                     .thenReturn(Optional.of(sampleNote));
             when(noteRepository.save(any(Note.class))).thenReturn(sampleNote);
 
@@ -205,13 +207,13 @@ class NoteServiceTest {
         @DisplayName("should throw when examen not found")
         void shouldThrowWhenExamenNotFound() {
             NoteRequestDTO request = NoteRequestDTO.builder()
-                    .studentId(1L)
-                    .examenId(999L)
+                    .studentId(new UUID(0, 1))
+                    .examenId(new UUID(0, 999))
                     .trimestre(1)
                     .valeur(14.0)
                     .build();
 
-            when(examenRepository.findById(999L)).thenReturn(Optional.empty());
+            when(examenRepository.findById(new UUID(0, 999))).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> noteService.upsertBulk(List.of(request)))
                     .isInstanceOf(ResourceNotFoundException.class)
@@ -224,13 +226,13 @@ class NoteServiceTest {
             sampleExamen.setDateLimiteSaisie(LocalDate.now().minusDays(1));
 
             NoteRequestDTO request = NoteRequestDTO.builder()
-                    .studentId(1L)
-                    .examenId(1L)
+                    .studentId(new UUID(0, 1))
+                    .examenId(new UUID(0, 1))
                     .trimestre(1)
                     .valeur(14.0)
                     .build();
 
-            when(examenRepository.findById(1L)).thenReturn(Optional.of(sampleExamen));
+            when(examenRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleExamen));
 
             assertThatThrownBy(() -> noteService.upsertBulk(List.of(request)))
                     .isInstanceOf(IllegalStateException.class)
@@ -241,7 +243,7 @@ class NoteServiceTest {
         @DisplayName("should reject note outside bareme range")
         void shouldRejectNoteOutsideBaremeRange() {
             Bareme bareme = Bareme.builder()
-                    .id(1L)
+                    .id(new UUID(0, 1))
                     .label("Standard")
                     .noteMin(new BigDecimal("0"))
                     .noteMax(new BigDecimal("20"))
@@ -250,13 +252,13 @@ class NoteServiceTest {
                     .build();
 
             NoteRequestDTO request = NoteRequestDTO.builder()
-                    .studentId(1L)
-                    .examenId(1L)
+                    .studentId(new UUID(0, 1))
+                    .examenId(new UUID(0, 1))
                     .trimestre(1)
                     .valeur(25.0) // Out of range
                     .build();
 
-            when(examenRepository.findById(1L)).thenReturn(Optional.of(sampleExamen));
+            when(examenRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleExamen));
             when(baremeRepository.findByActifTrue()).thenReturn(Optional.of(bareme));
 
             assertThatThrownBy(() -> noteService.upsertBulk(List.of(request)))
@@ -268,7 +270,7 @@ class NoteServiceTest {
         @DisplayName("should allow note within bareme range")
         void shouldAllowNoteWithinBaremeRange() {
             Bareme bareme = Bareme.builder()
-                    .id(1L)
+                    .id(new UUID(0, 1))
                     .label("Standard")
                     .noteMin(new BigDecimal("0"))
                     .noteMax(new BigDecimal("20"))
@@ -277,17 +279,17 @@ class NoteServiceTest {
                     .build();
 
             NoteRequestDTO request = NoteRequestDTO.builder()
-                    .studentId(1L)
-                    .examenId(1L)
+                    .studentId(new UUID(0, 1))
+                    .examenId(new UUID(0, 1))
                     .trimestre(1)
                     .valeur(15.0)
                     .build();
 
-            when(examenRepository.findById(1L)).thenReturn(Optional.of(sampleExamen));
+            when(examenRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleExamen));
             when(baremeRepository.findByActifTrue()).thenReturn(Optional.of(bareme));
-            when(noteRepository.findByStudentIdAndExamenIdAndTrimestre(1L, 1L, 1))
+            when(noteRepository.findByStudentIdAndExamenIdAndTrimestre(new UUID(0, 1), new UUID(0, 1), 1))
                     .thenReturn(Optional.empty());
-            when(studentRepository.findById(1L)).thenReturn(Optional.of(sampleStudent));
+            when(studentRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleStudent));
             when(noteRepository.save(any(Note.class))).thenReturn(sampleNote);
 
             List<NoteResponseDTO> result = noteService.upsertBulk(List.of(request));
@@ -303,19 +305,19 @@ class NoteServiceTest {
         @Test
         @DisplayName("should delete existing note")
         void shouldDeleteExistingNote() {
-            when(noteRepository.existsById(1L)).thenReturn(true);
+            when(noteRepository.existsById(new UUID(0, 1))).thenReturn(true);
 
-            noteService.delete(1L);
+            noteService.delete(new UUID(0, 1));
 
-            verify(noteRepository).deleteById(1L);
+            verify(noteRepository).deleteById(new UUID(0, 1));
         }
 
         @Test
         @DisplayName("should throw when deleting non-existing note")
         void shouldThrowWhenDeletingNonExisting() {
-            when(noteRepository.existsById(999L)).thenReturn(false);
+            when(noteRepository.existsById(new UUID(0, 999))).thenReturn(false);
 
-            assertThatThrownBy(() -> noteService.delete(999L))
+            assertThatThrownBy(() -> noteService.delete(new UUID(0, 999)))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Note");
         }

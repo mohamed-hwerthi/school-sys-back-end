@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.devoir.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,10 +15,10 @@ import lombok.NoArgsConstructor;
 public class CreateSoumissionRequest {
 
     @NotNull(message = "Le devoir est obligatoire")
-    private Long devoirId;
+    private UUID devoirId;
 
     @NotNull(message = "L'eleve est obligatoire")
-    private Long eleveId;
+    private UUID eleveId;
 
     private String contenu;
 

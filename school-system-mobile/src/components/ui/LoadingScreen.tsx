@@ -1,7 +1,9 @@
 import { View, Text, ActivityIndicator } from "react-native";
-import { colors, fontSize } from "@/constants/theme";
+import { useTheme } from "@/context/ThemeContext";
+import { fontSize } from "@/constants/theme";
 
 export function LoadingScreen() {
+  const { colors } = useTheme();
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.background }}>
       <View style={{ width: 64, height: 64, borderRadius: 20, backgroundColor: colors.primary, justifyContent: "center", alignItems: "center", marginBottom: 16 }}>

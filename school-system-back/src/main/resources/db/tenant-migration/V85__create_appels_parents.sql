@@ -2,8 +2,8 @@
 -- Used by AppelDialog on the front so calls leave an audit trail per student.
 
 CREATE TABLE IF NOT EXISTS appels_parents (
-    id              BIGSERIAL    PRIMARY KEY,
-    eleve_id        BIGINT       NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    id              UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
+    eleve_id        UUID       NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     appele_par      VARCHAR(150),                          -- name of the staff member
     telephone       VARCHAR(30),                           -- snapshot of the number at call time
     motif           VARCHAR(100),                          -- short categorization (paiement, absence, autre)

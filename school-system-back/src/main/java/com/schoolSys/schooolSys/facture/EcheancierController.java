@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.facture;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.facture.dto.*;
 import jakarta.validation.Valid;
@@ -26,13 +28,13 @@ public class EcheancierController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<EcheancierResponseDTO>> getEcheancierById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<EcheancierResponseDTO>> getEcheancierById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(factureService.getEcheancierById(id)));
     }
 
     @GetMapping("/student/{studentId}")
     public ResponseEntity<ApiResponse<List<EcheancierResponseDTO>>> getEcheanciersByStudent(
-            @PathVariable Long studentId) {
+            @PathVariable UUID studentId) {
         return ResponseEntity.ok(ApiResponse.ok(factureService.getEcheanciersByStudent(studentId)));
     }
 
@@ -45,18 +47,18 @@ public class EcheancierController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<EcheancierResponseDTO>> updateEcheancier(
-            @PathVariable Long id, @Valid @RequestBody EcheancierRequestDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody EcheancierRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(factureService.updateEcheancier(id, dto)));
     }
 
     @PutMapping("/echeances/{echeanceId}/payer")
     public ResponseEntity<ApiResponse<EcheanceDTO>> payerEcheance(
-            @PathVariable Long echeanceId, @RequestParam BigDecimal montant) {
+            @PathVariable UUID echeanceId, @RequestParam BigDecimal montant) {
         return ResponseEntity.ok(ApiResponse.ok(factureService.payerEcheance(echeanceId, montant)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEcheancier(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteEcheancier(@PathVariable UUID id) {
         factureService.deleteEcheancier(id);
         return ResponseEntity.noContent().build();
     }

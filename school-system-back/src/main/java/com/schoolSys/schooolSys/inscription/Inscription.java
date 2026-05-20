@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.inscription;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,8 +24,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class Inscription {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(nullable = false, length = 100)
     private String nom;
@@ -55,7 +59,7 @@ public class Inscription {
     private String prenomParent;
 
     @Column(name = "niveau_id")
-    private Long niveauId;
+    private UUID niveauId;
 
     @Column(name = "annee_scolaire", nullable = false, length = 20)
     private String anneeScolaire;

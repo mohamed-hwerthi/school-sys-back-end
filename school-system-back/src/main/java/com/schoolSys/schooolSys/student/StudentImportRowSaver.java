@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.student;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.student.dto.StudentRequestDTO;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -37,7 +39,7 @@ public class StudentImportRowSaver {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Student updateExisting(Long id, StudentRequestDTO dto) {
+    public Student updateExisting(UUID id, StudentRequestDTO dto) {
         Student existing = studentRepository.findById(id).orElseThrow();
         String matricule = existing.getMatricule();
         studentMapper.updateEntity(dto, existing);

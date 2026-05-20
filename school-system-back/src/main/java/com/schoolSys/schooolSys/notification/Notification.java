@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.notification;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,11 +21,12 @@ import org.hibernate.annotations.SQLRestriction;
 public class Notification {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private UUID userId;
 
     @Column(nullable = false, length = 200)
     private String title;

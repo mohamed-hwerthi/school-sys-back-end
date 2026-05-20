@@ -14,27 +14,27 @@ const BAREMES_KEY = "baremes";
 const COMPETENCES_KEY = "competences";
 const EVAL_COMP_KEY = "evaluations-competences";
 
-export function useNotesByExamen(examenId: number, trimestre: number) {
+export function useNotesByExamen(examenId: string, trimestre: number) {
   return useQuery<NoteDTO[]>({
     queryKey: [NOTES_KEY, "examen", examenId, trimestre],
     queryFn: () => notesApi.getByExamen(examenId, trimestre),
-    enabled: examenId > 0 && trimestre > 0,
+    enabled: !!examenId && trimestre > 0,
   });
 }
 
-export function useNotesByStudent(studentId: number, trimestre: number) {
+export function useNotesByStudent(studentId: string, trimestre: number) {
   return useQuery<NoteDTO[]>({
     queryKey: [NOTES_KEY, "student", studentId, trimestre],
     queryFn: () => notesApi.getByStudent(studentId, trimestre),
-    enabled: studentId > 0 && trimestre > 0,
+    enabled: !!studentId && trimestre > 0,
   });
 }
 
-export function useMoyennes(classeId: number, trimestre: number) {
+export function useMoyennes(classeId: string, trimestre: number) {
   return useQuery<MoyenneDTO[]>({
     queryKey: [NOTES_KEY, "moyennes", classeId, trimestre],
     queryFn: () => notesApi.getMoyennes(classeId, trimestre),
-    enabled: classeId > 0 && trimestre > 0,
+    enabled: !!classeId && trimestre > 0,
   });
 }
 
@@ -42,7 +42,12 @@ export function useUpsertNotes() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (notes: NoteRequest[]) => notesApi.upsertBulk(notes),
-    onSuccess: () => qc.invalidateQueries({ queryKey: [NOTES_KEY] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [NOTES_KEY] });
+      // Les ExamenDTO embarquent nbNotes/nbEleves : l'onglet Aperçu et les
+      // colonnes "Saisies" de l'onglet Examens doivent se rafraîchir aussi.
+      qc.invalidateQueries({ queryKey: ["examens"] });
+    },
   });
 }
 
@@ -65,14 +70,14 @@ export function useCreateBareme() {
 export function useUpdateBareme() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, dto }: { id: number; dto: BaremeDTO }) =>
+    mutationFn: ({ id, dto }: { id: string; dto: BaremeDTO }) =>
       notesApi.updateBareme(id, dto),
     onSuccess: () => qc.invalidateQueries({ queryKey: [BAREMES_KEY] }),
   });
 }
 
 // Competences
-export function useCompetences(moduleId?: number) {
+export function useCompetences(moduleId?: string) {
   return useQuery<CompetenceDTO[]>({
     queryKey: [COMPETENCES_KEY, moduleId],
     queryFn: () => notesApi.getCompetences(moduleId),
@@ -90,17 +95,17 @@ export function useCreateCompetence() {
 export function useDeleteCompetence() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => notesApi.deleteCompetence(id),
+    mutationFn: (id: string) => notesApi.deleteCompetence(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [COMPETENCES_KEY] }),
   });
 }
 
 // Evaluations competences
-export function useEvaluationsCompetences(examenId: number, eleveId?: number) {
+export function useEvaluationsCompetences(examenId: string, eleveId?: string) {
   return useQuery<EvaluationCompetenceDTO[]>({
     queryKey: [EVAL_COMP_KEY, examenId, eleveId],
     queryFn: () => notesApi.getEvaluationsCompetences(examenId, eleveId),
-    enabled: examenId > 0,
+    enabled: !!examenId,
   });
 }
 

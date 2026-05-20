@@ -31,7 +31,7 @@ export function useAllStudents() {
 /**
  * Single student by ID.
  */
-export function useStudent(id: number) {
+export function useStudent(id: string) {
   return useQuery<Student>({
     queryKey: [STUDENTS_KEY, id],
     queryFn: () => studentsApi.getById(id),
@@ -59,7 +59,7 @@ export function useCreateStudent() {
 export function useUpdateStudent() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Student> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<Student> }) =>
       studentsApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [STUDENTS_KEY] });
@@ -73,7 +73,7 @@ export function useUpdateStudent() {
 export function useDeleteStudent() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => studentsApi.delete(id),
+    mutationFn: (id: string) => studentsApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [STUDENTS_KEY] });
     },

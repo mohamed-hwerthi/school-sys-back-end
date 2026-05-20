@@ -10,7 +10,7 @@ export function useMeetings() {
   });
 }
 
-export function useMeetingById(id: number) {
+export function useMeetingById(id: string) {
   return useQuery<MeetingResponse>({
     queryKey: [MEETINGS_KEY, id],
     queryFn: () => meetingsApi.getById(id),
@@ -18,27 +18,27 @@ export function useMeetingById(id: number) {
   });
 }
 
-export function useMeetingsByTeacher(enseignantId: number) {
+export function useMeetingsByTeacher(enseignantId: string) {
   return useQuery<MeetingResponse[]>({
     queryKey: [MEETINGS_KEY, "teacher", enseignantId],
     queryFn: () => meetingsApi.getByTeacher(enseignantId),
-    enabled: enseignantId > 0,
+    enabled: !!enseignantId,
   });
 }
 
-export function useMeetingsByParent(parentId: number) {
+export function useMeetingsByParent(parentId: string) {
   return useQuery<MeetingResponse[]>({
     queryKey: [MEETINGS_KEY, "parent", parentId],
     queryFn: () => meetingsApi.getByParent(parentId),
-    enabled: parentId > 0,
+    enabled: !!parentId,
   });
 }
 
-export function useMeetingsByStudent(studentId: number) {
+export function useMeetingsByStudent(studentId: string) {
   return useQuery<MeetingResponse[]>({
     queryKey: [MEETINGS_KEY, "student", studentId],
     queryFn: () => meetingsApi.getByStudent(studentId),
-    enabled: studentId > 0,
+    enabled: !!studentId,
   });
 }
 
@@ -55,7 +55,7 @@ export function useCreateMeeting() {
 export function useUpdateMeeting() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: MeetingRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: MeetingRequest }) =>
       meetingsApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [MEETINGS_KEY] });
@@ -66,7 +66,7 @@ export function useUpdateMeeting() {
 export function useDeleteMeeting() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => meetingsApi.delete(id),
+    mutationFn: (id: string) => meetingsApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [MEETINGS_KEY] });
     },

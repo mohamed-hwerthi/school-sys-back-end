@@ -18,13 +18,13 @@ Remplacer la logique de notification éparpillée par **un module unique et cent
 - Front : hook `useNotificationsRealtime`, page `Notifications`, cloche navbar **codée en dur (« 3 »)**.
 - ❌ Pas de modèle de données unifié, pas de préférences, pas de templates, pas de suivi de livraison.
 
-## 3. Décisions à trancher avant de démarrer
+## 3. Décisions tranchées (2026-05-16)
 
-1. **Stockage** : notifications dans le schéma `public` (les `users` y sont) ou par tenant ?
-2. **Temps réel** : WebSocket (bidirectionnel) ou SSE (plus simple, suffisant ici) ?
-3. **Push mobile** : Firebase Cloud Messaging (recommandé — gère Android + iOS) ?
-4. **File d'attente** : outbox pattern en base (simple, pas d'infra) ou broker dédié (RabbitMQ/Kafka) ?
-5. **SMS** : quel provider, et le « crédit SMS » est-il déjà modélisé en base ?
+1. **Stockage** — ✅ **par tenant** (`db/tenant-migration/`) : cohérent avec l'architecture schema-per-tenant ; la notif référence des données tenant.
+2. **Temps réel** — ✅ **SSE** (Server-Sent Events) : flux unidirectionnel serveur→client, simple, `SseEmitter` natif Spring, reconnexion auto.
+3. **Push mobile** — ✅ **Firebase Cloud Messaging** : gère Android + iOS, SDK `firebase-admin` Java.
+4. **File d'attente** — ✅ **Outbox pattern en base** (+ poller `@Scheduled`) : zéro infra, transactionnel avec l'événement métier.
+5. **SMS** — ⏸️ **reporté** : aucun provider pour l'instant. Le canal SMS reste prévu derrière l'interface `ChannelSender` (NOTIF-005 / NOTIF-031) mais **sort du périmètre MVP** ; il sera branché dès qu'un provider sera choisi.
 
 ## 4. Épics & Stories
 

@@ -33,7 +33,7 @@ function gradeColor(val: number) {
 }
 
 function DomaineBlock({ domaine, bulletins }: { domaine: BulletinDomaineDTO; bulletins: BulletinDTO[] }) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   // Domain rank per student (1-indexed, ties share the same rank)
   const domainRank = useMemo(() => {
@@ -42,7 +42,7 @@ function DomaineBlock({ domaine, bulletins }: { domaine: BulletinDomaineDTO; bul
         const moy = b.domaines.find((d) => d.domaineId === domaine.domaineId)?.moyenneDomaine;
         return moy != null ? { studentId: b.studentId, moy } : null;
       })
-      .filter((e): e is { studentId: number; moy: number } => e !== null)
+      .filter((e): e is { studentId: string; moy: number } => e !== null)
       .sort((a, b) => b.moy - a.moy);
 
     const ranks = new Map<number, number>();
@@ -157,7 +157,7 @@ export default function MoyennesTab() {
   const { niveaux } = useNiveaux();
   const { niveauId, classeId, trimestre, setNiveauId, setClasseId, setTrimestre } = useCarnetSelection();
   const [version, setVersion] = useState("etatique");
-  const [statsModuleId, setStatsModuleId] = useState<number>(0);
+  const [statsModuleId, setStatsModuleId] = useState<string>("");
 
   const trimestreLabel = (n: number) => t(`common.trimester${n}`);
   const versionLabel = (v: string) =>
@@ -187,8 +187,8 @@ export default function MoyennesTab() {
           <Select
             value={niveauId ? String(niveauId) : ""}
             onValueChange={(v) => {
-              setNiveauId(Number(v));
-              setClasseId(0);
+              setNiveauId(v);
+              setClasseId("");
             }}
           >
             <SelectTrigger className="w-[180px]">
@@ -206,7 +206,7 @@ export default function MoyennesTab() {
 
           <Select
             value={classeId ? String(classeId) : ""}
-            onValueChange={(v) => setClasseId(Number(v))}
+            onValueChange={(v) => setClasseId(v)}
             disabled={!niveauId}
           >
             <SelectTrigger className="w-[140px]">
@@ -253,7 +253,7 @@ export default function MoyennesTab() {
       </motion.div>
 
       {/* Results */}
-      {classeId > 0 && trimestre > 0 && (
+      {classeId && trimestre > 0 && (
         <>
           {isLoading ? (
             <div className="rounded-xl border border-border/50 bg-card p-16 shadow-sm text-center text-muted-foreground">

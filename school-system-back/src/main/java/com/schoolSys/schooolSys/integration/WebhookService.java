@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.integration;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.integration.dto.WebhookConfig;
 import com.schoolSys.schooolSys.integration.dto.WebhookEventDTO;
 import lombok.extern.slf4j.Slf4j;

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.emploidutemps.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,10 +35,10 @@ public class TimetableGenerationRequestDTO {
     private List<String> rooms;
 
     /** Restrict generation to a single niveau (auto mode only). */
-    private Long niveauId;
+    private UUID niveauId;
 
     /** Defaults to the active année scolaire (auto mode only). */
-    private Long anneeScolaireId;
+    private UUID anneeScolaireId;
 
     @Builder.Default
     private Integer solverTimeoutSeconds = 30;

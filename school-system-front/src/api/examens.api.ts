@@ -1,7 +1,7 @@
 import api from "./axios";
 
 export interface ExamenDTO {
-  id: number;
+  id: string;
   name: string;
   namePrive: string | null;
   coeffEtatique: number;
@@ -9,11 +9,11 @@ export interface ExamenDTO {
   ordreEtatique: number;
   ordrePrive: number;
   trimestre: number;
-  classeId: number;
+  classeId: string;
   classeName: string;
-  teacherId: number | null;
+  teacherId: string | null;
   teacherName: string;
-  moduleId: number;
+  moduleId: string;
   moduleName: string;
   versionEtatique: boolean;
   versionPrivee: boolean;
@@ -29,9 +29,9 @@ export interface ExamenRequest {
   ordreEtatique: number;
   ordrePrive: number;
   trimestre: number;
-  classeId: number;
-  teacherId?: number;
-  moduleId: number;
+  classeId: string;
+  teacherId?: string;
+  moduleId: string;
   versionEtatique: boolean;
   versionPrivee: boolean;
 }
@@ -39,7 +39,7 @@ export interface ExamenRequest {
 const BASE = "/examens";
 
 export const examensApi = {
-  getAll: async (moduleId?: number, classeId?: number, trimestre?: number): Promise<ExamenDTO[]> => {
+  getAll: async (moduleId?: string, classeId?: string, trimestre?: number): Promise<ExamenDTO[]> => {
     const params = new URLSearchParams();
     if (moduleId) params.set("moduleId", String(moduleId));
     if (classeId) params.set("classeId", String(classeId));
@@ -49,7 +49,7 @@ export const examensApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<ExamenDTO> => {
+  getById: async (id: string): Promise<ExamenDTO> => {
     const res = await api.get<ExamenDTO>(`${BASE}/${id}`);
     return res.data;
   },
@@ -59,12 +59,12 @@ export const examensApi = {
     return res.data;
   },
 
-  update: async (id: number, data: ExamenRequest): Promise<ExamenDTO> => {
+  update: async (id: string, data: ExamenRequest): Promise<ExamenDTO> => {
     const res = await api.put<ExamenDTO>(`${BASE}/${id}`, data);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`${BASE}/${id}`),
+  delete: (id: string) => api.delete(`${BASE}/${id}`),
 
-  deleteBulk: (ids: number[]) => api.delete(`${BASE}/bulk`, { data: ids }),
+  deleteBulk: (ids: string[]) => api.delete(`${BASE}/bulk`, { data: ids }),
 };

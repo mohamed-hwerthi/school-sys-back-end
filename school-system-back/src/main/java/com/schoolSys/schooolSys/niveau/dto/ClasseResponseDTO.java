@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.niveau.dto;
 
+import java.util.UUID;
+
 import lombok.*;
 
 @Data
@@ -7,9 +9,9 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class ClasseResponseDTO {
-    private Long id;
+    private UUID id;
     private String letter;
-    private Long niveauId;
+    private UUID niveauId;
     private String niveauName;
     private String fullName;
 }

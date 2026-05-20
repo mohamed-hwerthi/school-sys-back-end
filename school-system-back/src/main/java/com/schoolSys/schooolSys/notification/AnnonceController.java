@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.notification;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.notification.dto.AnnonceDTO;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,7 @@ public class AnnonceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<AnnonceDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<AnnonceDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(annonceService.getById(id)));
     }
 
@@ -44,13 +46,13 @@ public class AnnonceController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_COMMUNICATION')")
     public ResponseEntity<ApiResponse<AnnonceDTO>> update(
-            @PathVariable Long id, @RequestBody AnnonceDTO dto) {
+            @PathVariable UUID id, @RequestBody AnnonceDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(annonceService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_COMMUNICATION')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         annonceService.softDelete(id);
         return ResponseEntity.noContent().build();
     }

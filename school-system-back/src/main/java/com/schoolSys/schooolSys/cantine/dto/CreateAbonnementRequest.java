@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.cantine.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +17,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class CreateAbonnementRequest {
     @NotNull
-    private Long eleveId;
+    private UUID eleveId;
     @NotNull
     private String typeAbonnement;
     @NotNull

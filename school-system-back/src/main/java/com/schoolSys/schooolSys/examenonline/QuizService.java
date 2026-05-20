@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.examenonline;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -22,7 +24,7 @@ public class QuizService {
     private final TentativeRepository tentativeRepository;
     private final CurrentUserContext currentUser;
 
-    public List<QuizDTO> findAll(Long classeId, String statut) {
+    public List<QuizDTO> findAll(UUID classeId, String statut) {
         List<Quiz> quizzes;
         if (classeId != null) {
             quizzes = quizRepository.findByClasseIdOrderByCreatedAtDesc(classeId);
@@ -41,14 +43,14 @@ public class QuizService {
         return quizzes.stream().map(this::toDTO).toList();
     }
 
-    public QuizDTO findById(Long id) {
+    public QuizDTO findById(UUID id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", id));
         assertCanAccessQuiz(quiz);
         return toDTO(quiz);
     }
 
-    public QuizDetailDTO findDetailById(Long id) {
+    public QuizDetailDTO findDetailById(UUID id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", id));
         assertCanAccessQuiz(quiz);
@@ -78,7 +80,7 @@ public class QuizService {
                 .build();
     }
 
-    public List<QuizDTO> findByClasse(Long classeId) {
+    public List<QuizDTO> findByClasse(UUID classeId) {
         if (currentUser.hasRole(UserRole.ENSEIGNANT)
                 && !currentUser.teacherTeachesClasse(classeId)) {
             throw new AccessDeniedException("Vous n'enseignez pas dans cette classe.");
@@ -114,7 +116,7 @@ public class QuizService {
     }
 
     @Transactional
-    public QuizDTO update(Long id, CreateQuizRequest request) {
+    public QuizDTO update(UUID id, CreateQuizRequest request) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", id));
         assertCanAccessQuiz(quiz);
@@ -139,7 +141,7 @@ public class QuizService {
     }
 
     @Transactional
-    public QuizDTO publish(Long id) {
+    public QuizDTO publish(UUID id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", id));
         assertCanAccessQuiz(quiz);
@@ -149,7 +151,7 @@ public class QuizService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", id));
         assertCanAccessQuiz(quiz);

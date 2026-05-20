@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.teacher;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,14 +22,15 @@ import org.hibernate.annotations.SQLRestriction;
 public class TeacherEvaluation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "teacher_id", nullable = false)
-    private Long teacherId;
+    private UUID teacherId;
 
     @Column(name = "evaluator_id")
-    private Long evaluatorId;
+    private UUID evaluatorId;
 
     @Column(name = "evaluator_name", length = 100)
     private String evaluatorName;

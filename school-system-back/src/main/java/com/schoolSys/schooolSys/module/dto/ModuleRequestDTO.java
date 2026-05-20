@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.module.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -37,12 +39,12 @@ public class ModuleRequestDTO {
     private Integer ordrePrive = 1;
 
     @NotNull(message = "Le niveau est obligatoire")
-    private Long niveauId;
+    private UUID niveauId;
 
     @NotNull(message = "Le domaine est obligatoire")
-    private Long domaineId;
+    private UUID domaineId;
 
-    private Long sousDomaineId;
+    private UUID sousDomaineId;
 
     @Builder.Default
     private Boolean versionEtatique = true;

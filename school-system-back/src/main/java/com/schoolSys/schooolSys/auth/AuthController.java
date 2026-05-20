@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.auth;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.auth.dto.*;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -54,19 +56,19 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<com.schoolSys.schooolSys.auth.dto.MeResponseDTO>> getCurrentUser(Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
+        UUID userId = (UUID) authentication.getPrincipal();
         UserResponseDTO user = authService.getCurrentUser(userId);
 
         java.util.List<String> perms = com.schoolSys.schooolSys.auth.RolePermissions
                 .getPermissions(user.getRole()).stream()
                 .map(Enum::name).toList();
 
-        java.util.Set<Long> scopedClasses = currentUserContext.hasRole(
+        java.util.Set<UUID> scopedClasses = currentUserContext.hasRole(
                 com.schoolSys.schooolSys.auth.UserRole.ENSEIGNANT)
                 ? currentUserContext.getScopedClasseIdsForTeacher()
                 : java.util.Set.of();
 
-        java.util.Set<Long> scopedStudents = currentUserContext.hasRole(
+        java.util.Set<UUID> scopedStudents = currentUserContext.hasRole(
                 com.schoolSys.schooolSys.auth.UserRole.PARENT)
                 ? currentUserContext.getScopedStudentIdsForParent()
                 : java.util.Set.of();
@@ -97,7 +99,7 @@ public class AuthController {
 
     @PostMapping("/2fa/enable")
     public ResponseEntity<ApiResponse<Enable2FAResponseDTO>> enable2FA(Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
+        UUID userId = (UUID) authentication.getPrincipal();
         Enable2FAResponseDTO response = authService.enable2FA(userId);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
@@ -106,7 +108,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> confirm2FA(
             Authentication authentication,
             @Valid @RequestBody Verify2FADTO request) {
-        Long userId = (Long) authentication.getPrincipal();
+        UUID userId = (UUID) authentication.getPrincipal();
         authService.confirm2FA(userId, request.getCode());
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
@@ -126,7 +128,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> disable2FA(
             Authentication authentication,
             @Valid @RequestBody Verify2FADTO request) {
-        Long userId = (Long) authentication.getPrincipal();
+        UUID userId = (UUID) authentication.getPrincipal();
         authService.disable2FA(userId, request.getCode());
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
@@ -137,7 +139,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<List<SessionDTO>>> getActiveSessions(
             Authentication authentication,
             @RequestHeader(value = "X-Current-Refresh-Token", required = false) String currentToken) {
-        Long userId = (Long) authentication.getPrincipal();
+        UUID userId = (UUID) authentication.getPrincipal();
         List<SessionDTO> sessions = authService.getActiveSessions(userId, currentToken);
         return ResponseEntity.ok(ApiResponse.ok(sessions));
     }
@@ -145,8 +147,8 @@ public class AuthController {
     @DeleteMapping("/sessions/{sessionId}")
     public ResponseEntity<ApiResponse<Void>> revokeSession(
             Authentication authentication,
-            @PathVariable Long sessionId) {
-        Long userId = (Long) authentication.getPrincipal();
+            @PathVariable UUID sessionId) {
+        UUID userId = (UUID) authentication.getPrincipal();
         authService.revokeSession(userId, sessionId);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
@@ -155,7 +157,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> revokeAllOtherSessions(
             Authentication authentication,
             @RequestHeader(value = "X-Current-Refresh-Token", required = false) String currentToken) {
-        Long userId = (Long) authentication.getPrincipal();
+        UUID userId = (UUID) authentication.getPrincipal();
         String token = currentToken != null ? currentToken : "";
         authService.revokeAllOtherSessions(userId, token);
         return ResponseEntity.ok(ApiResponse.ok(null));

@@ -27,7 +27,7 @@ export function useCreateEvenement() {
 export function useUpdateEvenement() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<EvenementCalendrierInput> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<EvenementCalendrierInput> }) =>
       evenementsApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [EVENEMENTS_KEY] });
@@ -38,7 +38,7 @@ export function useUpdateEvenement() {
 export function useDeleteEvenement() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => evenementsApi.delete(id),
+    mutationFn: (id: string) => evenementsApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [EVENEMENTS_KEY] });
     },

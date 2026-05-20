@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.enrollment;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.enrollment.dto.EnrollmentRequestDTO;
 import com.schoolSys.schooolSys.enrollment.dto.EnrollmentResponseDTO;
@@ -34,7 +36,7 @@ public class EnrollmentController {
     /** Gets an enrollment by ID. */
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_STUDENTS')")
-    public ResponseEntity<ApiResponse<EnrollmentResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<EnrollmentResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(enrollmentService.findById(id)));
     }
 
@@ -49,7 +51,7 @@ public class EnrollmentController {
     /** Updates an existing enrollment. */
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_STUDENTS')")
-    public ResponseEntity<ApiResponse<EnrollmentResponseDTO>> update(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<EnrollmentResponseDTO>> update(@PathVariable UUID id,
                                                                       @RequestBody EnrollmentRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(enrollmentService.update(id, dto)));
     }
@@ -57,7 +59,7 @@ public class EnrollmentController {
     /** Deletes an enrollment. */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('DELETE_STUDENTS')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         enrollmentService.delete(id);
         return ResponseEntity.noContent().build();
     }

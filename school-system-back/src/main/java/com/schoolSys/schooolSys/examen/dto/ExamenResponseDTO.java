@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.examen.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ExamenResponseDTO {
 
-    private Long id;
+    private UUID id;
     private String name;
     private String namePrive;
     private Double coeffEtatique;
@@ -19,11 +21,11 @@ public class ExamenResponseDTO {
     private Integer ordreEtatique;
     private Integer ordrePrive;
     private Integer trimestre;
-    private Long classeId;
+    private UUID classeId;
     private String classeName;
-    private Long teacherId;
+    private UUID teacherId;
     private String teacherName;
-    private Long moduleId;
+    private UUID moduleId;
     private String moduleName;
     private Boolean versionEtatique;
     private Boolean versionPrivee;

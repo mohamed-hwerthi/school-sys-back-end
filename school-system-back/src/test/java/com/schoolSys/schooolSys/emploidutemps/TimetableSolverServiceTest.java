@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.emploidutemps;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.emploidutemps.dto.EmploiDuTempsResponseDTO;
 import com.schoolSys.schooolSys.emploidutemps.dto.TeachingAssignmentDTO;
 import com.schoolSys.schooolSys.emploidutemps.dto.TimetableGenerationRequestDTO;
@@ -88,13 +90,13 @@ class TimetableSolverServiceTest {
         // Simulate 3 course creneaux (like a real school day)
         // Mutable list — TimetableSolverService sorts the creneaux in place.
         courseCreneaux = new ArrayList<>(List.of(
-                buildCreneau(1L, "Session 1", LocalTime.of(8, 0), LocalTime.of(9, 0), "COURS"),
-                buildCreneau(2L, "Session 2", LocalTime.of(9, 0), LocalTime.of(10, 0), "COURS"),
-                buildCreneau(3L, "Session 3", LocalTime.of(10, 0), LocalTime.of(11, 0), "COURS")
+                buildCreneau(new UUID(0, 1), "Session 1", LocalTime.of(8, 0), LocalTime.of(9, 0), "COURS"),
+                buildCreneau(new UUID(0, 2), "Session 2", LocalTime.of(9, 0), LocalTime.of(10, 0), "COURS"),
+                buildCreneau(new UUID(0, 3), "Session 3", LocalTime.of(10, 0), LocalTime.of(11, 0), "COURS")
         ));
     }
 
-    private Creneau buildCreneau(Long id, String label, LocalTime debut, LocalTime fin, String type) {
+    private Creneau buildCreneau(UUID id, String label, LocalTime debut, LocalTime fin, String type) {
         Creneau c = new Creneau();
         c.setId(id);
         c.setLabel(label);
@@ -112,16 +114,16 @@ class TimetableSolverServiceTest {
         @DisplayName("should generate a SOLVED timetable for simple assignment")
         void shouldGenerateSolvedTimetable() {
             when(creneauRepository.findByType("COURS")).thenReturn(courseCreneaux);
-            when(moduleRepository.findById(10L)).thenReturn(Optional.of(
-                    Module.builder().id(10L).coeffEtatique(2.0).build()
+            when(moduleRepository.findById(new UUID(0, 10))).thenReturn(Optional.of(
+                    Module.builder().id(new UUID(0, 10)).coeffEtatique(2.0).build()
             ));
-            doNothing().when(emploiDuTempsRepository).deleteByClasseId(anyLong());
+            doNothing().when(emploiDuTempsRepository).deleteByClasseId(any(UUID.class));
             when(emploiDuTempsRepository.saveAll(any())).thenAnswer(inv -> inv.getArgument(0));
 
             TimetableGenerationRequestDTO request = TimetableGenerationRequestDTO.builder()
                     .assignments(List.of(
                             TeachingAssignmentDTO.builder()
-                                    .classeId(1L).moduleId(10L).enseignantId(100L).nbHeures(2)
+                                    .classeId(new UUID(0, 1)).moduleId(new UUID(0, 10)).enseignantId(new UUID(0, 100)).nbHeures(2)
                                     .build()
                     ))
                     .rooms(List.of("Salle A1"))
@@ -143,25 +145,25 @@ class TimetableSolverServiceTest {
         @DisplayName("should generate timetable for multiple classes and teachers")
         void shouldGenerateForMultipleClassesAndTeachers() {
             when(creneauRepository.findByType("COURS")).thenReturn(courseCreneaux);
-            when(moduleRepository.findById(10L)).thenReturn(Optional.of(
-                    Module.builder().id(10L).coeffEtatique(2.0).build()
+            when(moduleRepository.findById(new UUID(0, 10))).thenReturn(Optional.of(
+                    Module.builder().id(new UUID(0, 10)).coeffEtatique(2.0).build()
             ));
-            when(moduleRepository.findById(11L)).thenReturn(Optional.of(
-                    Module.builder().id(11L).coeffEtatique(1.0).build()
+            when(moduleRepository.findById(new UUID(0, 11))).thenReturn(Optional.of(
+                    Module.builder().id(new UUID(0, 11)).coeffEtatique(1.0).build()
             ));
-            doNothing().when(emploiDuTempsRepository).deleteByClasseId(anyLong());
+            doNothing().when(emploiDuTempsRepository).deleteByClasseId(any(UUID.class));
             when(emploiDuTempsRepository.saveAll(any())).thenAnswer(inv -> inv.getArgument(0));
 
             TimetableGenerationRequestDTO request = TimetableGenerationRequestDTO.builder()
                     .assignments(List.of(
                             TeachingAssignmentDTO.builder()
-                                    .classeId(1L).moduleId(10L).enseignantId(100L).nbHeures(2)
+                                    .classeId(new UUID(0, 1)).moduleId(new UUID(0, 10)).enseignantId(new UUID(0, 100)).nbHeures(2)
                                     .build(),
                             TeachingAssignmentDTO.builder()
-                                    .classeId(1L).moduleId(11L).enseignantId(101L).nbHeures(1)
+                                    .classeId(new UUID(0, 1)).moduleId(new UUID(0, 11)).enseignantId(new UUID(0, 101)).nbHeures(1)
                                     .build(),
                             TeachingAssignmentDTO.builder()
-                                    .classeId(2L).moduleId(10L).enseignantId(100L).nbHeures(2)
+                                    .classeId(new UUID(0, 2)).moduleId(new UUID(0, 10)).enseignantId(new UUID(0, 100)).nbHeures(2)
                                     .build()
                     ))
                     .rooms(List.of("Salle A1", "Salle A2"))
@@ -187,7 +189,7 @@ class TimetableSolverServiceTest {
             TimetableGenerationRequestDTO request = TimetableGenerationRequestDTO.builder()
                     .assignments(List.of(
                             TeachingAssignmentDTO.builder()
-                                    .classeId(1L).moduleId(10L).enseignantId(100L).nbHeures(2)
+                                    .classeId(new UUID(0, 1)).moduleId(new UUID(0, 10)).enseignantId(new UUID(0, 100)).nbHeures(2)
                                     .build()
                     ))
                     .rooms(List.of("Salle A1"))
@@ -204,17 +206,17 @@ class TimetableSolverServiceTest {
         void shouldReturnInfeasibleWhenOverloaded() {
             // Only 1 creneau for the whole week = 6 slots (6 days x 1 creneau)
             when(creneauRepository.findByType("COURS")).thenReturn(new ArrayList<>(List.of(courseCreneaux.get(0))));
-            when(moduleRepository.findById(anyLong())).thenReturn(Optional.of(
-                    Module.builder().id(10L).coeffEtatique(1.0).build()
+            when(moduleRepository.findById(any(UUID.class))).thenReturn(Optional.of(
+                    Module.builder().id(new UUID(0, 10)).coeffEtatique(1.0).build()
             ));
-            lenient().doNothing().when(emploiDuTempsRepository).deleteByClasseId(anyLong());
+            lenient().doNothing().when(emploiDuTempsRepository).deleteByClasseId(any(UUID.class));
             lenient().when(emploiDuTempsRepository.saveAll(any())).thenAnswer(inv -> inv.getArgument(0));
 
             // 10 hours but only 1 room x 6 slots = 6 max
             TimetableGenerationRequestDTO request = TimetableGenerationRequestDTO.builder()
                     .assignments(List.of(
                             TeachingAssignmentDTO.builder()
-                                    .classeId(1L).moduleId(10L).enseignantId(100L).nbHeures(10)
+                                    .classeId(new UUID(0, 1)).moduleId(new UUID(0, 10)).enseignantId(new UUID(0, 100)).nbHeures(10)
                                     .build()
                     ))
                     .rooms(List.of("Salle A1"))
@@ -236,14 +238,14 @@ class TimetableSolverServiceTest {
         @DisplayName("should use default coefficient when module not found")
         void shouldUseDefaultCoefficientWhenModuleNotFound() {
             when(creneauRepository.findByType("COURS")).thenReturn(courseCreneaux);
-            when(moduleRepository.findById(anyLong())).thenReturn(Optional.empty());
-            doNothing().when(emploiDuTempsRepository).deleteByClasseId(anyLong());
+            when(moduleRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+            doNothing().when(emploiDuTempsRepository).deleteByClasseId(any(UUID.class));
             when(emploiDuTempsRepository.saveAll(any())).thenAnswer(inv -> inv.getArgument(0));
 
             TimetableGenerationRequestDTO request = TimetableGenerationRequestDTO.builder()
                     .assignments(List.of(
                             TeachingAssignmentDTO.builder()
-                                    .classeId(1L).moduleId(999L).enseignantId(100L).nbHeures(1)
+                                    .classeId(new UUID(0, 1)).moduleId(new UUID(0, 999)).enseignantId(new UUID(0, 100)).nbHeures(1)
                                     .build()
                     ))
                     .rooms(List.of("Salle A1"))

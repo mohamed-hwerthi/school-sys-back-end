@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.finance.dto.BourseDTO;
 import jakarta.validation.Valid;
@@ -27,14 +29,14 @@ public class BourseController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
-    public ResponseEntity<ApiResponse<BourseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<BourseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(bourseService.findById(id)));
     }
 
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<BourseDTO>>> getByStudent(
-            @PathVariable Long studentId,
+            @PathVariable UUID studentId,
             @RequestParam(required = false) String anneeScolaire) {
         List<BourseDTO> result;
         if (anneeScolaire != null && !anneeScolaire.isBlank()) {
@@ -55,13 +57,13 @@ public class BourseController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<BourseDTO>> update(
-            @PathVariable Long id, @Valid @RequestBody BourseDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody BourseDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(bourseService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         bourseService.delete(id);
         return ResponseEntity.noContent().build();
     }

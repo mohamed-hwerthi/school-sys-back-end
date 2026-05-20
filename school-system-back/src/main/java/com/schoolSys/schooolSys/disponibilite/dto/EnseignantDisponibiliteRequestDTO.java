@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.disponibilite.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +19,7 @@ import lombok.NoArgsConstructor;
 public class EnseignantDisponibiliteRequestDTO {
 
     @NotNull(message = "L'enseignant est obligatoire")
-    private Long enseignantId;
+    private UUID enseignantId;
 
     @NotNull(message = "Le jour est obligatoire")
     @Min(value = 1, message = "Jour entre 1 (lundi) et 6 (samedi)")
@@ -25,7 +27,7 @@ public class EnseignantDisponibiliteRequestDTO {
     private Integer jourSemaine;
 
     @NotNull(message = "Le créneau est obligatoire")
-    private Long creneauId;
+    private UUID creneauId;
 
     @NotNull(message = "Le type est obligatoire")
     @Pattern(regexp = "INDISPONIBLE|PREFERE|EVITER",

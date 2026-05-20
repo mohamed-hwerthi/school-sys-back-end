@@ -1,12 +1,12 @@
 import api from "./axios";
 
 export interface AffectationDTO {
-  id: number;
-  teacherId: number;
+  id: string;
+  teacherId: string;
   teacherName: string;
-  classeId: number;
+  classeId: string;
   classeName: string;
-  moduleId: number | null;
+  moduleId: string | null;
   moduleName: string | null;
   anneeScolaire: string;
   dateDebut: string | null;
@@ -15,9 +15,9 @@ export interface AffectationDTO {
 }
 
 export interface AffectationRequest {
-  teacherId: number;
-  classeId: number;
-  moduleId: number | null;
+  teacherId: string;
+  classeId: string;
+  moduleId: string | null;
   anneeScolaire: string;
   dateDebut?: string | null;
   dateFin?: string | null;
@@ -25,9 +25,9 @@ export interface AffectationRequest {
 }
 
 export interface AffectationFilters {
-  teacherId?: number;
-  classeId?: number;
-  moduleId?: number;
+  teacherId?: string;
+  classeId?: string;
+  moduleId?: string;
   anneeScolaire?: string;
 }
 
@@ -45,7 +45,7 @@ export const affectationsApi = {
     return res.data;
   },
 
-  getOne: async (id: number): Promise<AffectationDTO> => {
+  getOne: async (id: string): Promise<AffectationDTO> => {
     const res = await api.get<AffectationDTO>(`${BASE}/${id}`);
     return res.data;
   },
@@ -55,12 +55,12 @@ export const affectationsApi = {
     return res.data;
   },
 
-  update: async (id: number, req: AffectationRequest): Promise<AffectationDTO> => {
+  update: async (id: string, req: AffectationRequest): Promise<AffectationDTO> => {
     const res = await api.put<AffectationDTO>(`${BASE}/${id}`, req);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/${id}`);
   },
 };

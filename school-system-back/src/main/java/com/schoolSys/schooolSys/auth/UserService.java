@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.auth;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.auth.dto.UserResponseDTO;
 import com.schoolSys.schooolSys.auth.dto.CreateUserRequestDTO;
 import com.schoolSys.schooolSys.common.audit.AuditService;
@@ -68,7 +70,7 @@ public class UserService {
             .map(this::toDto);
     }
 
-    public UserResponseDTO getUserById(Long id) {
+    public UserResponseDTO getUserById(UUID id) {
         return toDto(userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User", id)));
     }
@@ -94,7 +96,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDTO updateUser(Long id, CreateUserRequestDTO request) {
+    public UserResponseDTO updateUser(UUID id, CreateUserRequestDTO request) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User", id));
         assertCanAssignRole(user.getRole());      // may the current user manage this account?
@@ -120,7 +122,7 @@ public class UserService {
     }
 
     @Transactional
-    public void toggleActive(Long id) {
+    public void toggleActive(UUID id) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User", id));
         assertCanAssignRole(user.getRole());
@@ -131,7 +133,7 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(Long id) {
+    public void deleteUser(UUID id) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User", id));
         assertCanAssignRole(user.getRole());

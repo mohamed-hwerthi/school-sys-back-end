@@ -1,5 +1,8 @@
 export interface TenantOnboardingRequest {
   schoolName: string;
+  schoolNameAr: string;
+  delegationRegionale: string;
+  delegationRegionaleAr: string;
   slug: string;
   adminFirstName: string;
   adminLastName: string;
@@ -43,7 +46,7 @@ export interface SuperAdminDashboard {
 }
 
 export interface TenantResponse {
-  id: number;
+  id: string;
   name: string;
   schemaName: string;
   slug: string;

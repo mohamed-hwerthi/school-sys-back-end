@@ -7,7 +7,7 @@ const ABSENCES_KEY = "absences";
 /**
  * Absences by class + date. Pass classeId <= 0 to get all classes for the date.
  */
-export function useAbsencesByClasseDate(classeId: number, date: string) {
+export function useAbsencesByClasseDate(classeId: string, date: string) {
   return useQuery<Absence[]>({
     queryKey: [ABSENCES_KEY, "classe", classeId, date],
     queryFn: () => absencesApi.getByClasseDate(classeId, date),
@@ -29,18 +29,18 @@ export function useFeuillesByDate(date: string) {
 /**
  * Absences by student.
  */
-export function useAbsencesByEleve(eleveId: number) {
+export function useAbsencesByEleve(eleveId: string) {
   return useQuery<Absence[]>({
     queryKey: [ABSENCES_KEY, "eleve", eleveId],
     queryFn: () => absencesApi.getByEleve(eleveId),
-    enabled: eleveId > 0,
+    enabled: !!eleveId,
   });
 }
 
 /**
  * Absence statistics.
  */
-export function useAbsenceStats(classeId?: number, dateDebut?: string, dateFin?: string) {
+export function useAbsenceStats(classeId?: string, dateDebut?: string, dateFin?: string) {
   return useQuery<AbsenceStats>({
     queryKey: [ABSENCES_KEY, "stats", classeId, dateDebut, dateFin],
     queryFn: () => absencesApi.getStats(classeId, dateDebut, dateFin),
@@ -66,7 +66,7 @@ export function useBatchCreateAbsences() {
 export function useJustifyAbsence() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, motif }: { id: number; motif: string }) =>
+    mutationFn: ({ id, motif }: { id: string; motif: string }) =>
       absencesApi.justifier(id, motif),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [ABSENCES_KEY] });
@@ -80,7 +80,7 @@ export function useJustifyAbsence() {
 export function useDeleteAbsence() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => absencesApi.delete(id),
+    mutationFn: (id: string) => absencesApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [ABSENCES_KEY] });
     },

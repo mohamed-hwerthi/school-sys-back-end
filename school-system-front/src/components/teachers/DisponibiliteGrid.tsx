@@ -39,7 +39,7 @@ const TYPE_STYLES: Record<DispoType, { bg: string; label: string; emoji: string 
 interface Props {
   open: boolean;
   onClose: () => void;
-  enseignantId: number;
+  enseignantId: string;
   enseignantName: string;
 }
 
@@ -55,7 +55,7 @@ export default function DisponibiliteGrid({ open, onClose, enseignantId, enseign
   // (cell key = "jour-creneau"). Race conditions on the same cell are the root cause of
   // the "déjà existe" error: two creates fire before the first refetch completes.
   const [pendingCells, setPendingCells] = useState<Set<string>>(new Set());
-  const cellKey = (jour: number, creneauId: number) => `${jour}-${creneauId}`;
+  const cellKey = (jour: number, creneauId: string) => `${jour}-${creneauId}`;
   const markPending = (key: string, on: boolean) => {
     setPendingCells((prev) => {
       const next = new Set(prev);
@@ -78,7 +78,7 @@ export default function DisponibiliteGrid({ open, onClose, enseignantId, enseign
     return m;
   }, [dispos]);
 
-  const cycleType = (jourSemaine: number, creneauId: number, current: DisponibiliteDTO | undefined) => {
+  const cycleType = (jourSemaine: number, creneauId: string, current: DisponibiliteDTO | undefined) => {
     const key = cellKey(jourSemaine, creneauId);
     if (pendingCells.has(key)) return; // ignore rapid re-clicks on same cell
 

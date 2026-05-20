@@ -3,7 +3,7 @@ export type TypeAction = "Création" | "Modification" | "Suppression" | "Connexi
 export type ModuleAction = "Élèves" | "Enseignants" | "Finance" | "Salles" | "Configuration" | "Évaluations" | "Circulaires" | "Rapports" | "Système";
 
 export type ActionLog = {
-  id: number;
+  id: string;
   type: TypeAction;
   module: ModuleAction;
   description: string;

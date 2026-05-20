@@ -92,7 +92,7 @@ function AdminEmploiDuTemps() {
   const [selectedClasseId, setSelectedClasseId] = useState(0);
   const [editingEntry, setEditingEntry] = useState<{
     jour: number;
-    creneauId: number;
+    creneauId: string;
     existing?: EmploiDuTempsEntry;
   } | null>(null);
   const [entryModuleId, setEntryModuleId] = useState("");
@@ -141,15 +141,15 @@ function AdminEmploiDuTemps() {
     [creneaux]
   );
 
-  const getEntry = (jour: number, creneauId: number) =>
+  const getEntry = (jour: number, creneauId: string) =>
     entries.find((e) => e.jourSemaine === jour && e.creneauId === creneauId);
 
-  const getModuleColor = (moduleId?: number) => {
+  const getModuleColor = (moduleId?: string) => {
     if (!moduleId) return "";
     return SLOT_COLORS[moduleId % SLOT_COLORS.length];
   };
 
-  const openSlotEditor = (jour: number, creneauId: number) => {
+  const openSlotEditor = (jour: number, creneauId: string) => {
     const existing = getEntry(jour, creneauId);
     setEditingEntry({ jour, creneauId, existing });
     setEntryModuleId(existing?.moduleId ? String(existing.moduleId) : "");
@@ -166,11 +166,11 @@ function AdminEmploiDuTemps() {
       classeId: selectedClasseId,
       jourSemaine: jour,
       creneauId,
-      moduleId: entryModuleId ? Number(entryModuleId) : undefined,
-      moduleName: modules.find((m) => m.id === Number(entryModuleId))?.name,
-      enseignantId: entryEnseignantId ? Number(entryEnseignantId) : undefined,
-      enseignantNom: teachers.find((t) => t.id === Number(entryEnseignantId))
-        ? `${teachers.find((t) => t.id === Number(entryEnseignantId))!.prenom} ${teachers.find((t) => t.id === Number(entryEnseignantId))!.nom}`
+      moduleId: entryModuleId ? entryModuleId : undefined,
+      moduleName: modules.find((m) => m.id === entryModuleId)?.name,
+      enseignantId: entryEnseignantId ? entryEnseignantId : undefined,
+      enseignantNom: teachers.find((t) => t.id === entryEnseignantId)
+        ? `${teachers.find((t) => t.id === entryEnseignantId)!.prenom} ${teachers.find((t) => t.id === entryEnseignantId)!.nom}`
         : undefined,
       salle: entrySalle || undefined,
     };
@@ -280,7 +280,7 @@ function AdminEmploiDuTemps() {
 
   const availableRooms = rooms.filter((r) => r.statut !== "En maintenance");
 
-  const isLoading = creneauxLoading || (entriesLoading && selectedClasseId > 0);
+  const isLoading = creneauxLoading || (entriesLoading && selectedClasseId);
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
@@ -359,7 +359,7 @@ function AdminEmploiDuTemps() {
           <Select
             value={selectedClasseId ? String(selectedClasseId) : ""}
             onValueChange={(v) => {
-              setSelectedClasseId(Number(v));
+              setSelectedClasseId(v);
               setHasLocalChanges(false);
               setConflits([]);
             }}
@@ -412,7 +412,7 @@ function AdminEmploiDuTemps() {
       )}
 
       {/* Grid */}
-      {selectedClasseId > 0 ? (
+      {selectedClasseId ? (
         isLoading ? (
           <div className="flex h-[40vh] items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -766,7 +766,7 @@ function AdminEmploiDuTemps() {
                     <Label className="text-xs text-muted-foreground">{t("common.class")}</Label>
                     <Select
                       value={newAssignment.classeId ? String(newAssignment.classeId) : ""}
-                      onValueChange={(v) => setNewAssignment({ ...newAssignment, classeId: Number(v) })}
+                      onValueChange={(v) => setNewAssignment({ ...newAssignment, classeId: v })}
                     >
                       <SelectTrigger className="h-9 text-xs">
                         <SelectValue placeholder="Classe" />
@@ -782,7 +782,7 @@ function AdminEmploiDuTemps() {
                     <Label className="text-xs text-muted-foreground">{t("grades.modules")}</Label>
                     <Select
                       value={newAssignment.moduleId ? String(newAssignment.moduleId) : ""}
-                      onValueChange={(v) => setNewAssignment({ ...newAssignment, moduleId: Number(v) })}
+                      onValueChange={(v) => setNewAssignment({ ...newAssignment, moduleId: v })}
                     >
                       <SelectTrigger className="h-9 text-xs">
                         <SelectValue placeholder="Matière" />
@@ -798,7 +798,7 @@ function AdminEmploiDuTemps() {
                     <Label className="text-xs text-muted-foreground">{t("common.teacher")}</Label>
                     <Select
                       value={newAssignment.enseignantId ? String(newAssignment.enseignantId) : ""}
-                      onValueChange={(v) => setNewAssignment({ ...newAssignment, enseignantId: Number(v) })}
+                      onValueChange={(v) => setNewAssignment({ ...newAssignment, enseignantId: v })}
                     >
                       <SelectTrigger className="h-9 text-xs">
                         <SelectValue placeholder="Enseignant" />

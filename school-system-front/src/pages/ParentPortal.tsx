@@ -98,7 +98,7 @@ function ChildSelector({
   );
 }
 
-function NotesTab({ studentId, classeId }: { studentId: number; classeId: number }) {
+function NotesTab({ studentId, classeId }: { studentId: string; classeId: string }) {
   const [trimestre, setTrimestre] = useState(1);
   const { data: notes = [], isLoading } = useChildNotes(studentId, trimestre);
 
@@ -167,7 +167,7 @@ function NotesTab({ studentId, classeId }: { studentId: number; classeId: number
   );
 }
 
-function AbsencesTab({ studentId }: { studentId: number }) {
+function AbsencesTab({ studentId }: { studentId: string }) {
   const { data: absences = [], isLoading } = useChildAbsences(studentId);
 
   const stats = {
@@ -264,8 +264,8 @@ function BulletinTab({
   studentId,
   classeId,
 }: {
-  studentId: number;
-  classeId: number;
+  studentId: string;
+  classeId: string;
 }) {
   const [trimestre, setTrimestre] = useState(1);
   const { data: bulletin, isLoading } = useChildBulletin(
@@ -360,7 +360,7 @@ function BulletinTab({
   );
 }
 
-function EmploiDuTempsTab({ studentId }: { studentId: number }) {
+function EmploiDuTempsTab({ studentId }: { studentId: string }) {
   const { data: emploi = [], isLoading } = useChildEmploiDuTemps(studentId);
 
   // Group by jour
@@ -430,7 +430,7 @@ function fmtMoney(n: number | null | undefined): string {
   return (n ?? 0).toLocaleString("fr-FR", { minimumFractionDigits: 0 }) + ` ${CURRENCY}`;
 }
 
-function KpiHeader({ studentId }: { studentId: number }) {
+function KpiHeader({ studentId }: { studentId: string }) {
   const { data: notes = [] } = useChildNotes(studentId, 1);
   const { data: absences = [] } = useChildAbsences(studentId);
   const { data: factures = [] } = useFacturesByEleve(studentId);
@@ -476,7 +476,7 @@ function KpiHeader({ studentId }: { studentId: number }) {
   );
 }
 
-function FacturesTab({ studentId }: { studentId: number }) {
+function FacturesTab({ studentId }: { studentId: string }) {
   const { data: factures = [], isLoading } = useFacturesByEleve(studentId);
 
   if (isLoading) {

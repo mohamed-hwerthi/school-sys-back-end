@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.examen.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -43,12 +45,12 @@ public class ExamenRequestDTO {
     private Integer trimestre = 1;
 
     @NotNull(message = "La classe est obligatoire")
-    private Long classeId;
+    private UUID classeId;
 
-    private Long teacherId;
+    private UUID teacherId;
 
     @NotNull(message = "Le module est obligatoire")
-    private Long moduleId;
+    private UUID moduleId;
 
     @Builder.Default
     private Boolean versionEtatique = true;

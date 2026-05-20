@@ -53,7 +53,7 @@ export default function StudentProfile() {
   const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: student, isLoading } = useStudent(Number(id));
+  const { data: student, isLoading } = useStudent(id);
   const { school } = useSchool();
 
   // Contact dialogs state

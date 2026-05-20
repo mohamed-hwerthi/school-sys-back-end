@@ -528,7 +528,7 @@ export default function PointagePage() {
                   type="number"
                   value={form.employeId || ""}
                   onChange={(e) =>
-                    setForm({ ...form, employeId: Number(e.target.value) })
+                    setForm({ ...form, employeId: e.target.value })
                   }
                   placeholder="ID"
                 />

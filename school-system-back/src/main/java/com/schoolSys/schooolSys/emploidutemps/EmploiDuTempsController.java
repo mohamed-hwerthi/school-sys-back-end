@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.emploidutemps;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -29,7 +31,7 @@ public class EmploiDuTempsController {
 
     @GetMapping("/api/emploi-du-temps/classe/{classeId}")
     @PreAuthorize("hasAuthority('READ_EMPLOI_DU_TEMPS')")
-    public ResponseEntity<ApiResponse<List<EmploiDuTempsResponseDTO>>> getByClasse(@PathVariable Long classeId) {
+    public ResponseEntity<ApiResponse<List<EmploiDuTempsResponseDTO>>> getByClasse(@PathVariable UUID classeId) {
         // A teacher may only read the timetable of a class he is affected to.
         if (currentUser.hasRole(UserRole.ENSEIGNANT) && !currentUser.teacherTeachesClasse(classeId)) {
             throw new AccessDeniedException("Cette classe n'est pas dans votre périmètre.");
@@ -39,10 +41,10 @@ public class EmploiDuTempsController {
 
     @GetMapping("/api/emploi-du-temps/enseignant/{enseignantId}")
     @PreAuthorize("hasAuthority('READ_EMPLOI_DU_TEMPS')")
-    public ResponseEntity<ApiResponse<List<EmploiDuTempsResponseDTO>>> getByEnseignant(@PathVariable Long enseignantId) {
+    public ResponseEntity<ApiResponse<List<EmploiDuTempsResponseDTO>>> getByEnseignant(@PathVariable UUID enseignantId) {
         // A teacher may only read his own timetable.
         if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
-            Long ownId = currentUser.getCurrentTeacher().map(Teacher::getId).orElse(null);
+            UUID ownId = currentUser.getCurrentTeacher().map(Teacher::getId).orElse(null);
             if (!Objects.equals(ownId, enseignantId)) {
                 throw new AccessDeniedException("Vous ne pouvez consulter que votre propre emploi du temps.");
             }
@@ -63,7 +65,7 @@ public class EmploiDuTempsController {
     @PutMapping("/api/emploi-du-temps/classe/{classeId}")
     @PreAuthorize("hasAuthority('WRITE_EMPLOI_DU_TEMPS')")
     public ResponseEntity<ApiResponse<List<EmploiDuTempsResponseDTO>>> saveAll(
-            @PathVariable Long classeId,
+            @PathVariable UUID classeId,
             @Valid @RequestBody List<EmploiDuTempsRequestDTO> requests) {
         return ResponseEntity.ok(ApiResponse.ok(emploiDuTempsService.saveAll(classeId, requests)));
     }
@@ -87,8 +89,8 @@ public class EmploiDuTempsController {
     @GetMapping("/api/emploi-du-temps/preview-check")
     @PreAuthorize("hasAuthority('WRITE_EMPLOI_DU_TEMPS')")
     public ResponseEntity<ApiResponse<TimetablePreviewCheckDTO>> previewCheck(
-            @RequestParam(required = false) Long niveauId,
-            @RequestParam(required = false) Long anneeScolaireId) {
+            @RequestParam(required = false) UUID niveauId,
+            @RequestParam(required = false) UUID anneeScolaireId) {
         return ResponseEntity.ok(ApiResponse.ok(
             timetableSolverService.previewCheck(niveauId, anneeScolaireId)));
     }
@@ -110,7 +112,7 @@ public class EmploiDuTempsController {
 
     @DeleteMapping("/api/creneaux/{id}")
     @PreAuthorize("hasAuthority('WRITE_EMPLOI_DU_TEMPS')")
-    public ResponseEntity<Void> deleteCreneau(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCreneau(@PathVariable UUID id) {
         emploiDuTempsService.deleteCreneau(id);
         return ResponseEntity.noContent().build();
     }
@@ -133,7 +135,7 @@ public class EmploiDuTempsController {
 
     @DeleteMapping("/api/emploi-du-temps/remplacements/{id}")
     @PreAuthorize("hasAuthority('WRITE_EMPLOI_DU_TEMPS')")
-    public ResponseEntity<Void> deleteRemplacement(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteRemplacement(@PathVariable UUID id) {
         emploiDuTempsService.deleteRemplacement(id);
         return ResponseEntity.noContent().build();
     }

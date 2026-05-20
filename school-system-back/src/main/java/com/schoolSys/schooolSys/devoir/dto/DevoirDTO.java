@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.devoir.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,12 +16,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class DevoirDTO {
 
-    private Long id;
+    private UUID id;
     private String titre;
     private String description;
-    private Long moduleId;
-    private Long classeId;
-    private Long enseignantId;
+    private UUID moduleId;
+    private UUID classeId;
+    private UUID enseignantId;
     private LocalDate datePublication;
     private LocalDate dateLimite;
     private String type;

@@ -234,7 +234,7 @@ export default function UsersPage() {
 
   const getInitials = (u: UserItem) =>
     `${u.firstName[0] ?? ""}${u.lastName[0] ?? ""}`.toUpperCase();
-  const getAvatarColor = (id: number) => avatarColors[id % avatarColors.length];
+  const getAvatarColor = (id: string) => avatarColors[id % avatarColors.length];
 
   if (isLoading) {
     return (

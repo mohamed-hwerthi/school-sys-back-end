@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.notification.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,13 +14,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AnnonceDTO {
-    private Long id;
+    private UUID id;
     private String titre;
     private String contenu;
     private String type;
     private String destinataires;
-    private Long classeId;
-    private Long auteurId;
+    private UUID classeId;
+    private UUID auteurId;
     private String auteurName;
     private LocalDateTime datePublication;
     private LocalDateTime dateExpiration;

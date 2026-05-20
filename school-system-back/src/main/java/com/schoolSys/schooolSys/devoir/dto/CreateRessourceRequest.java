@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.devoir.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +19,7 @@ public class CreateRessourceRequest {
 
     private String description;
 
-    private Long moduleId;
+    private UUID moduleId;
 
     @Builder.Default
     private String type = "DOCUMENT";
@@ -26,7 +28,7 @@ public class CreateRessourceRequest {
 
     private String lienExterne;
 
-    private Long enseignantId;
+    private UUID enseignantId;
 
     private Long tailleFichier;
 }

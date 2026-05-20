@@ -4,8 +4,8 @@ export type StatutPointage = 'PRESENT' | 'ABSENT' | 'RETARD' | 'CONGE';
 export type StatutFormation = 'PLANIFIEE' | 'EN_COURS' | 'TERMINEE' | 'ANNULEE';
 
 export interface Pointage {
-  id: number;
-  employeId: number;
+  id: string;
+  employeId: string;
   employeType: EmployeType;
   datePointage: string;
   heureArrivee?: string;
@@ -17,7 +17,7 @@ export interface Pointage {
 }
 
 export interface CreatePointageRequest {
-  employeId: number;
+  employeId: string;
   employeType: EmployeType;
   datePointage?: string;
   heureArrivee?: string;
@@ -29,8 +29,8 @@ export interface CreatePointageRequest {
 
 // ── Fiche de Paie ────────────────────────────────────
 export interface FichePaie {
-  id: number;
-  employeId: number;
+  id: string;
+  employeId: string;
   employeType: string;
   mois: number;
   annee: number;
@@ -45,7 +45,7 @@ export interface FichePaie {
 }
 
 export interface CreateFichePaieRequest {
-  employeId: number;
+  employeId: string;
   employeType: string;
   mois: number;
   annee: number;
@@ -60,16 +60,16 @@ export interface CreateFichePaieRequest {
 
 // ── Formation ────────────────────────────────────────
 export interface FormationParticipant {
-  id: number;
-  formationId: number;
-  employeId: number;
+  id: string;
+  formationId: string;
+  employeId: string;
   employeType: string;
   present: boolean;
   certificatObtenu: boolean;
 }
 
 export interface Formation {
-  id: number;
+  id: string;
   titre: string;
   description?: string;
   formateur?: string;
@@ -97,7 +97,7 @@ export interface CreateFormationRequest {
 }
 
 export interface AddParticipantRequest {
-  employeId: number;
+  employeId: string;
   employeType: string;
   present?: boolean;
   certificatObtenu?: boolean;

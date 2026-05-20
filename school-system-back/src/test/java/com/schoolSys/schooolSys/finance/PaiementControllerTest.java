@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.schoolSys.schooolSys.auth.JwtAuthenticationFilter;
@@ -58,11 +60,11 @@ class PaiementControllerTest {
                 .when(jwtAuthenticationFilter).doFilter(any(), any(), any());
 
         sampleResponse = PaiementResponseDTO.builder()
-                .id(1L)
-                .studentId(1L)
+                .id(new UUID(0, 1))
+                .studentId(new UUID(0, 1))
                 .studentFirstName("Ahmed")
                 .studentLastName("Benali")
-                .typeFraisId(1L)
+                .typeFraisId(new UUID(0, 1))
                 .typeFraisNom("Scolarité")
                 .mois("Janvier")
                 .anneeScolaire("2025-2026")
@@ -75,8 +77,8 @@ class PaiementControllerTest {
                 .build();
 
         sampleRequest = new PaiementRequestDTO();
-        sampleRequest.setStudentId(1L);
-        sampleRequest.setTypeFraisId(1L);
+        sampleRequest.setStudentId(new UUID(0, 1));
+        sampleRequest.setTypeFraisId(new UUID(0, 1));
         sampleRequest.setMois("Janvier");
         sampleRequest.setAnneeScolaire("2025-2026");
         sampleRequest.setMontantDu(new BigDecimal("500.00"));
@@ -177,12 +179,12 @@ class PaiementControllerTest {
         @WithMockUser(authorities = "READ_FINANCE")
         @DisplayName("should return 200 with paiement when found")
         void shouldReturn200WhenFound() throws Exception {
-            when(paiementService.findById(1L)).thenReturn(sampleResponse);
+            when(paiementService.findById(new UUID(0, 1))).thenReturn(sampleResponse);
 
-            mockMvc.perform(get("/api/paiements/1"))
+            mockMvc.perform(get("/api/paiements/00000000-0000-0000-0000-000000000001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.id").value(1))
+                    .andExpect(jsonPath("$.data.id").value("00000000-0000-0000-0000-000000000001"))
                     .andExpect(jsonPath("$.data.studentFirstName").value("Ahmed"))
                     .andExpect(jsonPath("$.data.montantDu").value(500.00));
         }
@@ -191,10 +193,10 @@ class PaiementControllerTest {
         @WithMockUser(authorities = "READ_FINANCE")
         @DisplayName("should return 404 when paiement not found")
         void shouldReturn404WhenNotFound() throws Exception {
-            when(paiementService.findById(999L))
-                    .thenThrow(new ResourceNotFoundException("Paiement", 999L));
+            when(paiementService.findById(new UUID(0, 999)))
+                    .thenThrow(new ResourceNotFoundException("Paiement", new UUID(0, 999)));
 
-            mockMvc.perform(get("/api/paiements/999"))
+            mockMvc.perform(get("/api/paiements/00000000-0000-0000-0000-0000000003e7"))
                     .andExpect(status().isNotFound());
         }
     }
@@ -211,22 +213,22 @@ class PaiementControllerTest {
         @WithMockUser(authorities = "READ_FINANCE")
         @DisplayName("should return paiements for a student")
         void shouldReturnPaiementsForStudent() throws Exception {
-            when(paiementService.findByStudentId(1L)).thenReturn(List.of(sampleResponse));
+            when(paiementService.findByStudentId(new UUID(0, 1))).thenReturn(List.of(sampleResponse));
 
-            mockMvc.perform(get("/api/paiements/eleve/1"))
+            mockMvc.perform(get("/api/paiements/eleve/00000000-0000-0000-0000-000000000001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data").isArray())
-                    .andExpect(jsonPath("$.data[0].studentId").value(1));
+                    .andExpect(jsonPath("$.data[0].studentId").value("00000000-0000-0000-0000-000000000001"));
         }
 
         @Test
         @WithMockUser(authorities = "READ_FINANCE")
         @DisplayName("should filter by anneeScolaire when provided")
         void shouldFilterByAnneeScolaire() throws Exception {
-            when(paiementService.findByStudentIdAndAnneeScolaire(1L, "2025-2026"))
+            when(paiementService.findByStudentIdAndAnneeScolaire(new UUID(0, 1), "2025-2026"))
                     .thenReturn(List.of(sampleResponse));
 
-            mockMvc.perform(get("/api/paiements/eleve/1")
+            mockMvc.perform(get("/api/paiements/eleve/00000000-0000-0000-0000-000000000001")
                             .param("anneeScolaire", "2025-2026"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data[0].anneeScolaire").value("2025-2026"));
@@ -262,7 +264,7 @@ class PaiementControllerTest {
         @DisplayName("should return 400 when studentId is missing")
         void shouldReturn400WhenStudentIdMissing() throws Exception {
             PaiementRequestDTO invalid = new PaiementRequestDTO();
-            invalid.setTypeFraisId(1L);
+            invalid.setTypeFraisId(new UUID(0, 1));
             invalid.setMois("Janvier");
             invalid.setAnneeScolaire("2025-2026");
             invalid.setMontantDu(new BigDecimal("500.00"));
@@ -281,8 +283,8 @@ class PaiementControllerTest {
         @DisplayName("should return 400 when mois is blank")
         void shouldReturn400WhenMoisBlank() throws Exception {
             PaiementRequestDTO invalid = new PaiementRequestDTO();
-            invalid.setStudentId(1L);
-            invalid.setTypeFraisId(1L);
+            invalid.setStudentId(new UUID(0, 1));
+            invalid.setTypeFraisId(new UUID(0, 1));
             invalid.setMois(""); // blank
             invalid.setAnneeScolaire("2025-2026");
             invalid.setMontantDu(new BigDecimal("500.00"));
@@ -321,24 +323,24 @@ class PaiementControllerTest {
         @WithMockUser(authorities = "WRITE_FINANCE")
         @DisplayName("should return 200 when updating existing paiement")
         void shouldReturn200OnUpdate() throws Exception {
-            when(paiementService.update(eq(1L), any(PaiementRequestDTO.class))).thenReturn(sampleResponse);
+            when(paiementService.update(eq(new UUID(0, 1)), any(PaiementRequestDTO.class))).thenReturn(sampleResponse);
 
-            mockMvc.perform(put("/api/paiements/1")
+            mockMvc.perform(put("/api/paiements/00000000-0000-0000-0000-000000000001")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(sampleRequest)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.id").value(1));
+                    .andExpect(jsonPath("$.data.id").value("00000000-0000-0000-0000-000000000001"));
         }
 
         @Test
         @WithMockUser(authorities = "WRITE_FINANCE")
         @DisplayName("should return 404 when updating non-existing paiement")
         void shouldReturn404WhenNotFound() throws Exception {
-            when(paiementService.update(eq(999L), any(PaiementRequestDTO.class)))
-                    .thenThrow(new ResourceNotFoundException("Paiement", 999L));
+            when(paiementService.update(eq(new UUID(0, 999)), any(PaiementRequestDTO.class)))
+                    .thenThrow(new ResourceNotFoundException("Paiement", new UUID(0, 999)));
 
-            mockMvc.perform(put("/api/paiements/999")
+            mockMvc.perform(put("/api/paiements/00000000-0000-0000-0000-0000000003e7")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(sampleRequest)))
@@ -358,21 +360,21 @@ class PaiementControllerTest {
         @WithMockUser(authorities = "WRITE_FINANCE")
         @DisplayName("should return 204 when deleting existing paiement")
         void shouldReturn204OnDelete() throws Exception {
-            mockMvc.perform(delete("/api/paiements/1")
+            mockMvc.perform(delete("/api/paiements/00000000-0000-0000-0000-000000000001")
                             .with(csrf()))
                     .andExpect(status().isNoContent());
 
-            verify(paiementService).delete(1L);
+            verify(paiementService).delete(new UUID(0, 1));
         }
 
         @Test
         @WithMockUser(authorities = "WRITE_FINANCE")
         @DisplayName("should return 404 when deleting non-existing paiement")
         void shouldReturn404WhenNotFound() throws Exception {
-            doThrow(new ResourceNotFoundException("Paiement", 999L))
-                    .when(paiementService).delete(999L);
+            doThrow(new ResourceNotFoundException("Paiement", new UUID(0, 999)))
+                    .when(paiementService).delete(new UUID(0, 999));
 
-            mockMvc.perform(delete("/api/paiements/999")
+            mockMvc.perform(delete("/api/paiements/00000000-0000-0000-0000-0000000003e7")
                             .with(csrf()))
                     .andExpect(status().isNotFound());
         }

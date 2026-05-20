@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.inscription.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -40,7 +42,7 @@ public class CreateInscriptionRequest {
 
     private String prenomParent;
 
-    private Long niveauId;
+    private UUID niveauId;
 
     @NotBlank(message = "L'annee scolaire est requise")
     private String anneeScolaire;

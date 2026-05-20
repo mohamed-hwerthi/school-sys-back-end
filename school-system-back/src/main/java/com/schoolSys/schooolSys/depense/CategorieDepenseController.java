@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.depense;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.depense.dto.CategorieDepenseRequestDTO;
 import com.schoolSys.schooolSys.depense.dto.CategorieDepenseResponseDTO;
@@ -27,7 +29,7 @@ public class CategorieDepenseController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
-    public ResponseEntity<ApiResponse<CategorieDepenseResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CategorieDepenseResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(categorieService.findById(id)));
     }
 
@@ -42,13 +44,13 @@ public class CategorieDepenseController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<CategorieDepenseResponseDTO>> update(
-            @PathVariable Long id, @Valid @RequestBody CategorieDepenseRequestDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody CategorieDepenseRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(categorieService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         categorieService.delete(id);
         return ResponseEntity.noContent().build();
     }

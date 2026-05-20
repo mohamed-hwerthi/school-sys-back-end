@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.auth;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.schoolSys.schooolSys.auth.dto.LoginRequestDTO;
@@ -8,7 +10,11 @@ import com.schoolSys.schooolSys.auth.dto.RefreshTokenRequestDTO;
 import com.schoolSys.schooolSys.auth.dto.UserResponseDTO;
 import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.common.config.SecurityConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import com.schoolSys.schooolSys.common.security.AuditingAccessDeniedHandler;
+import com.schoolSys.schooolSys.common.security.RestAuthenticationEntryPoint;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,9 +43,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * correctly protects all routes and allows public endpoints.
  */
 @WebMvcTest(AuthController.class)
-@Import({SecurityConfig.class, AuditingAccessDeniedHandler.class})
+@Import({SecurityConfig.class, AuditingAccessDeniedHandler.class, RestAuthenticationEntryPoint.class, SecurityIntegrationTest.JacksonTestConfig.class})
 @DisplayName("Security Integration Tests - End-to-End Route Protection")
 class SecurityIntegrationTest {
+
+    @TestConfiguration
+    static class JacksonTestConfig {
+        @Bean
+        ObjectMapper objectMapper() { return new ObjectMapper(); }
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -75,7 +87,7 @@ class SecurityIntegrationTest {
                 .when(jwtAuthenticationFilter).doFilter(any(), any(), any());
 
         UserResponseDTO userResponse = UserResponseDTO.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .email("admin@school.com")
                 .firstName("Admin")
                 .lastName("User")
@@ -144,7 +156,7 @@ class SecurityIntegrationTest {
             mockMvc.perform(post("/api/auth/logout")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -248,56 +260,56 @@ class SecurityIntegrationTest {
         @DisplayName("GET /api/auth/me should require authentication")
         void meShouldRequireAuth() throws Exception {
             mockMvc.perform(get("/api/auth/me"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("GET /api/students should require authentication")
         void studentsShouldRequireAuth() throws Exception {
             mockMvc.perform(get("/api/students"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("GET /api/paiements should require authentication")
         void paiementsShouldRequireAuth() throws Exception {
             mockMvc.perform(get("/api/paiements"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("GET /api/emploi-du-temps/classe/1 should require authentication")
         void emploiDuTempsShouldRequireAuth() throws Exception {
-            mockMvc.perform(get("/api/emploi-du-temps/classe/1"))
-                    .andExpect(status().isForbidden());
+            mockMvc.perform(get("/api/emploi-du-temps/classe/00000000-0000-0000-0000-000000000001"))
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("GET /api/inscriptions should require authentication")
         void inscriptionsShouldRequireAuth() throws Exception {
             mockMvc.perform(get("/api/inscriptions"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("POST /api/auth/2fa/enable should require authentication")
         void twoFactorEnableShouldRequireAuth() throws Exception {
             mockMvc.perform(post("/api/auth/2fa/enable"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("GET /api/auth/sessions should require authentication")
         void sessionsShouldRequireAuth() throws Exception {
             mockMvc.perform(get("/api/auth/sessions"))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
         @DisplayName("DELETE /api/auth/sessions/1 should require authentication")
         void deleteSessionShouldRequireAuth() throws Exception {
-            mockMvc.perform(delete("/api/auth/sessions/1"))
-                    .andExpect(status().isForbidden());
+            mockMvc.perform(delete("/api/auth/sessions/00000000-0000-0000-0000-000000000001"))
+                    .andExpect(status().isUnauthorized());
         }
     }
 
@@ -329,7 +341,7 @@ class SecurityIntegrationTest {
             // /api/auth/me only requires authenticated(), not a specific authority
             when(authService.getCurrentUser(any())).thenReturn(
                     UserResponseDTO.builder()
-                            .id(1L)
+                            .id(new UUID(0, 1))
                             .email("admin@school.com")
                             .role(UserRole.ADMIN)
                             .build()
@@ -380,7 +392,7 @@ class SecurityIntegrationTest {
         void loginWith2FAShouldReturn2FAFlag() throws Exception {
             LoginResponseDTO twoFactorResponse = LoginResponseDTO.builder()
                     .twoFactorRequired(true)
-                    .twoFactorUserId(1L)
+                    .twoFactorUserId(new UUID(0, 1))
                     .build();
 
             LoginRequestDTO request = new LoginRequestDTO();
@@ -395,7 +407,7 @@ class SecurityIntegrationTest {
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.twoFactorRequired").value(true))
-                    .andExpect(jsonPath("$.data.twoFactorUserId").value(1))
+                    .andExpect(jsonPath("$.data.twoFactorUserId").value("00000000-0000-0000-0000-000000000001"))
                     .andExpect(jsonPath("$.data.accessToken").doesNotExist());
         }
 

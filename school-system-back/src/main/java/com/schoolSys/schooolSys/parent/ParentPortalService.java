@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.parent;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.absence.Absence;
 import com.schoolSys.schooolSys.absence.AbsenceRepository;
 import com.schoolSys.schooolSys.absence.dto.AbsenceResponseDTO;
@@ -30,7 +32,7 @@ public class ParentPortalService {
     private final BulletinService bulletinService;
     private final EmploiDuTempsRepository emploiDuTempsRepository;
 
-    public List<ChildDTO> getChildren(Long parentUserId) {
+    public List<ChildDTO> getChildren(UUID parentUserId) {
         return parentStudentRepository.findByParentUserId(parentUserId)
                 .stream()
                 .map(ps -> {
@@ -47,7 +49,7 @@ public class ParentPortalService {
                 .collect(Collectors.toList());
     }
 
-    public List<NoteResponseDTO> getChildNotes(Long parentUserId, Long studentId, Integer trimestre) {
+    public List<NoteResponseDTO> getChildNotes(UUID parentUserId, UUID studentId, Integer trimestre) {
         verifyParentLink(parentUserId, studentId);
         List<Note> notes = noteRepository.findByStudentIdAndTrimestre(studentId, trimestre);
         return notes.stream()
@@ -64,7 +66,7 @@ public class ParentPortalService {
                 .collect(Collectors.toList());
     }
 
-    public List<AbsenceResponseDTO> getChildAbsences(Long parentUserId, Long studentId) {
+    public List<AbsenceResponseDTO> getChildAbsences(UUID parentUserId, UUID studentId) {
         verifyParentLink(parentUserId, studentId);
         return absenceRepository.findByEleveId(studentId)
                 .stream()
@@ -72,12 +74,12 @@ public class ParentPortalService {
                 .collect(Collectors.toList());
     }
 
-    public BulletinDTO getChildBulletin(Long parentUserId, Long studentId, Long classeId, Integer trimestre) {
+    public BulletinDTO getChildBulletin(UUID parentUserId, UUID studentId, UUID classeId, Integer trimestre) {
         verifyParentLink(parentUserId, studentId);
         return bulletinService.getBulletin(classeId, studentId, trimestre, "etatique");
     }
 
-    public List<EmploiDuTempsResponseDTO> getChildEmploiDuTemps(Long parentUserId, Long studentId) {
+    public List<EmploiDuTempsResponseDTO> getChildEmploiDuTemps(UUID parentUserId, UUID studentId) {
         verifyParentLink(parentUserId, studentId);
 
         // Get student's classe to find their schedule
@@ -91,7 +93,7 @@ public class ParentPortalService {
         if (classeStr == null) return List.of();
 
         try {
-            Long classeId = Long.parseLong(classeStr);
+            UUID classeId = UUID.fromString(classeStr);
             return emploiDuTempsRepository.findByClasseId(classeId)
                     .stream()
                     .map(this::toEmploiDto)
@@ -101,7 +103,7 @@ public class ParentPortalService {
         }
     }
 
-    private void verifyParentLink(Long parentUserId, Long studentId) {
+    private void verifyParentLink(UUID parentUserId, UUID studentId) {
         boolean linked = parentStudentRepository.findByParentUserId(parentUserId)
                 .stream()
                 .anyMatch(ps -> ps.getStudent().getId().equals(studentId));

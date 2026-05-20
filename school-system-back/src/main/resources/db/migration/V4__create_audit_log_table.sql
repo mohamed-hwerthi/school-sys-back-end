@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS audit_log (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT REFERENCES users(id),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id),
     action VARCHAR(20) NOT NULL,
     entity_type VARCHAR(100) NOT NULL,
-    entity_id BIGINT,
+    entity_id UUID,
     old_value JSONB,
     new_value JSONB,
     ip_address VARCHAR(45),

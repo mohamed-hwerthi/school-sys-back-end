@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.emploidutemps.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,9 +22,9 @@ import java.util.Map;
 public class TimetablePreviewCheckDTO {
 
     /** All metrics below are scoped to the requested niveau (or all niveaux if none). */
-    private Long anneeScolaireId;
+    private UUID anneeScolaireId;
     private String anneeScolaireLabel;
-    private Long niveauId;
+    private UUID niveauId;
     private String niveauName;
 
     // ── Modules / volumes ────────────────────────
@@ -41,7 +43,7 @@ public class TimetablePreviewCheckDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class TeacherSummary {
-        private Long id;
+        private UUID id;
         private String name;
     }
 

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.circulaire.dto;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 public class CirculaireResponseDTO {
 
-    private Long id;
+    private UUID id;
     private String titre;
     private String type;
     private String contenu;

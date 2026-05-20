@@ -1,18 +1,20 @@
 package com.schoolSys.schooolSys.examenonline;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface TentativeRepository extends JpaRepository<Tentative, Long> {
+public interface TentativeRepository extends JpaRepository<Tentative, UUID> {
 
-    List<Tentative> findByQuizIdOrderByDateDebutDesc(Long quizId);
+    List<Tentative> findByQuizIdOrderByDateDebutDesc(UUID quizId);
 
-    List<Tentative> findByEleveIdOrderByDateDebutDesc(Long eleveId);
+    List<Tentative> findByEleveIdOrderByDateDebutDesc(UUID eleveId);
 
-    List<Tentative> findByQuizIdAndEleveId(Long quizId, Long eleveId);
+    List<Tentative> findByQuizIdAndEleveId(UUID quizId, UUID eleveId);
 
-    long countByQuizId(Long quizId);
+    long countByQuizId(UUID quizId);
 
-    long countByQuizIdAndStatut(Long quizId, String statut);
+    long countByQuizIdAndStatut(UUID quizId, String statut);
 }

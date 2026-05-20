@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.transport;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.transport.dto.ArretDTO;
 import com.schoolSys.schooolSys.transport.dto.CircuitDTO;
@@ -28,13 +30,13 @@ public class CircuitController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TRANSPORT')")
-    public ResponseEntity<ApiResponse<CircuitDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CircuitDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(circuitService.getById(id)));
     }
 
     @GetMapping("/{id}/arrets")
     @PreAuthorize("hasAuthority('MANAGE_TRANSPORT')")
-    public ResponseEntity<ApiResponse<List<ArretDTO>>> getArrets(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<List<ArretDTO>>> getArrets(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(circuitService.getArretsByCircuit(id)));
     }
 
@@ -47,13 +49,13 @@ public class CircuitController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TRANSPORT')")
-    public ResponseEntity<ApiResponse<CircuitDTO>> update(@PathVariable Long id, @Valid @RequestBody CreateCircuitRequest request) {
+    public ResponseEntity<ApiResponse<CircuitDTO>> update(@PathVariable UUID id, @Valid @RequestBody CreateCircuitRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(circuitService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TRANSPORT')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         circuitService.delete(id);
         return ResponseEntity.noContent().build();
     }

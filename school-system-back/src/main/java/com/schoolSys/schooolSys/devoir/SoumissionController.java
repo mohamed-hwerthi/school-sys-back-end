@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.devoir;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.devoir.dto.CorrectionRequest;
 import com.schoolSys.schooolSys.devoir.dto.CreateSoumissionRequest;
@@ -23,19 +25,19 @@ public class SoumissionController {
 
     @GetMapping("/devoir/{devoirId}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<List<SoumissionDTO>>> getByDevoir(@PathVariable Long devoirId) {
+    public ResponseEntity<ApiResponse<List<SoumissionDTO>>> getByDevoir(@PathVariable UUID devoirId) {
         return ResponseEntity.ok(ApiResponse.ok(soumissionService.findByDevoir(devoirId)));
     }
 
     @GetMapping("/eleve/{eleveId}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<List<SoumissionDTO>>> getByEleve(@PathVariable Long eleveId) {
+    public ResponseEntity<ApiResponse<List<SoumissionDTO>>> getByEleve(@PathVariable UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(soumissionService.findByEleve(eleveId)));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<SoumissionDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<SoumissionDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(soumissionService.findById(id)));
     }
 
@@ -49,20 +51,20 @@ public class SoumissionController {
     @PutMapping("/{id}/correct")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<ApiResponse<SoumissionDTO>> correct(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody CorrectionRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(soumissionService.correct(id, request)));
     }
 
     @GetMapping("/stats/{devoirId}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<DevoirStatsDTO>> getStats(@PathVariable Long devoirId) {
+    public ResponseEntity<ApiResponse<DevoirStatsDTO>> getStats(@PathVariable UUID devoirId) {
         return ResponseEntity.ok(ApiResponse.ok(soumissionService.getStats(devoirId)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         soumissionService.delete(id);
         return ResponseEntity.noContent().build();
     }

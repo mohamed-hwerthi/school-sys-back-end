@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,8 +17,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class BourseDTO {
 
-    private Long id;
-    private Long studentId;
+    private UUID id;
+    private UUID studentId;
     private String studentName;
     private String type;
     private String label;

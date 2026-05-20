@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.appelparent;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.appelparent.dto.AppelParentRequestDTO;
 import com.schoolSys.schooolSys.appelparent.dto.AppelParentResponseDTO;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
@@ -18,14 +20,14 @@ public class AppelParentService {
     private final AppelParentRepository repository;
     private final AppelParentMapper mapper;
 
-    public List<AppelParentResponseDTO> findAll(Long eleveId) {
+    public List<AppelParentResponseDTO> findAll(UUID eleveId) {
         List<AppelParent> rows = eleveId != null
                 ? repository.findByEleveIdOrderByDateAppelDesc(eleveId)
                 : repository.findAllByOrderByDateAppelDesc();
         return mapper.toResponseDTOList(rows);
     }
 
-    public AppelParentResponseDTO findById(Long id) {
+    public AppelParentResponseDTO findById(UUID id) {
         return mapper.toResponseDTO(load(id));
     }
 
@@ -39,21 +41,21 @@ public class AppelParentService {
     }
 
     @Transactional
-    public AppelParentResponseDTO update(Long id, AppelParentRequestDTO dto) {
+    public AppelParentResponseDTO update(UUID id, AppelParentRequestDTO dto) {
         AppelParent entity = load(id);
         mapper.updateEntity(dto, entity);
         return mapper.toResponseDTO(repository.save(entity));
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("AppelParent", id);
         }
         repository.deleteById(id);
     }
 
-    private AppelParent load(Long id) {
+    private AppelParent load(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("AppelParent", id));
     }

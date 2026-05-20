@@ -7,7 +7,7 @@ export interface FactureFilters {
   page?: number;
   size?: number;
   statut?: string;
-  eleveId?: number;
+  eleveId?: string;
   search?: string;
 }
 
@@ -34,12 +34,12 @@ export const facturesApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<Facture> => {
+  getById: async (id: string): Promise<Facture> => {
     const res = await api.get<Facture>(`${BASE}/${id}`);
     return res.data;
   },
 
-  getByEleve: async (eleveId: number): Promise<Facture[]> => {
+  getByEleve: async (eleveId: string): Promise<Facture[]> => {
     const res = await api.get<Facture[]>(`${BASE}/eleve/${eleveId}`);
     return res.data;
   },
@@ -49,33 +49,33 @@ export const facturesApi = {
     return res.data;
   },
 
-  update: async (id: number, data: Partial<Facture>): Promise<Facture> => {
+  update: async (id: string, data: Partial<Facture>): Promise<Facture> => {
     const res = await api.put<Facture>(`${BASE}/${id}`, data);
     return res.data;
   },
 
-  generate: async (eleveId: number): Promise<Facture> => {
+  generate: async (eleveId: string): Promise<Facture> => {
     const res = await api.post<Facture>(`${BASE}/generate`, { eleveId });
     return res.data;
   },
 
-  cancel: async (id: number): Promise<Facture> => {
+  cancel: async (id: string): Promise<Facture> => {
     const res = await api.patch<Facture>(`${BASE}/${id}/cancel`);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/${id}`);
   },
 
   // --- Echeanciers ---
-  getEcheanciers: async (eleveId?: number): Promise<Echeancier[]> => {
+  getEcheanciers: async (eleveId?: string): Promise<Echeancier[]> => {
     const params = eleveId ? `?eleveId=${eleveId}` : "";
     const res = await api.get<Echeancier[]>(`${BASE}/echeanciers${params}`);
     return res.data;
   },
 
-  getEcheancierById: async (id: number): Promise<Echeancier> => {
+  getEcheancierById: async (id: string): Promise<Echeancier> => {
     const res = await api.get<Echeancier>(`${BASE}/echeanciers/${id}`);
     return res.data;
   },
@@ -85,7 +85,7 @@ export const facturesApi = {
     return res.data;
   },
 
-  deleteEcheancier: async (id: number): Promise<void> => {
+  deleteEcheancier: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/echeanciers/${id}`);
   },
 };

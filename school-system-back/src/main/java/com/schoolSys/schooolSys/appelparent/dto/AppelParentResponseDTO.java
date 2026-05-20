@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.appelparent.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +15,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AppelParentResponseDTO {
 
-    private Long id;
-    private Long eleveId;
+    private UUID id;
+    private UUID eleveId;
     private String appelePar;
     private String telephone;
     private String motif;

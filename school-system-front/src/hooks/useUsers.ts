@@ -30,7 +30,7 @@ export function useAllUsers() {
 /**
  * Single user by ID.
  */
-export function useUser(id: number) {
+export function useUser(id: string) {
   return useQuery<UserItem>({
     queryKey: [USERS_KEY, id],
     queryFn: () => usersApi.getById(id),
@@ -57,7 +57,7 @@ export function useCreateUser() {
 export function useUpdateUser() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<CreateUserRequest> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateUserRequest> }) =>
       usersApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [USERS_KEY] });
@@ -71,7 +71,7 @@ export function useUpdateUser() {
 export function useToggleUserActive() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => usersApi.toggleActive(id),
+    mutationFn: (id: string) => usersApi.toggleActive(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [USERS_KEY] });
     },
@@ -84,7 +84,7 @@ export function useToggleUserActive() {
 export function useDeleteUser() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => usersApi.delete(id),
+    mutationFn: (id: string) => usersApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [USERS_KEY] });
     },

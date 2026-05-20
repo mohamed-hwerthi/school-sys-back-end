@@ -11,7 +11,7 @@ export default function EditRoom() {
   const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: room, isLoading } = useRoom(Number(id));
+  const { data: room, isLoading } = useRoom(id);
   const updateRoom = useUpdateRoom();
 
   if (isLoading) {

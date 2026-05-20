@@ -7,11 +7,11 @@ import {
 
 const KEY = "appels-parents";
 
-export function useAppelsParents(eleveId?: number) {
+export function useAppelsParents(eleveId?: string) {
   return useQuery<AppelParentDTO[]>({
     queryKey: [KEY, eleveId ?? "all"],
     queryFn: () => appelsParentsApi.getAll(eleveId),
-    enabled: eleveId === undefined || eleveId > 0,
+    enabled: eleveId === undefined || !!eleveId,
   });
 }
 
@@ -26,7 +26,7 @@ export function useCreateAppelParent() {
 export function useDeleteAppelParent() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => appelsParentsApi.delete(id),
+    mutationFn: (id: string) => appelsParentsApi.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }

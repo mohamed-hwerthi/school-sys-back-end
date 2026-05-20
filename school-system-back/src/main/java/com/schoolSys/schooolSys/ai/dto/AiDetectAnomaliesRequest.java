@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.ai.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AiDetectAnomaliesRequest {
-    private Long studentId;
+    private UUID studentId;
     private List<Double> notes;
     private List<Integer> absences;
 }

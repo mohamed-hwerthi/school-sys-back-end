@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.finance.dto.TypeFraisRequestDTO;
 import com.schoolSys.schooolSys.finance.dto.TypeFraisResponseDTO;
@@ -29,7 +31,7 @@ public class TypeFraisService {
                 .toList();
     }
 
-    public TypeFraisResponseDTO findById(Long id) {
+    public TypeFraisResponseDTO findById(UUID id) {
         TypeFrais typeFrais = typeFraisRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TypeFrais", id));
         return typeFraisMapper.toResponseDTO(typeFrais);
@@ -42,7 +44,7 @@ public class TypeFraisService {
     }
 
     @Transactional
-    public TypeFraisResponseDTO update(Long id, TypeFraisRequestDTO dto) {
+    public TypeFraisResponseDTO update(UUID id, TypeFraisRequestDTO dto) {
         TypeFrais typeFrais = typeFraisRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TypeFrais", id));
         typeFraisMapper.updateEntity(dto, typeFrais);
@@ -50,7 +52,7 @@ public class TypeFraisService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!typeFraisRepository.existsById(id)) {
             throw new ResourceNotFoundException("TypeFrais", id);
         }

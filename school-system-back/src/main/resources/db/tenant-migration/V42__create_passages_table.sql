@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS passages (
-    id BIGSERIAL PRIMARY KEY,
-    student_id BIGINT NOT NULL REFERENCES students(id),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id UUID NOT NULL REFERENCES students(id),
     ancien_niveau VARCHAR(100),
     nouveau_niveau VARCHAR(100),
     ancienne_classe VARCHAR(50),

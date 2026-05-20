@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.cantine.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MenuDTO {
-    private Long id;
+    private UUID id;
     private LocalDate dateMenu;
     private String jourSemaine;
     private String entree;

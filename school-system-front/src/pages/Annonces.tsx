@@ -149,7 +149,7 @@ export default function AnnoncesPage() {
       type: form.type,
       destinataires: form.destinataires,
     };
-    if (form.classeId) payload.classeId = Number(form.classeId);
+    if (form.classeId) payload.classeId = form.classeId;
     if (form.dateExpiration) payload.dateExpiration = form.dateExpiration;
 
     if (editId) {
@@ -174,7 +174,7 @@ export default function AnnoncesPage() {
     }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     deleteAnnonce.mutate(id, {
       onSuccess: () => notify.success(t("announcements.deletedMsg")),
       onError: () => notify.error(t("common.deleteError")),

@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
+import { useTheme } from "@/context/ThemeContext";
+import { spacing, fontSize, borderRadius } from "@/constants/theme";
 
 interface ErrorViewProps {
   message?: string;
@@ -7,8 +8,9 @@ interface ErrorViewProps {
 }
 
 export function ErrorView({ message = "Une erreur est survenue", onRetry }: ErrorViewProps) {
+  const { colors } = useTheme();
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: spacing.xl }}>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: spacing.xl, backgroundColor: colors.surface }}>
       <Text style={{ fontSize: 48, marginBottom: spacing.md }}>⚠️</Text>
       <Text style={{ fontSize: fontSize.md, fontWeight: "600", color: colors.text, textAlign: "center" }}>{message}</Text>
       {onRetry && (

@@ -2,11 +2,11 @@
 -- Tracks user actions: CREATE, UPDATE, DELETE, LOGIN, LOGOUT
 
 CREATE TABLE IF NOT EXISTS audit_logs (
-    id          BIGSERIAL    PRIMARY KEY,
+    id          UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
     username    VARCHAR(200),
     action      VARCHAR(50)  NOT NULL,
     entity_type VARCHAR(100),
-    entity_id   BIGINT,
+    entity_id   UUID,
     details     TEXT,
     ip_address  VARCHAR(50),
     timestamp   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP

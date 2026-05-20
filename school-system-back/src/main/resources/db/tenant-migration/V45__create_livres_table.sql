@@ -1,5 +1,5 @@
 CREATE TABLE livres (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     titre VARCHAR(300) NOT NULL,
     auteur VARCHAR(200),
     isbn VARCHAR(20),

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.auth;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.schoolSys.schooolSys.auth.JwtAuthenticationFilter;
@@ -61,7 +63,7 @@ class AuthControllerTest {
                 .when(jwtAuthenticationFilter).doFilter(any(), any(), any());
 
         userResponse = UserResponseDTO.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .email("admin@school.com")
                 .firstName("Admin")
                 .lastName("User")
@@ -153,7 +155,7 @@ class AuthControllerTest {
         void shouldReturn200With2FARequired() throws Exception {
             LoginResponseDTO twoFactorResponse = LoginResponseDTO.builder()
                     .twoFactorRequired(true)
-                    .twoFactorUserId(1L)
+                    .twoFactorUserId(new UUID(0, 1))
                     .build();
 
             LoginRequestDTO request = new LoginRequestDTO();
@@ -168,7 +170,7 @@ class AuthControllerTest {
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.twoFactorRequired").value(true))
-                    .andExpect(jsonPath("$.data.twoFactorUserId").value(1));
+                    .andExpect(jsonPath("$.data.twoFactorUserId").value("00000000-0000-0000-0000-000000000001"));
         }
 
         @Test

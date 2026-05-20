@@ -1,6 +1,6 @@
 CREATE TABLE bourses (
-    id BIGSERIAL PRIMARY KEY,
-    student_id BIGINT NOT NULL REFERENCES students(id),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id UUID NOT NULL REFERENCES students(id),
     type VARCHAR(50) NOT NULL CHECK (type IN ('BOURSE', 'AIDE', 'EXONERATION')),
     label VARCHAR(200) NOT NULL,
     montant NUMERIC(12,2) NOT NULL,

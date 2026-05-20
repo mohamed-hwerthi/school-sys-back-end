@@ -4,12 +4,17 @@ import com.schoolSys.schooolSys.auth.PasswordResetService;
 import com.schoolSys.schooolSys.auth.User;
 import com.schoolSys.schooolSys.auth.UserRepository;
 import com.schoolSys.schooolSys.auth.UserRole;
+import com.schoolSys.schooolSys.common.dto.PagedResponse;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.multitenancy.TenantContext;
 import com.schoolSys.schooolSys.teacher.dto.TeacherRequestDTO;
 import com.schoolSys.schooolSys.teacher.dto.TeacherResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +40,18 @@ public class TeacherService {
                 .toList();
     }
 
-    public TeacherResponseDTO findById(Long id) {
+    public PagedResponse<TeacherResponseDTO> findPage(String search, String statut, int page, int size) {
+        String normalizedSearch = (search == null || search.isBlank()) ? null : search.trim();
+        String normalizedStatut = (statut == null || statut.isBlank()) ? null : statut.trim();
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "lastName", "firstName"));
+        Page<Teacher> result = teacherRepository.findFiltered(normalizedSearch, normalizedStatut, pageable);
+        List<TeacherResponseDTO> dtos = result.getContent().stream()
+                .map(teacherMapper::toResponseDTO)
+                .toList();
+        return PagedResponse.from(result, dtos);
+    }
+
+    public TeacherResponseDTO findById(UUID id) {
         Teacher teacher = teacherRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher", id));
         return teacherMapper.toResponseDTO(teacher);
@@ -50,7 +66,7 @@ public class TeacherService {
     }
 
     @Transactional
-    public TeacherResponseDTO update(Long id, TeacherRequestDTO dto) {
+    public TeacherResponseDTO update(UUID id, TeacherRequestDTO dto) {
         Teacher teacher = teacherRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher", id));
         teacherMapper.updateEntity(dto, teacher);
@@ -58,7 +74,7 @@ public class TeacherService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!teacherRepository.existsById(id)) {
             throw new ResourceNotFoundException("Teacher", id);
         }

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.course;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.course.dto.CourseRequestDTO;
 import com.schoolSys.schooolSys.course.dto.CourseResponseDTO;
@@ -45,7 +47,7 @@ public class CourseService {
      * @return the course DTO
      * @throws ResourceNotFoundException if the course does not exist
      */
-    public CourseResponseDTO findById(Long id) {
+    public CourseResponseDTO findById(UUID id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course", id));
         return courseMapper.toResponseDTO(course);
@@ -74,7 +76,7 @@ public class CourseService {
      * @throws ResourceNotFoundException if the course or teacher does not exist
      */
     @Transactional
-    public CourseResponseDTO update(Long id, CourseRequestDTO dto) {
+    public CourseResponseDTO update(UUID id, CourseRequestDTO dto) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course", id));
         courseMapper.updateEntity(dto, course);
@@ -89,7 +91,7 @@ public class CourseService {
      * @throws ResourceNotFoundException if the course does not exist
      */
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!courseRepository.existsById(id)) {
             throw new ResourceNotFoundException("Course", id);
         }
@@ -99,7 +101,7 @@ public class CourseService {
     /**
      * Looks up and assigns a teacher to the course if a teacher ID is provided.
      */
-    private void resolveTeacher(Long teacherId, Course course) {
+    private void resolveTeacher(UUID teacherId, Course course) {
         if (teacherId != null) {
             Teacher teacher = teacherRepository.findById(teacherId)
                     .orElseThrow(() -> new ResourceNotFoundException("Teacher", teacherId));

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.importexport;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.importexport.dto.ImportErrorDTO;
 import com.schoolSys.schooolSys.importexport.dto.ImportResultDTO;
 import com.schoolSys.schooolSys.note.Note;
@@ -197,8 +199,8 @@ public class ExcelImportService {
                         continue;
                     }
 
-                    Long studentId = Long.parseLong(studentIdStr.replace(".0", ""));
-                    Long examenId = Long.parseLong(examenIdStr.replace(".0", ""));
+                    UUID studentId = UUID.fromString(studentIdStr.replace(".0", ""));
+                    UUID examenId = UUID.fromString(examenIdStr.replace(".0", ""));
                     Integer trimestre = Integer.parseInt(trimestreStr.replace(".0", ""));
                     Double valeur = valeurStr.isBlank() ? null : Double.parseDouble(valeurStr);
 

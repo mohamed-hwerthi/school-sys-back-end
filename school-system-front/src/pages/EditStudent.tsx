@@ -12,7 +12,7 @@ export default function EditStudent() {
   const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: student, isLoading } = useStudent(Number(id));
+  const { data: student, isLoading } = useStudent(id);
   const updateStudent = useUpdateStudent();
 
   if (isLoading) return <StudentFormSkeleton />;

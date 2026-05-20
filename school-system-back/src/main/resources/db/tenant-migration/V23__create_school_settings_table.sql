@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS school_settings (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     school_name VARCHAR(255) NOT NULL DEFAULT 'École',
     school_name_ar VARCHAR(255),
     annee_scolaire VARCHAR(50) NOT NULL DEFAULT '2025 / 2026',

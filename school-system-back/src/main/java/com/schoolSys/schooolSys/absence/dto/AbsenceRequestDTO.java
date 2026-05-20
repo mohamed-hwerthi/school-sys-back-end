@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.absence.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -9,7 +11,7 @@ import java.time.LocalTime;
 @Data
 public class AbsenceRequestDTO {
     @NotNull
-    private Long eleveId;
+    private UUID eleveId;
     @NotNull
     private LocalDate date;
     @NotNull
@@ -18,5 +20,5 @@ public class AbsenceRequestDTO {
     private LocalTime heureArrivee;
     private Boolean justifie;
     private String motif;
-    private Long enseignantId;
+    private UUID enseignantId;
 }

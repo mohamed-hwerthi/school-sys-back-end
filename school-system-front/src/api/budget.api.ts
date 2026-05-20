@@ -3,7 +3,7 @@ import api from "./axios";
 // ─── Backend DTOs ────────────────────────────────────────
 
 export interface BudgetDTO {
-  id: number;
+  id: string;
   anneeScolaire: string;
   label: string;
   type: "RECETTE" | "DEPENSE";
@@ -47,7 +47,7 @@ export const budgetsApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<BudgetDTO> => {
+  getById: async (id: string): Promise<BudgetDTO> => {
     const res = await api.get<BudgetDTO>(`/budgets/${id}`);
     return res.data;
   },
@@ -57,12 +57,12 @@ export const budgetsApi = {
     return res.data;
   },
 
-  update: async (id: number, data: BudgetRequest): Promise<BudgetDTO> => {
+  update: async (id: string, data: BudgetRequest): Promise<BudgetDTO> => {
     const res = await api.put<BudgetDTO>(`/budgets/${id}`, data);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`/budgets/${id}`),
+  delete: (id: string) => api.delete(`/budgets/${id}`),
 
   getPrevisions: async (anneeScolaire: string): Promise<PrevisionDTO> => {
     const res = await api.get<PrevisionDTO>(

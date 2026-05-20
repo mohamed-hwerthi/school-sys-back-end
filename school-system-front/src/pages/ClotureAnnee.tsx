@@ -55,7 +55,7 @@ export default function ClotureAnnee() {
   const ouvertes = useMemo(() => annees.filter((a) => !a.cloturee), [annees]);
   const selectedAnnee = annees.find((a) => a.id === anneeId);
 
-  const onSelectAnnee = (id: number) => {
+  const onSelectAnnee = (id: string) => {
     setAnneeId(id);
     const a = annees.find((x) => x.id === id);
     if (a) {
@@ -183,7 +183,7 @@ export default function ClotureAnnee() {
                     </Select>
                   </div>
 
-                  {anneeId > 0 && checksLoading && (
+                  {anneeId && checksLoading && (
                     <div className="flex items-center justify-center py-8 text-slate-400">
                       <Loader2 className="h-5 w-5 animate-spin" />
                     </div>

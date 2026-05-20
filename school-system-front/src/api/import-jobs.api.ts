@@ -7,7 +7,7 @@ export type ImportJobStatus = "PENDING" | "RUNNING" | "DONE" | "FAILED";
 export type ImportJobStrategy = "SKIP" | "UPDATE";
 
 export interface ImportJob {
-  id: number;
+  id: string;
   type: "STUDENTS" | "TEACHERS" | string;
   status: ImportJobStatus;
   strategy: ImportJobStrategy;
@@ -43,7 +43,7 @@ export const importJobsApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<ImportJob> => {
+  getById: async (id: string): Promise<ImportJob> => {
     const res = await api.get<ImportJob>(`${BASE}/${id}`);
     return res.data;
   },

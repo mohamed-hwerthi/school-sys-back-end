@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.bibliotheque.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.bibliotheque.Emprunt;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,10 +18,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class EmpruntDTO {
 
-    private Long id;
-    private Long livreId;
+    private UUID id;
+    private UUID livreId;
     private String livreTitle;
-    private Long eleveId;
+    private UUID eleveId;
     private String eleveName;
     private LocalDate dateEmprunt;
     private LocalDate dateRetourPrevue;

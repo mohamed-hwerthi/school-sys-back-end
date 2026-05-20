@@ -122,7 +122,7 @@ export default function DisciplinePage() {
     description: "",
     gravite: "LEGERE" as GraviteType,
     lieu: "",
-    elevesImpliques: [] as { eleveId: number; roleEleve?: string }[],
+    elevesImpliques: [] as { eleveId: string; roleEleve?: string }[],
     signaleParId: undefined as number | undefined,
   });
 
@@ -671,7 +671,7 @@ export default function DisciplinePage() {
               <Label>Eleve *</Label>
               <Select
                 value={sanctionForm.eleveId ? String(sanctionForm.eleveId) : undefined}
-                onValueChange={(v) => setSanctionForm({ ...sanctionForm, eleveId: Number(v) })}
+                onValueChange={(v) => setSanctionForm({ ...sanctionForm, eleveId: v })}
                 disabled={!sanctionClasse}
               >
                 <SelectTrigger>

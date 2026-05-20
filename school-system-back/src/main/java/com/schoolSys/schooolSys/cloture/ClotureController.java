@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.cloture;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.cloture.dto.ClotureRequestDTO;
 import com.schoolSys.schooolSys.cloture.dto.ClotureResultDTO;
 import com.schoolSys.schooolSys.cloture.dto.PreChecksResponseDTO;
@@ -27,14 +29,14 @@ public class ClotureController {
 
     @GetMapping("/{anneeId}/pre-checks")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
-    public ResponseEntity<ApiResponse<PreChecksResponseDTO>> getPreChecks(@PathVariable Long anneeId) {
+    public ResponseEntity<ApiResponse<PreChecksResponseDTO>> getPreChecks(@PathVariable UUID anneeId) {
         return ResponseEntity.ok(ApiResponse.ok(clotureService.getPreChecks(anneeId)));
     }
 
     @PostMapping("/{anneeId}")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
     public ResponseEntity<ApiResponse<ClotureResultDTO>> cloturer(
-            @PathVariable Long anneeId,
+            @PathVariable UUID anneeId,
             @RequestBody(required = false) ClotureRequestDTO request) {
         return ResponseEntity.ok(ApiResponse.ok(clotureService.cloturer(anneeId, request)));
     }

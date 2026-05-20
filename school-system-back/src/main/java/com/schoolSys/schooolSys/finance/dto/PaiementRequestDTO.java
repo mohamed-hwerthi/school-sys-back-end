@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.finance.Paiement;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,10 +15,10 @@ import java.time.LocalDate;
 public class PaiementRequestDTO {
 
     @NotNull(message = "L'élève est requis")
-    private Long studentId;
+    private UUID studentId;
 
     @NotNull(message = "Le type de frais est requis")
-    private Long typeFraisId;
+    private UUID typeFraisId;
 
     @NotBlank(message = "Le mois est requis")
     private String mois;

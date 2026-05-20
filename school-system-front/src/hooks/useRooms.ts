@@ -17,7 +17,7 @@ export function useRooms() {
 /**
  * Single room by ID.
  */
-export function useRoom(id: number) {
+export function useRoom(id: string) {
   return useQuery<Room>({
     queryKey: [ROOMS_KEY, id],
     queryFn: () => roomsApi.getById(id),
@@ -44,7 +44,7 @@ export function useCreateRoom() {
 export function useUpdateRoom() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Omit<Room, "id"> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Omit<Room, "id"> }) =>
       roomsApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [ROOMS_KEY] });
@@ -58,7 +58,7 @@ export function useUpdateRoom() {
 export function useDeleteRoom() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => roomsApi.delete(id),
+    mutationFn: (id: string) => roomsApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [ROOMS_KEY] });
     },

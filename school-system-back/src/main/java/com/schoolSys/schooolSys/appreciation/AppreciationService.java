@@ -1,6 +1,9 @@
 package com.schoolSys.schooolSys.appreciation;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.appreciation.dto.*;
+import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.domaine.Domaine;
@@ -16,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +33,7 @@ public class AppreciationService {
     private final CurrentUserContext currentUser;
 
     /** Keeps only the student IDs the current user is allowed to read. */
-    private List<Long> scopeStudentIds(List<Long> studentIds) {
+    private List<UUID> scopeStudentIds(List<UUID> studentIds) {
         if (studentIds == null || studentIds.isEmpty()) return List.of();
         return studentIds.stream().filter(id -> {
             try {
@@ -43,8 +47,8 @@ public class AppreciationService {
 
     // ── Recommandations ─────────────────────────────────────
 
-    public List<RecommandationDTO> getRecommandations(List<Long> studentIds, Integer trimestre) {
-        List<Long> scoped = scopeStudentIds(studentIds);
+    public List<RecommandationDTO> getRecommandations(List<UUID> studentIds, Integer trimestre) {
+        List<UUID> scoped = scopeStudentIds(studentIds);
         if (scoped.isEmpty()) return List.of();
         return recommandationRepository.findByStudentIdInAndTrimestre(scoped, trimestre)
                 .stream().map(this::toRecommandationDTO).toList();
@@ -53,6 +57,18 @@ public class AppreciationService {
     @Transactional
     public List<RecommandationDTO> upsertRecommandations(List<RecommandationRequestDTO> dtos) {
         dtos.forEach(d -> currentUser.assertCanAccessStudent(d.getStudentId()));
+        // Row-level scoping (en plus de l'accès élève) : un ENSEIGNANT ne peut
+        // écrire que des recommandations sur les domaines où il enseigne au
+        // moins une matière. ADMIN / DIRECTEUR peuvent écrire partout.
+        if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
+            Set<UUID> scopedDomaines = currentUser.getScopedDomaineIdsForTeacher();
+            for (RecommandationRequestDTO d : dtos) {
+                if (!scopedDomaines.contains(d.getDomaineId())) {
+                    throw new AccessDeniedException(
+                            "Vous n'enseignez pas dans ce domaine.");
+                }
+            }
+        }
         List<Recommandation> saved = new ArrayList<>();
 
         for (RecommandationRequestDTO dto : dtos) {
@@ -86,8 +102,8 @@ public class AppreciationService {
 
     // ── Observations ────────────────────────────────────────
 
-    public List<ObservationDTO> getObservations(List<Long> studentIds, Integer trimestre) {
-        List<Long> scoped = scopeStudentIds(studentIds);
+    public List<ObservationDTO> getObservations(List<UUID> studentIds, Integer trimestre) {
+        List<UUID> scoped = scopeStudentIds(studentIds);
         if (scoped.isEmpty()) return List.of();
         return observationRepository.findByStudentIdInAndTrimestre(scoped, trimestre)
                 .stream().map(this::toObservationDTO).toList();

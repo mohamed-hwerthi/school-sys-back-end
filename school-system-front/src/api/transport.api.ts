@@ -17,7 +17,7 @@ export const vehiculesApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<Vehicule> => {
+  getById: async (id: string): Promise<Vehicule> => {
     const res = await api.get<Vehicule>(`/vehicules/${id}`);
     return res.data;
   },
@@ -27,12 +27,12 @@ export const vehiculesApi = {
     return res.data;
   },
 
-  update: async (id: number, data: Partial<Vehicule>): Promise<Vehicule> => {
+  update: async (id: string, data: Partial<Vehicule>): Promise<Vehicule> => {
     const res = await api.put<Vehicule>(`/vehicules/${id}`, data);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`/vehicules/${id}`);
   },
 };
@@ -45,12 +45,12 @@ export const circuitsApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<Circuit> => {
+  getById: async (id: string): Promise<Circuit> => {
     const res = await api.get<Circuit>(`/circuits/${id}`);
     return res.data;
   },
 
-  getArrets: async (id: number): Promise<Arret[]> => {
+  getArrets: async (id: string): Promise<Arret[]> => {
     const res = await api.get<Arret[]>(`/circuits/${id}/arrets`);
     return res.data;
   },
@@ -60,12 +60,12 @@ export const circuitsApi = {
     return res.data;
   },
 
-  update: async (id: number, data: CreateCircuitRequest): Promise<Circuit> => {
+  update: async (id: string, data: CreateCircuitRequest): Promise<Circuit> => {
     const res = await api.put<Circuit>(`/circuits/${id}`, data);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`/circuits/${id}`);
   },
 };
@@ -78,12 +78,12 @@ export const affectationsTransportApi = {
     return res.data;
   },
 
-  getByCircuit: async (circuitId: number): Promise<AffectationTransport[]> => {
+  getByCircuit: async (circuitId: string): Promise<AffectationTransport[]> => {
     const res = await api.get<AffectationTransport[]>(`/affectations-transport/circuit/${circuitId}`);
     return res.data;
   },
 
-  getByEleve: async (eleveId: number): Promise<AffectationTransport[]> => {
+  getByEleve: async (eleveId: string): Promise<AffectationTransport[]> => {
     const res = await api.get<AffectationTransport[]>(`/affectations-transport/eleve/${eleveId}`);
     return res.data;
   },
@@ -98,12 +98,12 @@ export const affectationsTransportApi = {
     return res.data;
   },
 
-  desaffecter: async (id: number): Promise<AffectationTransport> => {
+  desaffecter: async (id: string): Promise<AffectationTransport> => {
     const res = await api.put<AffectationTransport>(`/affectations-transport/${id}/desaffecter`);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`/affectations-transport/${id}`);
   },
 };

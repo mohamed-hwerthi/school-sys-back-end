@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.depense;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.domain.Specification;
 
 public final class DepenseSpecification {
@@ -11,7 +13,7 @@ public final class DepenseSpecification {
                 anneeScolaire == null ? null : cb.equal(root.get("anneeScolaire"), anneeScolaire);
     }
 
-    public static Specification<Depense> hasCategorieId(Long categorieId) {
+    public static Specification<Depense> hasCategorieId(UUID categorieId) {
         return (root, query, cb) ->
                 categorieId == null ? null : cb.equal(root.get("categorie").get("id"), categorieId);
     }

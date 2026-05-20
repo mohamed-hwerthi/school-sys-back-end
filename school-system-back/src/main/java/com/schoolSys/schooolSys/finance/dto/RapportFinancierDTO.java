@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -59,7 +61,7 @@ public class RapportFinancierDTO {
     @Data
     @Builder
     public static class LigneParEleve {
-        private Long studentId;
+        private UUID studentId;
         private String nom;
         private String prenom;
         private String classe;

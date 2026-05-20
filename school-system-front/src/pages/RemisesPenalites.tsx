@@ -126,7 +126,7 @@ export default function RemisesPenalites() {
   const togglePayee = useTogglePenalitePayee();
   const deletePenaliteMut = useDeletePenalite();
 
-  const getStudent = (id: number) => students.find((s) => s.id === id);
+  const getStudent = (id: string) => students.find((s) => s.id === id);
 
   // ── Remise dialog state ──
   const [remiseDialogOpen, setRemiseDialogOpen] = useState(false);
@@ -505,7 +505,7 @@ export default function RemisesPenalites() {
                 <Label>{t("common.student")} *</Label>
                 <Select
                   value={remiseForm.studentId ? String(remiseForm.studentId) : ""}
-                  onValueChange={(v) => setRemiseForm({ ...remiseForm, studentId: Number(v) })}
+                  onValueChange={(v) => setRemiseForm({ ...remiseForm, studentId: v })}
                 >
                   <SelectTrigger><SelectValue placeholder={t("common.select")} /></SelectTrigger>
                   <SelectContent>
@@ -608,7 +608,7 @@ export default function RemisesPenalites() {
                 <Label>{t("common.student")} *</Label>
                 <Select
                   value={penaliteForm.studentId ? String(penaliteForm.studentId) : ""}
-                  onValueChange={(v) => setPenaliteForm({ ...penaliteForm, studentId: Number(v) })}
+                  onValueChange={(v) => setPenaliteForm({ ...penaliteForm, studentId: v })}
                 >
                   <SelectTrigger><SelectValue placeholder={t("common.select")} /></SelectTrigger>
                   <SelectContent>

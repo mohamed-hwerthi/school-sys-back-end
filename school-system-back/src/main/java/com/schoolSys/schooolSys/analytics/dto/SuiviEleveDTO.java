@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.analytics.dto;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,7 +11,7 @@ import java.util.List;
 @Builder
 public class SuiviEleveDTO {
 
-    private Long eleveId;
+    private UUID eleveId;
     private String nom;
     private String prenom;
     private String classe;

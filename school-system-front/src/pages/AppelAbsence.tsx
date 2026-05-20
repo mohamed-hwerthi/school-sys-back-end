@@ -63,7 +63,7 @@ export default function AppelAbsencePage() {
       .sort((a, b) => `${a.nom} ${a.prenom}`.localeCompare(`${b.nom} ${b.prenom}`));
   }, [allStudents, selectedClasse]);
 
-  const setStatut = (eleveId: number, s: Statut) => {
+  const setStatut = (eleveId: string, s: Statut) => {
     setStatuts((prev) => ({ ...prev, [eleveId]: s }));
     if (s !== "RETARD") {
       setHeuresArrivee((prev) => {
@@ -85,7 +85,7 @@ export default function AppelAbsencePage() {
   const absents = students.filter((s) => statuts[s.id] === "ABSENCE").length;
   const retards = students.filter((s) => statuts[s.id] === "RETARD").length;
 
-  const canSave = classeId > 0 && date && seance && students.length > 0;
+  const canSave = classeId && date && seance && students.length > 0;
 
   const handleSave = () => {
     if (!canSave) return;
@@ -163,7 +163,7 @@ export default function AppelAbsencePage() {
           <Select
             value={classeId ? String(classeId) : undefined}
             onValueChange={(v) => {
-              setClasseId(Number(v));
+              setClasseId(v);
               setStatuts({});
               setHeuresArrivee({});
             }}
@@ -194,7 +194,7 @@ export default function AppelAbsencePage() {
         </div>
       </div>
 
-      {classeId > 0 && (
+      {classeId && (
         <div className="grid grid-cols-4 gap-3">
           <div className="rounded-xl border border-border/50 bg-card p-4 shadow-sm">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50">
@@ -228,7 +228,7 @@ export default function AppelAbsencePage() {
       )}
 
       <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
-        {classeId === 0 ? (
+        {!classeId ? (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <ClipboardCheck className="h-12 w-12 mb-3 opacity-40" />
             <p className="font-medium">Sélectionnez une classe</p>
@@ -298,7 +298,7 @@ export default function AppelAbsencePage() {
         )}
       </div>
 
-      {classeId > 0 && students.length > 0 && (
+      {classeId && students.length > 0 && (
         <div className="sticky bottom-4 flex justify-end">
           <Button
             size="lg"

@@ -1,24 +1,24 @@
 import api from "./axios";
 
 export const messagesApi = {
-  getInbox: (recipientId: number): Promise<any[]> =>
+  getInbox: (recipientId: string): Promise<any[]> =>
     api.get(`/messages/inbox/${recipientId}`),
 
-  getSent: (senderId: number): Promise<any[]> =>
+  getSent: (senderId: string): Promise<any[]> =>
     api.get(`/messages/sent/${senderId}`),
 
-  getById: (id: number): Promise<any> =>
+  getById: (id: string): Promise<any> =>
     api.get(`/messages/${id}`),
 
   send: (data: {
-    senderId: number;
-    recipientIds: number[];
+    senderId: string;
+    recipientIds: string[];
     subject: string;
     body: string;
     type?: "MESSAGE" | "CIRCULAIRE";
   }): Promise<any> =>
     api.post("/messages", { type: "MESSAGE", ...data }),
 
-  markAsRead: (messageId: number, recipientId: number): Promise<void> =>
+  markAsRead: (messageId: string, recipientId: string): Promise<void> =>
     api.put(`/messages/${messageId}/read/${recipientId}`),
 };

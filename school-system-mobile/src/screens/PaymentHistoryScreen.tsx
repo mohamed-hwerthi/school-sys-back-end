@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { paiementsApi } from "@/api/paiements.api";
 import { ChildSelector } from "@/components/ChildSelector";
 import { EmptyState } from "@/components/EmptyState";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 type FilterType = "all" | "paid" | "pending";
@@ -70,6 +71,7 @@ function formatDate(dateStr: string): string {
 }
 
 export default function PaymentHistoryScreen() {
+  const { colors } = useTheme();
   const { selectedChild, isLoading: childrenLoading } = useChild();
   const [filter, setFilter] = useState<FilterType>("all");
 
@@ -228,7 +230,7 @@ export default function PaymentHistoryScreen() {
                     style={{
                       height: 8,
                       width: `${summary.percentage}%`,
-                      backgroundColor: "#fff",
+                      backgroundColor: colors.background,
                       borderRadius: 4,
                     }}
                   />

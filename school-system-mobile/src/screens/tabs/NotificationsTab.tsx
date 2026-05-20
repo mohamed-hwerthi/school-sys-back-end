@@ -12,6 +12,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { notificationsApi } from "@/api/notifications.api";
 import { annoncesApi } from "@/api/annonces.api";
 import { EmptyState } from "@/components/EmptyState";
+import { ListSkeleton } from "@/components/skeletons/ListSkeleton";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 interface Notification {
@@ -90,6 +92,7 @@ function getDateGroup(dateStr: string): string {
 }
 
 export default function NotificationsTab() {
+  const { colors } = useTheme();
   const queryClient = useQueryClient();
 
   const {
@@ -234,7 +237,7 @@ export default function NotificationsTab() {
         }
       >
         {isLoading ? (
-          <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xl }} />
+          <ListSkeleton count={6} />
         ) : notifications.length === 0 && annonces.length === 0 ? (
           <EmptyState
             icon="🔔"

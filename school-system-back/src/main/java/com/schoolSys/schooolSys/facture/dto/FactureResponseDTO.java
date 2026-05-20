@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.facture.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,9 +17,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FactureResponseDTO {
-    private Long id;
+    private UUID id;
     private String numero;
-    private Long studentId;
+    private UUID studentId;
     private String studentNom;
     private LocalDate dateEmission;
     private LocalDate dateEcheance;

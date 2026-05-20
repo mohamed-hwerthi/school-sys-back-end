@@ -11,6 +11,7 @@ import {
   Award,
   FileText,
   MessageSquareText,
+  LayoutGrid,
 } from "lucide-react";
 import DomainesTab from "@/components/carnet/DomainesTab";
 import ModulesTab from "@/components/carnet/ModulesTab";
@@ -20,9 +21,10 @@ import MoyennesTab from "@/components/carnet/MoyennesTab";
 import AppreciationsTab from "@/components/carnet/AppreciationsTab";
 import CarnetsTab from "@/components/carnet/CarnetsTab";
 import CertificatsTab from "@/components/carnet/CertificatsTab";
+import ApercuTab from "@/components/carnet/ApercuTab";
 import { CarnetSelectionProvider } from "@/components/carnet/CarnetSelectionContext";
 
-const TAB_KEYS = ["domaines", "modules", "examens", "notes", "moyennes", "appreciations", "carnets", "certificats"] as const;
+const TAB_KEYS = ["domaines", "modules", "examens", "apercu", "notes", "moyennes", "appreciations", "carnets", "certificats"] as const;
 type TabKey = typeof TAB_KEYS[number];
 
 export default function CarnetNotes() {
@@ -46,6 +48,7 @@ export default function CarnetNotes() {
     { key: "domaines", label: t("grades.domains"), icon: Layers },
     { key: "modules", label: t("grades.modules"), icon: BookOpen },
     { key: "examens", label: t("grades.exams"), icon: ClipboardCheck },
+    { key: "apercu", label: "Aperçu", icon: LayoutGrid },
     { key: "notes", label: t("grades.gradeEntry"), icon: PenLine },
     { key: "moyennes", label: t("grades.averages"), icon: BarChart3 },
     { key: "appreciations", label: t("grades.appreciations"), icon: MessageSquareText },
@@ -94,6 +97,7 @@ export default function CarnetNotes() {
 
       {/* Tab Content */}
       <CarnetSelectionProvider goToTab={(t) => selectTab(t as TabKey)}>
+        {activeTab === "apercu" && <ApercuTab />}
         {activeTab === "domaines" && <DomainesTab />}
         {activeTab === "modules" && <ModulesTab />}
         {activeTab === "examens" && <ExamensTab />}

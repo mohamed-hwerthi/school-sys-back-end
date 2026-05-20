@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.common.audit;
 
+import java.util.UUID;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -22,14 +24,14 @@ public class JpaAuditingConfig {
      * anonymous or system writes, leaving the audit column null.
      */
     @Bean
-    public AuditorAware<Long> auditorProvider() {
+    public AuditorAware<UUID> auditorProvider() {
         return () -> {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth == null || !auth.isAuthenticated() || auth.getName() == null) {
                 return Optional.empty();
             }
             try {
-                return Optional.of(Long.parseLong(auth.getName()));
+                return Optional.of(UUID.fromString(auth.getName()));
             } catch (NumberFormatException notANumericUserId) {
                 return Optional.empty();
             }

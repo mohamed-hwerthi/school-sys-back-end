@@ -61,6 +61,9 @@ export default function Onboarding() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<TenantOnboardingRequest>({
     schoolName: "",
+    schoolNameAr: "",
+    delegationRegionale: "",
+    delegationRegionaleAr: "",
     slug: "",
     adminFirstName: "",
     adminLastName: "",
@@ -85,7 +88,13 @@ export default function Onboarding() {
   };
 
   const canNext = () => {
-    if (step === 0) return form.schoolName.length >= 3;
+    if (step === 0)
+      return (
+        form.schoolName.length >= 3 &&
+        form.schoolNameAr.trim().length >= 2 &&
+        form.delegationRegionale.trim().length >= 2 &&
+        form.delegationRegionaleAr.trim().length >= 2
+      );
     if (step === 1) return form.adminEmail.includes("@") && form.adminPassword.length >= 6 && form.adminPassword === confirmPassword;
     if (step === 2) return !!form.plan;
     return true;
@@ -157,6 +166,26 @@ export default function Onboarding() {
                   <label className="text-sm font-medium">Nom de l'ecole *</label>
                   <Input value={form.schoolName} onChange={(e) => updateForm("schoolName", e.target.value)}
                     placeholder="Ex: Ecole Manarat Al Malika" className="mt-1" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Nom de l'école (AR) *</label>
+                  <Input value={form.schoolNameAr} onChange={(e) => updateForm("schoolNameAr", e.target.value)}
+                    placeholder="مثال : المدرسة الابتدائية الخاصة منارة المليكة" dir="rtl" className="mt-1" />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Affiché en haut du bulletin officiel.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium">Délégation régionale *</label>
+                    <Input value={form.delegationRegionale} onChange={(e) => updateForm("delegationRegionale", e.target.value)}
+                      placeholder="Ex : Béja" className="mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Délégation régionale (AR) *</label>
+                    <Input value={form.delegationRegionaleAr} onChange={(e) => updateForm("delegationRegionaleAr", e.target.value)}
+                      placeholder="مثال : باجة" dir="rtl" className="mt-1" />
+                  </div>
                 </div>
                 <div>
                   <label className="text-sm font-medium">Slug (URL)</label>

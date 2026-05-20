@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.cantine;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.cantine.dto.CantineStatsDTO;
 import com.schoolSys.schooolSys.cantine.dto.PointageBatchRequest;
 import com.schoolSys.schooolSys.cantine.dto.PointageRepasDTO;
@@ -33,7 +35,7 @@ public class PointageRepasService {
                 .collect(Collectors.toList());
     }
 
-    public List<PointageRepasDTO> getByEleve(Long eleveId) {
+    public List<PointageRepasDTO> getByEleve(UUID eleveId) {
         currentUserContext.assertCanAccessStudent(eleveId);
         return pointageRepository.findByEleveId(eleveId).stream()
                 .map(this::toDto)

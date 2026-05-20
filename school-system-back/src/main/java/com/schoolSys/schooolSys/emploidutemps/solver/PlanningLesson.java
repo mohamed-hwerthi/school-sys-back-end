@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.emploidutemps.solver;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,9 +21,9 @@ public class PlanningLesson {
     private Long id;
 
     // Fixed facts
-    private Long classeId;
-    private Long moduleId;
-    private Long enseignantId;
+    private UUID classeId;
+    private UUID moduleId;
+    private UUID enseignantId;
     private Double moduleCoefficient;
 
     // Solver-relevant module attributes

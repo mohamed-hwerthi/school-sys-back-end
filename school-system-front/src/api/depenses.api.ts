@@ -4,7 +4,7 @@ import type { PagedResult } from "./students.api";
 // ─── Backend DTOs ────────────────────────────────────────
 
 export interface CategorieDepenseDTO {
-  id: number;
+  id: string;
   nom: string;
   type: "FIXE" | "VARIABLE";
   description: string | null;
@@ -18,8 +18,8 @@ export interface CategorieDepenseRequest {
 }
 
 export interface DepenseDTO {
-  id: number;
-  categorieId: number;
+  id: string;
+  categorieId: string;
   categorieNom: string;
   libelle: string;
   montant: number;
@@ -35,7 +35,7 @@ export interface DepenseDTO {
 }
 
 export interface DepenseRequest {
-  categorieId: number;
+  categorieId: string;
   libelle: string;
   montant: number;
   dateDepense: string;
@@ -50,7 +50,7 @@ export interface DepenseRequest {
 export interface DepenseStatsDTO {
   totalDepenses: number;
   nombreDepenses: number;
-  parCategorie: { categorieId: number; categorieNom: string; total: number }[];
+  parCategorie: { categorieId: string; categorieNom: string; total: number }[];
 }
 
 export interface DepenseFilters {
@@ -58,7 +58,7 @@ export interface DepenseFilters {
   size?: number;
   search?: string;
   anneeScolaire?: string;
-  categorieId?: number;
+  categorieId?: string;
   modePaiement?: string;
   recurrente?: boolean;
   sortBy?: string;
@@ -78,12 +78,12 @@ export const categoriesDepenseApi = {
     return res.data;
   },
 
-  update: async (id: number, data: CategorieDepenseRequest): Promise<CategorieDepenseDTO> => {
+  update: async (id: string, data: CategorieDepenseRequest): Promise<CategorieDepenseDTO> => {
     const res = await api.put<CategorieDepenseDTO>(`/categories-depense/${id}`, data);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`/categories-depense/${id}`),
+  delete: (id: string) => api.delete(`/categories-depense/${id}`),
 };
 
 export const depensesApi = {
@@ -103,7 +103,7 @@ export const depensesApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<DepenseDTO> => {
+  getById: async (id: string): Promise<DepenseDTO> => {
     const res = await api.get<DepenseDTO>(`/depenses/${id}`);
     return res.data;
   },
@@ -113,12 +113,12 @@ export const depensesApi = {
     return res.data;
   },
 
-  update: async (id: number, data: DepenseRequest): Promise<DepenseDTO> => {
+  update: async (id: string, data: DepenseRequest): Promise<DepenseDTO> => {
     const res = await api.put<DepenseDTO>(`/depenses/${id}`, data);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`/depenses/${id}`),
+  delete: (id: string) => api.delete(`/depenses/${id}`),
 
   getStats: async (anneeScolaire: string): Promise<DepenseStatsDTO> => {
     const res = await api.get<DepenseStatsDTO>(`/depenses/stats?anneeScolaire=${anneeScolaire}`);

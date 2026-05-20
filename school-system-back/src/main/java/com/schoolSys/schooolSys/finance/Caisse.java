@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -22,8 +25,9 @@ public class Caisse {
     public enum StatutCaisse { OUVERTE, FERMEE }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "date_ouverture", nullable = false)
     private LocalDate dateOuverture;

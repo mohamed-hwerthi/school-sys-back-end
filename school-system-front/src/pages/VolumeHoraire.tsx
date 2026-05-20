@@ -52,10 +52,10 @@ export default function VolumeHoraire() {
   // Local edits, keyed by "moduleId-classeId"
   const [edits, setEdits] = useState<Record<string, CellState>>({});
 
-  const cellKey = (moduleId: number, classeId: number) => `${moduleId}-${classeId}`;
+  const cellKey = (moduleId: string, classeId: string) => `${moduleId}-${classeId}`;
 
   const getCellValue = useCallback(
-    (moduleId: number, classeId: number) => {
+    (moduleId: string, classeId: string) => {
       const key = cellKey(moduleId, classeId);
       if (edits[key] !== undefined) return edits[key].value;
       const existing = volumeMap.get(key);
@@ -65,11 +65,11 @@ export default function VolumeHoraire() {
   );
 
   const isDirty = useCallback(
-    (moduleId: number, classeId: number) => !!edits[cellKey(moduleId, classeId)]?.dirty,
+    (moduleId: string, classeId: string) => !!edits[cellKey(moduleId, classeId)]?.dirty,
     [edits]
   );
 
-  const onCellChange = (moduleId: number, classeId: number, raw: string) => {
+  const onCellChange = (moduleId: string, classeId: string, raw: string) => {
     if (raw !== "" && !/^\d{1,2}$/.test(raw)) return; // numeric only, max 2 digits
     setEdits((prev) => ({
       ...prev,
@@ -189,7 +189,7 @@ export default function VolumeHoraire() {
           <Select
             value={selectedNiveauId ? String(selectedNiveauId) : ""}
             onValueChange={(v) => {
-              setSelectedNiveauId(Number(v));
+              setSelectedNiveauId(v);
               setEdits({});
             }}
           >

@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.facture;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,8 +23,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class Echeance {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "echeancier_id", nullable = false)

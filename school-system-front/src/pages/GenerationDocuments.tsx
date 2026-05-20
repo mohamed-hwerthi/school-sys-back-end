@@ -166,25 +166,25 @@ export default function GenerationDocuments() {
 
     switch (selectedDocType) {
       case "CERTIFICAT_SCOLARITE":
-        if (selectedStudentId > 0) genCertificat.mutate(selectedStudentId);
+        if (selectedStudentId) genCertificat.mutate(selectedStudentId);
         break;
       case "CARTE_SCOLAIRE":
-        if (selectedStudentId > 0) genCarte.mutate(selectedStudentId);
+        if (selectedStudentId) genCarte.mutate(selectedStudentId);
         break;
       case "ATTESTATION_REUSSITE":
-        if (selectedStudentId > 0)
+        if (selectedStudentId)
           genAttestation.mutate({ eleveId: selectedStudentId });
         break;
       case "RELEVE_NOTES":
-        if (selectedStudentId > 0)
+        if (selectedStudentId)
           genReleve.mutate({
             eleveId: selectedStudentId,
             trimestre: selectedTrimestre > 0 ? selectedTrimestre : undefined,
           });
         break;
       case "RECU_PAIEMENT": {
-        const pid = parseInt(paiementId);
-        if (!isNaN(pid) && pid > 0) genRecu.mutate(pid);
+        const pid = paiementId;
+        if (!isNaN(pid) && pid) genRecu.mutate(pid);
         break;
       }
     }
@@ -586,7 +586,7 @@ export default function GenerationDocuments() {
             </DialogClose>
             <Button
               onClick={handleGenerate}
-              disabled={selectedStudentId === 0 || isGenerating}
+              disabled={!selectedStudentId || isGenerating}
             >
               {isGenerating ? (
                 <>

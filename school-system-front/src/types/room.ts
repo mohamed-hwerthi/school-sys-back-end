@@ -9,7 +9,7 @@ export type RoomType =
 export type RoomStatus = "Disponible" | "Occupée" | "En maintenance";
 
 export type Room = {
-  id: number;
+  id: string;
   nom: string;
   type: RoomType;
   capacite: number;
@@ -19,8 +19,8 @@ export type Room = {
 };
 
 export type TimeSlot = {
-  id: number;
-  salleId: number;
+  id: string;
+  salleId: string;
   jour: Jour;
   heureDebut: string;
   heureFin: string;

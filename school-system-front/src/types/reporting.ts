@@ -5,7 +5,7 @@ export interface DayAttendance {
 }
 
 export interface UpcomingEvent {
-  id: number;
+  id: string;
   titre: string;
   dateDebut: string;
   couleur: string | null;
@@ -14,7 +14,7 @@ export interface UpcomingEvent {
 }
 
 export interface RecentStudent {
-  id: number;
+  id: string;
   fullName: string;
   classe: string | null;
   enrollmentDate: string | null;

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.finance.TypeFrais;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 public class TypeFraisResponseDTO {
 
-    private Long id;
+    private UUID id;
     private String nom;
     private BigDecimal montant;
     private TypeFrais.Frequence frequence;

@@ -1,6 +1,6 @@
 CREATE TABLE fiches_paie (
-    id BIGSERIAL PRIMARY KEY,
-    employe_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    employe_id UUID NOT NULL,
     employe_type VARCHAR(20) NOT NULL,
     mois INTEGER NOT NULL,
     annee INTEGER NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE fiches_paie (
 CREATE INDEX idx_fiches_paie_employe ON fiches_paie(employe_id, annee, mois);
 
 CREATE TABLE formations (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     titre VARCHAR(300) NOT NULL,
     description TEXT,
     formateur VARCHAR(200),
@@ -31,9 +31,9 @@ CREATE TABLE formations (
 );
 
 CREATE TABLE formation_participants (
-    id BIGSERIAL PRIMARY KEY,
-    formation_id BIGINT NOT NULL REFERENCES formations(id),
-    employe_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    formation_id UUID NOT NULL REFERENCES formations(id),
+    employe_id UUID NOT NULL,
     employe_type VARCHAR(20) NOT NULL,
     present BOOLEAN DEFAULT false,
     certificat_obtenu BOOLEAN DEFAULT false

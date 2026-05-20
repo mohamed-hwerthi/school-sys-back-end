@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.absence.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,7 +28,7 @@ public class RapportPresenceDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ElevePresenceDTO {
-        private Long eleveId;
+        private UUID eleveId;
         private String nom;
         private String prenom;
         private long totalAbsences;

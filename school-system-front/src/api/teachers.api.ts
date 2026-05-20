@@ -5,7 +5,7 @@ const BASE = "/teachers";
 
 // ─── Backend DTO types ──────────────────────────────────────
 interface TeacherBackend {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   email: string | null;
@@ -66,16 +66,16 @@ export const teachersApi = {
   getAll: () =>
     api.get<TeacherBackend[]>(BASE).then((res) => res.data.map(fromBackend)),
 
-  getById: (id: number) =>
+  getById: (id: string) =>
     api.get<TeacherBackend>(`${BASE}/${id}`).then((res) => fromBackend(res.data)),
 
   create: (data: Omit<Teacher, "id" | "dateEmbauche">) =>
     api.post<TeacherBackend>(BASE, toBackend(data)).then((res) => fromBackend(res.data)),
 
-  update: (id: number, data: Partial<Teacher>) =>
+  update: (id: string, data: Partial<Teacher>) =>
     api.put<TeacherBackend>(`${BASE}/${id}`, partialToBackend(data)).then((res) => fromBackend(res.data)),
 
-  delete: (id: number) => api.delete(`${BASE}/${id}`),
+  delete: (id: string) => api.delete(`${BASE}/${id}`),
 
   importBulk: (teachers: Omit<Teacher, "id" | "dateEmbauche">[]) =>
     api

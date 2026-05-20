@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.depense.dto;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -14,5 +16,5 @@ public class DepenseStatsDTO {
     private long nombreDepenses;
     private List<CategorieTotal> parCategorie;
 
-    public record CategorieTotal(Long categorieId, String categorieNom, BigDecimal total) {}
+    public record CategorieTotal(UUID categorieId, String categorieNom, BigDecimal total) {}
 }

@@ -47,28 +47,28 @@ export const vitrineAdminApi = {
     const res = await api.post<VitrinePage>(`${BASE}/pages`, dto);
     return res.data;
   },
-  updatePage: async (id: number, dto: Partial<VitrinePage>): Promise<VitrinePage> => {
+  updatePage: async (id: string, dto: Partial<VitrinePage>): Promise<VitrinePage> => {
     const res = await api.put<VitrinePage>(`${BASE}/pages/${id}`, dto);
     return res.data;
   },
-  deletePage: async (id: number): Promise<void> => {
+  deletePage: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/pages/${id}`);
   },
 
   // Sections
-  getSections: async (pageId: number): Promise<VitrineSection[]> => {
+  getSections: async (pageId: string): Promise<VitrineSection[]> => {
     const res = await api.get<VitrineSection[]>(`${BASE}/pages/${pageId}/sections`);
     return res.data;
   },
-  createSection: async (pageId: number, dto: Partial<VitrineSection>): Promise<VitrineSection> => {
+  createSection: async (pageId: string, dto: Partial<VitrineSection>): Promise<VitrineSection> => {
     const res = await api.post<VitrineSection>(`${BASE}/pages/${pageId}/sections`, dto);
     return res.data;
   },
-  updateSection: async (id: number, dto: Partial<VitrineSection>): Promise<VitrineSection> => {
+  updateSection: async (id: string, dto: Partial<VitrineSection>): Promise<VitrineSection> => {
     const res = await api.put<VitrineSection>(`${BASE}/sections/${id}`, dto);
     return res.data;
   },
-  deleteSection: async (id: number): Promise<void> => {
+  deleteSection: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/sections/${id}`);
   },
 
@@ -81,7 +81,7 @@ export const vitrineAdminApi = {
     const res = await api.post<VitrineGalleryItem>(`${BASE}/gallery`, dto);
     return res.data;
   },
-  deleteGalleryItem: async (id: number): Promise<void> => {
+  deleteGalleryItem: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/gallery/${id}`);
   },
 
@@ -94,11 +94,11 @@ export const vitrineAdminApi = {
     const res = await api.post<VitrineAnnouncement>(`${BASE}/announcements`, dto);
     return res.data;
   },
-  updateAnnouncement: async (id: number, dto: Partial<VitrineAnnouncement>): Promise<VitrineAnnouncement> => {
+  updateAnnouncement: async (id: string, dto: Partial<VitrineAnnouncement>): Promise<VitrineAnnouncement> => {
     const res = await api.put<VitrineAnnouncement>(`${BASE}/announcements/${id}`, dto);
     return res.data;
   },
-  deleteAnnouncement: async (id: number): Promise<void> => {
+  deleteAnnouncement: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/announcements/${id}`);
   },
 
@@ -111,10 +111,10 @@ export const vitrineAdminApi = {
     const res = await api.get<number>(`${BASE}/contacts/unread-count`);
     return res.data;
   },
-  markAsRead: async (id: number): Promise<void> => {
+  markAsRead: async (id: string): Promise<void> => {
     await api.put(`${BASE}/contacts/${id}/read`);
   },
-  replyToContact: async (id: number, replyText: string): Promise<void> => {
+  replyToContact: async (id: string, replyText: string): Promise<void> => {
     await api.post(`${BASE}/contacts/${id}/reply`, { replyText });
   },
 };

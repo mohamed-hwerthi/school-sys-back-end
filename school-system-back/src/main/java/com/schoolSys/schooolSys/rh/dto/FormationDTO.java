@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rh.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FormationDTO {
-    private Long id;
+    private UUID id;
     private String titre;
     private String description;
     private String formateur;

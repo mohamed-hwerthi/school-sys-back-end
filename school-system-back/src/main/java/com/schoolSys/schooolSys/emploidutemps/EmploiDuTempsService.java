@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.emploidutemps;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.emploidutemps.dto.*;
 import lombok.RequiredArgsConstructor;
@@ -19,20 +21,20 @@ public class EmploiDuTempsService {
     private final CreneauRepository creneauRepository;
     private final RemplacementRepository remplacementRepository;
 
-    public List<EmploiDuTempsResponseDTO> getByClasse(Long classeId) {
+    public List<EmploiDuTempsResponseDTO> getByClasse(UUID classeId) {
         return emploiDuTempsRepository.findByClasseId(classeId).stream()
             .map(this::toDto)
             .collect(Collectors.toList());
     }
 
-    public List<EmploiDuTempsResponseDTO> getByEnseignant(Long enseignantId) {
+    public List<EmploiDuTempsResponseDTO> getByEnseignant(UUID enseignantId) {
         return emploiDuTempsRepository.findByEnseignantId(enseignantId).stream()
             .map(this::toDto)
             .collect(Collectors.toList());
     }
 
     @Transactional
-    public List<EmploiDuTempsResponseDTO> saveAll(Long classeId, List<EmploiDuTempsRequestDTO> requests) {
+    public List<EmploiDuTempsResponseDTO> saveAll(UUID classeId, List<EmploiDuTempsRequestDTO> requests) {
         emploiDuTempsRepository.deleteByClasseId(classeId);
         List<EmploiDuTemps> entries = requests.stream()
             .map(req -> EmploiDuTemps.builder()
@@ -104,7 +106,7 @@ public class EmploiDuTempsService {
     }
 
     @Transactional
-    public void deleteCreneau(Long id) {
+    public void deleteCreneau(UUID id) {
         if (!creneauRepository.existsById(id)) throw new ResourceNotFoundException("Creneau", id);
         creneauRepository.deleteById(id);
     }
@@ -123,7 +125,7 @@ public class EmploiDuTempsService {
         return toRemplacementDto(remplacementRepository.save(r));
     }
 
-    public List<RemplacementResponseDTO> getRemplacements(Long enseignantId, LocalDate from, LocalDate to) {
+    public List<RemplacementResponseDTO> getRemplacements(UUID enseignantId, LocalDate from, LocalDate to) {
         return remplacementRepository
             .findByEnseignantRemplacantIdAndDateDebutLessThanEqualAndDateFinGreaterThanEqual(enseignantId, to, from)
             .stream().map(this::toRemplacementDto).collect(Collectors.toList());
@@ -135,7 +137,7 @@ public class EmploiDuTempsService {
     }
 
     @Transactional
-    public void deleteRemplacement(Long id) {
+    public void deleteRemplacement(UUID id) {
         if (!remplacementRepository.existsById(id)) throw new ResourceNotFoundException("Remplacement", id);
         remplacementRepository.deleteById(id);
     }

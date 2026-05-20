@@ -33,11 +33,11 @@ export function usePointagesByDate(date: string) {
   });
 }
 
-export function usePointagesByEmploye(employeId: number, employeType?: string) {
+export function usePointagesByEmploye(employeId: string, employeType?: string) {
   return useQuery<Pointage[]>({
     queryKey: [POINTAGE_KEY, "employe", employeId, employeType],
     queryFn: () => rhApi.getPointagesByEmploye(employeId, employeType),
-    enabled: employeId > 0,
+    enabled: !!employeId,
   });
 }
 
@@ -54,7 +54,7 @@ export function useCreatePointage() {
 export function useUpdatePointage() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CreatePointageRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: CreatePointageRequest }) =>
       rhApi.updatePointage(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [POINTAGE_KEY] });
@@ -65,7 +65,7 @@ export function useUpdatePointage() {
 export function useDeletePointage() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => rhApi.deletePointage(id),
+    mutationFn: (id: string) => rhApi.deletePointage(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [POINTAGE_KEY] });
     },
@@ -81,11 +81,11 @@ export function useFichesPaie() {
   });
 }
 
-export function useFichesPaieByEmploye(employeId: number) {
+export function useFichesPaieByEmploye(employeId: string) {
   return useQuery<FichePaie[]>({
     queryKey: [PAIE_KEY, "employe", employeId],
     queryFn: () => rhApi.getFichesPaieByEmploye(employeId),
-    enabled: employeId > 0,
+    enabled: !!employeId,
   });
 }
 
@@ -110,7 +110,7 @@ export function useCreateFichePaie() {
 export function useUpdateFichePaie() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CreateFichePaieRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: CreateFichePaieRequest }) =>
       rhApi.updateFichePaie(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [PAIE_KEY] });
@@ -121,7 +121,7 @@ export function useUpdateFichePaie() {
 export function useDeleteFichePaie() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => rhApi.deleteFichePaie(id),
+    mutationFn: (id: string) => rhApi.deleteFichePaie(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [PAIE_KEY] });
     },
@@ -137,7 +137,7 @@ export function useFormations() {
   });
 }
 
-export function useFormation(id: number) {
+export function useFormation(id: string) {
   return useQuery<Formation>({
     queryKey: [FORMATIONS_KEY, id],
     queryFn: () => rhApi.getFormationById(id),
@@ -158,7 +158,7 @@ export function useCreateFormation() {
 export function useUpdateFormation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CreateFormationRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: CreateFormationRequest }) =>
       rhApi.updateFormation(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [FORMATIONS_KEY] });
@@ -169,7 +169,7 @@ export function useUpdateFormation() {
 export function useDeleteFormation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => rhApi.deleteFormation(id),
+    mutationFn: (id: string) => rhApi.deleteFormation(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [FORMATIONS_KEY] });
     },
@@ -179,7 +179,7 @@ export function useDeleteFormation() {
 export function useAddParticipant() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ formationId, data }: { formationId: number; data: AddParticipantRequest }) =>
+    mutationFn: ({ formationId, data }: { formationId: string; data: AddParticipantRequest }) =>
       rhApi.addParticipant(formationId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [FORMATIONS_KEY] });
@@ -190,7 +190,7 @@ export function useAddParticipant() {
 export function useRemoveParticipant() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (participantId: number) => rhApi.removeParticipant(participantId),
+    mutationFn: (participantId: string) => rhApi.removeParticipant(participantId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [FORMATIONS_KEY] });
     },

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.cantine.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +27,7 @@ public class PointageBatchRequest {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class PointageItem {
-        private Long eleveId;
+        private UUID eleveId;
         private Boolean present;
     }
 }

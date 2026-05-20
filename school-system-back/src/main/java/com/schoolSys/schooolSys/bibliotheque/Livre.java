@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.bibliotheque;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,8 +21,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class Livre {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(nullable = false, length = 300)
     private String titre;

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.note.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +15,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class MoyenneDTO {
 
-    private Long studentId;
+    private UUID studentId;
     private String studentName;
     private Integer trimestre;
     private Map<String, Double> moyennesParModule;

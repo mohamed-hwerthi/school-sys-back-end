@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.facture.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -9,7 +11,7 @@ import java.util.List;
 @Data
 public class FactureRequestDTO {
     @NotNull
-    private Long studentId;
+    private UUID studentId;
     private LocalDate dateEmission;
     private LocalDate dateEcheance;
     private String statut;

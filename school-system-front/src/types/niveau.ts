@@ -1,5 +1,5 @@
 export type Niveau = {
-  id: number;
+  id: string;
   nom: string;
   sections: string[];
 };

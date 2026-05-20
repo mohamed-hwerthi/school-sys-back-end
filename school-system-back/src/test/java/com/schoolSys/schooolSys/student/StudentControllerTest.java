@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.student;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.schoolSys.schooolSys.auth.JwtAuthenticationFilter;
@@ -62,7 +64,7 @@ class StudentControllerTest {
                 .when(jwtAuthenticationFilter).doFilter(any(), any(), any());
 
         sampleResponse = StudentResponseDTO.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .firstName("Ahmed")
                 .lastName("Benali")
                 .sex("M")
@@ -143,12 +145,12 @@ class StudentControllerTest {
         @WithMockUser(authorities = "READ_STUDENTS")
         @DisplayName("should return 200 with student when found")
         void shouldReturn200WhenFound() throws Exception {
-            when(studentService.findById(1L)).thenReturn(sampleResponse);
+            when(studentService.findById(new UUID(0, 1))).thenReturn(sampleResponse);
 
-            mockMvc.perform(get("/api/students/1"))
+            mockMvc.perform(get("/api/students/00000000-0000-0000-0000-000000000001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.id").value(1))
+                    .andExpect(jsonPath("$.data.id").value("00000000-0000-0000-0000-000000000001"))
                     .andExpect(jsonPath("$.data.firstName").value("Ahmed"));
         }
 
@@ -156,10 +158,10 @@ class StudentControllerTest {
         @WithMockUser(authorities = "READ_STUDENTS")
         @DisplayName("should return 404 when student not found")
         void shouldReturn404WhenNotFound() throws Exception {
-            when(studentService.findById(999L))
-                    .thenThrow(new ResourceNotFoundException("Student", 999L));
+            when(studentService.findById(new UUID(0, 999)))
+                    .thenThrow(new ResourceNotFoundException("Student", new UUID(0, 999)));
 
-            mockMvc.perform(get("/api/students/999"))
+            mockMvc.perform(get("/api/students/00000000-0000-0000-0000-0000000003e7"))
                     .andExpect(status().isNotFound());
         }
     }
@@ -220,14 +222,14 @@ class StudentControllerTest {
         @WithMockUser(authorities = "WRITE_STUDENTS")
         @DisplayName("should return 200 when updating existing student")
         void shouldReturn200WhenUpdating() throws Exception {
-            when(studentService.update(eq(1L), any(StudentRequestDTO.class))).thenReturn(sampleResponse);
+            when(studentService.update(eq(new UUID(0, 1)), any(StudentRequestDTO.class))).thenReturn(sampleResponse);
 
-            mockMvc.perform(put("/api/students/1")
+            mockMvc.perform(put("/api/students/00000000-0000-0000-0000-000000000001")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(sampleRequest)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.id").value(1));
+                    .andExpect(jsonPath("$.data.id").value("00000000-0000-0000-0000-000000000001"));
         }
     }
 
@@ -239,7 +241,7 @@ class StudentControllerTest {
         @WithMockUser(authorities = "DELETE_STUDENTS")
         @DisplayName("should return 204 when deleting existing student")
         void shouldReturn204WhenDeleting() throws Exception {
-            mockMvc.perform(delete("/api/students/1")
+            mockMvc.perform(delete("/api/students/00000000-0000-0000-0000-000000000001")
                             .with(csrf()))
                     .andExpect(status().isNoContent());
         }
@@ -248,10 +250,10 @@ class StudentControllerTest {
         @WithMockUser(authorities = "DELETE_STUDENTS")
         @DisplayName("should return 404 when deleting non-existing student")
         void shouldReturn404WhenDeletingNonExisting() throws Exception {
-            doThrow(new ResourceNotFoundException("Student", 999L))
-                    .when(studentService).delete(999L);
+            doThrow(new ResourceNotFoundException("Student", new UUID(0, 999)))
+                    .when(studentService).delete(new UUID(0, 999));
 
-            mockMvc.perform(delete("/api/students/999")
+            mockMvc.perform(delete("/api/students/00000000-0000-0000-0000-0000000003e7")
                             .with(csrf()))
                     .andExpect(status().isNotFound());
         }

@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.note;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -11,17 +14,18 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("deleted = false")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class EvaluationCompetence {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "eleve_id", nullable = false)
-    private Long eleveId;
+    private UUID eleveId;
 
     @Column(name = "competence_id", nullable = false)
-    private Long competenceId;
+    private UUID competenceId;
 
     @Column(name = "examen_id", nullable = false)
-    private Long examenId;
+    private UUID examenId;
 
     @Column(nullable = false, length = 20)
     private String niveau; // NON_ATTEINT, EN_COURS, ATTEINT, DEPASSE

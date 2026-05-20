@@ -1,13 +1,13 @@
 -- V64: Create meetings table for parent-teacher meeting scheduler
 CREATE TABLE IF NOT EXISTS meetings (
-    id              BIGSERIAL PRIMARY KEY,
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title           VARCHAR(255) NOT NULL,
     date            DATE NOT NULL,
     heure_debut     TIME NOT NULL,
     heure_fin       TIME NOT NULL,
-    enseignant_id   BIGINT,
-    parent_id       BIGINT,
-    student_id      BIGINT,
+    enseignant_id   UUID,
+    parent_id       UUID,
+    student_id      UUID,
     statut          VARCHAR(20) NOT NULL DEFAULT 'PLANIFIE'
                     CHECK (statut IN ('PLANIFIE', 'CONFIRME', 'ANNULE')),
     notes           TEXT,

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS messages (
-    id BIGSERIAL PRIMARY KEY,
-    sender_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    sender_id UUID NOT NULL,
     subject VARCHAR(255) NOT NULL,
     body TEXT NOT NULL,
     type VARCHAR(20) NOT NULL DEFAULT 'MESSAGE' CHECK (type IN ('MESSAGE','CIRCULAIRE')),
@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 
 CREATE TABLE IF NOT EXISTS message_recipients (
-    id BIGSERIAL PRIMARY KEY,
-    message_id BIGINT NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
-    recipient_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    message_id UUID NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+    recipient_id UUID NOT NULL,
     read_at TIMESTAMP,
     deleted BOOLEAN NOT NULL DEFAULT FALSE
 );

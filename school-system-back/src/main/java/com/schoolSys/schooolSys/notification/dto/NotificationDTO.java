@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.notification.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,8 +14,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificationDTO {
-    private Long id;
-    private Long userId;
+    private UUID id;
+    private UUID userId;
     private String title;
     private String message;
     private String type;

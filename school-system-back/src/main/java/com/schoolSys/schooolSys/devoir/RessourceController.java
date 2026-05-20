@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.devoir;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.devoir.dto.CreateRessourceRequest;
 import com.schoolSys.schooolSys.devoir.dto.RessourceDTO;
@@ -22,19 +24,19 @@ public class RessourceController {
     @GetMapping
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<RessourceDTO>>> getAll(
-            @RequestParam(required = false) Long moduleId) {
+            @RequestParam(required = false) UUID moduleId) {
         return ResponseEntity.ok(ApiResponse.ok(ressourceService.findAll(moduleId)));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<RessourceDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<RessourceDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(ressourceService.findById(id)));
     }
 
     @GetMapping("/module/{moduleId}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<List<RessourceDTO>>> getByModule(@PathVariable Long moduleId) {
+    public ResponseEntity<ApiResponse<List<RessourceDTO>>> getByModule(@PathVariable UUID moduleId) {
         return ResponseEntity.ok(ApiResponse.ok(ressourceService.findByModule(moduleId)));
     }
 
@@ -48,14 +50,14 @@ public class RessourceController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<ApiResponse<RessourceDTO>> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody CreateRessourceRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(ressourceService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         ressourceService.delete(id);
         return ResponseEntity.noContent().build();
     }

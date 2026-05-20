@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.analytics;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.analytics.dto.KpiConfigRequestDTO;
 import com.schoolSys.schooolSys.analytics.dto.KpiConfigResponseDTO;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
@@ -21,7 +23,7 @@ public class KpiConfigService {
                 .toList();
     }
 
-    public KpiConfigResponseDTO findById(Long id) {
+    public KpiConfigResponseDTO findById(UUID id) {
         KpiConfig config = kpiConfigRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("KpiConfig", id));
         return toResponseDTO(config);
@@ -41,7 +43,7 @@ public class KpiConfigService {
     }
 
     @Transactional
-    public KpiConfigResponseDTO update(Long id, KpiConfigRequestDTO dto) {
+    public KpiConfigResponseDTO update(UUID id, KpiConfigRequestDTO dto) {
         KpiConfig config = kpiConfigRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("KpiConfig", id));
         config.setNom(dto.getNom());
@@ -56,7 +58,7 @@ public class KpiConfigService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!kpiConfigRepository.existsById(id)) {
             throw new ResourceNotFoundException("KpiConfig", id);
         }

@@ -32,7 +32,7 @@ export const livresApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<Livre> => {
+  getById: async (id: string): Promise<Livre> => {
     const res = await api.get<Livre>(`/livres/${id}`);
     return res.data;
   },
@@ -47,12 +47,12 @@ export const livresApi = {
     return res.data;
   },
 
-  update: async (id: number, data: CreateLivreRequest): Promise<Livre> => {
+  update: async (id: string, data: CreateLivreRequest): Promise<Livre> => {
     const res = await api.put<Livre>(`/livres/${id}`, data);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`/livres/${id}`),
+  delete: (id: string) => api.delete(`/livres/${id}`),
 };
 
 // ─── Emprunts API ───────────────────────────────────────
@@ -63,17 +63,17 @@ export const empruntsApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<Emprunt> => {
+  getById: async (id: string): Promise<Emprunt> => {
     const res = await api.get<Emprunt>(`/emprunts/${id}`);
     return res.data;
   },
 
-  getByEleve: async (eleveId: number): Promise<Emprunt[]> => {
+  getByEleve: async (eleveId: string): Promise<Emprunt[]> => {
     const res = await api.get<Emprunt[]>(`/emprunts/eleve/${eleveId}`);
     return res.data;
   },
 
-  getByLivre: async (livreId: number): Promise<Emprunt[]> => {
+  getByLivre: async (livreId: string): Promise<Emprunt[]> => {
     const res = await api.get<Emprunt[]>(`/emprunts/livre/${livreId}`);
     return res.data;
   },
@@ -93,7 +93,7 @@ export const empruntsApi = {
     return res.data;
   },
 
-  retourner: async (id: number): Promise<Emprunt> => {
+  retourner: async (id: string): Promise<Emprunt> => {
     const res = await api.put<Emprunt>(`/emprunts/${id}/retour`);
     return res.data;
   },

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.bulletin;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.appreciation.ObservationRepository;
 import com.schoolSys.schooolSys.appreciation.ObservationTrimestre;
 import com.schoolSys.schooolSys.appreciation.Recommandation;
@@ -52,13 +54,13 @@ public class BulletinService {
     /**
      * Compute bulletins for all students in a class for a given trimestre.
      */
-    public List<BulletinDTO> getBulletins(Long classeId, Integer trimestre, String version) {
+    public List<BulletinDTO> getBulletins(UUID classeId, Integer trimestre, String version) {
         assertTeacherTeachesClasse(classeId);
         boolean prive = VERSION_PRIVE.equalsIgnoreCase(version);
 
         Classe classe = classeRepository.findById(classeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Classe", classeId));
-        Long niveauId = classe.getNiveau().getId();
+        UUID niveauId = classe.getNiveau().getId();
 
         // 1. Fetch all notes for this class/trimestre
         List<Note> allNotes = noteRepository.findByExamenClasseIdAndTrimestre(classeId, trimestre);
@@ -68,7 +70,7 @@ public class BulletinService {
 
         // 2. Fetch domaines for this niveau
         List<Domaine> domaines = domaineRepository.findByNiveauIdOrderByOrdreAsc(niveauId);
-        Map<Long, Domaine> domaineMap = domaines.stream()
+        Map<UUID, Domaine> domaineMap = domaines.stream()
                 .collect(Collectors.toMap(Domaine::getId, d -> d));
 
         // 2bis. Fetch ALL modules of the niveau (so the bulletin shows them
@@ -76,39 +78,39 @@ public class BulletinService {
         List<Module> niveauModules = moduleRepository.findByNiveauIdOrderByOrdreEtatiqueAsc(niveauId);
 
         // 3. Group notes by student
-        Map<Long, List<Note>> notesByStudent = allNotes.stream()
+        Map<UUID, List<Note>> notesByStudent = allNotes.stream()
                 .collect(Collectors.groupingBy(n -> n.getStudent().getId()));
 
-        List<Long> studentIds = new ArrayList<>(notesByStudent.keySet());
+        List<UUID> studentIds = new ArrayList<>(notesByStudent.keySet());
 
         // 4. Fetch recommendations & observations
         List<Recommandation> allRecos = recommandationRepository
                 .findByStudentIdInAndTrimestre(studentIds, trimestre);
-        Map<Long, List<Recommandation>> recosByStudent = allRecos.stream()
+        Map<UUID, List<Recommandation>> recosByStudent = allRecos.stream()
                 .collect(Collectors.groupingBy(r -> r.getStudent().getId()));
 
         List<ObservationTrimestre> allObs = observationRepository
                 .findByStudentIdInAndTrimestre(studentIds, trimestre);
-        Map<Long, ObservationTrimestre> obsByStudent = allObs.stream()
+        Map<UUID, ObservationTrimestre> obsByStudent = allObs.stream()
                 .collect(Collectors.toMap(o -> o.getStudent().getId(), o -> o, (a, b) -> b));
 
         // 5. Compute per-student module averages (needed for class-level stats)
         // Map<studentId, Map<moduleId, moduleAvg>>
-        Map<Long, Map<Long, Double>> studentModuleAvgs = new LinkedHashMap<>();
-        Map<Long, Double> studentGeneralAvgs = new LinkedHashMap<>();
+        Map<UUID, Map<UUID, Double>> studentModuleAvgs = new LinkedHashMap<>();
+        Map<UUID, Double> studentGeneralAvgs = new LinkedHashMap<>();
 
-        for (Map.Entry<Long, List<Note>> entry : notesByStudent.entrySet()) {
-            Long studentId = entry.getKey();
+        for (Map.Entry<UUID, List<Note>> entry : notesByStudent.entrySet()) {
+            UUID studentId = entry.getKey();
             List<Note> studentNotes = entry.getValue();
 
-            Map<Long, List<Note>> byModule = studentNotes.stream()
+            Map<UUID, List<Note>> byModule = studentNotes.stream()
                     .collect(Collectors.groupingBy(n -> n.getExamen().getModule().getId()));
 
-            Map<Long, Double> moduleAvgs = new LinkedHashMap<>();
+            Map<UUID, Double> moduleAvgs = new LinkedHashMap<>();
             double totalWeighted = 0;
             double totalCoeff = 0;
 
-            for (Map.Entry<Long, List<Note>> moduleEntry : byModule.entrySet()) {
+            for (Map.Entry<UUID, List<Note>> moduleEntry : byModule.entrySet()) {
                 List<Note> moduleNotes = moduleEntry.getValue();
                 Module module = moduleNotes.get(0).getExamen().getModule();
 
@@ -136,18 +138,18 @@ public class BulletinService {
 
         // 6. Compute class-level stats per module
         // Map<moduleId, List<avg>>
-        Map<Long, List<Double>> moduleAvgLists = new LinkedHashMap<>();
-        for (Map<Long, Double> avgs : studentModuleAvgs.values()) {
-            for (Map.Entry<Long, Double> e : avgs.entrySet()) {
+        Map<UUID, List<Double>> moduleAvgLists = new LinkedHashMap<>();
+        for (Map<UUID, Double> avgs : studentModuleAvgs.values()) {
+            for (Map.Entry<UUID, Double> e : avgs.entrySet()) {
                 moduleAvgLists.computeIfAbsent(e.getKey(), k -> new ArrayList<>()).add(e.getValue());
             }
         }
 
-        Map<Long, Double> moduleMinMap = new LinkedHashMap<>();
-        Map<Long, Double> moduleMaxMap = new LinkedHashMap<>();
-        Map<Long, Double> moduleClasseAvgMap = new LinkedHashMap<>();
+        Map<UUID, Double> moduleMinMap = new LinkedHashMap<>();
+        Map<UUID, Double> moduleMaxMap = new LinkedHashMap<>();
+        Map<UUID, Double> moduleClasseAvgMap = new LinkedHashMap<>();
 
-        for (Map.Entry<Long, List<Double>> e : moduleAvgLists.entrySet()) {
+        for (Map.Entry<UUID, List<Double>> e : moduleAvgLists.entrySet()) {
             List<Double> vals = e.getValue();
             moduleMinMap.put(e.getKey(), vals.stream().mapToDouble(Double::doubleValue).min().orElse(0));
             moduleMaxMap.put(e.getKey(), vals.stream().mapToDouble(Double::doubleValue).max().orElse(0));
@@ -162,9 +164,9 @@ public class BulletinService {
         int totalEleves = studentGeneralAvgs.size();
 
         // 8. Compute ranks (descending by moyenne)
-        List<Map.Entry<Long, Double>> ranked = new ArrayList<>(studentGeneralAvgs.entrySet());
+        List<Map.Entry<UUID, Double>> ranked = new ArrayList<>(studentGeneralAvgs.entrySet());
         ranked.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
-        Map<Long, Integer> rankMap = new LinkedHashMap<>();
+        Map<UUID, Integer> rankMap = new LinkedHashMap<>();
         for (int i = 0; i < ranked.size(); i++) {
             // Same average = same rank
             if (i > 0 && Objects.equals(ranked.get(i).getValue(), ranked.get(i - 1).getValue())) {
@@ -180,21 +182,21 @@ public class BulletinService {
         // 10. Build BulletinDTO per student
         List<BulletinDTO> bulletins = new ArrayList<>();
 
-        for (Map.Entry<Long, List<Note>> entry : notesByStudent.entrySet()) {
-            Long studentId = entry.getKey();
+        for (Map.Entry<UUID, List<Note>> entry : notesByStudent.entrySet()) {
+            UUID studentId = entry.getKey();
             List<Note> studentNotes = entry.getValue();
             Student student = studentNotes.get(0).getStudent();
 
             // Group notes by module
-            Map<Long, List<Note>> byModule = studentNotes.stream()
+            Map<UUID, List<Note>> byModule = studentNotes.stream()
                     .collect(Collectors.groupingBy(n -> n.getExamen().getModule().getId()));
 
             // Build module DTOs — start from ALL modules of the niveau so the
             // bulletin always lists them, even when the student has no notes
             // for some modules (cells will display "—" / 0.0 on the front).
-            Map<Long, BulletinModuleDTO> moduleDTOs = new LinkedHashMap<>();
+            Map<UUID, BulletinModuleDTO> moduleDTOs = new LinkedHashMap<>();
             for (Module module : niveauModules) {
-                Long moduleId = module.getId();
+                UUID moduleId = module.getId();
                 List<Note> moduleNotes = byModule.getOrDefault(moduleId, Collections.emptyList());
 
                 List<BulletinExamenDTO> examenDTOs = moduleNotes.stream()
@@ -234,14 +236,14 @@ public class BulletinService {
             List<BulletinModuleDTO> horsDomaine = new ArrayList<>();
 
             // Recommendations for this student
-            Map<Long, String> recoTexts = new LinkedHashMap<>();
+            Map<UUID, String> recoTexts = new LinkedHashMap<>();
             List<Recommandation> studentRecos = recosByStudent.getOrDefault(studentId, Collections.emptyList());
             for (Recommandation r : studentRecos) {
                 recoTexts.put(r.getDomaine().getId(), r.getTexte());
             }
 
             // Build a quick lookup moduleId -> Module for domaine filtering
-            Map<Long, Module> niveauModuleMap = niveauModules.stream()
+            Map<UUID, Module> niveauModuleMap = niveauModules.stream()
                     .collect(Collectors.toMap(Module::getId, m -> m, (a, b) -> a));
 
             for (Domaine domaine : domaines) {
@@ -277,12 +279,12 @@ public class BulletinService {
             }
 
             // Modules not assigned to any domaine
-            Set<Long> assignedModuleIds = domaineDTOs.stream()
+            Set<UUID> assignedModuleIds = domaineDTOs.stream()
                     .flatMap(d -> d.getModules().stream())
                     .map(BulletinModuleDTO::getModuleId)
                     .collect(Collectors.toSet());
 
-            for (Map.Entry<Long, BulletinModuleDTO> e : moduleDTOs.entrySet()) {
+            for (Map.Entry<UUID, BulletinModuleDTO> e : moduleDTOs.entrySet()) {
                 if (!assignedModuleIds.contains(e.getKey())) {
                     horsDomaine.add(e.getValue());
                 }
@@ -307,6 +309,7 @@ public class BulletinService {
 
             bulletins.add(BulletinDTO.builder()
                     .studentId(studentId)
+                    .matricule(student.getMatricule())
                     .studentName(student.getFirstName() + " " + student.getLastName())
                     .studentNameAr(nameAr)
                     .classe(fullName)
@@ -341,7 +344,7 @@ public class BulletinService {
     /**
      * Get a single student's bulletin.
      */
-    public BulletinDTO getBulletin(Long classeId, Long studentId, Integer trimestre, String version) {
+    public BulletinDTO getBulletin(UUID classeId, UUID studentId, Integer trimestre, String version) {
         currentUser.assertCanAccessStudent(studentId);
         List<BulletinDTO> all = getBulletins(classeId, trimestre, version);
         return all.stream()
@@ -356,23 +359,23 @@ public class BulletinService {
      * Annual bulletin: per-student synthesis of the three trimestre bulletins —
      * per-module and general annual averages, annual rank and mention.
      */
-    public List<BulletinAnnuelDTO> getBulletinsAnnuels(Long classeId, String version) {
+    public List<BulletinAnnuelDTO> getBulletinsAnnuels(UUID classeId, String version) {
         List<BulletinDTO> t1 = getBulletins(classeId, 1, version);
         List<BulletinDTO> t2 = getBulletins(classeId, 2, version);
         List<BulletinDTO> t3 = getBulletins(classeId, 3, version);
 
-        Map<Long, BulletinDTO> m1 = indexByStudent(t1);
-        Map<Long, BulletinDTO> m2 = indexByStudent(t2);
-        Map<Long, BulletinDTO> m3 = indexByStudent(t3);
+        Map<UUID, BulletinDTO> m1 = indexByStudent(t1);
+        Map<UUID, BulletinDTO> m2 = indexByStudent(t2);
+        Map<UUID, BulletinDTO> m3 = indexByStudent(t3);
 
-        Map<Long, BulletinDTO> roster = new LinkedHashMap<>();
+        Map<UUID, BulletinDTO> roster = new LinkedHashMap<>();
         for (BulletinDTO b : t1) roster.putIfAbsent(b.getStudentId(), b);
         for (BulletinDTO b : t2) roster.putIfAbsent(b.getStudentId(), b);
         for (BulletinDTO b : t3) roster.putIfAbsent(b.getStudentId(), b);
 
         List<BulletinAnnuelDTO> result = new ArrayList<>();
-        for (Map.Entry<Long, BulletinDTO> entry : roster.entrySet()) {
-            Long studentId = entry.getKey();
+        for (Map.Entry<UUID, BulletinDTO> entry : roster.entrySet()) {
+            UUID studentId = entry.getKey();
             BulletinDTO ref = entry.getValue();
             BulletinDTO b1 = m1.get(studentId), b2 = m2.get(studentId), b3 = m3.get(studentId);
 
@@ -381,14 +384,14 @@ public class BulletinService {
             Double mg3 = b3 != null ? b3.getMoyenneGenerale() : null;
             Double annuelle = moyenneNonNull(mg1, mg2, mg3);
 
-            Map<Long, Double[]> moduleVals = new LinkedHashMap<>();
-            Map<Long, String> moduleNames = new LinkedHashMap<>();
+            Map<UUID, Double[]> moduleVals = new LinkedHashMap<>();
+            Map<UUID, String> moduleNames = new LinkedHashMap<>();
             collectModuleAverages(b1, 0, moduleVals, moduleNames);
             collectModuleAverages(b2, 1, moduleVals, moduleNames);
             collectModuleAverages(b3, 2, moduleVals, moduleNames);
 
             List<ModuleAnnuelDTO> modules = new ArrayList<>();
-            for (Map.Entry<Long, Double[]> me : moduleVals.entrySet()) {
+            for (Map.Entry<UUID, Double[]> me : moduleVals.entrySet()) {
                 Double[] v = me.getValue();
                 modules.add(ModuleAnnuelDTO.builder()
                         .moduleId(me.getKey())
@@ -435,10 +438,10 @@ public class BulletinService {
      * ANN-025 — annual success rate per subject: across all students of a class,
      * the share whose annual module average reaches the pass mark (10).
      */
-    public List<MatiereStatDTO> getStatsMatieresAnnuelles(Long classeId, String version) {
+    public List<MatiereStatDTO> getStatsMatieresAnnuelles(UUID classeId, String version) {
         List<BulletinAnnuelDTO> annuels = getBulletinsAnnuels(classeId, version);
-        Map<Long, List<Double>> parModule = new LinkedHashMap<>();
-        Map<Long, String> noms = new LinkedHashMap<>();
+        Map<UUID, List<Double>> parModule = new LinkedHashMap<>();
+        Map<UUID, String> noms = new LinkedHashMap<>();
         for (BulletinAnnuelDTO b : annuels) {
             if (b.getModules() == null) continue;
             for (ModuleAnnuelDTO m : b.getModules()) {
@@ -450,7 +453,7 @@ public class BulletinService {
             }
         }
         List<MatiereStatDTO> stats = new ArrayList<>();
-        for (Map.Entry<Long, List<Double>> e : parModule.entrySet()) {
+        for (Map.Entry<UUID, List<Double>> e : parModule.entrySet()) {
             List<Double> vals = e.getValue();
             int reussis = (int) vals.stream().filter(v -> v >= 10).count();
             double avg = vals.stream().mapToDouble(Double::doubleValue).average().orElse(0);
@@ -466,14 +469,14 @@ public class BulletinService {
         return stats;
     }
 
-    private Map<Long, BulletinDTO> indexByStudent(List<BulletinDTO> bulletins) {
-        Map<Long, BulletinDTO> map = new LinkedHashMap<>();
+    private Map<UUID, BulletinDTO> indexByStudent(List<BulletinDTO> bulletins) {
+        Map<UUID, BulletinDTO> map = new LinkedHashMap<>();
         for (BulletinDTO b : bulletins) map.put(b.getStudentId(), b);
         return map;
     }
 
     private void collectModuleAverages(BulletinDTO bulletin, int trimIndex,
-                                       Map<Long, Double[]> vals, Map<Long, String> names) {
+                                       Map<UUID, Double[]> vals, Map<UUID, String> names) {
         if (bulletin == null) return;
         List<BulletinModuleDTO> modules = new ArrayList<>();
         if (bulletin.getDomaines() != null) {
@@ -517,7 +520,7 @@ public class BulletinService {
                 .toList();
     }
 
-    public BulletinTemplateDTO getTemplate(Long id) {
+    public BulletinTemplateDTO getTemplate(UUID id) {
         BulletinTemplate template = bulletinTemplateRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("BulletinTemplate", id));
         return toTemplateDTO(template);
@@ -551,7 +554,7 @@ public class BulletinService {
     }
 
     @Transactional
-    public BulletinTemplateDTO updateTemplate(Long id, BulletinTemplateDTO dto) {
+    public BulletinTemplateDTO updateTemplate(UUID id, BulletinTemplateDTO dto) {
         BulletinTemplate template = bulletinTemplateRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("BulletinTemplate", id));
         template.setNom(dto.getNom());
@@ -572,7 +575,7 @@ public class BulletinService {
     }
 
     @Transactional
-    public BulletinTemplateDTO activateTemplate(Long id) {
+    public BulletinTemplateDTO activateTemplate(UUID id) {
         bulletinTemplateRepository.deactivateAll();
         BulletinTemplate template = bulletinTemplateRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("BulletinTemplate", id));
@@ -582,7 +585,7 @@ public class BulletinService {
     }
 
     @Transactional
-    public void deleteTemplate(Long id) {
+    public void deleteTemplate(UUID id) {
         BulletinTemplate template = bulletinTemplateRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("BulletinTemplate", id));
         if (Boolean.TRUE.equals(template.getActif())) {
@@ -613,13 +616,13 @@ public class BulletinService {
 
     // ── BUL-004: Mass generate bulletins ─────────────────
 
-    public List<BulletinDTO> generateBulletinsForClasse(Long classeId, Integer trimestre) {
+    public List<BulletinDTO> generateBulletinsForClasse(UUID classeId, Integer trimestre) {
         return getBulletins(classeId, trimestre, "etatique");
     }
 
     // ── BUL-005: Stats reussite ──────────────────────────
 
-    public StatsReussiteDTO getStatsReussite(Long classeId, Integer trimestre) {
+    public StatsReussiteDTO getStatsReussite(UUID classeId, Integer trimestre) {
         List<BulletinDTO> bulletins = getBulletins(classeId, trimestre, "etatique");
         if (bulletins.isEmpty()) {
             Classe classe = classeRepository.findById(classeId)
@@ -643,8 +646,8 @@ public class BulletinService {
         int reussis = (int) bulletins.stream().filter(b -> b.getMoyenneGenerale() >= 10).count();
 
         // Module stats
-        Map<Long, List<Double>> moduleAvgs = new LinkedHashMap<>();
-        Map<Long, String> moduleNames = new LinkedHashMap<>();
+        Map<UUID, List<Double>> moduleAvgs = new LinkedHashMap<>();
+        Map<UUID, String> moduleNames = new LinkedHashMap<>();
         for (BulletinDTO b : bulletins) {
             List<BulletinModuleDTO> allModules = new ArrayList<>();
             if (b.getDomaines() != null) {
@@ -662,7 +665,7 @@ public class BulletinService {
         }
 
         List<StatsReussiteDTO.ModuleStatsDTO> modulesStats = new ArrayList<>();
-        for (Map.Entry<Long, List<Double>> entry : moduleAvgs.entrySet()) {
+        for (Map.Entry<UUID, List<Double>> entry : moduleAvgs.entrySet()) {
             List<Double> avgs = entry.getValue();
             double avg = round2(avgs.stream().mapToDouble(Double::doubleValue).average().orElse(0));
             double min = avgs.stream().mapToDouble(Double::doubleValue).min().orElse(0);
@@ -712,7 +715,7 @@ public class BulletinService {
 
     // ── BUL-006: Attestation de scolarite ────────────────
 
-    public AttestationDTO getAttestation(Long eleveId) {
+    public AttestationDTO getAttestation(UUID eleveId) {
         currentUser.assertCanAccessStudent(eleveId);
         List<Note> notes = noteRepository.findByStudentIdAndTrimestre(eleveId, 1);
         if (notes.isEmpty()) {
@@ -767,14 +770,14 @@ public class BulletinService {
 
     // ── BUL-007: Comparatif performances ─────────────────
 
-    public ComparatifDTO getComparatifByNiveau(Long niveauId) {
+    public ComparatifDTO getComparatifByNiveau(UUID niveauId) {
         niveauRepository.findById(niveauId)
                 .orElseThrow(() -> new ResourceNotFoundException("Niveau", niveauId));
 
         List<Classe> classes = classeRepository.findByNiveauId(niveauId);
         // A teacher only compares classes he is affected to.
         if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
-            Set<Long> scoped = currentUser.getScopedClasseIdsForTeacher();
+            Set<UUID> scoped = currentUser.getScopedClasseIdsForTeacher();
             classes = classes.stream()
                     .filter(c -> scoped.contains(c.getId()))
                     .collect(Collectors.toList());
@@ -788,8 +791,8 @@ public class BulletinService {
             int total = bulletins.size();
             int classReussis = (int) bulletins.stream().filter(b -> b.getMoyenneGenerale() >= 10).count();
 
-            Map<Long, List<Double>> modAvgsMap = new LinkedHashMap<>();
-            Map<Long, String> modNamesMap = new LinkedHashMap<>();
+            Map<UUID, List<Double>> modAvgsMap = new LinkedHashMap<>();
+            Map<UUID, String> modNamesMap = new LinkedHashMap<>();
             for (BulletinDTO b : bulletins) {
                 List<BulletinModuleDTO> allModules = new ArrayList<>();
                 if (b.getDomaines() != null) {
@@ -830,7 +833,7 @@ public class BulletinService {
                 .build();
     }
 
-    public ComparatifDTO getComparatifEvolution(Long classeId) {
+    public ComparatifDTO getComparatifEvolution(UUID classeId) {
         List<ComparatifDTO.EvolutionTrimestreDTO> evolution = new ArrayList<>();
 
         for (int trimestre = 1; trimestre <= 3; trimestre++) {
@@ -857,7 +860,7 @@ public class BulletinService {
     // ── Helpers ────────────────────────────────────────────
 
     /** A teacher may only access bulletins of classes he is affected to. */
-    private void assertTeacherTeachesClasse(Long classeId) {
+    private void assertTeacherTeachesClasse(UUID classeId) {
         if (currentUser.hasRole(UserRole.ENSEIGNANT)
                 && !currentUser.teacherTeachesClasse(classeId)) {
             throw new AccessDeniedException("Cette classe n'est pas dans votre périmètre.");

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.finance.dto.PaiementRequestDTO;
@@ -58,14 +60,14 @@ class PaiementServiceTest {
     @BeforeEach
     void setUp() {
         sampleStudent = Student.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .firstName("Ahmed")
                 .lastName("Benali")
                 .classe("3A")
                 .build();
 
         sampleTypeFrais = TypeFrais.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .nom("Scolarité")
                 .montant(new BigDecimal("500.00"))
                 .frequence(TypeFrais.Frequence.MENSUEL)
@@ -73,7 +75,7 @@ class PaiementServiceTest {
                 .build();
 
         samplePaiement = Paiement.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .student(sampleStudent)
                 .typeFrais(sampleTypeFrais)
                 .mois("Janvier")
@@ -89,8 +91,8 @@ class PaiementServiceTest {
                 .build();
 
         sampleRequest = new PaiementRequestDTO();
-        sampleRequest.setStudentId(1L);
-        sampleRequest.setTypeFraisId(1L);
+        sampleRequest.setStudentId(new UUID(0, 1));
+        sampleRequest.setTypeFraisId(new UUID(0, 1));
         sampleRequest.setMois("Janvier");
         sampleRequest.setAnneeScolaire("2025-2026");
         sampleRequest.setMontantDu(new BigDecimal("500.00"));
@@ -98,11 +100,11 @@ class PaiementServiceTest {
         sampleRequest.setModePaiement(Paiement.ModePaiement.ESPECES);
 
         sampleResponse = PaiementResponseDTO.builder()
-                .id(1L)
-                .studentId(1L)
+                .id(new UUID(0, 1))
+                .studentId(new UUID(0, 1))
                 .studentFirstName("Ahmed")
                 .studentLastName("Benali")
-                .typeFraisId(1L)
+                .typeFraisId(new UUID(0, 1))
                 .typeFraisNom("Scolarité")
                 .mois("Janvier")
                 .anneeScolaire("2025-2026")
@@ -120,12 +122,12 @@ class PaiementServiceTest {
         @Test
         @DisplayName("should return paiement when found")
         void shouldReturnPaiementWhenFound() {
-            when(paiementRepository.findById(1L)).thenReturn(Optional.of(samplePaiement));
+            when(paiementRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(samplePaiement));
             when(paiementMapper.toResponseDTO(samplePaiement)).thenReturn(sampleResponse);
 
-            PaiementResponseDTO result = paiementService.findById(1L);
+            PaiementResponseDTO result = paiementService.findById(new UUID(0, 1));
 
-            assertThat(result.getId()).isEqualTo(1L);
+            assertThat(result.getId()).isEqualTo(new UUID(0, 1));
             assertThat(result.getStudentFirstName()).isEqualTo("Ahmed");
             assertThat(result.getMontantDu()).isEqualByComparingTo(new BigDecimal("500.00"));
         }
@@ -133,9 +135,9 @@ class PaiementServiceTest {
         @Test
         @DisplayName("should throw ResourceNotFoundException when not found")
         void shouldThrowWhenNotFound() {
-            when(paiementRepository.findById(999L)).thenReturn(Optional.empty());
+            when(paiementRepository.findById(new UUID(0, 999))).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> paiementService.findById(999L))
+            assertThatThrownBy(() -> paiementService.findById(new UUID(0, 999)))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Paiement");
         }
@@ -148,8 +150,8 @@ class PaiementServiceTest {
         @Test
         @DisplayName("should create paiement with PAYE status when fully paid")
         void shouldCreatePaiementWithPayeStatus() {
-            when(studentRepository.findById(1L)).thenReturn(Optional.of(sampleStudent));
-            when(typeFraisRepository.findById(1L)).thenReturn(Optional.of(sampleTypeFrais));
+            when(studentRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleStudent));
+            when(typeFraisRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleTypeFrais));
             when(paiementRepository.save(any(Paiement.class))).thenReturn(samplePaiement);
             when(paiementMapper.toResponseDTO(samplePaiement)).thenReturn(sampleResponse);
 
@@ -171,8 +173,8 @@ class PaiementServiceTest {
         void shouldSetPartielStatusWhenPartiallyPaid() {
             sampleRequest.setMontantPaye(new BigDecimal("200.00"));
 
-            when(studentRepository.findById(1L)).thenReturn(Optional.of(sampleStudent));
-            when(typeFraisRepository.findById(1L)).thenReturn(Optional.of(sampleTypeFrais));
+            when(studentRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleStudent));
+            when(typeFraisRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleTypeFrais));
             when(paiementRepository.save(any(Paiement.class))).thenAnswer(inv -> inv.getArgument(0));
             when(paiementMapper.toResponseDTO(any(Paiement.class))).thenReturn(sampleResponse);
 
@@ -188,8 +190,8 @@ class PaiementServiceTest {
         void shouldSetEnAttenteStatusWhenNothingPaid() {
             sampleRequest.setMontantPaye(BigDecimal.ZERO);
 
-            when(studentRepository.findById(1L)).thenReturn(Optional.of(sampleStudent));
-            when(typeFraisRepository.findById(1L)).thenReturn(Optional.of(sampleTypeFrais));
+            when(studentRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleStudent));
+            when(typeFraisRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleTypeFrais));
             when(paiementRepository.save(any(Paiement.class))).thenAnswer(inv -> inv.getArgument(0));
             when(paiementMapper.toResponseDTO(any(Paiement.class))).thenReturn(sampleResponse);
 
@@ -203,8 +205,8 @@ class PaiementServiceTest {
         @Test
         @DisplayName("should throw when student not found")
         void shouldThrowWhenStudentNotFound() {
-            when(studentRepository.findById(999L)).thenReturn(Optional.empty());
-            sampleRequest.setStudentId(999L);
+            when(studentRepository.findById(new UUID(0, 999))).thenReturn(Optional.empty());
+            sampleRequest.setStudentId(new UUID(0, 999));
 
             assertThatThrownBy(() -> paiementService.create(sampleRequest))
                     .isInstanceOf(ResourceNotFoundException.class)
@@ -214,9 +216,9 @@ class PaiementServiceTest {
         @Test
         @DisplayName("should throw when typeFrais not found")
         void shouldThrowWhenTypeFraisNotFound() {
-            when(studentRepository.findById(1L)).thenReturn(Optional.of(sampleStudent));
-            when(typeFraisRepository.findById(999L)).thenReturn(Optional.empty());
-            sampleRequest.setTypeFraisId(999L);
+            when(studentRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleStudent));
+            when(typeFraisRepository.findById(new UUID(0, 999))).thenReturn(Optional.empty());
+            sampleRequest.setTypeFraisId(new UUID(0, 999));
 
             assertThatThrownBy(() -> paiementService.create(sampleRequest))
                     .isInstanceOf(ResourceNotFoundException.class)
@@ -228,8 +230,8 @@ class PaiementServiceTest {
         void shouldGenerateReferenceWhenNoneProvided() {
             sampleRequest.setReference(null);
 
-            when(studentRepository.findById(1L)).thenReturn(Optional.of(sampleStudent));
-            when(typeFraisRepository.findById(1L)).thenReturn(Optional.of(sampleTypeFrais));
+            when(studentRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleStudent));
+            when(typeFraisRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleTypeFrais));
             when(paiementRepository.save(any(Paiement.class))).thenAnswer(inv -> inv.getArgument(0));
             when(paiementMapper.toResponseDTO(any(Paiement.class))).thenReturn(sampleResponse);
 
@@ -245,8 +247,8 @@ class PaiementServiceTest {
         void shouldUseProvidedReference() {
             sampleRequest.setReference("CUSTOM-REF-001");
 
-            when(studentRepository.findById(1L)).thenReturn(Optional.of(sampleStudent));
-            when(typeFraisRepository.findById(1L)).thenReturn(Optional.of(sampleTypeFrais));
+            when(studentRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleStudent));
+            when(typeFraisRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleTypeFrais));
             when(paiementRepository.save(any(Paiement.class))).thenAnswer(inv -> inv.getArgument(0));
             when(paiementMapper.toResponseDTO(any(Paiement.class))).thenReturn(sampleResponse);
 
@@ -265,13 +267,13 @@ class PaiementServiceTest {
         @Test
         @DisplayName("should update existing paiement")
         void shouldUpdateExistingPaiement() {
-            when(paiementRepository.findById(1L)).thenReturn(Optional.of(samplePaiement));
-            when(studentRepository.findById(1L)).thenReturn(Optional.of(sampleStudent));
-            when(typeFraisRepository.findById(1L)).thenReturn(Optional.of(sampleTypeFrais));
+            when(paiementRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(samplePaiement));
+            when(studentRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleStudent));
+            when(typeFraisRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleTypeFrais));
             when(paiementRepository.save(any(Paiement.class))).thenReturn(samplePaiement);
             when(paiementMapper.toResponseDTO(samplePaiement)).thenReturn(sampleResponse);
 
-            PaiementResponseDTO result = paiementService.update(1L, sampleRequest);
+            PaiementResponseDTO result = paiementService.update(new UUID(0, 1), sampleRequest);
 
             assertThat(result).isNotNull();
             verify(paiementRepository).save(samplePaiement);
@@ -280,9 +282,9 @@ class PaiementServiceTest {
         @Test
         @DisplayName("should throw when updating non-existing paiement")
         void shouldThrowWhenUpdatingNonExisting() {
-            when(paiementRepository.findById(999L)).thenReturn(Optional.empty());
+            when(paiementRepository.findById(new UUID(0, 999))).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> paiementService.update(999L, sampleRequest))
+            assertThatThrownBy(() -> paiementService.update(new UUID(0, 999), sampleRequest))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Paiement");
         }
@@ -295,19 +297,19 @@ class PaiementServiceTest {
         @Test
         @DisplayName("should delete existing paiement")
         void shouldDeleteExistingPaiement() {
-            when(paiementRepository.existsById(1L)).thenReturn(true);
+            when(paiementRepository.existsById(new UUID(0, 1))).thenReturn(true);
 
-            paiementService.delete(1L);
+            paiementService.delete(new UUID(0, 1));
 
-            verify(paiementRepository).deleteById(1L);
+            verify(paiementRepository).deleteById(new UUID(0, 1));
         }
 
         @Test
         @DisplayName("should throw when deleting non-existing paiement")
         void shouldThrowWhenDeletingNonExisting() {
-            when(paiementRepository.existsById(999L)).thenReturn(false);
+            when(paiementRepository.existsById(new UUID(0, 999))).thenReturn(false);
 
-            assertThatThrownBy(() -> paiementService.delete(999L))
+            assertThatThrownBy(() -> paiementService.delete(new UUID(0, 999)))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Paiement");
         }
@@ -320,13 +322,13 @@ class PaiementServiceTest {
         @Test
         @DisplayName("should return paiements for a given student")
         void shouldReturnPaiementsForStudent() {
-            when(paiementRepository.findByStudentId(1L)).thenReturn(List.of(samplePaiement));
+            when(paiementRepository.findByStudentId(new UUID(0, 1))).thenReturn(List.of(samplePaiement));
             when(paiementMapper.toResponseDTOList(List.of(samplePaiement))).thenReturn(List.of(sampleResponse));
 
-            List<PaiementResponseDTO> result = paiementService.findByStudentId(1L);
+            List<PaiementResponseDTO> result = paiementService.findByStudentId(new UUID(0, 1));
 
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).getStudentId()).isEqualTo(1L);
+            assertThat(result.get(0).getStudentId()).isEqualTo(new UUID(0, 1));
         }
     }
 

@@ -3,7 +3,7 @@ import { modulesApi, type ModuleDTO, type ModuleRequest } from "@/api/modules.ap
 
 const MODULES_KEY = "modules";
 
-export function useModules(niveauId?: number) {
+export function useModules(niveauId?: string) {
   return useQuery<ModuleDTO[]>({
     queryKey: [MODULES_KEY, niveauId],
     queryFn: () => modulesApi.getAll(niveauId),
@@ -21,7 +21,7 @@ export function useCreateModule() {
 export function useUpdateModule() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: ModuleRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: ModuleRequest }) =>
       modulesApi.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [MODULES_KEY] }),
   });
@@ -30,7 +30,7 @@ export function useUpdateModule() {
 export function useDeleteModule() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => modulesApi.delete(id),
+    mutationFn: (id: string) => modulesApi.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [MODULES_KEY] }),
   });
 }

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.finance.dto.PenaliteRequestDTO;
 import com.schoolSys.schooolSys.finance.dto.PenaliteResponseDTO;
@@ -27,12 +29,12 @@ public class PenaliteService {
         return penaliteMapper.toResponseDTOList(penaliteRepository.findByAnneeScolaire(anneeScolaire));
     }
 
-    public List<PenaliteResponseDTO> findByStudentId(Long studentId, String anneeScolaire) {
+    public List<PenaliteResponseDTO> findByStudentId(UUID studentId, String anneeScolaire) {
         return penaliteMapper.toResponseDTOList(
                 penaliteRepository.findByStudentIdAndAnneeScolaire(studentId, anneeScolaire));
     }
 
-    public PenaliteResponseDTO findById(Long id) {
+    public PenaliteResponseDTO findById(UUID id) {
         Penalite penalite = penaliteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Penalite", id));
         return penaliteMapper.toResponseDTO(penalite);
@@ -64,7 +66,7 @@ public class PenaliteService {
     }
 
     @Transactional
-    public PenaliteResponseDTO update(Long id, PenaliteRequestDTO dto) {
+    public PenaliteResponseDTO update(UUID id, PenaliteRequestDTO dto) {
         Penalite penalite = penaliteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Penalite", id));
 
@@ -90,7 +92,7 @@ public class PenaliteService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!penaliteRepository.existsById(id)) {
             throw new ResourceNotFoundException("Penalite", id);
         }
@@ -98,7 +100,7 @@ public class PenaliteService {
     }
 
     @Transactional
-    public PenaliteResponseDTO togglePayee(Long id) {
+    public PenaliteResponseDTO togglePayee(UUID id) {
         Penalite penalite = penaliteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Penalite", id));
         penalite.setPayee(!penalite.getPayee());

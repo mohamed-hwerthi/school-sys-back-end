@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.anneescolaire;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.anneescolaire.dto.*;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -26,7 +28,7 @@ public class AnneeScolaireController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<AnneeScolaireResponseDTO>> getAnneeById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<AnneeScolaireResponseDTO>> getAnneeById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.getAnneeById(id)));
     }
 
@@ -46,41 +48,41 @@ public class AnneeScolaireController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
     public ResponseEntity<ApiResponse<AnneeScolaireResponseDTO>> updateAnnee(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody AnneeScolaireRequestDTO request) {
         return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.updateAnnee(id, request)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
-    public ResponseEntity<Void> deleteAnnee(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteAnnee(@PathVariable UUID id) {
         anneeScolaireService.deleteAnnee(id);
         return ResponseEntity.noContent().build();
     }
 
     @RequestMapping(value = "/{id}/activate", method = { RequestMethod.PUT, RequestMethod.PATCH })
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
-    public ResponseEntity<ApiResponse<AnneeScolaireResponseDTO>> activateAnnee(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<AnneeScolaireResponseDTO>> activateAnnee(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.activateAnnee(id)));
     }
 
     @RequestMapping(value = "/{id}/cloturer", method = { RequestMethod.PUT, RequestMethod.PATCH })
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
-    public ResponseEntity<ApiResponse<AnneeScolaireResponseDTO>> cloturerAnnee(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<AnneeScolaireResponseDTO>> cloturerAnnee(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.cloturerAnnee(id)));
     }
 
     // --- Trimestre endpoints ---
 
     @GetMapping("/{anneeScolaireId}/trimestres")
-    public ResponseEntity<ApiResponse<List<TrimestreDTO>>> getTrimestres(@PathVariable Long anneeScolaireId) {
+    public ResponseEntity<ApiResponse<List<TrimestreDTO>>> getTrimestres(@PathVariable UUID anneeScolaireId) {
         return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.getTrimestresByAnnee(anneeScolaireId)));
     }
 
     @PostMapping("/{anneeScolaireId}/trimestres")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
     public ResponseEntity<ApiResponse<TrimestreDTO>> addTrimestre(
-            @PathVariable Long anneeScolaireId,
+            @PathVariable UUID anneeScolaireId,
             @Valid @RequestBody TrimestreDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.ok(anneeScolaireService.addTrimestre(anneeScolaireId, dto)));
@@ -89,14 +91,14 @@ public class AnneeScolaireController {
     @PutMapping("/trimestres/{id}")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
     public ResponseEntity<ApiResponse<TrimestreDTO>> updateTrimestre(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody TrimestreDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.updateTrimestre(id, dto)));
     }
 
     @DeleteMapping("/trimestres/{id}")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
-    public ResponseEntity<Void> deleteTrimestre(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteTrimestre(@PathVariable UUID id) {
         anneeScolaireService.deleteTrimestre(id);
         return ResponseEntity.noContent().build();
     }
@@ -104,14 +106,14 @@ public class AnneeScolaireController {
     // --- Vacance endpoints ---
 
     @GetMapping("/{anneeScolaireId}/vacances")
-    public ResponseEntity<ApiResponse<List<VacanceDTO>>> getVacances(@PathVariable Long anneeScolaireId) {
+    public ResponseEntity<ApiResponse<List<VacanceDTO>>> getVacances(@PathVariable UUID anneeScolaireId) {
         return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.getVacancesByAnnee(anneeScolaireId)));
     }
 
     @PostMapping("/{anneeScolaireId}/vacances")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
     public ResponseEntity<ApiResponse<VacanceDTO>> addVacance(
-            @PathVariable Long anneeScolaireId,
+            @PathVariable UUID anneeScolaireId,
             @Valid @RequestBody VacanceDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.ok(anneeScolaireService.addVacance(anneeScolaireId, dto)));
@@ -120,14 +122,14 @@ public class AnneeScolaireController {
     @PutMapping("/vacances/{id}")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
     public ResponseEntity<ApiResponse<VacanceDTO>> updateVacance(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody VacanceDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.updateVacance(id, dto)));
     }
 
     @DeleteMapping("/vacances/{id}")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
-    public ResponseEntity<Void> deleteVacance(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteVacance(@PathVariable UUID id) {
         anneeScolaireService.deleteVacance(id);
         return ResponseEntity.noContent().build();
     }
@@ -135,14 +137,14 @@ public class AnneeScolaireController {
     // --- JourFerie endpoints ---
 
     @GetMapping("/{anneeScolaireId}/jours-feries")
-    public ResponseEntity<ApiResponse<List<JourFerieDTO>>> getJoursFeries(@PathVariable Long anneeScolaireId) {
+    public ResponseEntity<ApiResponse<List<JourFerieDTO>>> getJoursFeries(@PathVariable UUID anneeScolaireId) {
         return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.getJoursFeriesByAnnee(anneeScolaireId)));
     }
 
     @PostMapping("/{anneeScolaireId}/jours-feries")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
     public ResponseEntity<ApiResponse<JourFerieDTO>> addJourFerie(
-            @PathVariable Long anneeScolaireId,
+            @PathVariable UUID anneeScolaireId,
             @Valid @RequestBody JourFerieDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.ok(anneeScolaireService.addJourFerie(anneeScolaireId, dto)));
@@ -151,14 +153,14 @@ public class AnneeScolaireController {
     @PutMapping("/jours-feries/{id}")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
     public ResponseEntity<ApiResponse<JourFerieDTO>> updateJourFerie(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody JourFerieDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(anneeScolaireService.updateJourFerie(id, dto)));
     }
 
     @DeleteMapping("/jours-feries/{id}")
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
-    public ResponseEntity<Void> deleteJourFerie(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteJourFerie(@PathVariable UUID id) {
         anneeScolaireService.deleteJourFerie(id);
         return ResponseEntity.noContent().build();
     }

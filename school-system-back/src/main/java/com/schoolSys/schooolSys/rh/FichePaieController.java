@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rh;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.rh.dto.CreateFichePaieRequest;
 import com.schoolSys.schooolSys.rh.dto.FichePaieDTO;
@@ -26,13 +28,13 @@ public class FichePaieController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<FichePaieDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<FichePaieDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(fichePaieService.getById(id)));
     }
 
     @GetMapping("/employe/{employeId}")
     public ResponseEntity<ApiResponse<List<FichePaieDTO>>> getByEmploye(
-            @PathVariable Long employeId) {
+            @PathVariable UUID employeId) {
         return ResponseEntity.ok(ApiResponse.ok(fichePaieService.getByEmploye(employeId)));
     }
 
@@ -51,12 +53,12 @@ public class FichePaieController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<FichePaieDTO>> update(
-            @PathVariable Long id, @Valid @RequestBody CreateFichePaieRequest dto) {
+            @PathVariable UUID id, @Valid @RequestBody CreateFichePaieRequest dto) {
         return ResponseEntity.ok(ApiResponse.ok(fichePaieService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         fichePaieService.delete(id);
         return ResponseEntity.noContent().build();
     }

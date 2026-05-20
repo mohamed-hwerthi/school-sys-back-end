@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class BudgetDTO {
 
-    private Long id;
+    private UUID id;
     private String anneeScolaire;
     private String label;
     private String type;

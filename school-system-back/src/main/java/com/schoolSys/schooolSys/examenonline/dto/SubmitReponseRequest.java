@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.examenonline.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +17,7 @@ import java.util.List;
 public class SubmitReponseRequest {
 
     @NotNull(message = "La tentative est obligatoire")
-    private Long tentativeId;
+    private UUID tentativeId;
 
     private List<ReponseItem> reponses;
 
@@ -24,8 +26,8 @@ public class SubmitReponseRequest {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ReponseItem {
-        private Long questionId;
-        private Long choixId;
+        private UUID questionId;
+        private UUID choixId;
         private String reponseTexte;
     }
 }

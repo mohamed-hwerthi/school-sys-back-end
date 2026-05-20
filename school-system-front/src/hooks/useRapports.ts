@@ -21,7 +21,7 @@ export function useRapports(params: RapportFilters = {}) {
 export function useDeleteRapport() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => rapportsApi.delete(id),
+    mutationFn: (id: string) => rapportsApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [RAPPORTS_KEY] });
       notify.success("Rapport supprime");

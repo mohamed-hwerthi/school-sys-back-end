@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.module;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.module.dto.ModuleRequestDTO;
 import com.schoolSys.schooolSys.module.dto.ModuleResponseDTO;
@@ -21,12 +23,12 @@ public class ModuleController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<ModuleResponseDTO>>> getAll(
-            @RequestParam(required = false) Long niveauId) {
+            @RequestParam(required = false) UUID niveauId) {
         return ResponseEntity.ok(ApiResponse.ok(moduleService.findAll(niveauId)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ModuleResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ModuleResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(moduleService.findById(id)));
     }
 
@@ -41,14 +43,14 @@ public class ModuleController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
     public ResponseEntity<ApiResponse<ModuleResponseDTO>> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody ModuleRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(moduleService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','DIRECTEUR')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         moduleService.delete(id);
         return ResponseEntity.noContent().build();
     }

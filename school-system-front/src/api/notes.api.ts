@@ -3,10 +3,10 @@ import api from "./axios";
 export type NoteStatut = "PRESENT" | "ABSENT" | "EXEMPT";
 
 export interface NoteDTO {
-  id: number;
-  studentId: number;
+  id: string;
+  studentId: string;
   studentName: string;
-  examenId: number;
+  examenId: string;
   examenName: string;
   trimestre: number;
   valeur: number | null;
@@ -15,8 +15,8 @@ export interface NoteDTO {
 }
 
 export interface NoteRequest {
-  studentId: number;
-  examenId: number;
+  studentId: string;
+  examenId: string;
   trimestre: number;
   valeur: number | null;
   observation?: string;
@@ -24,7 +24,7 @@ export interface NoteRequest {
 }
 
 export interface MoyenneDTO {
-  studentId: number;
+  studentId: string;
   studentName: string;
   trimestre: number;
   moyennesParModule: Record<string, number>;
@@ -33,7 +33,7 @@ export interface MoyenneDTO {
 
 // NOT-007: Bareme
 export interface BaremeDTO {
-  id?: number;
+  id?: string;
   label: string;
   noteMax: number;
   noteMin: number;
@@ -43,19 +43,19 @@ export interface BaremeDTO {
 
 // NOT-009: Competences
 export interface CompetenceDTO {
-  id?: number;
-  moduleId: number;
+  id?: string;
+  moduleId: string;
   label: string;
   description?: string;
 }
 
 // NOT-010: Evaluation competences
 export interface EvaluationCompetenceDTO {
-  id?: number;
-  eleveId: number;
-  competenceId: number;
+  id?: string;
+  eleveId: string;
+  competenceId: string;
   competenceLabel?: string;
-  examenId: number;
+  examenId: string;
   niveau: "NON_ATTEINT" | "EN_COURS" | "ATTEINT" | "DEPASSE";
   commentaire?: string;
 }
@@ -63,12 +63,12 @@ export interface EvaluationCompetenceDTO {
 const BASE = "/notes";
 
 export const notesApi = {
-  getByExamen: async (examenId: number, trimestre: number): Promise<NoteDTO[]> => {
+  getByExamen: async (examenId: string, trimestre: number): Promise<NoteDTO[]> => {
     const res = await api.get<NoteDTO[]>(`${BASE}?examenId=${examenId}&trimestre=${trimestre}`);
     return res.data;
   },
 
-  getByStudent: async (studentId: number, trimestre: number): Promise<NoteDTO[]> => {
+  getByStudent: async (studentId: string, trimestre: number): Promise<NoteDTO[]> => {
     const res = await api.get<NoteDTO[]>(`${BASE}/student/${studentId}?trimestre=${trimestre}`);
     return res.data;
   },
@@ -78,12 +78,12 @@ export const notesApi = {
     return res.data;
   },
 
-  getMoyennes: async (classeId: number, trimestre: number): Promise<MoyenneDTO[]> => {
+  getMoyennes: async (classeId: string, trimestre: number): Promise<MoyenneDTO[]> => {
     const res = await api.get<MoyenneDTO[]>(`${BASE}/moyennes?classeId=${classeId}&trimestre=${trimestre}`);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`${BASE}/${id}`),
+  delete: (id: string) => api.delete(`${BASE}/${id}`),
 
   // Baremes
   getBaremes: async (): Promise<BaremeDTO[]> => {
@@ -96,13 +96,13 @@ export const notesApi = {
     return res.data;
   },
 
-  updateBareme: async (id: number, dto: BaremeDTO): Promise<BaremeDTO> => {
+  updateBareme: async (id: string, dto: BaremeDTO): Promise<BaremeDTO> => {
     const res = await api.put<BaremeDTO>(`${BASE}/baremes/${id}`, dto);
     return res.data;
   },
 
   // Competences
-  getCompetences: async (moduleId?: number): Promise<CompetenceDTO[]> => {
+  getCompetences: async (moduleId?: string): Promise<CompetenceDTO[]> => {
     const params = moduleId ? `?moduleId=${moduleId}` : "";
     const res = await api.get<CompetenceDTO[]>(`${BASE}/competences${params}`);
     return res.data;
@@ -113,12 +113,12 @@ export const notesApi = {
     return res.data;
   },
 
-  deleteCompetence: async (id: number): Promise<void> => {
+  deleteCompetence: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/competences/${id}`);
   },
 
   // Evaluations competences
-  getEvaluationsCompetences: async (examenId: number, eleveId?: number): Promise<EvaluationCompetenceDTO[]> => {
+  getEvaluationsCompetences: async (examenId: string, eleveId?: string): Promise<EvaluationCompetenceDTO[]> => {
     const params = eleveId ? `?examenId=${examenId}&eleveId=${eleveId}` : `?examenId=${examenId}`;
     const res = await api.get<EvaluationCompetenceDTO[]>(`${BASE}/evaluations-competences${params}`);
     return res.data;

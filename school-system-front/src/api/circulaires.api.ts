@@ -27,7 +27,7 @@ export const circulairesApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<Circulaire> => {
+  getById: async (id: string): Promise<Circulaire> => {
     const res = await api.get<Circulaire>(`/circulaires/${id}`);
     return res.data;
   },
@@ -37,20 +37,20 @@ export const circulairesApi = {
     return res.data;
   },
 
-  update: async (id: number, data: Partial<CirculaireRequest>): Promise<Circulaire> => {
+  update: async (id: string, data: Partial<CirculaireRequest>): Promise<Circulaire> => {
     const res = await api.put<Circulaire>(`/circulaires/${id}`, data);
     return res.data;
   },
 
-  publish: async (id: number): Promise<Circulaire> => {
+  publish: async (id: string): Promise<Circulaire> => {
     const res = await api.put<Circulaire>(`/circulaires/${id}/publier`);
     return res.data;
   },
 
-  archive: async (id: number): Promise<Circulaire> => {
+  archive: async (id: string): Promise<Circulaire> => {
     const res = await api.put<Circulaire>(`/circulaires/${id}/archiver`);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`/circulaires/${id}`),
+  delete: (id: string) => api.delete(`/circulaires/${id}`),
 };

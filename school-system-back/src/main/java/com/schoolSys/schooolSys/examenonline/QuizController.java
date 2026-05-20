@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.examenonline;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.examenonline.dto.CreateQuizRequest;
 import com.schoolSys.schooolSys.examenonline.dto.QuizDTO;
@@ -23,26 +25,26 @@ public class QuizController {
     @GetMapping
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<QuizDTO>>> getAll(
-            @RequestParam(required = false) Long classeId,
+            @RequestParam(required = false) UUID classeId,
             @RequestParam(required = false) String statut) {
         return ResponseEntity.ok(ApiResponse.ok(quizService.findAll(classeId, statut)));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<QuizDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<QuizDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(quizService.findById(id)));
     }
 
     @GetMapping("/{id}/detail")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<QuizDetailDTO>> getDetail(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<QuizDetailDTO>> getDetail(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(quizService.findDetailById(id)));
     }
 
     @GetMapping("/classe/{classeId}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<List<QuizDTO>>> getByClasse(@PathVariable Long classeId) {
+    public ResponseEntity<ApiResponse<List<QuizDTO>>> getByClasse(@PathVariable UUID classeId) {
         return ResponseEntity.ok(ApiResponse.ok(quizService.findByClasse(classeId)));
     }
 
@@ -56,20 +58,20 @@ public class QuizController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<ApiResponse<QuizDTO>> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody CreateQuizRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(quizService.update(id, request)));
     }
 
     @PutMapping("/{id}/publish")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
-    public ResponseEntity<ApiResponse<QuizDTO>> publish(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<QuizDTO>> publish(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(quizService.publish(id)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         quizService.delete(id);
         return ResponseEntity.noContent().build();
     }

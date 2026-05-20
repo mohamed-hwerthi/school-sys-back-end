@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS factures (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     numero VARCHAR(20) NOT NULL UNIQUE,
-    eleve_id BIGINT NOT NULL REFERENCES students(id),
+    eleve_id UUID NOT NULL REFERENCES students(id),
     date_emission DATE NOT NULL DEFAULT CURRENT_DATE,
     date_echeance DATE,
     montant_total DECIMAL(10,2) NOT NULL,
@@ -14,9 +14,9 @@ CREATE TABLE IF NOT EXISTS factures (
 );
 
 CREATE TABLE IF NOT EXISTS facture_lignes (
-    id BIGSERIAL PRIMARY KEY,
-    facture_id BIGINT NOT NULL REFERENCES factures(id) ON DELETE CASCADE,
-    type_frais_id BIGINT REFERENCES types_frais(id),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    facture_id UUID NOT NULL REFERENCES factures(id) ON DELETE CASCADE,
+    type_frais_id UUID REFERENCES types_frais(id),
     description VARCHAR(255) NOT NULL,
     quantite INTEGER NOT NULL DEFAULT 1,
     prix_unitaire DECIMAL(10,2) NOT NULL,
@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS facture_lignes (
 );
 
 CREATE TABLE IF NOT EXISTS echeanciers (
-    id BIGSERIAL PRIMARY KEY,
-    eleve_id BIGINT NOT NULL REFERENCES students(id),
-    type_frais_id BIGINT REFERENCES types_frais(id),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    eleve_id UUID NOT NULL REFERENCES students(id),
+    type_frais_id UUID REFERENCES types_frais(id),
     montant_total DECIMAL(10,2) NOT NULL,
     nb_mensualites INTEGER NOT NULL,
     date_debut DATE NOT NULL,
@@ -34,13 +34,13 @@ CREATE TABLE IF NOT EXISTS echeanciers (
 );
 
 CREATE TABLE IF NOT EXISTS echeances (
-    id BIGSERIAL PRIMARY KEY,
-    echeancier_id BIGINT NOT NULL REFERENCES echeanciers(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    echeancier_id UUID NOT NULL REFERENCES echeanciers(id) ON DELETE CASCADE,
     numero INTEGER NOT NULL,
     montant DECIMAL(10,2) NOT NULL,
     date_echeance DATE NOT NULL,
     statut VARCHAR(20) NOT NULL DEFAULT 'EN_ATTENTE' CHECK (statut IN ('EN_ATTENTE','PAYEE','EN_RETARD')),
-    paiement_id BIGINT REFERENCES paiements(id),
+    paiement_id UUID REFERENCES paiements(id),
     UNIQUE(echeancier_id, numero)
 );
 CREATE INDEX idx_factures_eleve ON factures(eleve_id);

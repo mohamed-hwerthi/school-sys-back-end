@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.cantine;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.cantine.dto.CreateMenuRequest;
 import com.schoolSys.schooolSys.cantine.dto.MenuDTO;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
@@ -24,7 +26,7 @@ public class MenuService {
                 .collect(Collectors.toList());
     }
 
-    public MenuDTO getById(Long id) {
+    public MenuDTO getById(UUID id) {
         return toDto(menuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Menu", id)));
     }
@@ -58,7 +60,7 @@ public class MenuService {
     }
 
     @Transactional
-    public MenuDTO update(Long id, CreateMenuRequest request) {
+    public MenuDTO update(UUID id, CreateMenuRequest request) {
         Menu menu = menuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Menu", id));
         menu.setDateMenu(request.getDateMenu());
@@ -74,7 +76,7 @@ public class MenuService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!menuRepository.existsById(id)) {
             throw new ResourceNotFoundException("Menu", id);
         }

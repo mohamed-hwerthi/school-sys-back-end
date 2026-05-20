@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.examenonline;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.examenonline.dto.ChoixReponseDTO;
 import com.schoolSys.schooolSys.examenonline.dto.CreateQuestionRequest;
@@ -20,19 +22,19 @@ public class QuestionService {
     private final QuizRepository quizRepository;
     private final ChoixReponseRepository choixReponseRepository;
 
-    public List<QuestionDTO> findByQuiz(Long quizId) {
+    public List<QuestionDTO> findByQuiz(UUID quizId) {
         return questionRepository.findByQuizIdOrderByOrdreAsc(quizId)
                 .stream().map(this::toDTO).toList();
     }
 
-    public QuestionDTO findById(Long id) {
+    public QuestionDTO findById(UUID id) {
         Question question = questionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", id));
         return toDTO(question);
     }
 
     @Transactional
-    public QuestionDTO create(Long quizId, CreateQuestionRequest request) {
+    public QuestionDTO create(UUID quizId, CreateQuestionRequest request) {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", quizId));
 
@@ -67,7 +69,7 @@ public class QuestionService {
     }
 
     @Transactional
-    public QuestionDTO update(Long id, CreateQuestionRequest request) {
+    public QuestionDTO update(UUID id, CreateQuestionRequest request) {
         Question question = questionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", id));
 
@@ -97,7 +99,7 @@ public class QuestionService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!questionRepository.existsById(id)) {
             throw new ResourceNotFoundException("Question", id);
         }
@@ -105,11 +107,11 @@ public class QuestionService {
     }
 
     @Transactional
-    public List<QuestionDTO> reorder(Long quizId, List<Long> questionIds) {
+    public List<QuestionDTO> reorder(UUID quizId, List<UUID> questionIds) {
         List<Question> questions = questionRepository.findByQuizIdOrderByOrdreAsc(quizId);
 
         for (int i = 0; i < questionIds.size(); i++) {
-            Long qId = questionIds.get(i);
+            UUID qId = questionIds.get(i);
             questions.stream()
                     .filter(q -> q.getId().equals(qId))
                     .findFirst()

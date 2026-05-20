@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.devoir.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,10 +16,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class SoumissionDTO {
 
-    private Long id;
-    private Long devoirId;
+    private UUID id;
+    private UUID devoirId;
     private String devoirTitre;
-    private Long eleveId;
+    private UUID eleveId;
     private String contenu;
     private String fichierUrl;
     private LocalDateTime dateSoumission;

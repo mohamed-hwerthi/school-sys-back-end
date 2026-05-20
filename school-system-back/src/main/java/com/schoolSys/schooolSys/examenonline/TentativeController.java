@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.examenonline;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.examenonline.dto.*;
 import jakarta.validation.Valid;
@@ -20,19 +22,19 @@ public class TentativeController {
 
     @GetMapping("/quiz/{quizId}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<List<TentativeDTO>>> getByQuiz(@PathVariable Long quizId) {
+    public ResponseEntity<ApiResponse<List<TentativeDTO>>> getByQuiz(@PathVariable UUID quizId) {
         return ResponseEntity.ok(ApiResponse.ok(tentativeService.findByQuiz(quizId)));
     }
 
     @GetMapping("/eleve/{eleveId}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<List<TentativeDTO>>> getByEleve(@PathVariable Long eleveId) {
+    public ResponseEntity<ApiResponse<List<TentativeDTO>>> getByEleve(@PathVariable UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(tentativeService.findByEleve(eleveId)));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<TentativeDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<TentativeDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(tentativeService.findById(id)));
     }
 
@@ -51,7 +53,7 @@ public class TentativeController {
 
     @GetMapping("/stats/{quizId}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<QuizStatsDTO>> getStats(@PathVariable Long quizId) {
+    public ResponseEntity<ApiResponse<QuizStatsDTO>> getStats(@PathVariable UUID quizId) {
         return ResponseEntity.ok(ApiResponse.ok(tentativeService.getStats(quizId)));
     }
 }

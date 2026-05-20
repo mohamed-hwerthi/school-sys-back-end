@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.module;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -7,6 +9,7 @@ import com.schoolSys.schooolSys.domaine.Domaine;
 import com.schoolSys.schooolSys.domaine.DomaineRepository;
 import com.schoolSys.schooolSys.domaine.SousDomaine;
 import com.schoolSys.schooolSys.domaine.SousDomaineRepository;
+import com.schoolSys.schooolSys.examen.ExamenService;
 import com.schoolSys.schooolSys.module.dto.ModuleRequestDTO;
 import com.schoolSys.schooolSys.module.dto.ModuleResponseDTO;
 import com.schoolSys.schooolSys.niveau.Niveau;
@@ -27,9 +30,10 @@ public class ModuleService {
     private final NiveauRepository niveauRepository;
     private final DomaineRepository domaineRepository;
     private final SousDomaineRepository sousDomaineRepository;
+    private final ExamenService examenService;
     private final CurrentUserContext currentUser;
 
-    public List<ModuleResponseDTO> findAll(Long niveauId) {
+    public List<ModuleResponseDTO> findAll(UUID niveauId) {
         List<Module> modules;
         if (niveauId != null) {
             modules = moduleRepository.findByNiveauIdOrderByOrdreEtatiqueAsc(niveauId);
@@ -38,13 +42,13 @@ public class ModuleService {
         }
         // Row-level scoping: an ENSEIGNANT only sees the matières he is affected to teach.
         if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
-            Set<Long> scoped = currentUser.getScopedModuleIdsForTeacher();
+            Set<UUID> scoped = currentUser.getScopedModuleIdsForTeacher();
             modules = modules.stream().filter(m -> scoped.contains(m.getId())).toList();
         }
         return modules.stream().map(this::toResponse).toList();
     }
 
-    public ModuleResponseDTO findById(Long id) {
+    public ModuleResponseDTO findById(UUID id) {
         Module module = moduleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Module", id));
         return toResponse(module);
@@ -74,11 +78,14 @@ public class ModuleService {
                 .preferenceHoraire(dto.getPreferenceHoraire())
                 .build();
 
-        return toResponse(moduleRepository.save(module));
+        Module saved = moduleRepository.save(module);
+        // Each new matière gets a default exam grid: one exam per (classe × trimestre).
+        examenService.createDefaultsForModule(saved);
+        return toResponse(saved);
     }
 
     @Transactional
-    public ModuleResponseDTO update(Long id, ModuleRequestDTO dto) {
+    public ModuleResponseDTO update(UUID id, ModuleRequestDTO dto) {
         Module module = moduleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Module", id));
 
@@ -108,20 +115,20 @@ public class ModuleService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!moduleRepository.existsById(id)) {
             throw new ResourceNotFoundException("Module", id);
         }
         moduleRepository.deleteById(id);
     }
 
-    private Domaine resolveDomaine(Long domaineId) {
+    private Domaine resolveDomaine(UUID domaineId) {
         if (domaineId == null) return null;
         return domaineRepository.findById(domaineId)
                 .orElseThrow(() -> new ResourceNotFoundException("Domaine", domaineId));
     }
 
-    private SousDomaine resolveSousDomaine(Long sousDomaineId) {
+    private SousDomaine resolveSousDomaine(UUID sousDomaineId) {
         if (sousDomaineId == null) return null;
         return sousDomaineRepository.findById(sousDomaineId)
                 .orElseThrow(() -> new ResourceNotFoundException("SousDomaine", sousDomaineId));

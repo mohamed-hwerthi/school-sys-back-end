@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.discipline.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,14 +16,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class IncidentResponseDTO {
-    private Long id;
+    private UUID id;
     private String titre;
     private String description;
     private LocalDate date;
     private String type;
     private String gravite;
     private String lieu;
-    private Long signaleParId;
+    private UUID signaleParId;
     private List<IncidentEleveResponseDTO> elevesImpliques;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -31,8 +33,8 @@ public class IncidentResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class IncidentEleveResponseDTO {
-        private Long id;
-        private Long eleveId;
+        private UUID id;
+        private UUID eleveId;
         private String roleEleve;
     }
 }

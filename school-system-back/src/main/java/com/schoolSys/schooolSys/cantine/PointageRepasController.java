@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.cantine;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.cantine.dto.CantineStatsDTO;
 import com.schoolSys.schooolSys.cantine.dto.PointageBatchRequest;
 import com.schoolSys.schooolSys.cantine.dto.PointageRepasDTO;
@@ -35,7 +37,7 @@ public class PointageRepasController {
 
     @GetMapping("/eleve/{eleveId}")
     @PreAuthorize("hasAuthority('MANAGE_CANTINE')")
-    public ResponseEntity<ApiResponse<List<PointageRepasDTO>>> getByEleve(@PathVariable Long eleveId) {
+    public ResponseEntity<ApiResponse<List<PointageRepasDTO>>> getByEleve(@PathVariable UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(pointageService.getByEleve(eleveId)));
     }
 

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.messaging;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.messaging.dto.*;
 import jakarta.validation.Valid;
@@ -28,27 +30,27 @@ public class MessagingController {
 
     @GetMapping("/inbox/{recipientId}")
     @PreAuthorize("hasAuthority('READ_MESSAGES')")
-    public ResponseEntity<ApiResponse<List<MessageResponseDTO>>> getInbox(@PathVariable Long recipientId) {
+    public ResponseEntity<ApiResponse<List<MessageResponseDTO>>> getInbox(@PathVariable UUID recipientId) {
         return ResponseEntity.ok(ApiResponse.ok(messagingService.getInbox(recipientId)));
     }
 
     @GetMapping("/sent/{senderId}")
     @PreAuthorize("hasAuthority('READ_MESSAGES')")
-    public ResponseEntity<ApiResponse<List<MessageResponseDTO>>> getSent(@PathVariable Long senderId) {
+    public ResponseEntity<ApiResponse<List<MessageResponseDTO>>> getSent(@PathVariable UUID senderId) {
         return ResponseEntity.ok(ApiResponse.ok(messagingService.getSent(senderId)));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_MESSAGES')")
-    public ResponseEntity<ApiResponse<MessageResponseDTO>> getMessageById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<MessageResponseDTO>> getMessageById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(messagingService.getMessageById(id)));
     }
 
     @PutMapping("/{messageId}/read/{recipientId}")
     @PreAuthorize("hasAuthority('READ_MESSAGES')")
     public ResponseEntity<Void> markAsRead(
-            @PathVariable Long messageId,
-            @PathVariable Long recipientId) {
+            @PathVariable UUID messageId,
+            @PathVariable UUID recipientId) {
         messagingService.markAsRead(messageId, recipientId);
         return ResponseEntity.noContent().build();
     }
@@ -56,8 +58,8 @@ public class MessagingController {
     @DeleteMapping("/{messageId}/recipient/{recipientId}")
     @PreAuthorize("hasAuthority('WRITE_MESSAGES')")
     public ResponseEntity<Void> deleteForRecipient(
-            @PathVariable Long messageId,
-            @PathVariable Long recipientId) {
+            @PathVariable UUID messageId,
+            @PathVariable UUID recipientId) {
         messagingService.deleteForRecipient(messageId, recipientId);
         return ResponseEntity.noContent().build();
     }

@@ -20,29 +20,29 @@ export type TypeSanction =
 export type StatutSanction = 'ACTIVE' | 'LEVEE' | 'EXPIREE';
 
 export interface IncidentEleve {
-  id?: number;
-  eleveId: number;
+  id?: string;
+  eleveId: string;
   roleEleve?: string;
 }
 
 export interface Incident {
-  id: number;
+  id: string;
   titre: string;
   description?: string;
   date: string;
   type: TypeIncident;
   gravite: GraviteType;
   lieu?: string;
-  signaleParId?: number;
+  signaleParId?: string;
   elevesImpliques: IncidentEleve[];
   createdAt: string;
   updatedAt?: string;
 }
 
 export interface Sanction {
-  id: number;
-  incidentId?: number;
-  eleveId: number;
+  id: string;
+  incidentId?: string;
+  eleveId: string;
   eleveNom?: string;
   typeSanction: TypeSanction;
   description?: string;
@@ -57,7 +57,7 @@ export interface Sanction {
 }
 
 export interface SanctionSuggestion {
-  eleveId: number;
+  eleveId: string;
   currentMaxNiveau: number;
   suggestedNiveau: number;
   suggestedType: TypeSanction;
@@ -72,11 +72,11 @@ export interface EvenementDisciplinaire {
   gravite?: string;
   niveau?: number;
   statut?: string;
-  id: number;
+  id: string;
 }
 
 export interface DossierDisciplinaire {
-  eleveId: number;
+  eleveId: string;
   eleveNom?: string;
   totalIncidents: number;
   totalSanctions: number;

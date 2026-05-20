@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.transport.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,10 +17,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CircuitDTO {
-    private Long id;
+    private UUID id;
     private String nom;
     private String description;
-    private Long vehiculeId;
+    private UUID vehiculeId;
     private String vehiculeImmatriculation;
     private LocalTime heureDepart;
     private LocalTime heureRetour;

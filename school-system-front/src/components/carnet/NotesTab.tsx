@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dialog";
 
 interface LocalNote {
-  studentId: number;
+  studentId: string;
   studentName: string;
   valeur: string;
   observation: string;
@@ -152,7 +152,7 @@ export default function NotesTab() {
   const selectedModule = modules.find((m) => m.id === moduleId);
   const isArabicModule = selectedModule ? ARABIC_REGEX.test(selectedModule.name) : false;
 
-  const handleNoteChange = (studentId: number, field: "valeur" | "observation", value: string) => {
+  const handleNoteChange = (studentId: string, field: "valeur" | "observation", value: string) => {
     let newValue = value;
     if (field === "valeur" && value !== "") {
       const n = Number(value.replace(",", "."));
@@ -272,7 +272,9 @@ export default function NotesTab() {
             onClick: () => goToTab("moyennes"),
           },
         });
-        setExamenId(0);
+        setExamenId("");
+        // Redirige vers l'Aperçu pour voir la progression mise à jour.
+        goToTab("apercu");
       },
       onError: () => notify.error("Erreur lors de la sauvegarde"),
     });
@@ -307,7 +309,7 @@ export default function NotesTab() {
     performSave(buildPayload(toSave));
   };
 
-  const handleStatutChange = (studentId: number, statut: NoteStatut) => {
+  const handleStatutChange = (studentId: string, statut: NoteStatut) => {
     setLocalNotes((prev) =>
       prev.map((n) =>
         n.studentId === studentId
@@ -369,8 +371,8 @@ export default function NotesTab() {
         >
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <Select
-              value={niveauId ? String(niveauId) : ""}
-              onValueChange={(v) => setNiveauId(Number(v))}
+              value={niveauId || ""}
+              onValueChange={(v) => setNiveauId(v)}
             >
               <SelectTrigger className="w-[180px]">
                 <GraduationCap className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
@@ -386,8 +388,8 @@ export default function NotesTab() {
             </Select>
 
             <Select
-              value={classeId ? String(classeId) : ""}
-              onValueChange={(v) => setClasseId(Number(v))}
+              value={classeId || ""}
+              onValueChange={(v) => setClasseId(v)}
               disabled={!niveauId}
             >
               <SelectTrigger className="w-[140px]">
@@ -403,8 +405,8 @@ export default function NotesTab() {
             </Select>
 
             <Select
-              value={moduleId ? String(moduleId) : ""}
-              onValueChange={(v) => setModuleId(Number(v))}
+              value={moduleId || ""}
+              onValueChange={(v) => setModuleId(v)}
               disabled={!niveauId}
             >
               <SelectTrigger className="w-[180px]">
@@ -420,8 +422,8 @@ export default function NotesTab() {
             </Select>
 
             <Select
-              value={examenId ? String(examenId) : ""}
-              onValueChange={(v) => setExamenId(Number(v))}
+              value={examenId || ""}
+              onValueChange={(v) => setExamenId(v)}
               disabled={!classeId || !moduleId}
             >
               <SelectTrigger className="w-[200px]">
@@ -440,7 +442,7 @@ export default function NotesTab() {
       )}
 
       {/* Grade Entry Grid */}
-      {examenId > 0 && trimestre > 0 && (
+      {examenId && trimestre > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -493,7 +495,7 @@ export default function NotesTab() {
                   Sauvegarde
                 </span>
               )}
-              {classeId > 0 && trimestre > 0 && (
+              {classeId && trimestre > 0 && (
                 <ExportButton
                   type="notes"
                   label="Exporter"

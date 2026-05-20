@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import { colors, spacing, fontSize } from "@/constants/theme";
+import { useTheme } from "@/context/ThemeContext";
+import { spacing, fontSize } from "@/constants/theme";
 
 interface SectionHeaderProps {
   title: string;
@@ -8,6 +9,7 @@ interface SectionHeaderProps {
 }
 
 export function SectionHeader({ title, action, onAction }: SectionHeaderProps) {
+  const { colors } = useTheme();
   return (
     <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: spacing.md }}>
       <Text style={{ fontSize: fontSize.lg, fontWeight: "700", color: colors.text }}>{title}</Text>

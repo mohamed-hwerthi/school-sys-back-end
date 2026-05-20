@@ -1,6 +1,6 @@
 -- Users table in PUBLIC schema (needed before tenant resolution)
 CREATE TABLE IF NOT EXISTS users (
-    id              BIGSERIAL PRIMARY KEY,
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email           VARCHAR(255) NOT NULL UNIQUE,
     password_hash   VARCHAR(255) NOT NULL,
     first_name      VARCHAR(100) NOT NULL,
@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Refresh tokens for JWT rotation
 CREATE TABLE IF NOT EXISTS refresh_tokens (
-    id          BIGSERIAL PRIMARY KEY,
-    user_id     BIGINT       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     UUID       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     token       VARCHAR(500) NOT NULL UNIQUE,
     expires_at  TIMESTAMP    NOT NULL,
     revoked     BOOLEAN      NOT NULL DEFAULT FALSE,

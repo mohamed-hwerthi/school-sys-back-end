@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -8,11 +10,11 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.util.List;
 
-public interface PaiementRepository extends JpaRepository<Paiement, Long>, JpaSpecificationExecutor<Paiement> {
+public interface PaiementRepository extends JpaRepository<Paiement, UUID>, JpaSpecificationExecutor<Paiement> {
 
-    List<Paiement> findByStudentId(Long studentId);
+    List<Paiement> findByStudentId(UUID studentId);
 
-    List<Paiement> findByStudentIdAndAnneeScolaire(Long studentId, String anneeScolaire);
+    List<Paiement> findByStudentIdAndAnneeScolaire(UUID studentId, String anneeScolaire);
 
     List<Paiement> findByMoisAndAnneeScolaire(String mois, String anneeScolaire);
 
@@ -35,7 +37,7 @@ public interface PaiementRepository extends JpaRepository<Paiement, Long>, JpaSp
     long countByStatutAndAnneeScolaire(Paiement.StatutPaiement statut, String anneeScolaire);
 
     boolean existsByStudentIdAndTypeFraisIdAndMoisAndAnneeScolaire(
-            Long studentId, Long typeFraisId, String mois, String anneeScolaire);
+            UUID studentId, UUID typeFraisId, String mois, String anneeScolaire);
 
     List<Paiement> findByAnneeScolaireAndStatutIn(String anneeScolaire, List<Paiement.StatutPaiement> statuts);
 }

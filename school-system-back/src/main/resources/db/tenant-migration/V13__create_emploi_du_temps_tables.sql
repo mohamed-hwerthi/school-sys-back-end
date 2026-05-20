@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS creneaux (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     label VARCHAR(50) NOT NULL,
     heure_debut TIME NOT NULL,
     heure_fin TIME NOT NULL,
@@ -7,12 +7,12 @@ CREATE TABLE IF NOT EXISTS creneaux (
 );
 
 CREATE TABLE IF NOT EXISTS emploi_du_temps (
-    id BIGSERIAL PRIMARY KEY,
-    classe_id BIGINT NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
-    creneau_id BIGINT NOT NULL REFERENCES creneaux(id),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    classe_id UUID NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+    creneau_id UUID NOT NULL REFERENCES creneaux(id),
     jour_semaine INTEGER NOT NULL CHECK (jour_semaine BETWEEN 1 AND 6),
-    module_id BIGINT REFERENCES modules(id),
-    enseignant_id BIGINT REFERENCES teachers(id),
+    module_id UUID REFERENCES modules(id),
+    enseignant_id UUID REFERENCES teachers(id),
     salle VARCHAR(50),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),

@@ -28,7 +28,7 @@ export const disciplineApi = {
     return res.data;
   },
 
-  getIncidentById: async (id: number): Promise<Incident> => {
+  getIncidentById: async (id: string): Promise<Incident> => {
     const res = await api.get<Incident>(`${BASE}/incidents/${id}`);
     return res.data;
   },
@@ -38,12 +38,12 @@ export const disciplineApi = {
     return res.data;
   },
 
-  updateIncident: async (id: number, data: Partial<Incident>): Promise<Incident> => {
+  updateIncident: async (id: string, data: Partial<Incident>): Promise<Incident> => {
     const res = await api.put<Incident>(`${BASE}/incidents/${id}`, data);
     return res.data;
   },
 
-  deleteIncident: async (id: number): Promise<void> => {
+  deleteIncident: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/incidents/${id}`);
   },
 
@@ -53,7 +53,7 @@ export const disciplineApi = {
     return res.data.map(fromSanctionPayload);
   },
 
-  getSanctionsByEleve: async (eleveId: number): Promise<Sanction[]> => {
+  getSanctionsByEleve: async (eleveId: string): Promise<Sanction[]> => {
     const res = await api.get<Record<string, unknown>[]>(`${BASE}/sanctions/eleve/${eleveId}`);
     return res.data.map(fromSanctionPayload);
   },
@@ -63,17 +63,17 @@ export const disciplineApi = {
     return fromSanctionPayload(res.data);
   },
 
-  updateSanction: async (id: number, data: Partial<Sanction>): Promise<Sanction> => {
+  updateSanction: async (id: string, data: Partial<Sanction>): Promise<Sanction> => {
     const res = await api.put<Record<string, unknown>>(`${BASE}/sanctions/${id}`, toSanctionPayload(data));
     return fromSanctionPayload(res.data);
   },
 
-  deleteSanction: async (id: number): Promise<void> => {
+  deleteSanction: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/sanctions/${id}`);
   },
 
   // --- By student ---
-  getByEleve: async (eleveId: number): Promise<{ incidents: Incident[]; sanctions: Sanction[] }> => {
+  getByEleve: async (eleveId: string): Promise<{ incidents: Incident[]; sanctions: Sanction[] }> => {
     const res = await api.get<{ incidents: Incident[]; sanctions: Sanction[] }>(
       `${BASE}/eleve/${eleveId}`
     );
@@ -81,12 +81,12 @@ export const disciplineApi = {
   },
 
   // --- DISC-004: Workflow ---
-  getSanctionSuggestion: async (eleveId: number): Promise<SanctionSuggestion> => {
+  getSanctionSuggestion: async (eleveId: string): Promise<SanctionSuggestion> => {
     const res = await api.get<SanctionSuggestion>(`${BASE}/sanctions/suggestion/${eleveId}`);
     return res.data;
   },
 
-  approveSanction: async (id: number, approuveParId: number, commentaire?: string): Promise<Sanction> => {
+  approveSanction: async (id: string, approuveParId: string, commentaire?: string): Promise<Sanction> => {
     const res = await api.post<Sanction>(`${BASE}/sanctions/${id}/approuver`, {
       approuveParId,
       commentaire,
@@ -94,13 +94,13 @@ export const disciplineApi = {
     return res.data;
   },
 
-  leverSanction: async (id: number): Promise<Sanction> => {
+  leverSanction: async (id: string): Promise<Sanction> => {
     const res = await api.post<Sanction>(`${BASE}/sanctions/${id}/lever`);
     return res.data;
   },
 
   // --- DISC-005: Dossier disciplinaire ---
-  getDossierDisciplinaire: async (eleveId: number): Promise<DossierDisciplinaire> => {
+  getDossierDisciplinaire: async (eleveId: string): Promise<DossierDisciplinaire> => {
     const res = await api.get<DossierDisciplinaire>(`${BASE}/dossier/${eleveId}`);
     return res.data;
   },

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.finance.dto.BudgetDTO;
 import com.schoolSys.schooolSys.finance.dto.PrevisionDTO;
@@ -28,7 +30,7 @@ public class BudgetController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
-    public ResponseEntity<ApiResponse<BudgetDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<BudgetDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(budgetService.findById(id)));
     }
 
@@ -42,13 +44,13 @@ public class BudgetController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<BudgetDTO>> update(
-            @PathVariable Long id, @Valid @RequestBody BudgetDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody BudgetDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(budgetService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         budgetService.delete(id);
         return ResponseEntity.noContent().build();
     }

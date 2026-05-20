@@ -12,6 +12,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { devoirsApi } from "@/api/devoirs.api";
 import { EmptyState } from "@/components/EmptyState";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 interface Homework {
@@ -62,6 +63,7 @@ function getCountdown(dateStr: string): { label: string; color: string } {
 }
 
 export default function HomeworkDetailScreen() {
+  const { colors } = useTheme();
   const navigation = useNavigation();
   const route = useRoute<any>();
   const homeworkId = route.params?.homeworkId as number;

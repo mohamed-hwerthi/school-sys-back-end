@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.finance.Caisse;
 import lombok.*;
 
@@ -11,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor @AllArgsConstructor
 @Builder
 public class CaisseResponseDTO {
-    private Long id;
+    private UUID id;
     private LocalDate dateOuverture;
     private LocalDate dateFermeture;
     private Caisse.StatutCaisse statut;

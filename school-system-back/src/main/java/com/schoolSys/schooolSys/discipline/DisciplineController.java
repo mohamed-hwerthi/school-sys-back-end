@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.discipline;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.discipline.dto.*;
 import jakarta.validation.Valid;
@@ -31,7 +33,7 @@ public class DisciplineController {
 
     @GetMapping("/incidents/{id}")
     @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
-    public ResponseEntity<ApiResponse<IncidentResponseDTO>> getIncidentById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<IncidentResponseDTO>> getIncidentById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.getIncidentById(id)));
     }
 
@@ -66,14 +68,14 @@ public class DisciplineController {
     @PutMapping("/incidents/{id}")
     @PreAuthorize("hasAuthority('WRITE_DISCIPLINE')")
     public ResponseEntity<ApiResponse<IncidentResponseDTO>> updateIncident(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody IncidentRequestDTO request) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.updateIncident(id, request)));
     }
 
     @DeleteMapping("/incidents/{id}")
     @PreAuthorize("hasAuthority('WRITE_DISCIPLINE')")
-    public ResponseEntity<Void> deleteIncident(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteIncident(@PathVariable UUID id) {
         disciplineService.deleteIncident(id);
         return ResponseEntity.noContent().build();
     }
@@ -88,19 +90,19 @@ public class DisciplineController {
 
     @GetMapping("/sanctions/{id}")
     @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
-    public ResponseEntity<ApiResponse<SanctionResponseDTO>> getSanctionById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<SanctionResponseDTO>> getSanctionById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.getSanctionById(id)));
     }
 
     @GetMapping("/sanctions/eleve/{eleveId}")
     @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
-    public ResponseEntity<ApiResponse<List<SanctionResponseDTO>>> getSanctionsByEleve(@PathVariable Long eleveId) {
+    public ResponseEntity<ApiResponse<List<SanctionResponseDTO>>> getSanctionsByEleve(@PathVariable UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.getSanctionsByEleve(eleveId)));
     }
 
     @GetMapping("/sanctions/incident/{incidentId}")
     @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
-    public ResponseEntity<ApiResponse<List<SanctionResponseDTO>>> getSanctionsByIncident(@PathVariable Long incidentId) {
+    public ResponseEntity<ApiResponse<List<SanctionResponseDTO>>> getSanctionsByIncident(@PathVariable UUID incidentId) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.getSanctionsByIncident(incidentId)));
     }
 
@@ -115,14 +117,14 @@ public class DisciplineController {
     @PutMapping("/sanctions/{id}")
     @PreAuthorize("hasAuthority('WRITE_DISCIPLINE')")
     public ResponseEntity<ApiResponse<SanctionResponseDTO>> updateSanction(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody SanctionRequestDTO request) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.updateSanction(id, request)));
     }
 
     @DeleteMapping("/sanctions/{id}")
     @PreAuthorize("hasAuthority('WRITE_DISCIPLINE')")
-    public ResponseEntity<Void> deleteSanction(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteSanction(@PathVariable UUID id) {
         disciplineService.deleteSanction(id);
         return ResponseEntity.noContent().build();
     }
@@ -131,29 +133,29 @@ public class DisciplineController {
 
     @GetMapping("/dossier/{eleveId}")
     @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
-    public ResponseEntity<ApiResponse<DossierDisciplinaireDTO>> getDossierDisciplinaire(@PathVariable Long eleveId) {
+    public ResponseEntity<ApiResponse<DossierDisciplinaireDTO>> getDossierDisciplinaire(@PathVariable UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.getDossierDisciplinaire(eleveId)));
     }
 
     @PostMapping("/sanctions/{id}/approuver")
     @PreAuthorize("hasAuthority('WRITE_DISCIPLINE')")
     public ResponseEntity<ApiResponse<SanctionResponseDTO>> approveSanction(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody Map<String, Object> body) {
-        Long approvedBy = body.get("approuveParId") != null ? Long.valueOf(body.get("approuveParId").toString()) : null;
+        UUID approvedBy = body.get("approuveParId") != null ? UUID.fromString(body.get("approuveParId").toString()) : null;
         String comment = body.get("commentaire") != null ? body.get("commentaire").toString() : null;
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.approveSanction(id, approvedBy, comment)));
     }
 
     @PostMapping("/sanctions/{id}/lever")
     @PreAuthorize("hasAuthority('WRITE_DISCIPLINE')")
-    public ResponseEntity<ApiResponse<SanctionResponseDTO>> leverSanction(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<SanctionResponseDTO>> leverSanction(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.leverSanction(id)));
     }
 
     @GetMapping("/sanctions/suggestion/{eleveId}")
     @PreAuthorize("hasAuthority('READ_DISCIPLINE')")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getSanctionSuggestion(@PathVariable Long eleveId) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getSanctionSuggestion(@PathVariable UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(disciplineService.escalateSanction(eleveId)));
     }
 }

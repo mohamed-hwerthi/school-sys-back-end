@@ -13,6 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { ressourcesApi } from "@/api/ressources.api";
 import { EmptyState } from "@/components/EmptyState";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 interface Resource {
@@ -57,6 +58,7 @@ function getTypeLabel(type: string): string {
 }
 
 export default function ResourcesScreen() {
+  const { colors } = useTheme();
   const navigation = useNavigation();
 
   const {

@@ -38,6 +38,8 @@ public class SchoolSettingsService {
         s.setTelephone(dto.getTelephone());
         s.setDirecteurName(dto.getDirecteurName());
         s.setDirecteurNameAr(dto.getDirecteurNameAr());
+        s.setDelegationRegionale(dto.getDelegationRegionale());
+        s.setDelegationRegionaleAr(dto.getDelegationRegionaleAr());
         s.setLogo(dto.getLogo());
         s.setVille(dto.getVille());
         s.setVilleAr(dto.getVilleAr());
@@ -98,6 +100,8 @@ public class SchoolSettingsService {
                 .telephone(s.getTelephone())
                 .directeurName(s.getDirecteurName())
                 .directeurNameAr(s.getDirecteurNameAr())
+                .delegationRegionale(s.getDelegationRegionale())
+                .delegationRegionaleAr(s.getDelegationRegionaleAr())
                 .logo(s.getLogo())
                 .ville(s.getVille())
                 .villeAr(s.getVilleAr())

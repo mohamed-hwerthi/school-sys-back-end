@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.enrollment;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.course.Course;
 import com.schoolSys.schooolSys.course.CourseRepository;
@@ -48,7 +50,7 @@ public class EnrollmentService {
      * @return the enrollment DTO
      * @throws ResourceNotFoundException if the enrollment does not exist
      */
-    public EnrollmentResponseDTO findById(Long id) {
+    public EnrollmentResponseDTO findById(UUID id) {
         Enrollment enrollment = enrollmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Enrollment", id));
         return enrollmentMapper.toResponseDTO(enrollment);
@@ -83,7 +85,7 @@ public class EnrollmentService {
      * @throws ResourceNotFoundException if the enrollment, student, or course does not exist
      */
     @Transactional
-    public EnrollmentResponseDTO update(Long id, EnrollmentRequestDTO dto) {
+    public EnrollmentResponseDTO update(UUID id, EnrollmentRequestDTO dto) {
         Enrollment enrollment = enrollmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Enrollment", id));
 
@@ -106,7 +108,7 @@ public class EnrollmentService {
      * @throws ResourceNotFoundException if the enrollment does not exist
      */
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!enrollmentRepository.existsById(id)) {
             throw new ResourceNotFoundException("Enrollment", id);
         }

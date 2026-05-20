@@ -71,7 +71,7 @@ export default function DomainesTab() {
     name: "",
     nameAr: "",
     ordre: 1,
-    niveauId: 0,
+    niveauId: "",
   });
   const [deleteTarget, setDeleteTarget] = useState<DomaineDTO | null>(null);
 
@@ -90,7 +90,7 @@ export default function DomainesTab() {
 
   // Expanded domaines
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
-  const toggleExpand = (id: number) => {
+  const toggleExpand = (id: string) => {
     setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -160,7 +160,7 @@ export default function DomainesTab() {
   };
 
   // SousDomaine CRUD
-  const openAddSD = (domaineId: number, sdCount: number) => {
+  const openAddSD = (domaineId: string, sdCount: number) => {
     setEditSDId(null);
     setSDForm({ name: "", nameAr: "", ordre: sdCount + 1, domaineId });
     setShowSDDialog(true);
@@ -227,7 +227,7 @@ export default function DomainesTab() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <Select
             value={selectedNiveauId ? String(selectedNiveauId) : ""}
-            onValueChange={(v) => setSelectedNiveauId(Number(v))}
+            onValueChange={(v) => setSelectedNiveauId(v)}
           >
             <SelectTrigger className="w-[220px]">
               <GraduationCap className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
@@ -254,7 +254,7 @@ export default function DomainesTab() {
             </div>
           )}
         </div>
-        {selectedNiveauId > 0 && (
+        {selectedNiveauId && (
           <div className="mt-2 text-xs text-muted-foreground">
             {domaines.length} domaine{domaines.length !== 1 ? "s" : ""}
           </div>
@@ -262,7 +262,7 @@ export default function DomainesTab() {
       </motion.div>
 
       {/* Domaines List */}
-      {selectedNiveauId > 0 && (
+      {selectedNiveauId && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

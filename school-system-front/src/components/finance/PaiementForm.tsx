@@ -80,7 +80,7 @@ export function PaiementForm({
             <Label>Élève *</Label>
             <Select
               value={eleveId ? String(eleveId) : ""}
-              onValueChange={(v) => setValue("eleveId", Number(v), { shouldValidate: true })}
+              onValueChange={(v) => setValue("eleveId", v, { shouldValidate: true })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Choisir un élève" />

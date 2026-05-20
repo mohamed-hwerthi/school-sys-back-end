@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rh;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,9 +11,9 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
-public interface FichePaieRepository extends JpaRepository<FichePaie, Long> {
+public interface FichePaieRepository extends JpaRepository<FichePaie, UUID> {
 
-    List<FichePaie> findByEmployeId(Long employeId);
+    List<FichePaie> findByEmployeId(UUID employeId);
 
     List<FichePaie> findByMoisAndAnnee(Integer mois, Integer annee);
 

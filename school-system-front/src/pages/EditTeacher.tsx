@@ -13,7 +13,7 @@ export default function EditTeacher() {
   const navigate = useNavigate();
   const { getTeacher, updateTeacher, isLoading } = useTeachers();
 
-  const teacher = getTeacher(Number(id));
+  const teacher = getTeacher(id ?? "");
 
   if (isLoading) return <StudentFormSkeleton />;
 

@@ -1,6 +1,6 @@
 -- Types de frais (scolarité, inscription, transport, etc.)
 CREATE TABLE IF NOT EXISTS types_frais (
-    id              BIGSERIAL       PRIMARY KEY,
+    id              UUID       PRIMARY KEY DEFAULT gen_random_uuid(),
     nom             VARCHAR(255)    NOT NULL,
     montant         DECIMAL(10,2)   NOT NULL,
     frequence       VARCHAR(20)     NOT NULL CHECK (frequence IN ('MENSUEL', 'TRIMESTRIEL', 'ANNUEL', 'UNIQUE')),
@@ -11,9 +11,9 @@ CREATE TABLE IF NOT EXISTS types_frais (
 
 -- Paiements (entrées financières liées aux élèves)
 CREATE TABLE IF NOT EXISTS paiements (
-    id              BIGSERIAL       PRIMARY KEY,
-    student_id      BIGINT          NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-    type_frais_id   BIGINT          NOT NULL REFERENCES types_frais(id) ON DELETE RESTRICT,
+    id              UUID       PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id      UUID          NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    type_frais_id   UUID          NOT NULL REFERENCES types_frais(id) ON DELETE RESTRICT,
     mois            VARCHAR(10)     NOT NULL,
     annee_scolaire  VARCHAR(9)      NOT NULL,
     montant_du      DECIMAL(10,2)   NOT NULL,

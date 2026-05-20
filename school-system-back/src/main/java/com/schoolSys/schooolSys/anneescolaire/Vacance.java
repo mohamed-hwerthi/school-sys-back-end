@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.anneescolaire;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,8 +22,9 @@ import java.time.LocalDateTime;
 public class Vacance {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "annee_scolaire_id", nullable = false)

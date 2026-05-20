@@ -12,9 +12,9 @@ export type NotifEvent =
   | "MANUAL";
 
 export interface NotificationLog {
-  id: number;
+  id: string;
   recipientType: "PARENT" | "TEACHER" | "STUDENT" | "ADMIN";
-  recipientId: number | null;
+  recipientId: string | null;
   recipientAddress: string;
   channel: NotifChannel | "PUSH";
   eventType: NotifEvent;
@@ -24,8 +24,8 @@ export interface NotificationLog {
   providerMessageId: string | null;
   errorMessage: string | null;
   relatedEntityType: string | null;
-  relatedEntityId: number | null;
-  triggeredByUserId: number | null;
+  relatedEntityId: string | null;
+  triggeredByUserId: string | null;
   retryCount: number;
   createdAt: string;
   sentAt: string | null;
@@ -33,7 +33,7 @@ export interface NotificationLog {
 
 export interface SendRequest {
   channels: NotifChannel[];
-  triggeredByUserId?: number;
+  triggeredByUserId?: string;
 }
 
 export interface ManualSendRequest extends SendRequest {
@@ -43,23 +43,23 @@ export interface ManualSendRequest extends SendRequest {
 const BASE = "/parent-notifications";
 
 export const parentNotificationsApi = {
-  notifyForNote: async (noteId: number, body: SendRequest): Promise<NotificationLog[]> => {
+  notifyForNote: async (noteId: string, body: SendRequest): Promise<NotificationLog[]> => {
     const res = await api.post(`${BASE}/note/${noteId}`, body);
     return res.data.data;
   },
 
-  notifyForExamen: async (examenId: number, body: SendRequest): Promise<number> => {
+  notifyForExamen: async (examenId: string, body: SendRequest): Promise<number> => {
     const res = await api.post(`${BASE}/examen/${examenId}`, body);
     return res.data.data;
   },
 
-  notifyManual: async (studentId: number, body: ManualSendRequest): Promise<NotificationLog[]> => {
+  notifyManual: async (studentId: string, body: ManualSendRequest): Promise<NotificationLog[]> => {
     const res = await api.post(`${BASE}/manual/${studentId}`, body);
     return res.data.data;
   },
 
   listLogs: async (params: {
-    recipientId?: number;
+    recipientId?: string;
     eventType?: NotifEvent;
     status?: NotifStatus;
     page?: number;

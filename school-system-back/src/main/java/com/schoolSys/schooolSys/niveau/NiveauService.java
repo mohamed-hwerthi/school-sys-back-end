@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.niveau;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -30,7 +32,7 @@ public class NiveauService {
         List<Niveau> list = niveauRepository.findAll();
         // Row-level scoping: an ENSEIGNANT only sees the niveaux of his own classes.
         if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
-            Set<Long> scoped = currentUser.getScopedNiveauIdsForTeacher();
+            Set<UUID> scoped = currentUser.getScopedNiveauIdsForTeacher();
             list = list.stream().filter(n -> scoped.contains(n.getId())).toList();
         }
         return list.stream()
@@ -38,7 +40,7 @@ public class NiveauService {
                 .toList();
     }
 
-    public NiveauResponseDTO findById(Long id) {
+    public NiveauResponseDTO findById(UUID id) {
         Niveau niveau = niveauRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Niveau", id));
         return toResponse(niveau);
@@ -57,7 +59,7 @@ public class NiveauService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!niveauRepository.existsById(id)) {
             throw new ResourceNotFoundException("Niveau", id);
         }
@@ -65,7 +67,7 @@ public class NiveauService {
     }
 
     @Transactional
-    public NiveauResponseDTO addClasse(Long niveauId, String letter) {
+    public NiveauResponseDTO addClasse(UUID niveauId, String letter) {
         Niveau niveau = niveauRepository.findById(niveauId)
                 .orElseThrow(() -> new ResourceNotFoundException("Niveau", niveauId));
 
@@ -82,7 +84,7 @@ public class NiveauService {
     }
 
     @Transactional
-    public NiveauResponseDTO removeClasse(Long niveauId, String letter) {
+    public NiveauResponseDTO removeClasse(UUID niveauId, String letter) {
         Niveau niveau = niveauRepository.findById(niveauId)
                 .orElseThrow(() -> new ResourceNotFoundException("Niveau", niveauId));
 

@@ -1,8 +1,8 @@
 export interface TeacherEvaluation {
-  id: number;
-  teacherId: number;
+  id: string;
+  teacherId: string;
   teacherName: string;
-  evaluatorId: number | null;
+  evaluatorId: string | null;
   evaluatorName: string | null;
   anneeScolaire: string;
   trimestre: number;
@@ -17,7 +17,7 @@ export interface TeacherEvaluation {
 }
 
 export interface TeacherEvaluationStats {
-  teacherId: number;
+  teacherId: string;
   teacherName: string;
   avgPonctualite: number;
   avgPedagogie: number;

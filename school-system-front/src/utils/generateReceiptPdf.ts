@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 
 interface PaymentData {
-  id: number;
+  id: string;
   studentName: string;
   amount: number;
   date: string;

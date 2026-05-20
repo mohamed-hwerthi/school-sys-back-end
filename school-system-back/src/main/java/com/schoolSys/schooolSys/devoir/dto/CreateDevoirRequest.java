@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.devoir.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -20,11 +22,11 @@ public class CreateDevoirRequest {
 
     private String description;
 
-    private Long moduleId;
+    private UUID moduleId;
 
-    private Long classeId;
+    private UUID classeId;
 
-    private Long enseignantId;
+    private UUID enseignantId;
 
     private LocalDate datePublication;
 

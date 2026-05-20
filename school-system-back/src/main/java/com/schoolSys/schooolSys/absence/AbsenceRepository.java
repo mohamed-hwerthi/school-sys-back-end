@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.absence;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,23 +11,23 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface AbsenceRepository extends JpaRepository<Absence, Long> {
+public interface AbsenceRepository extends JpaRepository<Absence, UUID> {
 
-    List<Absence> findByEleveId(Long eleveId);
+    List<Absence> findByEleveId(UUID eleveId);
 
-    List<Absence> findByEleveIdIn(List<Long> eleveIds);
+    List<Absence> findByEleveIdIn(List<UUID> eleveIds);
 
-    List<Absence> findByDateAndEleveIdIn(LocalDate date, List<Long> eleveIds);
+    List<Absence> findByDateAndEleveIdIn(LocalDate date, List<UUID> eleveIds);
 
-    List<Absence> findByDateAndEleveIdInAndType(LocalDate date, List<Long> eleveIds, String type);
+    List<Absence> findByDateAndEleveIdInAndType(LocalDate date, List<UUID> eleveIds, String type);
 
     @Query("SELECT a FROM Absence a WHERE a.eleveId IN :eleveIds AND MONTH(a.date) = :mois AND YEAR(a.date) = :annee")
-    List<Absence> findByEleveIdInAndMonthAndYear(@Param("eleveIds") List<Long> eleveIds,
+    List<Absence> findByEleveIdInAndMonthAndYear(@Param("eleveIds") List<UUID> eleveIds,
                                                   @Param("mois") int mois,
                                                   @Param("annee") int annee);
 
-    List<Absence> findByEleveIdOrderByDateDesc(Long eleveId);
+    List<Absence> findByEleveIdOrderByDateDesc(UUID eleveId);
 
     @Query("SELECT COUNT(a) FROM Absence a WHERE a.eleveId = :eleveId AND a.type = 'ABSENCE'")
-    long countAbsencesByEleveId(@Param("eleveId") Long eleveId);
+    long countAbsencesByEleveId(@Param("eleveId") UUID eleveId);
 }

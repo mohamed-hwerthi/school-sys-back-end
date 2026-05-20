@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rh;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.rh.dto.CreateFichePaieRequest;
 import com.schoolSys.schooolSys.rh.dto.FichePaieDTO;
@@ -23,13 +25,13 @@ public class FichePaieService {
                 .collect(Collectors.toList());
     }
 
-    public FichePaieDTO getById(Long id) {
+    public FichePaieDTO getById(UUID id) {
         FichePaie f = fichePaieRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("FichePaie", id));
         return toDto(f);
     }
 
-    public List<FichePaieDTO> getByEmploye(Long employeId) {
+    public List<FichePaieDTO> getByEmploye(UUID employeId) {
         return fichePaieRepository.findByEmployeId(employeId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
@@ -61,7 +63,7 @@ public class FichePaieService {
     }
 
     @Transactional
-    public FichePaieDTO update(Long id, CreateFichePaieRequest dto) {
+    public FichePaieDTO update(UUID id, CreateFichePaieRequest dto) {
         FichePaie fichePaie = fichePaieRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("FichePaie", id));
 
@@ -87,7 +89,7 @@ public class FichePaieService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!fichePaieRepository.existsById(id)) {
             throw new ResourceNotFoundException("FichePaie", id);
         }

@@ -17,7 +17,7 @@ export const inscriptionsApi = {
   getAll: async (params: {
     statut?: string;
     anneeScolaire?: string;
-    niveauId?: number;
+    niveauId?: string;
     page?: number;
     size?: number;
     sortBy?: string;
@@ -30,7 +30,7 @@ export const inscriptionsApi = {
   /**
    * Get a single inscription by ID (admin).
    */
-  getById: async (id: number): Promise<Inscription> => {
+  getById: async (id: string): Promise<Inscription> => {
     const res = await api.get<Inscription>(`${BASE}/${id}`);
     return res.data;
   },
@@ -39,7 +39,7 @@ export const inscriptionsApi = {
    * Update inscription status (admin).
    */
   updateStatut: async (
-    id: number,
+    id: string,
     data: UpdateStatutRequest
   ): Promise<Inscription> => {
     const res = await api.put<Inscription>(`${BASE}/${id}/statut`, data);
@@ -59,7 +59,7 @@ export const inscriptionsApi = {
    * Get waiting list for a niveau (admin).
    */
   getListeAttente: async (
-    niveauId: number,
+    niveauId: string,
     anneeScolaire?: string
   ): Promise<Inscription[]> => {
     const params = anneeScolaire ? { anneeScolaire } : {};

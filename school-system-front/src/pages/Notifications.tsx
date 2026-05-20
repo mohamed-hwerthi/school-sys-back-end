@@ -106,7 +106,7 @@ export default function NotificationsPage() {
 
   const grouped = useMemo(() => groupByDate(filtered, t), [filtered, t]);
 
-  const handleMarkAsRead = (id: number) => {
+  const handleMarkAsRead = (id: string) => {
     markAsRead.mutate(id, {
       onError: () => notify.error(t("notifications.markError")),
     });
@@ -119,7 +119,7 @@ export default function NotificationsPage() {
     });
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     deleteNotification.mutate(id, {
       onSuccess: () => notify.success(t("notifications.deleted")),
       onError: () => notify.error(t("notifications.deleteError")),

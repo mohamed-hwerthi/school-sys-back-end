@@ -7,8 +7,8 @@ export type DocumentType =
 
 export interface DocumentGenerationRequest {
   type: DocumentType;
-  eleveId?: number;
-  eleveIds?: number[];
+  eleveId?: string;
+  eleveIds?: string[];
   anneeScolaire?: string;
   trimestre?: number;
 }
@@ -24,7 +24,7 @@ export interface DocumentTemplateConfig {
 }
 
 export interface DocumentHistory {
-  id: number;
+  id: string;
   type: DocumentType;
   eleveName: string | null;
   fileName: string;

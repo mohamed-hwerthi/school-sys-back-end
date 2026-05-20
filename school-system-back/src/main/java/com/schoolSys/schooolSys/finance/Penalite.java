@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import com.schoolSys.schooolSys.student.Student;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,8 +24,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class Penalite {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)

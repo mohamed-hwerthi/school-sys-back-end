@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.scolarite;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -23,11 +26,12 @@ import java.time.LocalDateTime;
 public class Scolarite {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "student_id", nullable = false)
-    private Long studentId;
+    private UUID studentId;
 
     @Column(name = "annee_scolaire", nullable = false, length = 20)
     private String anneeScolaire;

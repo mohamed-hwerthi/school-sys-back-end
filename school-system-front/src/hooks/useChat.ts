@@ -2,16 +2,16 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useWebSocket } from "./useWebSocket";
 
 export interface ChatMessageData {
-  senderId: number;
+  senderId: string;
   senderName: string;
-  recipientId: number;
+  recipientId: string;
   content: string;
   timestamp: string;
   type: "TEXT" | "SYSTEM";
 }
 
 export interface TypingStatus {
-  senderId: number;
+  senderId: string;
   senderName: string;
   typing: boolean;
 }
@@ -72,7 +72,7 @@ export function useChat() {
   }, [connected, subscribe]);
 
   const sendChatMessage = useCallback(
-    (recipientId: number, content: string) => {
+    (recipientId: string, content: string) => {
       const userStr = localStorage.getItem("user");
       let senderId = 0;
       let senderName = "Moi";
@@ -101,7 +101,7 @@ export function useChat() {
   );
 
   const setTyping = useCallback(
-    (recipientId: number, typing: boolean) => {
+    (recipientId: string, typing: boolean) => {
       const userStr = localStorage.getItem("user");
       let senderId = 0;
       let senderName = "Moi";
@@ -126,7 +126,7 @@ export function useChat() {
   );
 
   const isTyping = useCallback(
-    (userId: number): boolean => {
+    (userId: string): boolean => {
       return typingUsers.has(userId);
     },
     [typingUsers]

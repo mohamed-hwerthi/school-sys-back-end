@@ -1,14 +1,26 @@
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import { storage } from "@/utils/storage";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ActivityIndicator, View, Text } from "react-native";
+import type { ComponentProps } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ChildProvider } from "@/context/ChildContext";
+import { SchoolProvider, useSchool } from "@/context/SchoolContext";
+import { SchoolYearProvider } from "@/context/SchoolYearContext";
+import { ThemeProvider, useTheme } from "@/context/ThemeContext";
+import SchoolPickerScreen from "@/screens/SchoolPickerScreen";
 import LoginScreen from "@/screens/LoginScreen";
+import RoleUnsupportedScreen from "@/screens/RoleUnsupportedScreen";
+import TeacherNavigator from "@/navigation/TeacherNavigator";
+import AdminNavigator from "@/navigation/AdminNavigator";
 import HomeTab from "@/screens/tabs/HomeTab";
 import GradesTab from "@/screens/tabs/GradesTab";
 import TimetableTab from "@/screens/tabs/TimetableTab";
@@ -33,34 +45,41 @@ import type { RootStackParamList } from "@/types/navigation";
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: 1, staleTime: 30_000 },
+    queries: { retry: 1, staleTime: 30_000, gcTime: 1000 * 60 * 60 * 24 * 7 /* 7 days */ },
   },
+});
+
+/** Persists the React Query cache so the app shows last-known data offline. */
+const persister = createAsyncStoragePersister({
+  storage: {
+    getItem: (k: string) => storage.getItem(k),
+    setItem: (k: string, v: string) => storage.setItem(k, v),
+    removeItem: (k: string) => storage.deleteItem(k),
+  },
+  key: "ECOLENET_QUERY_CACHE",
 });
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-function TabIcon({ label, focused }: { label: string; focused: boolean }) {
-  const icons: Record<string, string> = {
-    Accueil: "🏠",
-    Notes: "📊",
-    EDT: "🗓️",
-    Messages: "💬",
-    Plus: "⚙️",
+function TabIcon({ routeName, color }: { routeName: string; color: string }) {
+  const icons: Record<string, ComponentProps<typeof Ionicons>["name"]> = {
+    Accueil: "home-outline",
+    Notes: "bar-chart-outline",
+    EDT: "calendar-outline",
+    Messages: "chatbubble-outline",
+    Plus: "grid-outline",
   };
-  return (
-    <View style={{ alignItems: "center", paddingTop: 4 }}>
-      <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>{icons[label] || "📱"}</Text>
-    </View>
-  );
+  return <Ionicons name={icons[routeName] ?? "ellipse-outline"} size={23} color={color} />;
 }
 
 function MainTabs() {
+  const { colors } = useTheme();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({ focused }) => <TabIcon label={route.name} focused={focused} />,
+        tabBarIcon: ({ color }) => <TabIcon routeName={route.name} color={color} />,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarLabelStyle: { fontSize: 11, fontWeight: "600", marginTop: -2 },
@@ -161,9 +180,10 @@ function MainStack() {
 }
 
 function AppContent() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { school, isLoading: schoolLoading } = useSchool();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
-  if (isLoading) {
+  if (schoolLoading || authLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.background }}>
         <View style={{
@@ -177,28 +197,59 @@ function AppContent() {
     );
   }
 
+  // Step 1 — pick a school, Step 2 — log in, Step 3 — use the app.
+  if (!school) {
+    return <SchoolPickerScreen />;
+  }
+
   if (!isAuthenticated) {
     return <LoginScreen />;
   }
 
-  return (
-    <ChildProvider>
-      <MainStack />
-    </ChildProvider>
-  );
+  // Step 3 — route to the navigator matching the authenticated user's role.
+  switch (user?.role) {
+    case "PARENT":
+      return (
+        <ChildProvider>
+          <MainStack />
+        </ChildProvider>
+      );
+    case "ENSEIGNANT":
+      return <TeacherNavigator />;
+    case "ADMIN":
+    case "DIRECTEUR":
+      return <AdminNavigator />;
+    default:
+      // COMPTABLE, SUPER_ADMIN — no mobile experience.
+      return <RoleUnsupportedScreen />;
+  }
 }
 
 export default function App() {
   return (
     <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <NavigationContainer>
-            <StatusBar style="auto" />
-            <AppContent />
-          </NavigationContainer>
-        </AuthProvider>
-      </QueryClientProvider>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{
+          persister,
+          maxAge: 1000 * 60 * 60 * 24 * 7 /* 7 days */,
+          // Bump when query schemas change — invalidates any stale persisted cache.
+          buster: "ecolenet-v2",
+        }}
+      >
+        <ThemeProvider>
+          <SchoolProvider>
+            <AuthProvider>
+              <SchoolYearProvider>
+                <NavigationContainer>
+                  <StatusBar style="auto" />
+                  <AppContent />
+                </NavigationContainer>
+              </SchoolYearProvider>
+            </AuthProvider>
+          </SchoolProvider>
+        </ThemeProvider>
+      </PersistQueryClientProvider>
     </SafeAreaProvider>
   );
 }

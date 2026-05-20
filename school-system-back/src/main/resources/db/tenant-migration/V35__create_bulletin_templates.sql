@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS bulletin_templates (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     nom VARCHAR(100) NOT NULL,
     logo_url VARCHAR(500),
     nom_ecole_fr VARCHAR(255),

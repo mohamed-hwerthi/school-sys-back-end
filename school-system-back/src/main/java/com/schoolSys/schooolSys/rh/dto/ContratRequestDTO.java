@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.rh.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -9,7 +11,7 @@ import java.time.LocalDate;
 @Data
 public class ContratRequestDTO {
     @NotNull
-    private Long enseignantId;
+    private UUID enseignantId;
     @NotNull
     private String typeContrat;
     @NotNull

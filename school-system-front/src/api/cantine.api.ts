@@ -17,7 +17,7 @@ export const menusApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<Menu> => {
+  getById: async (id: string): Promise<Menu> => {
     const res = await api.get<Menu>(`/cantine/menus/${id}`);
     return res.data;
   },
@@ -39,12 +39,12 @@ export const menusApi = {
     return res.data;
   },
 
-  update: async (id: number, data: CreateMenuRequest): Promise<Menu> => {
+  update: async (id: string, data: CreateMenuRequest): Promise<Menu> => {
     const res = await api.put<Menu>(`/cantine/menus/${id}`, data);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`/cantine/menus/${id}`);
   },
 };
@@ -62,12 +62,12 @@ export const abonnementsCantineApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<AbonnementCantine> => {
+  getById: async (id: string): Promise<AbonnementCantine> => {
     const res = await api.get<AbonnementCantine>(`/cantine/abonnements/${id}`);
     return res.data;
   },
 
-  getByEleve: async (eleveId: number): Promise<AbonnementCantine[]> => {
+  getByEleve: async (eleveId: string): Promise<AbonnementCantine[]> => {
     const res = await api.get<AbonnementCantine[]>(`/cantine/abonnements/eleve/${eleveId}`);
     return res.data;
   },
@@ -77,17 +77,17 @@ export const abonnementsCantineApi = {
     return res.data;
   },
 
-  update: async (id: number, data: CreateAbonnementRequest): Promise<AbonnementCantine> => {
+  update: async (id: string, data: CreateAbonnementRequest): Promise<AbonnementCantine> => {
     const res = await api.put<AbonnementCantine>(`/cantine/abonnements/${id}`, data);
     return res.data;
   },
 
-  deactivate: async (id: number): Promise<AbonnementCantine> => {
+  deactivate: async (id: string): Promise<AbonnementCantine> => {
     const res = await api.put<AbonnementCantine>(`/cantine/abonnements/${id}/deactivate`);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`/cantine/abonnements/${id}`);
   },
 };
@@ -102,7 +102,7 @@ export const pointagesRepasApi = {
     return res.data;
   },
 
-  getByEleve: async (eleveId: number): Promise<PointageRepas[]> => {
+  getByEleve: async (eleveId: string): Promise<PointageRepas[]> => {
     const res = await api.get<PointageRepas[]>(`/cantine/pointages/eleve/${eleveId}`);
     return res.data;
   },

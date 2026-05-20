@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.devoir;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.devoir.dto.CorrectionRequest;
@@ -25,18 +27,18 @@ public class SoumissionService {
     private final DevoirRepository devoirRepository;
     private final CurrentUserContext currentUserContext;
 
-    public List<SoumissionDTO> findByDevoir(Long devoirId) {
+    public List<SoumissionDTO> findByDevoir(UUID devoirId) {
         return soumissionRepository.findByDevoirIdOrderByDateSoumissionDesc(devoirId)
                 .stream().map(this::toDTO).toList();
     }
 
-    public List<SoumissionDTO> findByEleve(Long eleveId) {
+    public List<SoumissionDTO> findByEleve(UUID eleveId) {
         currentUserContext.assertCanAccessStudent(eleveId);
         return soumissionRepository.findByEleveIdOrderByDateSoumissionDesc(eleveId)
                 .stream().map(this::toDTO).toList();
     }
 
-    public SoumissionDTO findById(Long id) {
+    public SoumissionDTO findById(UUID id) {
         Soumission soumission = soumissionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Soumission", id));
         return toDTO(soumission);
@@ -61,7 +63,7 @@ public class SoumissionService {
     }
 
     @Transactional
-    public SoumissionDTO correct(Long id, CorrectionRequest request) {
+    public SoumissionDTO correct(UUID id, CorrectionRequest request) {
         Soumission soumission = soumissionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Soumission", id));
 
@@ -73,7 +75,7 @@ public class SoumissionService {
         return toDTO(soumissionRepository.save(soumission));
     }
 
-    public DevoirStatsDTO getStats(Long devoirId) {
+    public DevoirStatsDTO getStats(UUID devoirId) {
         devoirRepository.findById(devoirId)
                 .orElseThrow(() -> new ResourceNotFoundException("Devoir", devoirId));
 
@@ -105,7 +107,7 @@ public class SoumissionService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!soumissionRepository.existsById(id)) {
             throw new ResourceNotFoundException("Soumission", id);
         }

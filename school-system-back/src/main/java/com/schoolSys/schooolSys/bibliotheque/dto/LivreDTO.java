@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.bibliotheque.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class LivreDTO {
 
-    private Long id;
+    private UUID id;
     private String titre;
     private String auteur;
     private String isbn;

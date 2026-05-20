@@ -4,10 +4,10 @@ export const DISPO_TYPES = ["INDISPONIBLE", "PREFERE", "EVITER"] as const;
 export type DispoType = (typeof DISPO_TYPES)[number];
 
 export interface DisponibiliteDTO {
-  id: number;
-  enseignantId: number;
+  id: string;
+  enseignantId: string;
   jourSemaine: number; // 1=Lundi ... 6=Samedi
-  creneauId: number;
+  creneauId: string;
   type: DispoType;
   motif: string | null;
   createdAt: string;
@@ -15,9 +15,9 @@ export interface DisponibiliteDTO {
 }
 
 export interface DisponibiliteRequest {
-  enseignantId: number;
+  enseignantId: string;
   jourSemaine: number;
-  creneauId: number;
+  creneauId: string;
   type: DispoType;
   motif?: string;
 }
@@ -25,7 +25,7 @@ export interface DisponibiliteRequest {
 const BASE = "/disponibilites-enseignants";
 
 export const disponibilitesApi = {
-  getAll: async (enseignantId?: number): Promise<DisponibiliteDTO[]> => {
+  getAll: async (enseignantId?: string): Promise<DisponibiliteDTO[]> => {
     const res = await api.get<DisponibiliteDTO[]>(BASE, {
       params: enseignantId ? { enseignantId } : undefined,
     });
@@ -38,14 +38,14 @@ export const disponibilitesApi = {
   },
 
   update: async (
-    id: number,
+    id: string,
     data: DisponibiliteRequest
   ): Promise<DisponibiliteDTO> => {
     const res = await api.put<DisponibiliteDTO>(`${BASE}/${id}`, data);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/${id}`);
   },
 };

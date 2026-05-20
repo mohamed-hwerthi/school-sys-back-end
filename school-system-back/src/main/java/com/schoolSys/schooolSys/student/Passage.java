@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.student;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import com.schoolSys.schooolSys.anneescolaire.AnneeScolaire;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,11 +22,12 @@ import org.hibernate.annotations.SQLRestriction;
 public class Passage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "student_id", nullable = false)
-    private Long studentId;
+    private UUID studentId;
 
     @Column(name = "ancien_niveau", length = 100)
     private String ancienNiveau;

@@ -54,7 +54,7 @@ export function useCreateAnneeScolaire() {
 export function useUpdateAnneeScolaire() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<AnneeScolaire> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<AnneeScolaire> }) =>
       anneeScolaireApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [ANNEES_KEY] });
@@ -68,7 +68,7 @@ export function useUpdateAnneeScolaire() {
 export function useCloturerAnneeScolaire() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => anneeScolaireApi.cloturer(id),
+    mutationFn: (id: string) => anneeScolaireApi.cloturer(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [ANNEES_KEY] });
     },
@@ -81,7 +81,7 @@ export function useCloturerAnneeScolaire() {
 export function useActivateAnneeScolaire() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => anneeScolaireApi.activate(id),
+    mutationFn: (id: string) => anneeScolaireApi.activate(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [ANNEES_KEY] });
     },
@@ -93,12 +93,35 @@ export function useActivateAnneeScolaire() {
 /**
  * Trimesters for an academic year.
  */
-export function useTrimestres(anneeScolaireId: number) {
+export function useTrimestres(anneeScolaireId: string | null | undefined) {
   return useQuery<Trimestre[]>({
     queryKey: [TRIMESTRES_KEY, anneeScolaireId],
-    queryFn: () => anneeScolaireApi.getTrimestres(anneeScolaireId),
-    enabled: anneeScolaireId > 0,
+    queryFn: () => anneeScolaireApi.getTrimestres(anneeScolaireId!),
+    enabled: !!anneeScolaireId,
   });
+}
+
+/**
+ * Trimestre numéro (1/2/3) couvrant la date du jour, basé sur les bornes
+ * de l'année scolaire active. Retourne `null` tant que les données chargent.
+ * Fallback : avant le T1 → 1 ; après le dernier → dernier ; sinon → 1.
+ */
+export function useCurrentTrimestre(): number | null {
+  const { data: annee } = useActiveAnneeScolaire();
+  const { data: trimestres = [] } = useTrimestres(annee?.id);
+
+  if (!annee || trimestres.length === 0) return null;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const sorted = [...trimestres].sort((a, b) => a.numero - b.numero);
+
+  const match = sorted.find(
+    (t) => today >= t.dateDebut && today <= t.dateFin
+  );
+  if (match) return match.numero;
+
+  if (today < sorted[0].dateDebut) return sorted[0].numero;
+  return sorted[sorted.length - 1].numero;
 }
 
 /**
@@ -111,7 +134,7 @@ export function useCreateTrimestre() {
       anneeScolaireId,
       data,
     }: {
-      anneeScolaireId: number;
+      anneeScolaireId: string;
       data: Omit<Trimestre, "id" | "anneeScolaireId">;
     }) => anneeScolaireApi.createTrimestre(anneeScolaireId, data),
     onSuccess: () => {
@@ -126,7 +149,7 @@ export function useCreateTrimestre() {
 export function useUpdateTrimestre() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Trimestre> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<Trimestre> }) =>
       anneeScolaireApi.updateTrimestre(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [TRIMESTRES_KEY] });
@@ -140,7 +163,7 @@ export function useUpdateTrimestre() {
 export function useDeleteTrimestre() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => anneeScolaireApi.deleteTrimestre(id),
+    mutationFn: (id: string) => anneeScolaireApi.deleteTrimestre(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [TRIMESTRES_KEY] });
     },
@@ -152,11 +175,11 @@ export function useDeleteTrimestre() {
 /**
  * Holidays for an academic year.
  */
-export function useVacances(anneeScolaireId: number) {
+export function useVacances(anneeScolaireId: string | null | undefined) {
   return useQuery<Vacance[]>({
     queryKey: [VACANCES_KEY, anneeScolaireId],
-    queryFn: () => anneeScolaireApi.getVacances(anneeScolaireId),
-    enabled: anneeScolaireId > 0,
+    queryFn: () => anneeScolaireApi.getVacances(anneeScolaireId!),
+    enabled: !!anneeScolaireId,
   });
 }
 
@@ -170,7 +193,7 @@ export function useCreateVacance() {
       anneeScolaireId,
       data,
     }: {
-      anneeScolaireId: number;
+      anneeScolaireId: string;
       data: Omit<Vacance, "id" | "anneeScolaireId">;
     }) => anneeScolaireApi.createVacance(anneeScolaireId, data),
     onSuccess: () => {
@@ -185,7 +208,7 @@ export function useCreateVacance() {
 export function useDeleteVacance() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => anneeScolaireApi.deleteVacance(id),
+    mutationFn: (id: string) => anneeScolaireApi.deleteVacance(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [VACANCES_KEY] });
     },
@@ -197,11 +220,11 @@ export function useDeleteVacance() {
 /**
  * Public holidays for an academic year.
  */
-export function useJoursFeries(anneeScolaireId: number) {
+export function useJoursFeries(anneeScolaireId: string | null | undefined) {
   return useQuery<JourFerie[]>({
     queryKey: [JOURS_FERIES_KEY, anneeScolaireId],
-    queryFn: () => anneeScolaireApi.getJoursFeries(anneeScolaireId),
-    enabled: anneeScolaireId > 0,
+    queryFn: () => anneeScolaireApi.getJoursFeries(anneeScolaireId!),
+    enabled: !!anneeScolaireId,
   });
 }
 
@@ -215,7 +238,7 @@ export function useCreateJourFerie() {
       anneeScolaireId,
       data,
     }: {
-      anneeScolaireId: number;
+      anneeScolaireId: string;
       data: Omit<JourFerie, "id" | "anneeScolaireId">;
     }) => anneeScolaireApi.createJourFerie(anneeScolaireId, data),
     onSuccess: () => {
@@ -230,7 +253,7 @@ export function useCreateJourFerie() {
 export function useDeleteJourFerie() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => anneeScolaireApi.deleteJourFerie(id),
+    mutationFn: (id: string) => anneeScolaireApi.deleteJourFerie(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [JOURS_FERIES_KEY] });
     },

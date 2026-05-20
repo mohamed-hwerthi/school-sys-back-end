@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.scolarite.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,8 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ScolariteDTO {
 
-    private Long id;
-    private Long studentId;
+    private UUID id;
+    private UUID studentId;
     private String studentName;
     private String anneeScolaire;
     private String niveau;

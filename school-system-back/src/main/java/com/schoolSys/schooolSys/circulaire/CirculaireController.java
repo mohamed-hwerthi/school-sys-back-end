@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.circulaire;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.circulaire.dto.CirculaireRequestDTO;
 import com.schoolSys.schooolSys.circulaire.dto.CirculaireResponseDTO;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
@@ -29,7 +31,7 @@ public class CirculaireController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CirculaireResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CirculaireResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(circulaireService.findById(id)));
     }
 
@@ -44,25 +46,25 @@ public class CirculaireController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_COMMUNICATION')")
     public ResponseEntity<ApiResponse<CirculaireResponseDTO>> update(
-            @PathVariable Long id, @Valid @RequestBody CirculaireRequestDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody CirculaireRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(circulaireService.update(id, dto)));
     }
 
     @PutMapping("/{id}/publier")
     @PreAuthorize("hasAuthority('MANAGE_COMMUNICATION')")
-    public ResponseEntity<ApiResponse<CirculaireResponseDTO>> publish(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CirculaireResponseDTO>> publish(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(circulaireService.publish(id)));
     }
 
     @PutMapping("/{id}/archiver")
     @PreAuthorize("hasAuthority('MANAGE_COMMUNICATION')")
-    public ResponseEntity<ApiResponse<CirculaireResponseDTO>> archive(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<CirculaireResponseDTO>> archive(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(circulaireService.archive(id)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_COMMUNICATION')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         circulaireService.delete(id);
         return ResponseEntity.noContent().build();
     }

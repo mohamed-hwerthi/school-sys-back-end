@@ -12,6 +12,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { quizApi } from "@/api/quiz.api";
 import { EmptyState } from "@/components/EmptyState";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 interface Question {
@@ -46,6 +47,7 @@ function formatTime(seconds: number): string {
 }
 
 export default function QuizPassationScreen() {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const quizId = route.params?.quizId as number;

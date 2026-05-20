@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.finance.dto.AuditFinancierDTO;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,7 @@ public class AuditFinancierController {
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<AuditFinancierDTO>>> getByEntity(
             @PathVariable String entityType,
-            @PathVariable Long entityId) {
+            @PathVariable UUID entityId) {
         return ResponseEntity.ok(ApiResponse.ok(
                 auditFinancierService.getByEntity(entityType, entityId)));
     }

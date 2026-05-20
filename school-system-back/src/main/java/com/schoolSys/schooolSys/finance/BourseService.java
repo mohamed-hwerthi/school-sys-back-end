@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.finance.dto.BourseDTO;
 import com.schoolSys.schooolSys.student.Student;
@@ -29,17 +31,17 @@ public class BourseService {
         return bourses.stream().map(this::toDTO).toList();
     }
 
-    public List<BourseDTO> findByStudentId(Long studentId) {
+    public List<BourseDTO> findByStudentId(UUID studentId) {
         return bourseRepository.findByStudentId(studentId).stream()
                 .map(this::toDTO).toList();
     }
 
-    public List<BourseDTO> findByStudentIdAndAnneeScolaire(Long studentId, String anneeScolaire) {
+    public List<BourseDTO> findByStudentIdAndAnneeScolaire(UUID studentId, String anneeScolaire) {
         return bourseRepository.findByStudentIdAndAnneeScolaire(studentId, anneeScolaire).stream()
                 .map(this::toDTO).toList();
     }
 
-    public BourseDTO findById(Long id) {
+    public BourseDTO findById(UUID id) {
         Bourse bourse = bourseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Bourse", id));
         return toDTO(bourse);
@@ -69,7 +71,7 @@ public class BourseService {
     }
 
     @Transactional
-    public BourseDTO update(Long id, BourseDTO dto) {
+    public BourseDTO update(UUID id, BourseDTO dto) {
         Bourse bourse = bourseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Bourse", id));
 
@@ -93,7 +95,7 @@ public class BourseService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!bourseRepository.existsById(id)) {
             throw new ResourceNotFoundException("Bourse", id);
         }

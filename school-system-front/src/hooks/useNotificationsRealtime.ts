@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useWebSocket } from "./useWebSocket";
 
 export interface RealtimeNotification {
-  id: number;
+  id: string;
   type: "ABSENCE" | "NOTE" | "PAIEMENT" | "INSCRIPTION" | "SYSTEM" | "DISCIPLINE" | "EXAMEN" | "DEVOIR";
   title: string;
   message: string;
@@ -44,7 +44,7 @@ export function useNotificationsRealtime() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const markAsRead = useCallback((id: number) => {
+  const markAsRead = useCallback((id: string) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
@@ -58,7 +58,7 @@ export function useNotificationsRealtime() {
     setNotifications([]);
   }, []);
 
-  const removeNotification = useCallback((id: number) => {
+  const removeNotification = useCallback((id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   }, []);
 

@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.parent;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import com.schoolSys.schooolSys.student.Student;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,11 +22,12 @@ import org.hibernate.annotations.SQLRestriction;
 public class ParentStudent {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "parent_user_id", nullable = false)
-    private Long parentUserId;
+    private UUID parentUserId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)

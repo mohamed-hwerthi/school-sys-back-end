@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.note;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -11,11 +14,12 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("deleted = false")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class Competence {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "module_id")
-    private Long moduleId;
+    private UUID moduleId;
 
     @Column(nullable = false)
     private String label;

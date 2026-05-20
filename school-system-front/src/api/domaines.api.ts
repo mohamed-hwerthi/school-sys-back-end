@@ -1,19 +1,19 @@
 import api from "./axios";
 
 export interface SousDomaineDTO {
-  id: number;
+  id: string;
   name: string;
   nameAr: string | null;
   ordre: number;
-  domaineId: number;
+  domaineId: string;
 }
 
 export interface DomaineDTO {
-  id: number;
+  id: string;
   name: string;
   nameAr: string | null;
   ordre: number;
-  niveauId: number;
+  niveauId: string;
   niveauName: string;
   sousDomaines: SousDomaineDTO[];
 }
@@ -22,20 +22,20 @@ export interface DomaineRequest {
   name: string;
   nameAr?: string;
   ordre: number;
-  niveauId: number;
+  niveauId: string;
 }
 
 export interface SousDomaineRequest {
   name: string;
   nameAr?: string;
   ordre: number;
-  domaineId: number;
+  domaineId: string;
 }
 
 const BASE = "/domaines";
 
 export const domainesApi = {
-  getAll: async (niveauId?: number): Promise<DomaineDTO[]> => {
+  getAll: async (niveauId?: string): Promise<DomaineDTO[]> => {
     const params = niveauId ? `?niveauId=${niveauId}` : "";
     const res = await api.get<DomaineDTO[]>(`${BASE}${params}`);
     return res.data;
@@ -46,12 +46,12 @@ export const domainesApi = {
     return res.data;
   },
 
-  update: async (id: number, data: DomaineRequest): Promise<DomaineDTO> => {
+  update: async (id: string, data: DomaineRequest): Promise<DomaineDTO> => {
     const res = await api.put<DomaineDTO>(`${BASE}/${id}`, data);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`${BASE}/${id}`),
+  delete: (id: string) => api.delete(`${BASE}/${id}`),
 
   // Sous-domaines
   createSousDomaine: async (data: SousDomaineRequest): Promise<SousDomaineDTO> => {
@@ -59,10 +59,10 @@ export const domainesApi = {
     return res.data;
   },
 
-  updateSousDomaine: async (id: number, data: SousDomaineRequest): Promise<SousDomaineDTO> => {
+  updateSousDomaine: async (id: string, data: SousDomaineRequest): Promise<SousDomaineDTO> => {
     const res = await api.put<SousDomaineDTO>(`${BASE}/sous-domaines/${id}`, data);
     return res.data;
   },
 
-  deleteSousDomaine: (id: number) => api.delete(`${BASE}/sous-domaines/${id}`),
+  deleteSousDomaine: (id: string) => api.delete(`${BASE}/sous-domaines/${id}`),
 };

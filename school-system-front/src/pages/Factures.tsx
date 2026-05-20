@@ -188,7 +188,7 @@ export default function FacturesPage() {
 
   const handleGenerate = () => {
     if (!generateEleveId) return;
-    generateMutation.mutate(Number(generateEleveId), {
+    generateMutation.mutate(generateEleveId, {
       onSuccess: () => {
         setGenerateOpen(false);
         setGenerateEleveId("");
@@ -628,7 +628,7 @@ export default function FacturesPage() {
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
               <Label htmlFor="echEleveId">{t("common.student")} ID</Label>
-              <Input id="echEleveId" type="number" value={echeancierForm.eleveId || ""} onChange={(e) => setEcheancierForm({ ...echeancierForm, eleveId: Number(e.target.value) })} placeholder={t("invoices.enterStudentId")} />
+              <Input id="echEleveId" type="number" value={echeancierForm.eleveId || ""} onChange={(e) => setEcheancierForm({ ...echeancierForm, eleveId: e.target.value })} placeholder={t("invoices.enterStudentId")} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">

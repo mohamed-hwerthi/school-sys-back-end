@@ -5,11 +5,11 @@ const BASE = "/audit-logs";
 
 // ── Backend DTO shape ───────────────────────────────────────────────
 export interface AuditLogDTO {
-  id: number;
+  id: string;
   username: string;
   action: string;
   entityType: string;
-  entityId: number | null;
+  entityId: string | null;
   details: string;
   ipAddress: string;
   timestamp: string; // ISO-8601

@@ -5,24 +5,24 @@ export interface MeetingRequest {
   date: string;
   heureDebut: string;
   heureFin: string;
-  enseignantId?: number;
-  parentId?: number;
-  studentId?: number;
+  enseignantId?: string;
+  parentId?: string;
+  studentId?: string;
   statut?: string;
   notes?: string;
 }
 
 export interface MeetingResponse {
-  id: number;
+  id: string;
   title: string;
   date: string;
   heureDebut: string;
   heureFin: string;
-  enseignantId?: number;
+  enseignantId?: string;
   enseignantName?: string;
-  parentId?: number;
+  parentId?: string;
   parentName?: string;
-  studentId?: number;
+  studentId?: string;
   studentName?: string;
   statut: "PLANIFIE" | "CONFIRME" | "ANNULE";
   notes?: string;
@@ -37,22 +37,22 @@ export const meetingsApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<MeetingResponse> => {
+  getById: async (id: string): Promise<MeetingResponse> => {
     const res = await api.get<MeetingResponse>(`${BASE}/${id}`);
     return res.data;
   },
 
-  getByTeacher: async (enseignantId: number): Promise<MeetingResponse[]> => {
+  getByTeacher: async (enseignantId: string): Promise<MeetingResponse[]> => {
     const res = await api.get<MeetingResponse[]>(`${BASE}/teacher/${enseignantId}`);
     return res.data;
   },
 
-  getByParent: async (parentId: number): Promise<MeetingResponse[]> => {
+  getByParent: async (parentId: string): Promise<MeetingResponse[]> => {
     const res = await api.get<MeetingResponse[]>(`${BASE}/parent/${parentId}`);
     return res.data;
   },
 
-  getByStudent: async (studentId: number): Promise<MeetingResponse[]> => {
+  getByStudent: async (studentId: string): Promise<MeetingResponse[]> => {
     const res = await api.get<MeetingResponse[]>(`${BASE}/student/${studentId}`);
     return res.data;
   },
@@ -74,12 +74,12 @@ export const meetingsApi = {
     return res.data;
   },
 
-  update: async (id: number, data: MeetingRequest): Promise<MeetingResponse> => {
+  update: async (id: string, data: MeetingRequest): Promise<MeetingResponse> => {
     const res = await api.put<MeetingResponse>(`${BASE}/${id}`, data);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/${id}`);
   },
 };

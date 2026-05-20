@@ -1,10 +1,13 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert, RefreshControl } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from "react-native";
 import { useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
+import { useTheme } from "@/context/ThemeContext";
+import { confirmAction } from "@/utils/confirm";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 export default function MoreTab() {
+  const { colors } = useTheme();
   const { user, logout } = useAuth();
   const navigation = useNavigation<any>();
   const [refreshing, setRefreshing] = useState(false);
@@ -16,10 +19,12 @@ export default function MoreTab() {
   }, []);
 
   const handleLogout = () => {
-    Alert.alert("Deconnexion", "Etes-vous sur de vouloir vous deconnecter ?", [
-      { text: "Annuler", style: "cancel" },
-      { text: "Deconnecter", style: "destructive", onPress: () => logout() },
-    ]);
+    confirmAction({
+      title: "Déconnexion",
+      message: "Êtes-vous sûr de vouloir vous déconnecter ?",
+      confirmLabel: "Déconnecter",
+      destructive: true,
+    }, () => { void logout(); });
   };
 
   const menuItems = [

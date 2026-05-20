@@ -4,6 +4,7 @@ import { useChild } from "@/context/ChildContext";
 import { ChildSelector } from "@/components/ChildSelector";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorView } from "@/components/ErrorView";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 import { useQuery } from "@tanstack/react-query";
 import { emploiDuTempsApi } from "@/api/emploi-du-temps.api";
@@ -30,6 +31,7 @@ function isCurrentSlot(heureDebut: string, heureFin: string): boolean {
 }
 
 export default function TimetableTab() {
+  const { colors } = useTheme();
   const { selectedChild } = useChild();
   const [viewMode, setViewMode] = useState<"today" | "week">("today");
 

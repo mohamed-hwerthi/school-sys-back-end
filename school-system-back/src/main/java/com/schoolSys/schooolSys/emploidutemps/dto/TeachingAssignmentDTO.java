@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.emploidutemps.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -14,13 +16,13 @@ import lombok.NoArgsConstructor;
 public class TeachingAssignmentDTO {
 
     @NotNull
-    private Long classeId;
+    private UUID classeId;
 
     @NotNull
-    private Long moduleId;
+    private UUID moduleId;
 
     @NotNull
-    private Long enseignantId;
+    private UUID enseignantId;
 
     @NotNull
     @Min(1)

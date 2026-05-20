@@ -14,6 +14,7 @@ import { disciplineApi } from "@/api/discipline.api";
 import { ChildSelector } from "@/components/ChildSelector";
 import { EmptyState } from "@/components/EmptyState";
 import { StatCard } from "@/components/StatCard";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 type SectionType = "incidents" | "sanctions";
@@ -87,6 +88,7 @@ function getSanctionStatusLabel(statut: string): string {
 }
 
 export default function DisciplineScreen() {
+  const { colors } = useTheme();
   const { selectedChild, isLoading: childrenLoading } = useChild();
   const navigation = useNavigation();
   const [section, setSection] = useState<SectionType>("incidents");

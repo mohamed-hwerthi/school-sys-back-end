@@ -7,10 +7,10 @@
 -- date_debut/date_fin allow handling mid-year changes (a teacher replacing another at trim 2)
 -- without losing the historical assignment.
 CREATE TABLE IF NOT EXISTS affectations (
-    id              BIGSERIAL PRIMARY KEY,
-    teacher_id      BIGINT      NOT NULL REFERENCES teachers(id) ON DELETE CASCADE,
-    classe_id       BIGINT      NOT NULL REFERENCES classes(id)  ON DELETE CASCADE,
-    module_id       BIGINT               REFERENCES modules(id)  ON DELETE SET NULL,
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    teacher_id      UUID      NOT NULL REFERENCES teachers(id) ON DELETE CASCADE,
+    classe_id       UUID      NOT NULL REFERENCES classes(id)  ON DELETE CASCADE,
+    module_id       UUID               REFERENCES modules(id)  ON DELETE SET NULL,
     annee_scolaire  VARCHAR(20) NOT NULL,
     date_debut      DATE,
     date_fin        DATE,
@@ -29,5 +29,5 @@ CREATE INDEX IF NOT EXISTS idx_affectations_annee   ON affectations(annee_scolai
 -- Empêche le doublon exact (teacher, classe, module, année) sur les lignes vivantes.
 -- Un même prof peut avoir plusieurs lignes pour la même classe avec des module_id différents.
 CREATE UNIQUE INDEX IF NOT EXISTS uq_affectations_unique
-    ON affectations(teacher_id, classe_id, COALESCE(module_id, 0), annee_scolaire)
+    ON affectations(teacher_id, classe_id, COALESCE(module_id, '00000000-0000-0000-0000-000000000000'::uuid), annee_scolaire)
     WHERE deleted = FALSE;

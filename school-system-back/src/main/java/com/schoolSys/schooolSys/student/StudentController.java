@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.student;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.common.dto.PagedResponse;
 import com.schoolSys.schooolSys.student.dto.ReinscriptionRequestDTO;
@@ -66,7 +68,7 @@ public class StudentController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_STUDENTS')")
-    public ResponseEntity<ApiResponse<StudentResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<StudentResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(studentService.findById(id)));
     }
 
@@ -79,14 +81,14 @@ public class StudentController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_STUDENTS')")
-    public ResponseEntity<ApiResponse<StudentResponseDTO>> update(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<StudentResponseDTO>> update(@PathVariable UUID id,
                                                                    @Valid @RequestBody StudentRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(studentService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('DELETE_STUDENTS')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         studentService.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -116,7 +118,7 @@ public class StudentController {
     @PostMapping("/{id}/documents")
     @PreAuthorize("hasAuthority('WRITE_STUDENTS')")
     public ResponseEntity<ApiResponse<DocumentEleve>> uploadDocument(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "type", defaultValue = "AUTRE") DocumentEleve.DocumentType type) {
         DocumentEleve doc = documentService.upload(id, file, type);
@@ -125,13 +127,13 @@ public class StudentController {
 
     @GetMapping("/{id}/documents")
     @PreAuthorize("hasAuthority('READ_STUDENTS')")
-    public ResponseEntity<ApiResponse<List<DocumentEleve>>> listDocuments(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<List<DocumentEleve>>> listDocuments(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(documentService.listByStudent(id)));
     }
 
     @GetMapping("/documents/{docId}/download")
     @PreAuthorize("hasAuthority('READ_STUDENTS')")
-    public ResponseEntity<Resource> downloadDocument(@PathVariable Long docId) throws IOException {
+    public ResponseEntity<Resource> downloadDocument(@PathVariable UUID docId) throws IOException {
         DocumentEleve doc = documentService.findById(docId);
         Path path = Paths.get(doc.getFilePath());
         Resource resource = new UrlResource(path.toUri());
@@ -146,7 +148,7 @@ public class StudentController {
 
     @DeleteMapping("/documents/{docId}")
     @PreAuthorize("hasAuthority('DELETE_STUDENTS')")
-    public ResponseEntity<Void> deleteDocument(@PathVariable Long docId) {
+    public ResponseEntity<Void> deleteDocument(@PathVariable UUID docId) {
         documentService.delete(docId);
         return ResponseEntity.noContent().build();
     }
@@ -180,7 +182,7 @@ public class StudentController {
 
     @GetMapping("/{id}/fiche-pdf")
     @PreAuthorize("hasAuthority('READ_STUDENTS')")
-    public ResponseEntity<String> fichePdf(@PathVariable Long id) {
+    public ResponseEntity<String> fichePdf(@PathVariable UUID id) {
         String html = studentService.generateFicheHtml(id);
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)

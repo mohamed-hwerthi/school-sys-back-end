@@ -817,11 +817,11 @@ function AffectationsTab() {
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
               <Label>ID Eleve</Label>
-              <Input type="number" value={form.eleveId || ""} onChange={(e) => setForm({ ...form, eleveId: Number(e.target.value) })} placeholder="ID de l'eleve" />
+              <Input type="number" value={form.eleveId || ""} onChange={(e) => setForm({ ...form, eleveId: e.target.value })} placeholder="ID de l'eleve" />
             </div>
             <div className="space-y-1.5">
               <Label>Circuit</Label>
-              <Select value={form.circuitId ? String(form.circuitId) : ""} onValueChange={(v) => setForm({ ...form, circuitId: Number(v) })}>
+              <Select value={form.circuitId ? String(form.circuitId) : ""} onValueChange={(v) => setForm({ ...form, circuitId: v })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selectionner un circuit" />
                 </SelectTrigger>

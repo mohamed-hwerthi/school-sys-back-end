@@ -10,7 +10,7 @@ import {
 const RECO_KEY = "recommandations";
 const OBS_KEY = "observations";
 
-export function useRecommandations(studentIds: number[], trimestre: number) {
+export function useRecommandations(studentIds: string[], trimestre: number) {
   return useQuery<RecommandationDTO[]>({
     queryKey: [RECO_KEY, studentIds, trimestre],
     queryFn: () => appreciationsApi.getRecommandations(studentIds, trimestre),
@@ -27,7 +27,7 @@ export function useUpsertRecommandations() {
   });
 }
 
-export function useObservations(studentIds: number[], trimestre: number) {
+export function useObservations(studentIds: string[], trimestre: number) {
   return useQuery<ObservationDTO[]>({
     queryKey: [OBS_KEY, studentIds, trimestre],
     queryFn: () => appreciationsApi.getObservations(studentIds, trimestre),

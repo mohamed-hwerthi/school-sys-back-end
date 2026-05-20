@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.importexport;
 
+import java.util.UUID;
+
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 import com.schoolSys.schooolSys.importexport.dto.ImportErrorDTO;
@@ -236,8 +238,8 @@ public class CsvImportService {
                         continue;
                     }
 
-                    Long studentId = Long.parseLong(studentIdStr);
-                    Long examenId = Long.parseLong(examenIdStr);
+                    UUID studentId = UUID.fromString(studentIdStr);
+                    UUID examenId = UUID.fromString(examenIdStr);
                     Integer trimestre = Integer.parseInt(trimestreStr);
                     Double valeur = valeurStr.isBlank() ? null : Double.parseDouble(valeurStr);
 

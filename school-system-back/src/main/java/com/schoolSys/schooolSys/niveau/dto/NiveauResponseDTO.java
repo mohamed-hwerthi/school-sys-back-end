@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.niveau.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class NiveauResponseDTO {
 
-    private Long id;
+    private UUID id;
     private String name;
     private List<String> sections;
 }

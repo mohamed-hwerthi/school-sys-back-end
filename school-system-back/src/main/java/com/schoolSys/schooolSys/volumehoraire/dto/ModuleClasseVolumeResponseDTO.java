@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.volumehoraire.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,11 +15,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ModuleClasseVolumeResponseDTO {
 
-    private Long id;
-    private Long moduleId;
-    private Long classeId;
-    private Long enseignantId;
-    private Long anneeScolaireId;
+    private UUID id;
+    private UUID moduleId;
+    private UUID classeId;
+    private UUID enseignantId;
+    private UUID anneeScolaireId;
     private Integer nbHeuresHebdo;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

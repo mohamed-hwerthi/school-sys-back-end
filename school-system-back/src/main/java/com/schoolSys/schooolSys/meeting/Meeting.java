@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.meeting;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,8 +23,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class Meeting {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(nullable = false)
     private String title;
@@ -36,13 +40,13 @@ public class Meeting {
     private LocalTime heureFin;
 
     @Column(name = "enseignant_id")
-    private Long enseignantId;
+    private UUID enseignantId;
 
     @Column(name = "parent_id")
-    private Long parentId;
+    private UUID parentId;
 
     @Column(name = "student_id")
-    private Long studentId;
+    private UUID studentId;
 
     @Column(nullable = false, length = 20)
     @Builder.Default

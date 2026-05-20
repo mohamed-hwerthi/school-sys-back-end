@@ -27,8 +27,8 @@ ON CONFLICT (niveau_id, letter) DO NOTHING;
 -- Using a DO block to look up the niveau_id dynamically.
 DO $$
 DECLARE
-    v_niveau_1_id BIGINT;
-    v_niveau_2_id BIGINT;
+    v_niveau_1_id UUID;
+    v_niveau_2_id UUID;
 BEGIN
     SELECT id INTO v_niveau_1_id FROM niveaux WHERE name = '1ère année';
     SELECT id INTO v_niveau_2_id FROM niveaux WHERE name = '2ème année';
@@ -153,41 +153,41 @@ ON CONFLICT DO NOTHING;
 -- ── 7. EXAMENS (12 across Maths+Francais for classes 1A, 2A) ───
 DO $$
 DECLARE
-    v_classe_1a_id BIGINT;
-    v_classe_2a_id BIGINT;
-    v_mod_maths_n1 BIGINT;
-    v_mod_franc_n1 BIGINT;
-    v_mod_maths_n2 BIGINT;
-    v_mod_franc_n2 BIGINT;
-    v_teacher_maths BIGINT;
-    v_teacher_franc BIGINT;
+    v_classe_1a_id UUID;
+    v_classe_2a_id UUID;
+    v_mod_maths_n1 UUID;
+    v_mod_franc_n1 UUID;
+    v_mod_maths_n2 UUID;
+    v_mod_franc_n2 UUID;
+    v_teacher_maths UUID;
+    v_teacher_franc UUID;
     -- students arrays
-    v_student_ids_1a BIGINT[];
-    v_student_ids_2a BIGINT[];
-    v_sid BIGINT;
-    v_eid BIGINT;
+    v_student_ids_1a UUID[];
+    v_student_ids_2a UUID[];
+    v_sid UUID;
+    v_eid UUID;
     v_val DOUBLE PRECISION;
     v_counter INTEGER;
     -- examen IDs
-    v_ex_ctrl1_t1_maths_1a BIGINT;
-    v_ex_exam_t1_maths_1a BIGINT;
-    v_ex_ctrl1_t2_maths_1a BIGINT;
-    v_ex_exam_t2_maths_1a BIGINT;
-    v_ex_ctrl1_t3_maths_1a BIGINT;
-    v_ex_exam_t3_maths_1a BIGINT;
-    v_ex_ctrl1_t1_franc_1a BIGINT;
-    v_ex_exam_t1_franc_1a BIGINT;
-    v_ex_ctrl1_t2_franc_1a BIGINT;
-    v_ex_exam_t2_franc_1a BIGINT;
-    v_ex_ctrl1_t3_franc_1a BIGINT;
-    v_ex_exam_t3_franc_1a BIGINT;
+    v_ex_ctrl1_t1_maths_1a UUID;
+    v_ex_exam_t1_maths_1a UUID;
+    v_ex_ctrl1_t2_maths_1a UUID;
+    v_ex_exam_t2_maths_1a UUID;
+    v_ex_ctrl1_t3_maths_1a UUID;
+    v_ex_exam_t3_maths_1a UUID;
+    v_ex_ctrl1_t1_franc_1a UUID;
+    v_ex_exam_t1_franc_1a UUID;
+    v_ex_ctrl1_t2_franc_1a UUID;
+    v_ex_exam_t2_franc_1a UUID;
+    v_ex_ctrl1_t3_franc_1a UUID;
+    v_ex_exam_t3_franc_1a UUID;
     -- 2A examen IDs
-    v_ex_ctrl1_t1_maths_2a BIGINT;
-    v_ex_exam_t1_maths_2a BIGINT;
-    v_ex_ctrl1_t1_franc_2a BIGINT;
-    v_ex_exam_t1_franc_2a BIGINT;
+    v_ex_ctrl1_t1_maths_2a UUID;
+    v_ex_exam_t1_maths_2a UUID;
+    v_ex_ctrl1_t1_franc_2a UUID;
+    v_ex_exam_t1_franc_2a UUID;
     -- all examen IDs for notes generation
-    v_all_examens BIGINT[];
+    v_all_examens UUID[];
     v_trimestres INTEGER[];
 BEGIN
     -- ── Look up class IDs ──
@@ -464,17 +464,17 @@ BEGIN
 
     -- Look up module IDs for 1ère année
     DECLARE
-        v_cr1 BIGINT; v_cr2 BIGINT; v_cr3 BIGINT; v_cr4 BIGINT;
-        v_cr5 BIGINT; v_cr6 BIGINT;
-        v_mod_arabe_n1 BIGINT; v_mod_sciences_n1 BIGINT;
-        v_mod_histgeo_n1 BIGINT; v_mod_edislam_n1 BIGINT;
-        v_mod_edphys_n1 BIGINT; v_mod_anglais_n1 BIGINT;
-        v_mod_arabe_n2 BIGINT; v_mod_sciences_n2 BIGINT;
-        v_mod_histgeo_n2 BIGINT; v_mod_edislam_n2 BIGINT;
-        v_mod_edphys_n2 BIGINT; v_mod_anglais_n2 BIGINT;
-        v_teacher_arabe BIGINT; v_teacher_sciences BIGINT;
-        v_teacher_histgeo BIGINT; v_teacher_edislam BIGINT;
-        v_teacher_edphys BIGINT; v_teacher_anglais BIGINT;
+        v_cr1 UUID; v_cr2 UUID; v_cr3 UUID; v_cr4 UUID;
+        v_cr5 UUID; v_cr6 UUID;
+        v_mod_arabe_n1 UUID; v_mod_sciences_n1 UUID;
+        v_mod_histgeo_n1 UUID; v_mod_edislam_n1 UUID;
+        v_mod_edphys_n1 UUID; v_mod_anglais_n1 UUID;
+        v_mod_arabe_n2 UUID; v_mod_sciences_n2 UUID;
+        v_mod_histgeo_n2 UUID; v_mod_edislam_n2 UUID;
+        v_mod_edphys_n2 UUID; v_mod_anglais_n2 UUID;
+        v_teacher_arabe UUID; v_teacher_sciences UUID;
+        v_teacher_histgeo UUID; v_teacher_edislam UUID;
+        v_teacher_edphys UUID; v_teacher_anglais UUID;
     BEGIN
         SELECT id INTO v_cr1 FROM creneaux WHERE label = 'Séance 1' LIMIT 1;
         SELECT id INTO v_cr2 FROM creneaux WHERE label = 'Séance 2' LIMIT 1;
@@ -593,10 +593,10 @@ ON CONFLICT DO NOTHING;
 -- For students in class 1A, various months of the 2025-2026 year
 DO $$
 DECLARE
-    v_student_ids_1a BIGINT[];
-    v_tf_scolarite BIGINT;
-    v_tf_cantine BIGINT;
-    v_tf_transport BIGINT;
+    v_student_ids_1a UUID[];
+    v_tf_scolarite UUID;
+    v_tf_cantine UUID;
+    v_tf_transport UUID;
 BEGIN
     SELECT ARRAY_AGG(id ORDER BY id) INTO v_student_ids_1a FROM students WHERE classe = '1A';
     SELECT id INTO v_tf_scolarite FROM types_frais WHERE nom = 'Frais de scolarité' LIMIT 1;
@@ -681,18 +681,3 @@ VALUES
      'GENERAL', 'PARENTS', 'Ali Comptable', '2025-12-20 14:00:00', true)
 ON CONFLICT DO NOTHING;
 
--- ── 11. NOTIFICATIONS (10) ──────────────────────────────────────
--- user_id references PUBLIC schema users; we use safe IDs (1-5 from V3/V60)
-INSERT INTO notifications (user_id, title, message, type, is_read, link)
-VALUES
-    (2, 'Nouvelle note enregistrée',           'La note de Mathématiques T1 a été saisie pour la classe 1A.',                               'NOTE',     false, '/notes'),
-    (2, 'Absence signalée',                    'Un élève de la classe 1A a été signalé absent le 07/10/2025.',                               'ABSENCE',  false, '/absences'),
-    (2, 'Paiement en retard',                  'Le paiement de scolarité de Nour Sassi pour septembre est en retard.',                       'FINANCE',  true,  '/finance/paiements'),
-    (3, 'Notes à saisir',                      'Les notes du Contrôle 1 T2 de Mathématiques sont à saisir avant le 15/02/2026.',             'NOTE',     false, '/notes'),
-    (3, 'Rappel emploi du temps',              'Votre emploi du temps a été mis à jour pour le 2ème trimestre.',                             'INFO',     true,  '/emploi-du-temps'),
-    (4, 'Rapport financier disponible',        'Le rapport financier du mois d''octobre est disponible dans votre espace.',                  'FINANCE',  false, '/finance/rapports'),
-    (4, 'Paiement reçu',                       'Le paiement de scolarité de Meriem Laabidi pour novembre a été partiellement reçu.',         'FINANCE',  true,  '/finance/paiements'),
-    (5, 'Bulletin disponible',                 'Le bulletin du 1er trimestre de votre enfant est disponible.',                               'NOTE',     false, '/bulletins'),
-    (5, 'Absence de votre enfant',             'Votre enfant a été signalé absent le 14/11/2025. Merci de fournir un justificatif.',         'ABSENCE',  false, '/absences'),
-    (2, 'Nouvelle annonce publiée',            'Une nouvelle annonce concernant la fête scolaire a été publiée.',                            'INFO',     true,  '/annonces')
-ON CONFLICT DO NOTHING;

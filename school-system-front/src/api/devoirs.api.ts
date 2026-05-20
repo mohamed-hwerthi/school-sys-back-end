@@ -16,7 +16,7 @@ const RESSOURCES_BASE = "/ressources";
 
 export const devoirsApi = {
   // Devoirs
-  getAll: async (classeId?: number, moduleId?: number): Promise<Devoir[]> => {
+  getAll: async (classeId?: string, moduleId?: string): Promise<Devoir[]> => {
     const params = new URLSearchParams();
     if (classeId) params.set("classeId", String(classeId));
     if (moduleId) params.set("moduleId", String(moduleId));
@@ -25,7 +25,7 @@ export const devoirsApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<Devoir> => {
+  getById: async (id: string): Promise<Devoir> => {
     const res = await api.get<Devoir>(`${DEVOIRS_BASE}/${id}`);
     return res.data;
   },
@@ -35,25 +35,25 @@ export const devoirsApi = {
     return res.data;
   },
 
-  update: async (id: number, data: CreateDevoirRequest): Promise<Devoir> => {
+  update: async (id: string, data: CreateDevoirRequest): Promise<Devoir> => {
     const res = await api.put<Devoir>(`${DEVOIRS_BASE}/${id}`, data);
     return res.data;
   },
 
-  close: async (id: number): Promise<Devoir> => {
+  close: async (id: string): Promise<Devoir> => {
     const res = await api.put<Devoir>(`${DEVOIRS_BASE}/${id}/close`);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`${DEVOIRS_BASE}/${id}`),
+  delete: (id: string) => api.delete(`${DEVOIRS_BASE}/${id}`),
 
   // Soumissions
-  getSoumissionsByDevoir: async (devoirId: number): Promise<Soumission[]> => {
+  getSoumissionsByDevoir: async (devoirId: string): Promise<Soumission[]> => {
     const res = await api.get<Soumission[]>(`${SOUMISSIONS_BASE}/devoir/${devoirId}`);
     return res.data;
   },
 
-  getSoumissionsByEleve: async (eleveId: number): Promise<Soumission[]> => {
+  getSoumissionsByEleve: async (eleveId: string): Promise<Soumission[]> => {
     const res = await api.get<Soumission[]>(`${SOUMISSIONS_BASE}/eleve/${eleveId}`);
     return res.data;
   },
@@ -63,20 +63,20 @@ export const devoirsApi = {
     return res.data;
   },
 
-  correctSoumission: async (id: number, data: CorrectionRequest): Promise<Soumission> => {
+  correctSoumission: async (id: string, data: CorrectionRequest): Promise<Soumission> => {
     const res = await api.put<Soumission>(`${SOUMISSIONS_BASE}/${id}/correct`, data);
     return res.data;
   },
 
-  getDevoirStats: async (devoirId: number): Promise<DevoirStats> => {
+  getDevoirStats: async (devoirId: string): Promise<DevoirStats> => {
     const res = await api.get<DevoirStats>(`${SOUMISSIONS_BASE}/stats/${devoirId}`);
     return res.data;
   },
 
-  deleteSoumission: (id: number) => api.delete(`${SOUMISSIONS_BASE}/${id}`),
+  deleteSoumission: (id: string) => api.delete(`${SOUMISSIONS_BASE}/${id}`),
 
   // Ressources
-  getRessources: async (moduleId?: number): Promise<RessourcePedagogique[]> => {
+  getRessources: async (moduleId?: string): Promise<RessourcePedagogique[]> => {
     const params = new URLSearchParams();
     if (moduleId) params.set("moduleId", String(moduleId));
     const qs = params.toString();
@@ -89,10 +89,10 @@ export const devoirsApi = {
     return res.data;
   },
 
-  updateRessource: async (id: number, data: CreateRessourceRequest): Promise<RessourcePedagogique> => {
+  updateRessource: async (id: string, data: CreateRessourceRequest): Promise<RessourcePedagogique> => {
     const res = await api.put<RessourcePedagogique>(`${RESSOURCES_BASE}/${id}`, data);
     return res.data;
   },
 
-  deleteRessource: (id: number) => api.delete(`${RESSOURCES_BASE}/${id}`),
+  deleteRessource: (id: string) => api.delete(`${RESSOURCES_BASE}/${id}`),
 };

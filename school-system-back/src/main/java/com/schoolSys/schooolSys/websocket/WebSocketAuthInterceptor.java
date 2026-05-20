@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.websocket;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.auth.JwtTokenProvider;
 import com.schoolSys.schooolSys.auth.User;
 import com.schoolSys.schooolSys.auth.UserRepository;
@@ -38,7 +40,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
             String token = extractToken(accessor);
 
             if (token != null && jwtTokenProvider.validateToken(token)) {
-                Long userId = jwtTokenProvider.getUserIdFromToken(token);
+                UUID userId = jwtTokenProvider.getUserIdFromToken(token);
                 String role = jwtTokenProvider.getRoleFromToken(token);
 
                 Optional<User> userOpt = userRepository.findById(userId);

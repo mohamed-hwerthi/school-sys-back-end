@@ -69,14 +69,14 @@ export function useAllPaiements(anneeScolaire: string = DEFAULT_ANNEE) {
 
 // ─── Paiements for a specific student ───────────────────
 
-export function usePaiementsByStudent(studentId: number, anneeScolaire?: string) {
+export function usePaiementsByStudent(studentId: string, anneeScolaire?: string) {
   return useQuery<Paiement[]>({
     queryKey: [PAIEMENTS_KEY, "student", studentId, anneeScolaire],
     queryFn: async () => {
       const data = await paiementsApi.getByStudentId(studentId, anneeScolaire);
       return data.map(paiementFromApi);
     },
-    enabled: studentId > 0,
+    enabled: !!studentId,
   });
 }
 
@@ -95,8 +95,8 @@ export function useCreatePaiement() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: {
-      eleveId: number;
-      typeFraisId: number;
+      eleveId: string;
+      typeFraisId: string;
       mois: string;
       montantDu: number;
       montantPaye: number;
@@ -124,10 +124,10 @@ export function useUpdatePaiement() {
       id,
       data,
     }: {
-      id: number;
+      id: string;
       data: {
-        eleveId: number;
-        typeFraisId: number;
+        eleveId: string;
+        typeFraisId: string;
         mois: string;
         montantDu: number;
         montantPaye: number;
@@ -152,7 +152,7 @@ export function useUpdatePaiement() {
 export function useDeletePaiement() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => paiementsApi.delete(id),
+    mutationFn: (id: string) => paiementsApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [PAIEMENTS_KEY] });
       qc.invalidateQueries({ queryKey: [FINANCE_DASHBOARD_KEY] });

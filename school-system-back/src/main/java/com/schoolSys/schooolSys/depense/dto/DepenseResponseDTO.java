@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.depense.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.depense.Depense;
 import lombok.Builder;
 import lombok.Data;
@@ -12,8 +14,8 @@ import java.time.LocalDateTime;
 @Builder
 public class DepenseResponseDTO {
 
-    private Long id;
-    private Long categorieId;
+    private UUID id;
+    private UUID categorieId;
     private String categorieNom;
     private String libelle;
     private BigDecimal montant;

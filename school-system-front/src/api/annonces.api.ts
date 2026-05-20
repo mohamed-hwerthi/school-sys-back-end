@@ -11,7 +11,7 @@ export const annoncesApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<Annonce> => {
+  getById: async (id: string): Promise<Annonce> => {
     const res = await api.get<Annonce>(`${BASE}/${id}`);
     return res.data;
   },
@@ -26,12 +26,12 @@ export const annoncesApi = {
     return res.data;
   },
 
-  update: async (id: number, data: Partial<Annonce>): Promise<Annonce> => {
+  update: async (id: string, data: Partial<Annonce>): Promise<Annonce> => {
     const res = await api.put<Annonce>(`${BASE}/${id}`, data);
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/${id}`);
   },
 };

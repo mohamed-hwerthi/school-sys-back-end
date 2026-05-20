@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.parentnotif;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,7 @@ public class ParentNotificationController {
 
     @PostMapping("/note/{noteId}")
     public ResponseEntity<ApiResponse<List<NotificationLog>>> notifyForNote(
-            @PathVariable Long noteId,
+            @PathVariable UUID noteId,
             @RequestBody SendRequest body) {
         Set<NotificationLog.Channel> channels = parseChannels(body.getChannels());
         return ResponseEntity.ok(ApiResponse.ok(
@@ -34,7 +36,7 @@ public class ParentNotificationController {
 
     @PostMapping("/examen/{examenId}")
     public ResponseEntity<ApiResponse<Integer>> notifyForExamen(
-            @PathVariable Long examenId,
+            @PathVariable UUID examenId,
             @RequestBody SendRequest body) {
         Set<NotificationLog.Channel> channels = parseChannels(body.getChannels());
         int count = service.sendForExamen(examenId, channels, body.getTriggeredByUserId());
@@ -43,7 +45,7 @@ public class ParentNotificationController {
 
     @PostMapping("/manual/{studentId}")
     public ResponseEntity<ApiResponse<List<NotificationLog>>> notifyManual(
-            @PathVariable Long studentId,
+            @PathVariable UUID studentId,
             @RequestBody ManualSendRequest body) {
         Set<NotificationLog.Channel> channels = parseChannels(body.getChannels());
         return ResponseEntity.ok(ApiResponse.ok(
@@ -52,7 +54,7 @@ public class ParentNotificationController {
 
     @GetMapping("/logs")
     public ResponseEntity<ApiResponse<Page<NotificationLog>>> listLogs(
-            @RequestParam(required = false) Long recipientId,
+            @RequestParam(required = false) UUID recipientId,
             @RequestParam(required = false) ParentNotificationEvent eventType,
             @RequestParam(required = false) NotificationLog.Status status,
             @RequestParam(defaultValue = "0") int page,
@@ -74,13 +76,13 @@ public class ParentNotificationController {
     @Data
     public static class SendRequest {
         private List<String> channels;
-        private Long triggeredByUserId;
+        private UUID triggeredByUserId;
     }
 
     @Data
     public static class ManualSendRequest {
         private String message;
         private List<String> channels;
-        private Long triggeredByUserId;
+        private UUID triggeredByUserId;
     }
 }

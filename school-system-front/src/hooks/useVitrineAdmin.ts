@@ -6,7 +6,7 @@ import type { VitrineConfig, VitrinePage, VitrineSection, VitrineAnnouncement, V
 const KEYS = {
   config: ["vitrine-admin", "config"] as const,
   pages: ["vitrine-admin", "pages"] as const,
-  sections: (pageId: number) => ["vitrine-admin", "sections", pageId] as const,
+  sections: (pageId: string) => ["vitrine-admin", "sections", pageId] as const,
   gallery: ["vitrine-admin", "gallery"] as const,
   announcements: ["vitrine-admin", "announcements"] as const,
   analytics: ["vitrine-admin", "analytics"] as const,
@@ -78,7 +78,7 @@ export function useCreateVitrinePage() {
 export function useUpdateVitrinePage() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, dto }: { id: number; dto: Partial<VitrinePage> }) => vitrineAdminApi.updatePage(id, dto),
+    mutationFn: ({ id, dto }: { id: string; dto: Partial<VitrinePage> }) => vitrineAdminApi.updatePage(id, dto),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.pages });
       notify.success("Page mise à jour");
@@ -90,7 +90,7 @@ export function useUpdateVitrinePage() {
 export function useDeleteVitrinePage() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => vitrineAdminApi.deletePage(id),
+    mutationFn: (id: string) => vitrineAdminApi.deletePage(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.pages });
       notify.success("Page supprimée");
@@ -101,7 +101,7 @@ export function useDeleteVitrinePage() {
 
 // ======================== SECTIONS ========================
 
-export function useVitrineSections(pageId: number) {
+export function useVitrineSections(pageId: string) {
   return useQuery({
     queryKey: KEYS.sections(pageId),
     queryFn: () => vitrineAdminApi.getSections(pageId),
@@ -112,7 +112,7 @@ export function useVitrineSections(pageId: number) {
 export function useCreateVitrineSection() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ pageId, dto }: { pageId: number; dto: Partial<VitrineSection> }) =>
+    mutationFn: ({ pageId, dto }: { pageId: string; dto: Partial<VitrineSection> }) =>
       vitrineAdminApi.createSection(pageId, dto),
     onSuccess: (_, { pageId }) => {
       qc.invalidateQueries({ queryKey: KEYS.sections(pageId) });
@@ -126,7 +126,7 @@ export function useCreateVitrineSection() {
 export function useUpdateVitrineSection() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, dto }: { id: number; dto: Partial<VitrineSection> }) =>
+    mutationFn: ({ id, dto }: { id: string; dto: Partial<VitrineSection> }) =>
       vitrineAdminApi.updateSection(id, dto),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["vitrine-admin"] });
@@ -139,7 +139,7 @@ export function useUpdateVitrineSection() {
 export function useDeleteVitrineSection() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => vitrineAdminApi.deleteSection(id),
+    mutationFn: (id: string) => vitrineAdminApi.deleteSection(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["vitrine-admin"] });
       notify.success("Section supprimée");
@@ -172,7 +172,7 @@ export function useAddVitrineGalleryItem() {
 export function useDeleteVitrineGalleryItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => vitrineAdminApi.deleteGalleryItem(id),
+    mutationFn: (id: string) => vitrineAdminApi.deleteGalleryItem(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.gallery });
       notify.success("Image supprimée");
@@ -205,7 +205,7 @@ export function useCreateVitrineAnnouncement() {
 export function useUpdateVitrineAnnouncement() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, dto }: { id: number; dto: Partial<VitrineAnnouncement> }) =>
+    mutationFn: ({ id, dto }: { id: string; dto: Partial<VitrineAnnouncement> }) =>
       vitrineAdminApi.updateAnnouncement(id, dto),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.announcements });
@@ -218,7 +218,7 @@ export function useUpdateVitrineAnnouncement() {
 export function useDeleteVitrineAnnouncement() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => vitrineAdminApi.deleteAnnouncement(id),
+    mutationFn: (id: string) => vitrineAdminApi.deleteAnnouncement(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.announcements });
       notify.success("Annonce supprimée");
@@ -247,7 +247,7 @@ export function useVitrineUnreadCount() {
 export function useMarkContactAsRead() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => vitrineAdminApi.markAsRead(id),
+    mutationFn: (id: string) => vitrineAdminApi.markAsRead(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.contacts });
       qc.invalidateQueries({ queryKey: KEYS.unreadCount });
@@ -259,7 +259,7 @@ export function useMarkContactAsRead() {
 export function useReplyToContact() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, replyText }: { id: number; replyText: string }) =>
+    mutationFn: ({ id, replyText }: { id: string; replyText: string }) =>
       vitrineAdminApi.replyToContact(id, replyText),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.contacts });

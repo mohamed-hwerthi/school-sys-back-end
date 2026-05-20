@@ -1,17 +1,17 @@
 import api from "./axios";
 
 export interface BulletinExamenDTO {
-  examenId: number;
+  examenId: string;
   examenName: string;
   coeff: number;
   note: number | null;
 }
 
 export interface BulletinModuleDTO {
-  moduleId: number;
+  moduleId: string;
   moduleName: string;
   moduleNameAr: string | null;
-  sousDomaineId: number | null;
+  sousDomaineId: string | null;
   sousDomaineName: string | null;
   sousDomaineNameAr: string | null;
   sousDomaineOrdre: number | null;
@@ -25,7 +25,7 @@ export interface BulletinModuleDTO {
 }
 
 export interface BulletinDomaineDTO {
-  domaineId: number;
+  domaineId: string;
   domaineName: string;
   domaineNameAr: string | null;
   ordre: number;
@@ -35,7 +35,8 @@ export interface BulletinDomaineDTO {
 }
 
 export interface BulletinDTO {
-  studentId: number;
+  studentId: string;
+  matricule: string | null;
   studentName: string;
   studentNameAr: string | null;
   classe: string;
@@ -56,7 +57,7 @@ export interface BulletinDTO {
 
 // BUL-003: Template
 export interface BulletinTemplateDTO {
-  id?: number;
+  id?: string;
   nom: string;
   logoUrl?: string | null;
   nomEcoleFr?: string | null;
@@ -75,7 +76,7 @@ export interface BulletinTemplateDTO {
 
 // BUL-005: Stats
 export interface ModuleStatsDTO {
-  moduleId: number;
+  moduleId: string;
   moduleName: string;
   moyenne: number;
   min: number;
@@ -105,7 +106,7 @@ export interface StatsReussiteDTO {
 
 // BUL-006: Attestation
 export interface AttestationDTO {
-  studentId: number;
+  studentId: string;
   studentName: string;
   studentNameAr: string | null;
   dateOfBirth: string | null;
@@ -125,13 +126,13 @@ export interface AttestationDTO {
 
 // BUL-007: Comparatif
 export interface ModuleAvgDTO {
-  moduleId: number;
+  moduleId: string;
   moduleName: string;
   moyenne: number;
 }
 
 export interface ClassePerformanceDTO {
-  classeId: number;
+  classeId: string;
   classeName: string;
   moyenneGenerale: number;
   tauxReussite: number;
@@ -155,7 +156,7 @@ export interface ComparatifDTO {
 
 // ANN-040: Bulletin annuel
 export interface ModuleAnnuelDTO {
-  moduleId: number;
+  moduleId: string;
   moduleName: string;
   moyenneT1: number | null;
   moyenneT2: number | null;
@@ -164,7 +165,7 @@ export interface ModuleAnnuelDTO {
 }
 
 export interface BulletinAnnuelDTO {
-  studentId: number;
+  studentId: string;
   studentName: string;
   studentNameAr: string | null;
   classe: string;
@@ -182,7 +183,7 @@ export interface BulletinAnnuelDTO {
 
 // ANN-025: stats de réussite par matière
 export interface MatiereStatDTO {
-  moduleId: number;
+  moduleId: string;
   moduleName: string;
   moyenne: number;
   reussis: number;
@@ -195,7 +196,7 @@ const BASE = "/bulletins";
 export const bulletinsApi = {
   // Existing
   getAll: async (
-    classeId: number,
+    classeId: string,
     trimestre: number,
     version: string = "etatique"
   ): Promise<BulletinDTO[]> => {
@@ -206,8 +207,8 @@ export const bulletinsApi = {
   },
 
   getOne: async (
-    classeId: number,
-    studentId: number,
+    classeId: string,
+    studentId: string,
     trimestre: number,
     version: string = "etatique"
   ): Promise<BulletinDTO> => {
@@ -219,7 +220,7 @@ export const bulletinsApi = {
 
   // ANN-040: Bulletin annuel (synthèse des 3 trimestres)
   getAnnuels: async (
-    classeId: number,
+    classeId: string,
     version: string = "etatique"
   ): Promise<BulletinAnnuelDTO[]> => {
     const res = await api.get<BulletinAnnuelDTO[]>(
@@ -230,7 +231,7 @@ export const bulletinsApi = {
 
   // ANN-025: taux de réussite par matière (annuel)
   getStatsMatieres: async (
-    classeId: number,
+    classeId: string,
     version: string = "etatique"
   ): Promise<MatiereStatDTO[]> => {
     const res = await api.get<MatiereStatDTO[]>(
@@ -245,7 +246,7 @@ export const bulletinsApi = {
     return res.data;
   },
 
-  getTemplate: async (id: number): Promise<BulletinTemplateDTO> => {
+  getTemplate: async (id: string): Promise<BulletinTemplateDTO> => {
     const res = await api.get<BulletinTemplateDTO>(`${BASE}/templates/${id}`);
     return res.data;
   },
@@ -265,7 +266,7 @@ export const bulletinsApi = {
   },
 
   updateTemplate: async (
-    id: number,
+    id: string,
     dto: BulletinTemplateDTO
   ): Promise<BulletinTemplateDTO> => {
     const res = await api.put<BulletinTemplateDTO>(
@@ -275,21 +276,21 @@ export const bulletinsApi = {
     return res.data;
   },
 
-  activateTemplate: async (id: number): Promise<BulletinTemplateDTO> => {
+  activateTemplate: async (id: string): Promise<BulletinTemplateDTO> => {
     const res = await api.put<BulletinTemplateDTO>(
       `${BASE}/templates/${id}/activate`
     );
     return res.data;
   },
 
-  deleteTemplate: async (id: number): Promise<void> => {
+  deleteTemplate: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/templates/${id}`);
   },
 
   // BUL-004: Mass generate
   massGenerate: async (
-    classeId: number,
-    trimestreId: number
+    classeId: string,
+    trimestreId: string
   ): Promise<BulletinDTO[]> => {
     const res = await api.get<BulletinDTO[]>(
       `${BASE}/classe/${classeId}/trimestre/${trimestreId}/mass-generate`
@@ -299,8 +300,8 @@ export const bulletinsApi = {
 
   // BUL-005: Stats
   getStatsReussite: async (
-    classeId: number,
-    trimestreId: number
+    classeId: string,
+    trimestreId: string
   ): Promise<StatsReussiteDTO> => {
     const res = await api.get<StatsReussiteDTO>(
       `${BASE}/stats/classe/${classeId}/trimestre/${trimestreId}`
@@ -309,7 +310,7 @@ export const bulletinsApi = {
   },
 
   // BUL-006: Attestation
-  getAttestation: async (eleveId: number): Promise<AttestationDTO> => {
+  getAttestation: async (eleveId: string): Promise<AttestationDTO> => {
     const res = await api.get<AttestationDTO>(
       `${BASE}/attestation/${eleveId}`
     );
@@ -317,14 +318,14 @@ export const bulletinsApi = {
   },
 
   // BUL-007: Comparatif
-  getComparatifByNiveau: async (niveauId: number): Promise<ComparatifDTO> => {
+  getComparatifByNiveau: async (niveauId: string): Promise<ComparatifDTO> => {
     const res = await api.get<ComparatifDTO>(
       `${BASE}/comparatif?niveauId=${niveauId}`
     );
     return res.data;
   },
 
-  getComparatifEvolution: async (classeId: number): Promise<ComparatifDTO> => {
+  getComparatifEvolution: async (classeId: string): Promise<ComparatifDTO> => {
     const res = await api.get<ComparatifDTO>(
       `${BASE}/comparatif/evolution?classeId=${classeId}`
     );

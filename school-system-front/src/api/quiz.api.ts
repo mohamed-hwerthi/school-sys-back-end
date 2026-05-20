@@ -16,7 +16,7 @@ const TENTATIVES_BASE = "/tentatives";
 
 export const quizApi = {
   // Quiz CRUD
-  getAll: async (classeId?: number, statut?: string): Promise<Quiz[]> => {
+  getAll: async (classeId?: string, statut?: string): Promise<Quiz[]> => {
     const params = new URLSearchParams();
     if (classeId) params.set("classeId", String(classeId));
     if (statut) params.set("statut", statut);
@@ -25,12 +25,12 @@ export const quizApi = {
     return res.data;
   },
 
-  getById: async (id: number): Promise<Quiz> => {
+  getById: async (id: string): Promise<Quiz> => {
     const res = await api.get<Quiz>(`${QUIZ_BASE}/${id}`);
     return res.data;
   },
 
-  getDetail: async (id: number): Promise<QuizDetail> => {
+  getDetail: async (id: string): Promise<QuizDetail> => {
     const res = await api.get<QuizDetail>(`${QUIZ_BASE}/${id}/detail`);
     return res.data;
   },
@@ -40,54 +40,54 @@ export const quizApi = {
     return res.data;
   },
 
-  update: async (id: number, data: CreateQuizRequest): Promise<Quiz> => {
+  update: async (id: string, data: CreateQuizRequest): Promise<Quiz> => {
     const res = await api.put<Quiz>(`${QUIZ_BASE}/${id}`, data);
     return res.data;
   },
 
-  publish: async (id: number): Promise<Quiz> => {
+  publish: async (id: string): Promise<Quiz> => {
     const res = await api.put<Quiz>(`${QUIZ_BASE}/${id}/publish`);
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`${QUIZ_BASE}/${id}`),
+  delete: (id: string) => api.delete(`${QUIZ_BASE}/${id}`),
 
   // Questions
-  getQuestions: async (quizId: number): Promise<QuestionDTO[]> => {
+  getQuestions: async (quizId: string): Promise<QuestionDTO[]> => {
     const res = await api.get<QuestionDTO[]>(`${QUIZ_BASE}/${quizId}/questions`);
     return res.data;
   },
 
-  createQuestion: async (quizId: number, data: CreateQuestionRequest): Promise<QuestionDTO> => {
+  createQuestion: async (quizId: string, data: CreateQuestionRequest): Promise<QuestionDTO> => {
     const res = await api.post<QuestionDTO>(`${QUIZ_BASE}/${quizId}/questions`, data);
     return res.data;
   },
 
-  updateQuestion: async (quizId: number, questionId: number, data: CreateQuestionRequest): Promise<QuestionDTO> => {
+  updateQuestion: async (quizId: string, questionId: string, data: CreateQuestionRequest): Promise<QuestionDTO> => {
     const res = await api.put<QuestionDTO>(`${QUIZ_BASE}/${quizId}/questions/${questionId}`, data);
     return res.data;
   },
 
-  deleteQuestion: (quizId: number, questionId: number) =>
+  deleteQuestion: (quizId: string, questionId: string) =>
     api.delete(`${QUIZ_BASE}/${quizId}/questions/${questionId}`),
 
-  reorderQuestions: async (quizId: number, questionIds: number[]): Promise<QuestionDTO[]> => {
+  reorderQuestions: async (quizId: string, questionIds: string[]): Promise<QuestionDTO[]> => {
     const res = await api.put<QuestionDTO[]>(`${QUIZ_BASE}/${quizId}/questions/reorder`, questionIds);
     return res.data;
   },
 
   // Tentatives
-  getTentativesByQuiz: async (quizId: number): Promise<Tentative[]> => {
+  getTentativesByQuiz: async (quizId: string): Promise<Tentative[]> => {
     const res = await api.get<Tentative[]>(`${TENTATIVES_BASE}/quiz/${quizId}`);
     return res.data;
   },
 
-  getTentativesByEleve: async (eleveId: number): Promise<Tentative[]> => {
+  getTentativesByEleve: async (eleveId: string): Promise<Tentative[]> => {
     const res = await api.get<Tentative[]>(`${TENTATIVES_BASE}/eleve/${eleveId}`);
     return res.data;
   },
 
-  getTentativeById: async (id: number): Promise<Tentative> => {
+  getTentativeById: async (id: string): Promise<Tentative> => {
     const res = await api.get<Tentative>(`${TENTATIVES_BASE}/${id}`);
     return res.data;
   },
@@ -102,7 +102,7 @@ export const quizApi = {
     return res.data;
   },
 
-  getQuizStats: async (quizId: number): Promise<QuizStats> => {
+  getQuizStats: async (quizId: string): Promise<QuizStats> => {
     const res = await api.get<QuizStats>(`${TENTATIVES_BASE}/stats/${quizId}`);
     return res.data;
   },

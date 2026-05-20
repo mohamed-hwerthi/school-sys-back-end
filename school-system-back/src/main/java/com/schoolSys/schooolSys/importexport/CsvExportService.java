@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.importexport;
 
+import java.util.UUID;
+
 import com.opencsv.CSVWriter;
 import com.schoolSys.schooolSys.absence.Absence;
 import com.schoolSys.schooolSys.absence.AbsenceRepository;
@@ -89,7 +91,7 @@ public class CsvExportService {
     /**
      * Exports notes/grades for a specific class and trimester.
      */
-    public void exportNotes(Long classeId, Integer trimestre, OutputStream out) throws IOException {
+    public void exportNotes(UUID classeId, Integer trimestre, OutputStream out) throws IOException {
         out.write(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
 
         try (CSVWriter writer = new CSVWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8))) {

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.vitrine.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +15,8 @@ import java.util.Map;
 @AllArgsConstructor
 public class VitrineSectionDTO {
 
-    private Long id;
-    private Long pageId;
+    private UUID id;
+    private UUID pageId;
     private String sectionType;
     private String title;
     private Map<String, Object> content;

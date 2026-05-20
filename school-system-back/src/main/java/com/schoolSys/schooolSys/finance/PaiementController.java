@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.common.dto.PagedResponse;
 import com.schoolSys.schooolSys.finance.dto.FinanceDashboardDTO;
@@ -34,8 +36,8 @@ public class PaiementController {
             @RequestParam(required = false) String mois,
             @RequestParam(required = false) Paiement.StatutPaiement statut,
             @RequestParam(required = false) Paiement.ModePaiement modePaiement,
-            @RequestParam(required = false) Long studentId,
-            @RequestParam(required = false) Long typeFraisId,
+            @RequestParam(required = false) UUID studentId,
+            @RequestParam(required = false) UUID typeFraisId,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir
     ) {
@@ -51,14 +53,14 @@ public class PaiementController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
-    public ResponseEntity<ApiResponse<PaiementResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<PaiementResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(paiementService.findById(id)));
     }
 
     @GetMapping("/eleve/{studentId}")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<PaiementResponseDTO>>> getByStudentId(
-            @PathVariable Long studentId,
+            @PathVariable UUID studentId,
             @RequestParam(required = false) String anneeScolaire) {
         List<PaiementResponseDTO> result = anneeScolaire != null
                 ? paiementService.findByStudentIdAndAnneeScolaire(studentId, anneeScolaire)
@@ -77,13 +79,13 @@ public class PaiementController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<PaiementResponseDTO>> update(
-            @PathVariable Long id, @Valid @RequestBody PaiementRequestDTO dto) {
+            @PathVariable UUID id, @Valid @RequestBody PaiementRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(paiementService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         paiementService.delete(id);
         return ResponseEntity.noContent().build();
     }

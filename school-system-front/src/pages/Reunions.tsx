@@ -147,9 +147,9 @@ export default function ReunionsPage() {
       statut: form.statut,
       notes: form.notes || undefined,
     };
-    if (form.enseignantId) payload.enseignantId = Number(form.enseignantId);
-    if (form.parentId) payload.parentId = Number(form.parentId);
-    if (form.studentId) payload.studentId = Number(form.studentId);
+    if (form.enseignantId) payload.enseignantId = form.enseignantId;
+    if (form.parentId) payload.parentId = form.parentId;
+    if (form.studentId) payload.studentId = form.studentId;
 
     if (editId) {
       updateMeeting.mutate(
@@ -173,7 +173,7 @@ export default function ReunionsPage() {
     }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     deleteMeeting.mutate(id, {
       onSuccess: () => notify.success(t("meetings.deletedMsg")),
       onError: () => notify.error(t("common.deleteError")),

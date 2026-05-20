@@ -49,7 +49,7 @@ export const studentsApi = {
     };
   },
 
-  getById: async (id: number): Promise<Student> => {
+  getById: async (id: string): Promise<Student> => {
     const res = await api.get<StudentApiDTO>(`${BASE}/${id}`);
     return fromApi(res.data);
   },
@@ -59,12 +59,12 @@ export const studentsApi = {
     return fromApi(res.data);
   },
 
-  update: async (id: number, data: Partial<Student>): Promise<Student> => {
+  update: async (id: string, data: Partial<Student>): Promise<Student> => {
     const res = await api.put<StudentApiDTO>(`${BASE}/${id}`, toApi(data as Omit<Student, "id" | "dateInscription">));
     return fromApi(res.data);
   },
 
-  delete: (id: number) => api.delete(`${BASE}/${id}`),
+  delete: (id: string) => api.delete(`${BASE}/${id}`),
 
   importBulk: async (
     students: Omit<Student, "id" | "dateInscription">[]

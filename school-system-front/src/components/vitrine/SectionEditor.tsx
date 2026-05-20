@@ -35,7 +35,7 @@ const SECTION_TYPES = [
 ] as const;
 
 interface Props {
-  pageId: number;
+  pageId: string;
   pageTitle: string;
   onBack: () => void;
 }
@@ -182,7 +182,7 @@ function AddSectionDialog({
 }: {
   open: boolean;
   onClose: () => void;
-  pageId: number;
+  pageId: string;
   nextOrder: number;
 }) {
   const createSection = useCreateVitrineSection();

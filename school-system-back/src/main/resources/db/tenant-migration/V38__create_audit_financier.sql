@@ -1,9 +1,9 @@
 CREATE TABLE audit_financier (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     entity_type VARCHAR(50) NOT NULL,
-    entity_id BIGINT NOT NULL,
+    entity_id UUID NOT NULL,
     action VARCHAR(20) NOT NULL CHECK (action IN ('CREATE', 'UPDATE', 'DELETE')),
-    user_id BIGINT,
+    user_id UUID,
     user_name VARCHAR(100),
     old_values TEXT,
     new_values TEXT,

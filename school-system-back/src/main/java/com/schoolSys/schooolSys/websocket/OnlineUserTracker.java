@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.websocket;
 
+import java.util.UUID;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
@@ -24,10 +26,10 @@ public class OnlineUserTracker {
     private final Map<String, String> sessionUserMap = new ConcurrentHashMap<>();
 
     /** Map of sessionId -> userId */
-    private final Map<String, Long> sessionUserIdMap = new ConcurrentHashMap<>();
+    private final Map<String, UUID> sessionUserIdMap = new ConcurrentHashMap<>();
 
     /** Map of userId -> email for reverse lookup */
-    private final Map<Long, String> userIdEmailMap = new ConcurrentHashMap<>();
+    private final Map<UUID, String> userIdEmailMap = new ConcurrentHashMap<>();
 
     @EventListener
     public void handleWebSocketConnect(SessionConnectEvent event) {
@@ -42,7 +44,7 @@ public class OnlineUserTracker {
             // Extract userId from session attributes if available
             Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
             if (sessionAttributes != null && sessionAttributes.containsKey("userId")) {
-                Long userId = (Long) sessionAttributes.get("userId");
+                UUID userId = (UUID) sessionAttributes.get("userId");
                 sessionUserIdMap.put(sessionId, userId);
                 userIdEmailMap.put(userId, username);
             }
@@ -58,7 +60,7 @@ public class OnlineUserTracker {
 
         if (sessionId != null) {
             String username = sessionUserMap.remove(sessionId);
-            Long userId = sessionUserIdMap.remove(sessionId);
+            UUID userId = sessionUserIdMap.remove(sessionId);
 
             // Only remove from userIdEmailMap if no other sessions exist for this user
             if (userId != null && !sessionUserIdMap.containsValue(userId)) {
@@ -92,7 +94,7 @@ public class OnlineUserTracker {
      * @param userId the user's ID
      * @return the user's email, or null if not currently online
      */
-    public String getUserEmailById(Long userId) {
+    public String getUserEmailById(UUID userId) {
         return userIdEmailMap.get(userId);
     }
 

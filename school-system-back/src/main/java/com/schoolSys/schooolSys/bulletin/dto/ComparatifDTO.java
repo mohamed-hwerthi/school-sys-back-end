@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.bulletin.dto;
 
+import java.util.UUID;
+
 import lombok.*;
 import java.util.List;
 
@@ -10,7 +12,7 @@ public class ComparatifDTO {
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class ClassePerformanceDTO {
-        private Long classeId;
+        private UUID classeId;
         private String classeName;
         private double moyenneGenerale;
         private double tauxReussite;
@@ -21,7 +23,7 @@ public class ComparatifDTO {
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class ModuleAvgDTO {
-        private Long moduleId;
+        private UUID moduleId;
         private String moduleName;
         private double moyenne;
     }

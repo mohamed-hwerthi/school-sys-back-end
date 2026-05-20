@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.emploidutemps.solver;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +16,7 @@ import java.time.LocalTime;
 public class PlanningTimeslot {
 
     private Long id;
-    private Long creneauId;
+    private UUID creneauId;
     private Integer jourSemaine; // 1=Monday ... 6=Saturday
     private LocalTime heureDebut;
     private LocalTime heureFin;

@@ -57,7 +57,7 @@ export function useCreateNiveau() {
 export function useDeleteNiveau() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => niveauxApi.delete(id),
+    mutationFn: (id: string) => niveauxApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [NIVEAUX_KEY] });
     },
@@ -70,7 +70,7 @@ export function useDeleteNiveau() {
 export function useAddClasse() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ niveauId, letter }: { niveauId: number; letter: string }) =>
+    mutationFn: ({ niveauId, letter }: { niveauId: string; letter: string }) =>
       niveauxApi.addClasse(niveauId, letter),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [NIVEAUX_KEY] });
@@ -84,7 +84,7 @@ export function useAddClasse() {
 export function useRemoveClasse() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ niveauId, letter }: { niveauId: number; letter: string }) =>
+    mutationFn: ({ niveauId, letter }: { niveauId: string; letter: string }) =>
       niveauxApi.removeClasse(niveauId, letter),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [NIVEAUX_KEY] });

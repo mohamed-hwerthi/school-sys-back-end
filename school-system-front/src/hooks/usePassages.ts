@@ -17,11 +17,11 @@ export function usePassages(anneeScolaire: string = "2025-2026") {
 /**
  * Passages for a specific student.
  */
-export function usePassagesByStudent(studentId: number) {
+export function usePassagesByStudent(studentId: string) {
   return useQuery<Passage[]>({
     queryKey: [PASSAGES_KEY, "student", studentId],
     queryFn: () => passagesApi.getByStudent(studentId),
-    enabled: studentId > 0,
+    enabled: !!studentId,
   });
 }
 

@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.emploidutemps;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -13,14 +16,15 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("deleted = false")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class Remplacement {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "emploi_du_temps_id", nullable = false)
-    private Long emploiDuTempsId;
+    private UUID emploiDuTempsId;
 
     @Column(name = "enseignant_remplacant_id", nullable = false)
-    private Long enseignantRemplacantId;
+    private UUID enseignantRemplacantId;
 
     @Column(name = "date_debut", nullable = false)
     private LocalDate dateDebut;

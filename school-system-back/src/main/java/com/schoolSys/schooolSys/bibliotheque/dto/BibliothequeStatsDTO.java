@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.bibliotheque.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +26,7 @@ public class BibliothequeStatsDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class LivreEmprunteDTO {
-        private Long livreId;
+        private UUID livreId;
         private String titre;
         private long count;
     }

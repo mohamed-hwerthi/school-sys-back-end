@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.conseilclasse.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ConseilClasseDTO {
 
-    private Long classeId;
+    private UUID classeId;
     private String classeNom;
     private String niveauNom;
 

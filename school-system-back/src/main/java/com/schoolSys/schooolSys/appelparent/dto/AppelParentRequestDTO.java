@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.appelparent.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -17,7 +19,7 @@ import java.time.LocalDateTime;
 public class AppelParentRequestDTO {
 
     @NotNull(message = "L'élève est obligatoire")
-    private Long eleveId;
+    private UUID eleveId;
 
     @Size(max = 150)
     private String appelePar;

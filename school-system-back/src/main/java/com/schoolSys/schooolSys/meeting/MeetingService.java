@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.meeting;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.auth.User;
 import com.schoolSys.schooolSys.auth.UserRepository;
 import com.schoolSys.schooolSys.auth.UserRole;
@@ -39,15 +41,15 @@ public class MeetingService {
                 .toList();
     }
 
-    public MeetingResponseDTO findById(Long id) {
+    public MeetingResponseDTO findById(UUID id) {
         Meeting meeting = meetingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Meeting", id));
         return enrichResponse(meeting);
     }
 
-    public List<MeetingResponseDTO> findByTeacher(Long enseignantId) {
+    public List<MeetingResponseDTO> findByTeacher(UUID enseignantId) {
         if (currentUserContext.hasRole(UserRole.ENSEIGNANT)) {
-            Long ownId = currentUserContext.getCurrentTeacher().map(Teacher::getId).orElse(null);
+            UUID ownId = currentUserContext.getCurrentTeacher().map(Teacher::getId).orElse(null);
             if (!Objects.equals(ownId, enseignantId)) {
                 throw new AccessDeniedException("Vous ne pouvez consulter que vos propres rendez-vous.");
             }
@@ -57,9 +59,9 @@ public class MeetingService {
                 .toList();
     }
 
-    public List<MeetingResponseDTO> findByParent(Long parentId) {
+    public List<MeetingResponseDTO> findByParent(UUID parentId) {
         if (currentUserContext.hasRole(UserRole.PARENT)) {
-            Long ownId = currentUserContext.getUserId().orElse(null);
+            UUID ownId = currentUserContext.getUserId().orElse(null);
             if (!Objects.equals(ownId, parentId)) {
                 throw new AccessDeniedException("Vous ne pouvez consulter que vos propres rendez-vous.");
             }
@@ -69,7 +71,7 @@ public class MeetingService {
                 .toList();
     }
 
-    public List<MeetingResponseDTO> findByStudent(Long studentId) {
+    public List<MeetingResponseDTO> findByStudent(UUID studentId) {
         currentUserContext.assertCanAccessStudent(studentId);
         return meetingRepository.findByStudentIdOrderByDateAscHeureDebutAsc(studentId).stream()
                 .map(this::enrichResponse)
@@ -101,7 +103,7 @@ public class MeetingService {
     }
 
     @Transactional
-    public MeetingResponseDTO update(Long id, MeetingRequestDTO dto) {
+    public MeetingResponseDTO update(UUID id, MeetingRequestDTO dto) {
         Meeting meeting = meetingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Meeting", id));
         meetingMapper.updateEntity(dto, meeting);
@@ -111,7 +113,7 @@ public class MeetingService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!meetingRepository.existsById(id)) {
             throw new ResourceNotFoundException("Meeting", id);
         }

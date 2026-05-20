@@ -1,15 +1,17 @@
 package com.schoolSys.schooolSys.emploidutemps.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class EmploiDuTempsRequestDTO {
     @NotNull
-    private Long creneauId;
+    private UUID creneauId;
     @NotNull
     private Integer jourSemaine;
-    private Long moduleId;
-    private Long enseignantId;
+    private UUID moduleId;
+    private UUID enseignantId;
     private String salle;
 }

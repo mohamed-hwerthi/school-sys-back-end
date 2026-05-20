@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.affectation;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -23,18 +26,19 @@ import java.time.LocalDateTime;
 public class Affectation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "teacher_id", nullable = false)
-    private Long teacherId;
+    private UUID teacherId;
 
     @Column(name = "classe_id", nullable = false)
-    private Long classeId;
+    private UUID classeId;
 
     /** Nullable: un professeur principal n'est pas forcément lié à une matière. */
     @Column(name = "module_id")
-    private Long moduleId;
+    private UUID moduleId;
 
     @Column(name = "annee_scolaire", nullable = false, length = 20)
     private String anneeScolaire;

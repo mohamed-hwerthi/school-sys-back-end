@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.bibliotheque;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.bibliotheque.dto.BibliothequeStatsDTO;
 import com.schoolSys.schooolSys.bibliotheque.dto.CreateEmpruntRequest;
 import com.schoolSys.schooolSys.bibliotheque.dto.EmpruntDTO;
@@ -28,19 +30,19 @@ public class EmpruntController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_BIBLIOTHEQUE')")
-    public ResponseEntity<ApiResponse<EmpruntDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<EmpruntDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(empruntService.findById(id)));
     }
 
     @GetMapping("/eleve/{eleveId}")
     @PreAuthorize("hasAuthority('MANAGE_BIBLIOTHEQUE')")
-    public ResponseEntity<ApiResponse<List<EmpruntDTO>>> getByEleve(@PathVariable Long eleveId) {
+    public ResponseEntity<ApiResponse<List<EmpruntDTO>>> getByEleve(@PathVariable UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(empruntService.findByEleve(eleveId)));
     }
 
     @GetMapping("/livre/{livreId}")
     @PreAuthorize("hasAuthority('MANAGE_BIBLIOTHEQUE')")
-    public ResponseEntity<ApiResponse<List<EmpruntDTO>>> getByLivre(@PathVariable Long livreId) {
+    public ResponseEntity<ApiResponse<List<EmpruntDTO>>> getByLivre(@PathVariable UUID livreId) {
         return ResponseEntity.ok(ApiResponse.ok(empruntService.findByLivre(livreId)));
     }
 
@@ -65,7 +67,7 @@ public class EmpruntController {
 
     @PutMapping("/{id}/retour")
     @PreAuthorize("hasAuthority('MANAGE_BIBLIOTHEQUE')")
-    public ResponseEntity<ApiResponse<EmpruntDTO>> retourner(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<EmpruntDTO>> retourner(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(empruntService.retourner(id)));
     }
 }

@@ -54,7 +54,7 @@ interface CalendarEvent {
   date: string; // YYYY-MM-DD
   label: string;
   type: "holiday" | "exam" | "annonce" | "custom";
-  customId?: number;
+  customId?: string;
   customType?: EvenementType;
   description?: string;
   lieu?: string;
@@ -274,7 +274,7 @@ export default function Calendrier() {
     setShowDialog(true);
   };
 
-  const handleOpenEdit = (id: number) => {
+  const handleOpenEdit = (id: string) => {
     const ev = customEvents.find((e) => e.id === id);
     if (!ev) return;
     setEditingId(id);
@@ -340,7 +340,7 @@ export default function Calendrier() {
     }
   };
 
-  const handleDeleteCustom = (id: number) => {
+  const handleDeleteCustom = (id: string) => {
     if (!confirm("Supprimer cet événement ?")) return;
     deleteEvent.mutate(id, {
       onSuccess: () => notify.success("Événement supprimé"),

@@ -75,6 +75,8 @@ export default function Configuration() {
   const [telephone, setTelephone] = useState("");
   const [directeurName, setDirecteurName] = useState("");
   const [directeurNameAr, setDirecteurNameAr] = useState("");
+  const [delegationRegionale, setDelegationRegionale] = useState("");
+  const [delegationRegionaleAr, setDelegationRegionaleAr] = useState("");
   const [langue, setLangue] = useState("fr");
   const [fuseau, setFuseau] = useState("Africa/Tunis");
   const [devise, setDevise] = useState(CURRENCY);
@@ -89,6 +91,8 @@ export default function Configuration() {
     setTelephone(settings.telephone || "");
     setDirecteurName(settings.directeurName || "");
     setDirecteurNameAr(settings.directeurNameAr || "");
+    setDelegationRegionale(settings.delegationRegionale || "");
+    setDelegationRegionaleAr(settings.delegationRegionaleAr || "");
     setSettingsLoaded(true);
   }
 
@@ -122,6 +126,8 @@ export default function Configuration() {
         telephone: telephone || null,
         directeurName: directeurName || null,
         directeurNameAr: directeurNameAr || null,
+        delegationRegionale: delegationRegionale || null,
+        delegationRegionaleAr: delegationRegionaleAr || null,
       },
       {
         onSuccess: () => notify.success(t("common.success")),
@@ -223,6 +229,14 @@ export default function Configuration() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">{t("schoolInfo.directorName")} (AR)</label>
                   <Input value={directeurNameAr} onChange={(e) => setDirecteurNameAr(e.target.value)} placeholder="اسم المدير" dir="rtl" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Délégation régionale</label>
+                  <Input value={delegationRegionale} onChange={(e) => setDelegationRegionale(e.target.value)} placeholder="Ex : Béja" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Délégation régionale (AR)</label>
+                  <Input value={delegationRegionaleAr} onChange={(e) => setDelegationRegionaleAr(e.target.value)} placeholder="مثال : باجة" dir="rtl" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">{t("configuration.language")}</label>

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.enrollment.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.enrollment.Enrollment;
 import lombok.Data;
 
@@ -10,8 +12,8 @@ import java.time.LocalDate;
  */
 @Data
 public class EnrollmentRequestDTO {
-    private Long studentId;
-    private Long courseId;
+    private UUID studentId;
+    private UUID courseId;
     private LocalDate enrollmentDate;
     private Enrollment.EnrollmentStatus status;
 }

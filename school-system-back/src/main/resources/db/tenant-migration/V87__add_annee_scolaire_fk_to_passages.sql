@@ -2,7 +2,7 @@
 -- The legacy annee_scolaire VARCHAR is kept as a denormalised label for
 -- backward compatibility; annee_scolaire_id is the referential source of truth.
 
-ALTER TABLE passages ADD COLUMN IF NOT EXISTS annee_scolaire_id BIGINT;
+ALTER TABLE passages ADD COLUMN IF NOT EXISTS annee_scolaire_id UUID;
 
 -- Backfill from the matching academic-year label.
 UPDATE passages p

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.transport;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.transport.dto.ArretDTO;
 import com.schoolSys.schooolSys.transport.dto.CircuitDTO;
@@ -27,7 +29,7 @@ public class CircuitService {
                 .collect(Collectors.toList());
     }
 
-    public CircuitDTO getById(Long id) {
+    public CircuitDTO getById(UUID id) {
         Circuit circuit = circuitRepository.findByIdWithDetails(id);
         if (circuit == null) {
             throw new ResourceNotFoundException("Circuit", id);
@@ -35,7 +37,7 @@ public class CircuitService {
         return toDto(circuit);
     }
 
-    public List<ArretDTO> getArretsByCircuit(Long circuitId) {
+    public List<ArretDTO> getArretsByCircuit(UUID circuitId) {
         if (!circuitRepository.existsById(circuitId)) {
             throw new ResourceNotFoundException("Circuit", circuitId);
         }
@@ -84,7 +86,7 @@ public class CircuitService {
     }
 
     @Transactional
-    public CircuitDTO update(Long id, CreateCircuitRequest request) {
+    public CircuitDTO update(UUID id, CreateCircuitRequest request) {
         Circuit circuit = circuitRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Circuit", id));
 
@@ -124,7 +126,7 @@ public class CircuitService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!circuitRepository.existsById(id)) {
             throw new ResourceNotFoundException("Circuit", id);
         }

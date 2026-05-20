@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.finance.dto.*;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,7 @@ public class CaisseService {
                 caisseRepository.findByAnneeScolaireOrderByCreatedAtDesc(annee));
     }
 
-    public CaisseResponseDTO findById(Long id) {
+    public CaisseResponseDTO findById(UUID id) {
         Caisse c = caisseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Caisse", id));
         return caisseMapper.toResponseDTO(c);
@@ -63,7 +65,7 @@ public class CaisseService {
     }
 
     @Transactional
-    public CaisseResponseDTO fermer(Long id, String fermePar) {
+    public CaisseResponseDTO fermer(UUID id, String fermePar) {
         Caisse c = caisseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Caisse", id));
 
@@ -86,7 +88,7 @@ public class CaisseService {
 
     // ── Mouvements ──
 
-    public List<MouvementCaisseResponseDTO> findMouvements(Long caisseId) {
+    public List<MouvementCaisseResponseDTO> findMouvements(UUID caisseId) {
         return caisseMapper.toMouvementDTOList(
                 mouvementCaisseRepository.findByCaisseIdOrderByCreatedAtDesc(caisseId));
     }
@@ -124,7 +126,7 @@ public class CaisseService {
     }
 
     @Transactional
-    public void deleteMouvement(Long mouvementId) {
+    public void deleteMouvement(UUID mouvementId) {
         MouvementCaisse m = mouvementCaisseRepository.findById(mouvementId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mouvement", mouvementId));
 

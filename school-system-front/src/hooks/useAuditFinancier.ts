@@ -13,10 +13,10 @@ export function useAuditFinancier(entityType?: string) {
   });
 }
 
-export function useAuditFinancierByEntity(entityType: string, entityId: number) {
+export function useAuditFinancierByEntity(entityType: string, entityId: string) {
   return useQuery<AuditFinancierDTO[]>({
     queryKey: [AUDIT_KEY, entityType, entityId],
     queryFn: () => auditFinancierApi.getByEntity(entityType, entityId),
-    enabled: !!entityType && entityId > 0,
+    enabled: !!entityType && !!entityId,
   });
 }

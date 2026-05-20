@@ -1,6 +1,6 @@
 export type Message = {
-  id: number;
-  studentId: number;
+  id: string;
+  studentId: string;
   senderRole: "admin" | "parent";
   content: string;
   timestamp: string;
@@ -8,7 +8,7 @@ export type Message = {
 };
 
 export type Conversation = {
-  studentId: number;
+  studentId: string;
   messages: Message[];
   unreadCount: number;
 };

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.devoir;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -23,7 +25,7 @@ public class DevoirService {
     private final SoumissionRepository soumissionRepository;
     private final CurrentUserContext currentUser;
 
-    public List<DevoirDTO> findAll(Long classeId, Long moduleId) {
+    public List<DevoirDTO> findAll(UUID classeId, UUID moduleId) {
         List<Devoir> devoirs;
         if (classeId != null && moduleId != null) {
             devoirs = devoirRepository.findByClasseIdAndModuleIdOrderByDateLimiteDesc(classeId, moduleId);
@@ -44,7 +46,7 @@ public class DevoirService {
         return devoirs.stream().map(this::toDTO).toList();
     }
 
-    public DevoirDTO findById(Long id) {
+    public DevoirDTO findById(UUID id) {
         Devoir devoir = devoirRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Devoir", id));
         if (currentUser.hasRole(UserRole.ENSEIGNANT)
@@ -55,7 +57,7 @@ public class DevoirService {
         return toDTO(devoir);
     }
 
-    public List<DevoirDTO> findByClasse(Long classeId) {
+    public List<DevoirDTO> findByClasse(UUID classeId) {
         if (currentUser.hasRole(UserRole.ENSEIGNANT)
                 && !currentUser.teacherTeachesClasse(classeId)) {
             throw new AccessDeniedException("Vous n'enseignez pas dans cette classe.");
@@ -64,7 +66,7 @@ public class DevoirService {
                 .stream().map(this::toDTO).toList();
     }
 
-    public List<DevoirDTO> findByModule(Long moduleId) {
+    public List<DevoirDTO> findByModule(UUID moduleId) {
         List<Devoir> devoirs = devoirRepository.findByModuleIdOrderByDateLimiteDesc(moduleId);
         // A teacher only sees devoirs of this module that belong to his classes.
         if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
@@ -101,7 +103,7 @@ public class DevoirService {
     }
 
     @Transactional
-    public DevoirDTO update(Long id, CreateDevoirRequest request) {
+    public DevoirDTO update(UUID id, CreateDevoirRequest request) {
         Devoir devoir = devoirRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Devoir", id));
 
@@ -124,7 +126,7 @@ public class DevoirService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!devoirRepository.existsById(id)) {
             throw new ResourceNotFoundException("Devoir", id);
         }
@@ -132,7 +134,7 @@ public class DevoirService {
     }
 
     @Transactional
-    public DevoirDTO closeDevoir(Long id) {
+    public DevoirDTO closeDevoir(UUID id) {
         Devoir devoir = devoirRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Devoir", id));
         devoir.setStatut("FERME");

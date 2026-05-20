@@ -320,6 +320,7 @@
   "dashboard": {
     "title": "Tableau de bord",
     "welcome": "Bonjour",
+    "schoolYear": "Année scolaire",
     "totalStudents": "Total Élèves",
     "teachers": "Enseignants",
     "attendanceRate": "Taux de présence",
@@ -339,6 +340,7 @@
     "semesterEvolution": "Évolution sur le semestre",
     "loadingTrends": "Chargement des tendances...",
     "noTrendData": "Aucune donnée de tendance disponible",
+    "noData": "Aucune donnée disponible",
     "noEvents": "Aucun événement à venir",
     "noRecentStudents": "Aucun élève récemment inscrit",
     "upcomingEvents": "Événements à venir",

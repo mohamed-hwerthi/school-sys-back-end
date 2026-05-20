@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.auth;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.multitenancy.TenantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -34,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (token != null && jwtTokenProvider.validateToken(token)
                 && !tokenBlacklistService.isBlacklisted(token)) {
-            Long userId = jwtTokenProvider.getUserIdFromToken(token);
+            UUID userId = jwtTokenProvider.getUserIdFromToken(token);
             String role = jwtTokenProvider.getRoleFromToken(token);
             String tenantId = jwtTokenProvider.getTenantIdFromToken(token);
 

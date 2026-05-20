@@ -1,5 +1,6 @@
 import { View, Text } from "react-native";
-import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
+import { useTheme } from "@/context/ThemeContext";
+import { spacing, fontSize, borderRadius } from "@/constants/theme";
 
 interface EmptyStateProps {
   icon: string;
@@ -8,6 +9,7 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ icon, title, subtitle }: EmptyStateProps) {
+  const { colors } = useTheme();
   return (
     <View style={{
       backgroundColor: colors.surface, borderRadius: borderRadius.lg,

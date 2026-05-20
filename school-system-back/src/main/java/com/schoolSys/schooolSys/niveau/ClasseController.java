@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.niveau;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -26,14 +28,14 @@ public class ClasseController {
     @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<ClasseResponseDTO>>> getAll(
-            @RequestParam(required = false) Long niveauId) {
+            @RequestParam(required = false) UUID niveauId) {
         List<Classe> classes = niveauId != null
                 ? classeRepository.findByNiveauId(niveauId)
                 : classeRepository.findAll();
 
         // Row-level scoping: an ENSEIGNANT only sees classes he is affected to.
         if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
-            Set<Long> scoped = currentUser.getScopedClasseIdsForTeacher();
+            Set<UUID> scoped = currentUser.getScopedClasseIdsForTeacher();
             classes = classes.stream().filter(c -> scoped.contains(c.getId())).toList();
         }
 

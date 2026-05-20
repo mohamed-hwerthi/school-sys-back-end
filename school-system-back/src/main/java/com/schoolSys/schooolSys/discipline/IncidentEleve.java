@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.discipline;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -17,8 +20,9 @@ import java.time.LocalDateTime;
 public class IncidentEleve {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "incident_id", nullable = false)
@@ -27,7 +31,7 @@ public class IncidentEleve {
     private Incident incident;
 
     @Column(name = "eleve_id", nullable = false)
-    private Long eleveId;
+    private UUID eleveId;
 
     @Column(length = 20)
     private String roleEleve; // AUTEUR, VICTIME, TEMOIN

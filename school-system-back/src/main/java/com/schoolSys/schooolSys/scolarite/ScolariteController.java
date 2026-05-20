@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.scolarite;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.scolarite.dto.AttestationReussiteDTO;
 import com.schoolSys.schooolSys.scolarite.dto.ReinscriptionResultDTO;
@@ -24,7 +26,7 @@ public class ScolariteController {
 
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasAuthority('READ_STUDENTS')")
-    public ResponseEntity<ApiResponse<List<ScolariteDTO>>> getHistorique(@PathVariable Long studentId) {
+    public ResponseEntity<ApiResponse<List<ScolariteDTO>>> getHistorique(@PathVariable UUID studentId) {
         return ResponseEntity.ok(ApiResponse.ok(scolariteService.getHistorique(studentId)));
     }
 
@@ -47,7 +49,7 @@ public class ScolariteController {
     @GetMapping("/attestation-reussite")
     @PreAuthorize("hasAuthority('READ_BULLETINS')")
     public ResponseEntity<ApiResponse<AttestationReussiteDTO>> getAttestationReussite(
-            @RequestParam Long studentId,
+            @RequestParam UUID studentId,
             @RequestParam String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(
                 scolariteService.getAttestationReussite(studentId, anneeScolaire)));

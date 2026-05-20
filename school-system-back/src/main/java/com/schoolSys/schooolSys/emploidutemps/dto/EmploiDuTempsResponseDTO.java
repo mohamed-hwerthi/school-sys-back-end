@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.emploidutemps.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,14 +14,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmploiDuTempsResponseDTO {
-    private Long id;
-    private Long classeId;
-    private Long creneauId;
+    private UUID id;
+    private UUID classeId;
+    private UUID creneauId;
     private Integer jourSemaine;
-    private Long moduleId;
-    private Long enseignantId;
+    private UUID moduleId;
+    private UUID enseignantId;
     private String salle;
-    private Long classroomId;
+    private UUID classroomId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

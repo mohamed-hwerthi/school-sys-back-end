@@ -16,14 +16,16 @@ import { useAuth } from "@/context/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { messagesApi } from "@/api/messages.api";
 import { EmptyState } from "@/components/EmptyState";
+import { ListSkeleton } from "@/components/skeletons/ListSkeleton";
 import { ErrorView } from "@/components/ErrorView";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 interface Message {
-  id: number;
-  senderId: number;
+  id: string;
+  senderId: string;
   senderName: string;
-  recipientId: number;
+  recipientId: string;
   recipientName: string;
   subject: string;
   body: string;
@@ -55,6 +57,7 @@ function getInitials(name: string): string {
 }
 
 export default function MessagesTab() {
+  const { colors } = useTheme();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
@@ -76,14 +79,14 @@ export default function MessagesTab() {
   });
 
   const markAsReadMutation = useMutation({
-    mutationFn: (messageId: number) => messagesApi.markAsRead(messageId, user!.id),
+    mutationFn: (messageId: string) => messagesApi.markAsRead(messageId, user!.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inbox", user?.id] });
     },
   });
 
   const sendMutation = useMutation({
-    mutationFn: (data: { recipientId: number; subject: string; body: string }) =>
+    mutationFn: (data: { recipientId: string; subject: string; body: string }) =>
       messagesApi.send({
         senderId: user!.id,
         recipientIds: [data.recipientId],
@@ -118,8 +121,8 @@ export default function MessagesTab() {
   );
 
   const handleSend = useCallback(() => {
-    const recipientId = parseInt(composeRecipient, 10);
-    if (!recipientId || isNaN(recipientId)) {
+    const recipientId = composeRecipient.trim();
+    if (!recipientId) {
       Alert.alert("Erreur", "Veuillez entrer un ID destinataire valide.");
       return;
     }
@@ -183,7 +186,7 @@ export default function MessagesTab() {
         }
       >
         {isLoading ? (
-          <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xl }} />
+          <ListSkeleton count={5} />
         ) : messages.length === 0 ? (
           <EmptyState
             icon="💬"
@@ -522,9 +525,9 @@ export default function MessagesTab() {
               <TextInput
                 value={composeRecipient}
                 onChangeText={setComposeRecipient}
-                placeholder="Ex: 12"
+                placeholder="ID du destinataire"
                 placeholderTextColor={colors.textMuted}
-                keyboardType="numeric"
+                autoCapitalize="none"
                 style={{
                   backgroundColor: colors.surface,
                   borderRadius: borderRadius.md,

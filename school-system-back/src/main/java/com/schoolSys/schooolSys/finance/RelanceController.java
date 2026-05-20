@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.finance.dto.RelanceRequestDTO;
 import com.schoolSys.schooolSys.finance.dto.RelanceResponseDTO;
@@ -29,7 +31,7 @@ public class RelanceController {
     @GetMapping("/eleve/{studentId}")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<RelanceResponseDTO>>> getByStudent(
-            @PathVariable Long studentId,
+            @PathVariable UUID studentId,
             @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(relanceService.findByStudent(studentId, anneeScolaire)));
     }
@@ -50,7 +52,7 @@ public class RelanceController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
-    public ResponseEntity<ApiResponse<RelanceResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<RelanceResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(relanceService.findById(id)));
     }
 
@@ -73,20 +75,20 @@ public class RelanceController {
 
     @PatchMapping("/{id}/envoyee")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
-    public ResponseEntity<ApiResponse<RelanceResponseDTO>> markEnvoyee(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<RelanceResponseDTO>> markEnvoyee(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(relanceService.markAsEnvoyee(id)));
     }
 
     @PatchMapping("/{id}/echouee")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
-    public ResponseEntity<ApiResponse<RelanceResponseDTO>> markEchouee(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<RelanceResponseDTO>> markEchouee(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(relanceService.markAsEchouee(id)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
+    public void delete(@PathVariable UUID id) {
         relanceService.delete(id);
     }
 }

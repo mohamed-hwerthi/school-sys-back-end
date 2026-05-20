@@ -17,6 +17,7 @@ import { absencesApi } from "@/api/absences.api";
 import { ChildSelector } from "@/components/ChildSelector";
 import { EmptyState } from "@/components/EmptyState";
 import { StatCard } from "@/components/StatCard";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 type FilterType = "all" | "justified" | "unjustified";
@@ -51,6 +52,7 @@ function getTypeColor(type: string): string {
 }
 
 export default function AbsencesScreen() {
+  const { colors } = useTheme();
   const { selectedChild, isLoading: childrenLoading } = useChild();
   const navigation = useNavigation();
   const queryClient = useQueryClient();

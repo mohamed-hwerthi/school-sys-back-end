@@ -2,7 +2,7 @@ import type { DecisionType } from "@/types/passage";
 
 /** One row of a conseil de classe: a student, their annual average and the proposed decision. */
 export interface PropositionPassage {
-  studentId: number;
+  studentId: string;
   studentName: string;
   niveauActuel: string;
   classeActuelle: string;
@@ -18,7 +18,7 @@ export interface PropositionPassage {
 
 /** Conseil de classe for one class: propositions plus the context to validate them. */
 export interface ConseilClasse {
-  classeId: number;
+  classeId: string;
   classeNom: string;
   niveauNom: string;
   niveauSuivant: string | null;

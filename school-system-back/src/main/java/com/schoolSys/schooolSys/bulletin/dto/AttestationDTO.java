@@ -1,10 +1,12 @@
 package com.schoolSys.schooolSys.bulletin.dto;
 
+import java.util.UUID;
+
 import lombok.*;
 
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class AttestationDTO {
-    private Long studentId;
+    private UUID studentId;
     private String studentName;
     private String studentNameAr;
     private String dateOfBirth;

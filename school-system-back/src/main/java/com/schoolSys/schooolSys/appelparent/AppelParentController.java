@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.appelparent;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.appelparent.dto.AppelParentRequestDTO;
 import com.schoolSys.schooolSys.appelparent.dto.AppelParentResponseDTO;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
@@ -21,12 +23,12 @@ public class AppelParentController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<AppelParentResponseDTO>>> getAll(
-            @RequestParam(required = false) Long eleveId) {
+            @RequestParam(required = false) UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(service.findAll(eleveId)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<AppelParentResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<AppelParentResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(service.findById(id)));
     }
 
@@ -41,14 +43,14 @@ public class AppelParentController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_COMMUNICATION')")
     public ResponseEntity<ApiResponse<AppelParentResponseDTO>> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody AppelParentRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_COMMUNICATION')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

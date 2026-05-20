@@ -1,12 +1,18 @@
 package com.schoolSys.schooolSys.reporting;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.absence.Absence;
 import com.schoolSys.schooolSys.absence.AbsenceRepository;
 import com.schoolSys.schooolSys.evenement.EvenementCalendrier;
 import com.schoolSys.schooolSys.evenement.EvenementCalendrierRepository;
 import com.schoolSys.schooolSys.finance.PaiementRepository;
+import com.schoolSys.schooolSys.niveau.Classe;
 import com.schoolSys.schooolSys.niveau.ClasseRepository;
+import com.schoolSys.schooolSys.niveau.Niveau;
+import com.schoolSys.schooolSys.note.Note;
 import com.schoolSys.schooolSys.note.NoteRepository;
+import com.schoolSys.schooolSys.reporting.dto.ClassStatsDTO;
 import com.schoolSys.schooolSys.reporting.dto.DashboardStatsDTO;
 import com.schoolSys.schooolSys.reporting.dto.DayAttendanceDTO;
 import com.schoolSys.schooolSys.reporting.dto.MonthlyTrendDTO;
@@ -169,6 +175,101 @@ public class ReportingService {
         return out;
     }
 
+    /**
+     * Per-class aggregate stats for a given trimestre.
+     * Returns one entry per class with average grade, success rate (% notes >= 10/20),
+     * presence rate, and absence/retard counts.
+     */
+    public List<ClassStatsDTO> getClassStats(int trimestre) {
+        // School-day baseline used for the presence rate when no `expected sessions`
+        // field is tracked. Roughly: one trimestre ≈ 60 school days.
+        final int trimestreSchoolDays = 60;
+
+        List<Classe> classes = classeRepository.findAll();
+        List<ClassStatsDTO> out = new ArrayList<>();
+
+        for (Classe c : classes) {
+            Niveau n = c.getNiveau();
+            String fullName = buildClasseFullName(n.getName(), c.getLetter());
+            List<com.schoolSys.schooolSys.student.Student> students =
+                    studentRepository.findByClasse(fullName);
+            long nbEleves = students.size();
+
+            // ── Grades ─────────────────────────────────────────────
+            List<Note> notes = noteRepository.findByExamenClasseIdAndTrimestre(c.getId(), trimestre);
+            double moyenne = 0;
+            double tauxReussite = 0;
+            if (!notes.isEmpty()) {
+                double sum = 0;
+                int passed = 0;
+                int counted = 0;
+                for (Note note : notes) {
+                    if (note.getValeur() == null) continue;
+                    sum += note.getValeur();
+                    if (note.getValeur() >= 10) passed++;
+                    counted++;
+                }
+                if (counted > 0) {
+                    moyenne = Math.round((sum / counted) * 10.0) / 10.0;
+                    tauxReussite = Math.round(((double) passed / counted) * 1000.0) / 10.0;
+                }
+            }
+
+            // ── Absences ───────────────────────────────────────────
+            List<UUID> studentIds = students.stream()
+                    .map(com.schoolSys.schooolSys.student.Student::getId)
+                    .toList();
+            long totalAbsences = 0;
+            long totalRetards = 0;
+            long totalJustifiees = 0;
+            if (!studentIds.isEmpty()) {
+                List<Absence> absences = absenceRepository.findByEleveIdIn(studentIds);
+                for (Absence a : absences) {
+                    String type = a.getType() == null ? "" : a.getType().toUpperCase();
+                    if ("RETARD".equals(type)) {
+                        totalRetards++;
+                    } else {
+                        totalAbsences++;
+                        if (Boolean.TRUE.equals(a.getJustifie())) totalJustifiees++;
+                    }
+                }
+            }
+
+            double tauxPresence = 100.0;
+            if (nbEleves > 0 && totalAbsences > 0) {
+                double expected = (double) nbEleves * trimestreSchoolDays;
+                double present = Math.max(0, expected - totalAbsences);
+                tauxPresence = Math.round((present / expected) * 1000.0) / 10.0;
+            }
+
+            out.add(ClassStatsDTO.builder()
+                    .classeId(c.getId())
+                    .classeName(fullName)
+                    .niveauName(n.getName())
+                    .nbEleves(nbEleves)
+                    .moyenne(moyenne)
+                    .tauxReussite(tauxReussite)
+                    .tauxPresence(tauxPresence)
+                    .totalAbsences(totalAbsences)
+                    .totalRetards(totalRetards)
+                    .totalAbsencesJustifiees(totalJustifiees)
+                    .build());
+        }
+
+        // Sort by fullName for stable display
+        out.sort(Comparator.comparing(ClassStatsDTO::getClasseName));
+        return out;
+    }
+
+    private String buildClasseFullName(String niveauName, String letter) {
+        StringBuilder digits = new StringBuilder();
+        for (char ch : niveauName.toCharArray()) {
+            if (Character.isDigit(ch)) digits.append(ch);
+            else break;
+        }
+        return digits.toString() + letter;
+    }
+
     public List<MonthlyTrendDTO> getMonthlyTrends(String anneeScolaire) {
         List<MonthlyTrendDTO> trends = new ArrayList<>();
         Locale fr = Locale.FRENCH;
@@ -192,7 +293,7 @@ public class ReportingService {
                 {5, endYear}, {6, endYear}
         };
 
-        List<Long> allStudentIds = studentRepository.findAll().stream()
+        List<UUID> allStudentIds = studentRepository.findAll().stream()
                 .map(Student::getId)
                 .toList();
 

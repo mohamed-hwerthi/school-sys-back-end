@@ -1,5 +1,5 @@
 export interface SuiviEleve {
-  eleveId: number;
+  eleveId: string;
   nom: string;
   prenom: string;
   classe: string;
@@ -13,7 +13,7 @@ export interface SuiviEleve {
 }
 
 export interface ClasseStats {
-  classeId: number;
+  classeId: string;
   classeName: string;
   moyenne: number;
   tauxReussite: number;
@@ -44,7 +44,7 @@ export interface Cohorte {
 }
 
 export interface KpiConfig {
-  id: number;
+  id: string;
   nom: string;
   description: string;
   type: string;

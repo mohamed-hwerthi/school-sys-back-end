@@ -10,6 +10,10 @@ import {
   Target,
   UserX,
   Crown,
+  ChevronDown,
+  ChevronRight,
+  BarChart3,
+  FileText,
 } from "lucide-react";
 import {
   Select,
@@ -98,6 +102,8 @@ export default function CertificatsTab() {
   const { niveauId, classeId, trimestre, setNiveauId, setClasseId, setTrimestre } = useCarnetSelection();
   const [certFilter, setCertFilter] = useState("all");
   const [previewStudent, setPreviewStudent] = useState<BulletinDTO | null>(null);
+  const [statsExpanded, setStatsExpanded] = useState(false);
+  const [listExpanded, setListExpanded] = useState(false);
 
   const { data: classes = [] } = useClasses(niveauId || undefined);
   const { data: bulletins = [], isLoading } = useBulletins(classeId, trimestre, "etatique");
@@ -218,8 +224,8 @@ export default function CertificatsTab() {
           <Select
             value={niveauId ? String(niveauId) : ""}
             onValueChange={(v) => {
-              setNiveauId(Number(v));
-              setClasseId(0);
+              setNiveauId(v);
+              setClasseId("");
             }}
           >
             <SelectTrigger className="w-[180px]">
@@ -237,7 +243,7 @@ export default function CertificatsTab() {
 
           <Select
             value={classeId ? String(classeId) : ""}
-            onValueChange={(v) => setClasseId(Number(v))}
+            onValueChange={(v) => setClasseId(v)}
             disabled={!niveauId}
           >
             <SelectTrigger className="w-[140px]">
@@ -296,7 +302,7 @@ export default function CertificatsTab() {
       </motion.div>
 
       {/* Results */}
-      {classeId > 0 && trimestre > 0 && (
+      {classeId && trimestre > 0 && (
         <>
           {isLoading ? (
             <div className="rounded-xl border border-border/50 bg-card p-16 shadow-sm text-center text-muted-foreground">
@@ -318,50 +324,60 @@ export default function CertificatsTab() {
             </motion.div>
           ) : (
             <>
-              {/* KPI summary */}
+              {/* Stats section — collapsed by default */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: 0.03 }}
-                className="grid grid-cols-2 lg:grid-cols-4 gap-3"
+                className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden"
               >
-                <KpiCard
-                  label="Total certifiés"
-                  value={`${totalCertifies}/${totalEleves}`}
-                  icon={Award}
-                  color="text-amber-600"
-                />
-                <KpiCard
-                  label="Taux de certification"
-                  value={`${tauxCertification.toFixed(0)}%`}
-                  icon={TrendingUp}
-                  color={
-                    tauxCertification >= 50
-                      ? "text-emerald-600"
-                      : "text-amber-600"
-                  }
-                />
-                <KpiCard
-                  label="Moyenne des certifiés"
-                  value={moyenneCertifies.toFixed(2)}
-                  icon={Target}
-                  color="text-blue-600"
-                />
-                <KpiCard
-                  label="Sans certificat"
-                  value={sansCert}
-                  icon={UserX}
-                  color="text-red-600"
-                />
-              </motion.div>
+                <button
+                  onClick={() => setStatsExpanded(!statsExpanded)}
+                  className="w-full flex items-center gap-2 px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors text-start"
+                >
+                  {statsExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  <BarChart3 className="h-4 w-4 text-amber-600" />
+                  <span className="font-semibold text-sm text-foreground">Statistiques — répartition des certificats</span>
+                  <span className="ms-auto text-xs text-muted-foreground tabular-nums">
+                    {totalCertifies}/{totalEleves} certifiés · {tauxCertification.toFixed(0)}% · Moy. {moyenneCertifies.toFixed(2)}
+                  </span>
+                </button>
+                {statsExpanded && (
+                  <div className="p-4 space-y-3 border-t border-border">
+                    {/* KPI summary */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                      <KpiCard
+                        label="Total certifiés"
+                        value={`${totalCertifies}/${totalEleves}`}
+                        icon={Award}
+                        color="text-amber-600"
+                      />
+                      <KpiCard
+                        label="Taux de certification"
+                        value={`${tauxCertification.toFixed(0)}%`}
+                        icon={TrendingUp}
+                        color={
+                          tauxCertification >= 50
+                            ? "text-emerald-600"
+                            : "text-amber-600"
+                        }
+                      />
+                      <KpiCard
+                        label="Moyenne des certifiés"
+                        value={moyenneCertifies.toFixed(2)}
+                        icon={Target}
+                        color="text-blue-600"
+                      />
+                      <KpiCard
+                        label="Sans certificat"
+                        value={sansCert}
+                        icon={UserX}
+                        color="text-red-600"
+                      />
+                    </div>
 
-              {/* Charts row: donut + per-type breakdown */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: 0.05 }}
-                className="grid grid-cols-1 lg:grid-cols-3 gap-3"
-              >
+                    {/* Charts row: donut + per-type breakdown */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <div className="lg:col-span-1">
                   <CertificatPie certificats={certificatsCounts} />
                 </div>
@@ -437,15 +453,31 @@ export default function CertificatsTab() {
                     );
                   })}
                 </div>
+                    </div>
+                  </div>
+                )}
               </motion.div>
 
-              {/* Student list */}
+              {/* Student list — collapsed by default */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: 0.06 }}
                 className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden"
               >
+                <button
+                  onClick={() => setListExpanded(!listExpanded)}
+                  className="w-full flex items-center gap-2 px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors text-start"
+                >
+                  {listExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  <FileText className="h-4 w-4 text-amber-600" />
+                  <span className="font-semibold text-sm text-foreground">Liste des élèves & impression</span>
+                  <span className="ms-auto text-xs text-muted-foreground tabular-nums">
+                    {filtered.length} élève(s)
+                  </span>
+                </button>
+                {listExpanded && (
+                <div className="overflow-x-auto border-t border-border">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
@@ -523,6 +555,8 @@ export default function CertificatsTab() {
                       ))}
                   </tbody>
                 </table>
+                </div>
+                )}
               </motion.div>
             </>
           )}

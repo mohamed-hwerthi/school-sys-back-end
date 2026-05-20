@@ -14,11 +14,11 @@ export function useBourses(anneeScolaire?: string) {
   });
 }
 
-export function useBoursesByStudent(studentId: number, anneeScolaire?: string) {
+export function useBoursesByStudent(studentId: string, anneeScolaire?: string) {
   return useQuery<BourseDTO[]>({
     queryKey: [BOURSES_KEY, "student", studentId, anneeScolaire],
     queryFn: () => boursesApi.getByStudent(studentId, anneeScolaire),
-    enabled: studentId > 0,
+    enabled: !!studentId,
   });
 }
 
@@ -35,7 +35,7 @@ export function useCreateBourse() {
 export function useUpdateBourse() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: BourseRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: BourseRequest }) =>
       boursesApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [BOURSES_KEY] });
@@ -46,7 +46,7 @@ export function useUpdateBourse() {
 export function useDeleteBourse() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => boursesApi.delete(id),
+    mutationFn: (id: string) => boursesApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [BOURSES_KEY] });
     },

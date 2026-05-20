@@ -7,7 +7,7 @@ export type EvenementType =
   | "AUTRE";
 
 export interface EvenementCalendrier {
-  id: number;
+  id: string;
   titre: string;
   description?: string;
   dateDebut: string; // YYYY-MM-DD

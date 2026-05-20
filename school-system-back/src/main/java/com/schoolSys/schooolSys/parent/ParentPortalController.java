@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.parent;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.absence.dto.AbsenceResponseDTO;
 import com.schoolSys.schooolSys.bulletin.dto.BulletinDTO;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
@@ -24,7 +26,7 @@ public class ParentPortalController {
     @GetMapping("/children")
     @PreAuthorize("hasAuthority('PARENT_ACCESS')")
     public ResponseEntity<ApiResponse<List<ChildDTO>>> getChildren(Authentication auth) {
-        Long parentUserId = extractUserId(auth);
+        UUID parentUserId = extractUserId(auth);
         return ResponseEntity.ok(ApiResponse.ok(parentPortalService.getChildren(parentUserId)));
     }
 
@@ -32,9 +34,9 @@ public class ParentPortalController {
     @PreAuthorize("hasAuthority('PARENT_ACCESS')")
     public ResponseEntity<ApiResponse<List<NoteResponseDTO>>> getChildNotes(
             Authentication auth,
-            @PathVariable Long studentId,
+            @PathVariable UUID studentId,
             @RequestParam(required = false, defaultValue = "1") Integer trimestre) {
-        Long parentUserId = extractUserId(auth);
+        UUID parentUserId = extractUserId(auth);
         return ResponseEntity.ok(ApiResponse.ok(
                 parentPortalService.getChildNotes(parentUserId, studentId, trimestre)));
     }
@@ -43,8 +45,8 @@ public class ParentPortalController {
     @PreAuthorize("hasAuthority('PARENT_ACCESS')")
     public ResponseEntity<ApiResponse<List<AbsenceResponseDTO>>> getChildAbsences(
             Authentication auth,
-            @PathVariable Long studentId) {
-        Long parentUserId = extractUserId(auth);
+            @PathVariable UUID studentId) {
+        UUID parentUserId = extractUserId(auth);
         return ResponseEntity.ok(ApiResponse.ok(
                 parentPortalService.getChildAbsences(parentUserId, studentId)));
     }
@@ -53,10 +55,10 @@ public class ParentPortalController {
     @PreAuthorize("hasAuthority('PARENT_ACCESS')")
     public ResponseEntity<ApiResponse<BulletinDTO>> getChildBulletin(
             Authentication auth,
-            @PathVariable Long studentId,
-            @RequestParam Long classeId,
+            @PathVariable UUID studentId,
+            @RequestParam UUID classeId,
             @RequestParam(required = false, defaultValue = "1") Integer trimestre) {
-        Long parentUserId = extractUserId(auth);
+        UUID parentUserId = extractUserId(auth);
         return ResponseEntity.ok(ApiResponse.ok(
                 parentPortalService.getChildBulletin(parentUserId, studentId, classeId, trimestre)));
     }
@@ -65,15 +67,15 @@ public class ParentPortalController {
     @PreAuthorize("hasAuthority('PARENT_ACCESS')")
     public ResponseEntity<ApiResponse<List<EmploiDuTempsResponseDTO>>> getChildEmploiDuTemps(
             Authentication auth,
-            @PathVariable Long studentId) {
-        Long parentUserId = extractUserId(auth);
+            @PathVariable UUID studentId) {
+        UUID parentUserId = extractUserId(auth);
         return ResponseEntity.ok(ApiResponse.ok(
                 parentPortalService.getChildEmploiDuTemps(parentUserId, studentId)));
     }
 
-    private Long extractUserId(Authentication auth) {
+    private UUID extractUserId(Authentication auth) {
         try {
-            return Long.parseLong(auth.getName());
+            return UUID.fromString(auth.getName());
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid user authentication");
         }

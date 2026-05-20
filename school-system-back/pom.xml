@@ -66,10 +66,17 @@
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
 
-		<!-- Flyway -->
+		<!-- Flyway — Spring Boot 4 modularised the auto-configuration into the
+		     dedicated spring-boot-flyway module; without it FlywayAutoConfiguration
+		     never runs and the public schema is left unmigrated. -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-flyway</artifactId>
+			<version>4.0.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.flywaydb</groupId>
@@ -128,6 +135,18 @@
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
 			<version>5.2.5</version>
+		</dependency>
+
+		<!-- OpenHTMLToPDF (HTML → PDF avec support arabe/RTL pour les bulletins) -->
+		<dependency>
+			<groupId>com.openhtmltopdf</groupId>
+			<artifactId>openhtmltopdf-pdfbox</artifactId>
+			<version>1.0.10</version>
+		</dependency>
+		<dependency>
+			<groupId>com.openhtmltopdf</groupId>
+			<artifactId>openhtmltopdf-rtl-support</artifactId>
+			<version>1.0.10</version>
 		</dependency>
 
 		<!-- OpenCSV (CSV import/export) -->

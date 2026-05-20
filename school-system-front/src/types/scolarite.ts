@@ -1,7 +1,7 @@
 /** One historised year of a student's schooling (ANN-004). */
 export interface Scolarite {
-  id: number;
-  studentId: number;
+  id: string;
+  studentId: string;
   studentName: string;
   anneeScolaire: string;
   niveau: string | null;
@@ -30,7 +30,7 @@ export interface SuiviReinscription {
 
 /** Certificate of success for a student for a school year (ANN-042). */
 export interface AttestationReussite {
-  studentId: number;
+  studentId: string;
   studentName: string;
   anneeScolaire: string;
   eligible: boolean;

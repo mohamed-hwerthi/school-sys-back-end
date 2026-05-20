@@ -1,6 +1,9 @@
 package com.schoolSys.schooolSys.importexport;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
+import com.schoolSys.schooolSys.common.multitenancy.TenantContext;
 import com.schoolSys.schooolSys.importexport.dto.ImportResultDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -64,13 +67,13 @@ public class ImportExportController {
         boolean xlsx = "xlsx".equalsIgnoreCase(format);
         String filename = "eleves." + (xlsx ? "xlsx" : "csv");
 
-        StreamingResponseBody body = out -> {
+        StreamingResponseBody body = withTenant(out -> {
             if (xlsx) {
                 excelExportService.exportStudents(out);
             } else {
                 csvExportService.exportStudents(out);
             }
-        };
+        });
 
         return ResponseEntity.ok()
                 .contentType(xlsx ? excelMediaType() : csvMediaType())
@@ -85,13 +88,13 @@ public class ImportExportController {
         boolean xlsx = "xlsx".equalsIgnoreCase(format);
         String filename = "enseignants." + (xlsx ? "xlsx" : "csv");
 
-        StreamingResponseBody body = out -> {
+        StreamingResponseBody body = withTenant(out -> {
             if (xlsx) {
                 excelExportService.exportTeachers(out);
             } else {
                 csvExportService.exportTeachers(out);
             }
-        };
+        });
 
         return ResponseEntity.ok()
                 .contentType(xlsx ? excelMediaType() : csvMediaType())
@@ -102,19 +105,19 @@ public class ImportExportController {
     @GetMapping("/export/notes")
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<StreamingResponseBody> exportNotes(
-            @RequestParam Long classeId,
+            @RequestParam UUID classeId,
             @RequestParam Integer trimestre,
             @RequestParam(defaultValue = "csv") String format) {
         boolean xlsx = "xlsx".equalsIgnoreCase(format);
         String filename = "notes_classe" + classeId + "_T" + trimestre + "." + (xlsx ? "xlsx" : "csv");
 
-        StreamingResponseBody body = out -> {
+        StreamingResponseBody body = withTenant(out -> {
             if (xlsx) {
                 excelExportService.exportNotes(classeId, trimestre, out);
             } else {
                 csvExportService.exportNotes(classeId, trimestre, out);
             }
-        };
+        });
 
         return ResponseEntity.ok()
                 .contentType(xlsx ? excelMediaType() : csvMediaType())
@@ -130,13 +133,13 @@ public class ImportExportController {
         boolean xlsx = "xlsx".equalsIgnoreCase(format);
         String filename = "paiements_" + anneeScolaire + "." + (xlsx ? "xlsx" : "csv");
 
-        StreamingResponseBody body = out -> {
+        StreamingResponseBody body = withTenant(out -> {
             if (xlsx) {
                 excelExportService.exportPaiements(anneeScolaire, out);
             } else {
                 csvExportService.exportPaiements(anneeScolaire, out);
             }
-        };
+        });
 
         return ResponseEntity.ok()
                 .contentType(xlsx ? excelMediaType() : csvMediaType())
@@ -153,13 +156,13 @@ public class ImportExportController {
         boolean xlsx = "xlsx".equalsIgnoreCase(format);
         String filename = "absences_" + from + "_" + to + "." + (xlsx ? "xlsx" : "csv");
 
-        StreamingResponseBody body = out -> {
+        StreamingResponseBody body = withTenant(out -> {
             if (xlsx) {
                 excelExportService.exportAbsences(from, to, out);
             } else {
                 csvExportService.exportAbsences(from, to, out);
             }
-        };
+        });
 
         return ResponseEntity.ok()
                 .contentType(xlsx ? excelMediaType() : csvMediaType())
@@ -222,5 +225,22 @@ public class ImportExportController {
 
     private MediaType csvMediaType() {
         return MediaType.parseMediaType("text/csv; charset=UTF-8");
+    }
+
+    /**
+     * StreamingResponseBody s'exécute dans un thread asynchrone où le
+     * ThreadLocal de TenantContext n'est pas propagé. On capture le tenant
+     * dans le thread de requête puis on le réinjecte dans le thread async.
+     */
+    private StreamingResponseBody withTenant(StreamingResponseBody inner) {
+        String tenant = TenantContext.getCurrentTenant();
+        return out -> {
+            TenantContext.setCurrentTenant(tenant);
+            try {
+                inner.writeTo(out);
+            } finally {
+                TenantContext.clear();
+            }
+        };
     }
 }

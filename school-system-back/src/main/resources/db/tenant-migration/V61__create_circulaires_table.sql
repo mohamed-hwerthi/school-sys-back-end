@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS circulaires (
-    id              BIGSERIAL       PRIMARY KEY,
+    id              UUID       PRIMARY KEY DEFAULT gen_random_uuid(),
     titre           VARCHAR(255)    NOT NULL,
     type            VARCHAR(50)     NOT NULL CHECK (type IN ('Information', 'Règlement', 'Événement', 'Urgent', 'Pédagogique')),
     contenu         TEXT            NOT NULL,

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS absence_settings (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     seuil_alerte_jaune INT NOT NULL DEFAULT 3,
     seuil_alerte_rouge INT NOT NULL DEFAULT 5,
     notification_auto BOOLEAN NOT NULL DEFAULT TRUE,

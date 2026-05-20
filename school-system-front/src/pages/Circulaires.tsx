@@ -121,11 +121,11 @@ export default function Circulaires() {
     setDeleteTarget(null);
   };
 
-  const handlePublish = (id: number) => {
+  const handlePublish = (id: string) => {
     publishMutation.mutate(id);
   };
 
-  const handleArchive = (id: number) => {
+  const handleArchive = (id: string) => {
     archiveMutation.mutate(id);
   };
 

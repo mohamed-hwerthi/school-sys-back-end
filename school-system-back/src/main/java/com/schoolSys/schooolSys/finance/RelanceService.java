@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.finance.dto.RelanceRequestDTO;
 import com.schoolSys.schooolSys.finance.dto.RelanceResponseDTO;
@@ -32,7 +34,7 @@ public class RelanceService {
                 relanceRepository.findByAnneeScolaireOrderByCreatedAtDesc(annee));
     }
 
-    public List<RelanceResponseDTO> findByStudent(Long studentId, String anneeScolaire) {
+    public List<RelanceResponseDTO> findByStudent(UUID studentId, String anneeScolaire) {
         String annee = anneeScolaire != null ? anneeScolaire : DEFAULT_ANNEE;
         return relanceMapper.toResponseDTOList(
                 relanceRepository.findByStudentIdAndAnneeScolaireOrderByCreatedAtDesc(studentId, annee));
@@ -45,7 +47,7 @@ public class RelanceService {
                         Relance.StatutRelance.EN_ATTENTE, annee));
     }
 
-    public RelanceResponseDTO findById(Long id) {
+    public RelanceResponseDTO findById(UUID id) {
         Relance r = relanceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Relance", id));
         return relanceMapper.toResponseDTO(r);
@@ -89,7 +91,7 @@ public class RelanceService {
     }
 
     @Transactional
-    public RelanceResponseDTO markAsEnvoyee(Long id) {
+    public RelanceResponseDTO markAsEnvoyee(UUID id) {
         Relance r = relanceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Relance", id));
         r.setStatut(Relance.StatutRelance.ENVOYEE);
@@ -98,7 +100,7 @@ public class RelanceService {
     }
 
     @Transactional
-    public RelanceResponseDTO markAsEchouee(Long id) {
+    public RelanceResponseDTO markAsEchouee(UUID id) {
         Relance r = relanceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Relance", id));
         r.setStatut(Relance.StatutRelance.ECHOUEE);
@@ -106,7 +108,7 @@ public class RelanceService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!relanceRepository.existsById(id)) {
             throw new ResourceNotFoundException("Relance", id);
         }

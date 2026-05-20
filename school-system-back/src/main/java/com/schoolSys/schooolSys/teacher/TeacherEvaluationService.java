@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.teacher;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.teacher.dto.TeacherEvaluationDTO;
 import com.schoolSys.schooolSys.teacher.dto.TeacherEvaluationStatsDTO;
@@ -17,7 +19,7 @@ public class TeacherEvaluationService {
     private final TeacherEvaluationRepository evaluationRepository;
     private final TeacherRepository teacherRepository;
 
-    public List<TeacherEvaluationDTO> findAll(Long teacherId, String anneeScolaire) {
+    public List<TeacherEvaluationDTO> findAll(UUID teacherId, String anneeScolaire) {
         List<TeacherEvaluation> evaluations;
         if (teacherId != null && anneeScolaire != null) {
             evaluations = evaluationRepository.findByTeacherIdAndAnneeScolaire(teacherId, anneeScolaire);
@@ -31,7 +33,7 @@ public class TeacherEvaluationService {
         return evaluations.stream().map(this::toDTO).toList();
     }
 
-    public TeacherEvaluationDTO findById(Long id) {
+    public TeacherEvaluationDTO findById(UUID id) {
         TeacherEvaluation eval = evaluationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TeacherEvaluation", id));
         return toDTO(eval);
@@ -56,7 +58,7 @@ public class TeacherEvaluationService {
     }
 
     @Transactional
-    public TeacherEvaluationDTO update(Long id, TeacherEvaluationDTO dto) {
+    public TeacherEvaluationDTO update(UUID id, TeacherEvaluationDTO dto) {
         TeacherEvaluation eval = evaluationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TeacherEvaluation", id));
 
@@ -75,14 +77,14 @@ public class TeacherEvaluationService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!evaluationRepository.existsById(id)) {
             throw new ResourceNotFoundException("TeacherEvaluation", id);
         }
         evaluationRepository.deleteById(id);
     }
 
-    public TeacherEvaluationStatsDTO getStats(Long teacherId) {
+    public TeacherEvaluationStatsDTO getStats(UUID teacherId) {
         Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher", teacherId));
 

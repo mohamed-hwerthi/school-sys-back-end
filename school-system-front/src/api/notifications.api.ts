@@ -14,7 +14,7 @@ export const notificationsApi = {
     return res.data;
   },
 
-  markAsRead: async (id: number): Promise<Notification> => {
+  markAsRead: async (id: string): Promise<Notification> => {
     const res = await api.put<Notification>(`${BASE}/${id}/read`);
     return res.data;
   },
@@ -23,7 +23,7 @@ export const notificationsApi = {
     await api.put(`${BASE}/read-all`);
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/${id}`);
   },
 };

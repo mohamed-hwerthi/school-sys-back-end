@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.examen;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.examen.dto.ExamenRequestDTO;
 import com.schoolSys.schooolSys.examen.dto.ExamenResponseDTO;
@@ -22,15 +24,15 @@ public class ExamenController {
     @GetMapping
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<ExamenResponseDTO>>> getAll(
-            @RequestParam(required = false) Long moduleId,
-            @RequestParam(required = false) Long classeId,
+            @RequestParam(required = false) UUID moduleId,
+            @RequestParam(required = false) UUID classeId,
             @RequestParam(required = false) Integer trimestre) {
         return ResponseEntity.ok(ApiResponse.ok(examenService.findAll(moduleId, classeId, trimestre)));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<ExamenResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ExamenResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(examenService.findById(id)));
     }
 
@@ -45,21 +47,21 @@ public class ExamenController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
     public ResponseEntity<ApiResponse<ExamenResponseDTO>> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody ExamenRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(examenService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         examenService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/bulk")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
-    public ResponseEntity<Void> deleteBulk(@RequestBody List<Long> ids) {
+    public ResponseEntity<Void> deleteBulk(@RequestBody List<UUID> ids) {
         examenService.deleteBulk(ids);
         return ResponseEntity.noContent().build();
     }

@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.teacher;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.teacher.dto.TeacherEvaluationDTO;
 import com.schoolSys.schooolSys.teacher.dto.TeacherEvaluationStatsDTO;
@@ -21,14 +23,14 @@ public class TeacherEvaluationController {
     @GetMapping
     @PreAuthorize("hasAuthority('MANAGE_TEACHERS')")
     public ResponseEntity<ApiResponse<List<TeacherEvaluationDTO>>> getAll(
-            @RequestParam(required = false) Long teacherId,
+            @RequestParam(required = false) UUID teacherId,
             @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(evaluationService.findAll(teacherId, anneeScolaire)));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TEACHERS')")
-    public ResponseEntity<ApiResponse<TeacherEvaluationDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<TeacherEvaluationDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(evaluationService.findById(id)));
     }
 
@@ -43,21 +45,21 @@ public class TeacherEvaluationController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TEACHERS')")
     public ResponseEntity<ApiResponse<TeacherEvaluationDTO>> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody TeacherEvaluationDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(evaluationService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_TEACHERS')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         evaluationService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/stats/{teacherId}")
     @PreAuthorize("hasAuthority('MANAGE_TEACHERS')")
-    public ResponseEntity<ApiResponse<TeacherEvaluationStatsDTO>> getStats(@PathVariable Long teacherId) {
+    public ResponseEntity<ApiResponse<TeacherEvaluationStatsDTO>> getStats(@PathVariable UUID teacherId) {
         return ResponseEntity.ok(ApiResponse.ok(evaluationService.getStats(teacherId)));
     }
 }

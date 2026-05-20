@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.document.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.document.DocumentGenere;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,9 +18,9 @@ public class DocumentGenerationRequest {
 
     private DocumentGenere.TypeDocument type;
 
-    private Long eleveId;
+    private UUID eleveId;
 
-    private List<Long> eleveIds;
+    private List<UUID> eleveIds;
 
     private String anneeScolaire;
 

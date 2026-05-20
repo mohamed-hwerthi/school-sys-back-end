@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.student.dto;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,7 +11,7 @@ import java.time.LocalDate;
 @Builder
 public class StudentResponseDTO {
 
-    private Long id;
+    private UUID id;
     private String firstName;
     private String lastName;
     private String firstNameAr;

@@ -8,11 +8,11 @@ const CONSEIL_KEY = "conseil-classe";
 const PASSAGES_KEY = "passages";
 
 /** Load the conseil de classe (annual averages + proposed decisions) for a class. */
-export function useConseilClasse(classeId: number) {
+export function useConseilClasse(classeId: string) {
   return useQuery<ConseilClasse>({
     queryKey: [CONSEIL_KEY, classeId],
     queryFn: () => conseilClasseApi.getByClasse(classeId),
-    enabled: classeId > 0,
+    enabled: !!classeId,
   });
 }
 

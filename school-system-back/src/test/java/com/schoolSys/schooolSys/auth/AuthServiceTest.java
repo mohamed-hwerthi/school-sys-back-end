@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.auth;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.auth.dto.LoginRequestDTO;
 import com.schoolSys.schooolSys.auth.dto.LoginResponseDTO;
 import com.schoolSys.schooolSys.auth.dto.RefreshTokenRequestDTO;
@@ -68,7 +70,7 @@ class AuthServiceTest {
         ReflectionTestUtils.setField(authService, "refreshTokenExpirationMs", 604800000L);
 
         activeUser = User.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .email("admin@school.com")
                 .passwordHash("$2a$10$hashedPassword")
                 .firstName("Admin")
@@ -124,7 +126,7 @@ class AuthServiceTest {
         void shouldThrowOnInvalidPassword() {
             when(userRepository.findByEmail("admin@school.com")).thenReturn(Optional.of(activeUser));
             when(passwordEncoder.matches("wrongpass", "$2a$10$hashedPassword")).thenReturn(false);
-            when(loginAttemptService.recordFailedAttempt(1L)).thenReturn(1);
+            when(loginAttemptService.recordFailedAttempt(new UUID(0, 1))).thenReturn(1);
 
             loginRequest.setPassword("wrongpass");
 
@@ -132,7 +134,7 @@ class AuthServiceTest {
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Invalid email or password");
 
-            verify(loginAttemptService).recordFailedAttempt(1L);
+            verify(loginAttemptService).recordFailedAttempt(new UUID(0, 1));
         }
 
         @Test
@@ -140,7 +142,7 @@ class AuthServiceTest {
         void shouldLockAccountAfterMaxAttempts() {
             when(userRepository.findByEmail("admin@school.com")).thenReturn(Optional.of(activeUser));
             when(passwordEncoder.matches("wrongpass", "$2a$10$hashedPassword")).thenReturn(false);
-            when(loginAttemptService.recordFailedAttempt(1L))
+            when(loginAttemptService.recordFailedAttempt(new UUID(0, 1)))
                     .thenReturn(LoginAttemptService.MAX_FAILED_ATTEMPTS);
 
             loginRequest.setPassword("wrongpass");
@@ -187,7 +189,7 @@ class AuthServiceTest {
 
             authService.login(loginRequest, "Chrome", "127.0.0.1", null);
 
-            verify(loginAttemptService).resetAttempts(1L);
+            verify(loginAttemptService).resetAttempts(new UUID(0, 1));
         }
 
         @Test
@@ -202,7 +204,7 @@ class AuthServiceTest {
             LoginResponseDTO result = authService.login(loginRequest, "Chrome", "127.0.0.1", null);
 
             assertThat(result.isTwoFactorRequired()).isTrue();
-            assertThat(result.getTwoFactorUserId()).isEqualTo(1L);
+            assertThat(result.getTwoFactorUserId()).isEqualTo(new UUID(0, 1));
             assertThat(result.getAccessToken()).isNull();
         }
     }
@@ -215,7 +217,7 @@ class AuthServiceTest {
         @DisplayName("should issue new tokens on valid refresh token")
         void shouldIssueNewTokensOnValidRefresh() {
             RefreshToken existingToken = RefreshToken.builder()
-                    .id(1L)
+                    .id(new UUID(0, 1))
                     .user(activeUser)
                     .token("valid-refresh-token")
                     .expiresAt(LocalDateTime.now().plusDays(7))
@@ -256,7 +258,7 @@ class AuthServiceTest {
         @DisplayName("should throw on expired refresh token")
         void shouldThrowOnExpiredRefreshToken() {
             RefreshToken expiredToken = RefreshToken.builder()
-                    .id(1L)
+                    .id(new UUID(0, 1))
                     .user(activeUser)
                     .token("expired-token")
                     .expiresAt(LocalDateTime.now().minusDays(1))
@@ -277,7 +279,7 @@ class AuthServiceTest {
         @DisplayName("should throw on revoked refresh token")
         void shouldThrowOnRevokedRefreshToken() {
             RefreshToken revokedToken = RefreshToken.builder()
-                    .id(1L)
+                    .id(new UUID(0, 1))
                     .user(activeUser)
                     .token("revoked-token")
                     .expiresAt(LocalDateTime.now().plusDays(7))
@@ -303,7 +305,7 @@ class AuthServiceTest {
         @DisplayName("should revoke refresh token on logout")
         void shouldRevokeRefreshTokenOnLogout() {
             RefreshToken token = RefreshToken.builder()
-                    .id(1L)
+                    .id(new UUID(0, 1))
                     .user(activeUser)
                     .token("active-token")
                     .expiresAt(LocalDateTime.now().plusDays(7))
@@ -330,11 +332,11 @@ class AuthServiceTest {
         @Test
         @DisplayName("should return user details")
         void shouldReturnUserDetails() {
-            when(userRepository.findById(1L)).thenReturn(Optional.of(activeUser));
+            when(userRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(activeUser));
 
-            var result = authService.getCurrentUser(1L);
+            var result = authService.getCurrentUser(new UUID(0, 1));
 
-            assertThat(result.getId()).isEqualTo(1L);
+            assertThat(result.getId()).isEqualTo(new UUID(0, 1));
             assertThat(result.getEmail()).isEqualTo("admin@school.com");
             assertThat(result.getRole()).isEqualTo(UserRole.ADMIN);
         }
@@ -342,9 +344,9 @@ class AuthServiceTest {
         @Test
         @DisplayName("should throw when user not found")
         void shouldThrowWhenUserNotFound() {
-            when(userRepository.findById(999L)).thenReturn(Optional.empty());
+            when(userRepository.findById(new UUID(0, 999))).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> authService.getCurrentUser(999L))
+            assertThatThrownBy(() -> authService.getCurrentUser(new UUID(0, 999)))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("User not found");
         }

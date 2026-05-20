@@ -52,11 +52,11 @@ import type { AffectationDTO, AffectationRequest } from "@/api/affectations.api"
 const NONE = "none";
 
 interface FormState {
-  id: number | null;
-  teacherId: number | "";
-  niveauId: number | "";
-  classeId: number | "";
-  moduleId: number | null;
+  id: string | null;
+  teacherId: string | "";
+  niveauId: string | "";
+  classeId: string | "";
+  moduleId: string | null;
   anneeScolaire: string;
   dateDebut: string;
   dateFin: string;
@@ -98,15 +98,15 @@ export default function AffectationsPage() {
   const [searchText, setSearchText] = useState<string>("");
 
   // Cascading lookups for filter selects
-  const filterNiveauId = filterNiveau ? Number(filterNiveau) : undefined;
+  const filterNiveauId = filterNiveau ? filterNiveau : undefined;
   const { data: filterClasses = [] } = useClasses(filterNiveauId);
   const { data: filterModulesList = [] } = useModules(filterNiveauId);
 
   const { data: affectations = [], isLoading } = useAffectations({
     anneeScolaire: filterAnnee || undefined,
-    teacherId: filterTeacher ? Number(filterTeacher) : undefined,
-    classeId: filterClasse ? Number(filterClasse) : undefined,
-    moduleId: filterModule ? Number(filterModule) : undefined,
+    teacherId: filterTeacher ? filterTeacher : undefined,
+    classeId: filterClasse ? filterClasse : undefined,
+    moduleId: filterModule ? filterModule : undefined,
   });
 
   // ── client-side text search across teacher/classe/matière names ───
@@ -140,7 +140,7 @@ export default function AffectationsPage() {
   const openEdit = (a: AffectationDTO) => {
     // Resolve niveauId from classeId so the niveau selector pre-fills correctly.
     // We don't have classes loaded for "any niveau", so walk niveaux.
-    let niveauId: number | "" = "";
+    let niveauId: string | "" = "";
     for (const n of niveaux) {
       // best-effort: match the leading digit of fullName == leading digit of niveau name
       const lead = n.nom.match(/^(\d+)/)?.[1] ?? "";
@@ -168,8 +168,8 @@ export default function AffectationsPage() {
   const submit = () => {
     if (!isFormValid) return;
     const req: AffectationRequest = {
-      teacherId: Number(form.teacherId),
-      classeId: Number(form.classeId),
+      teacherId: form.teacherId,
+      classeId: form.classeId,
       moduleId: form.moduleId,
       anneeScolaire: form.anneeScolaire,
       dateDebut: form.dateDebut || null,
@@ -437,7 +437,7 @@ export default function AffectationsPage() {
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
               <Label>Enseignant *</Label>
-              <Select value={form.teacherId === "" ? "" : String(form.teacherId)} onValueChange={(v) => setForm({ ...form, teacherId: Number(v) })}>
+              <Select value={form.teacherId === "" ? "" : String(form.teacherId)} onValueChange={(v) => setForm({ ...form, teacherId: v })}>
                 <SelectTrigger><SelectValue placeholder="Sélectionner un enseignant…" /></SelectTrigger>
                 <SelectContent>
                   {teachers.map((t) => (
@@ -449,7 +449,7 @@ export default function AffectationsPage() {
 
             <div className="space-y-1.5">
               <Label>Niveau *</Label>
-              <Select value={form.niveauId === "" ? "" : String(form.niveauId)} onValueChange={(v) => setForm({ ...form, niveauId: Number(v), classeId: "", moduleId: null })}>
+              <Select value={form.niveauId === "" ? "" : String(form.niveauId)} onValueChange={(v) => setForm({ ...form, niveauId: v, classeId: "", moduleId: null })}>
                 <SelectTrigger><SelectValue placeholder="Sélectionner un niveau…" /></SelectTrigger>
                 <SelectContent>
                   {niveaux.map((n) => (
@@ -464,7 +464,7 @@ export default function AffectationsPage() {
                 <Label>Classe *</Label>
                 <Select
                   value={form.classeId === "" ? "" : String(form.classeId)}
-                  onValueChange={(v) => setForm({ ...form, classeId: Number(v) })}
+                  onValueChange={(v) => setForm({ ...form, classeId: v })}
                   disabled={form.niveauId === ""}
                 >
                   <SelectTrigger><SelectValue placeholder={form.niveauId === "" ? "Choisir un niveau" : "Sélectionner une classe…"} /></SelectTrigger>

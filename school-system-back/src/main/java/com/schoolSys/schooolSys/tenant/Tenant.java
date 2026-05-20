@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.tenant;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,8 +27,9 @@ import java.time.LocalDateTime;
 public class Tenant {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     /** Display name of the school. */
     @Column(nullable = false)

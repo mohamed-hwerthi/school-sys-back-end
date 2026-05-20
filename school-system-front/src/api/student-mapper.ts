@@ -4,7 +4,7 @@ import type { Student } from "@/types/student";
  * Backend DTO shape (EN field names).
  */
 export interface StudentApiDTO {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   firstNameAr: string | null;

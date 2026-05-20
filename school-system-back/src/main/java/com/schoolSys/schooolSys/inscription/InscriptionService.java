@@ -56,7 +56,7 @@ public class InscriptionService {
     /**
      * List inscriptions with optional filters.
      */
-    public PagedResponse<InscriptionDTO> findAll(String statut, String anneeScolaire, Long niveauId, Pageable pageable) {
+    public PagedResponse<InscriptionDTO> findAll(String statut, String anneeScolaire, UUID niveauId, Pageable pageable) {
         Page<Inscription> page;
 
         if (statut != null && anneeScolaire != null && niveauId != null) {
@@ -87,7 +87,7 @@ public class InscriptionService {
     /**
      * Get a single inscription by ID.
      */
-    public InscriptionDTO findById(Long id) {
+    public InscriptionDTO findById(UUID id) {
         Inscription inscription = inscriptionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Inscription", id));
         return toDTO(inscription);
@@ -106,7 +106,7 @@ public class InscriptionService {
      * Update inscription status.
      */
     @Transactional
-    public InscriptionDTO updateStatut(Long id, UpdateStatutRequest request) {
+    public InscriptionDTO updateStatut(UUID id, UpdateStatutRequest request) {
         Inscription inscription = inscriptionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Inscription", id));
 
@@ -164,7 +164,7 @@ public class InscriptionService {
     /**
      * Get waiting list for a specific niveau.
      */
-    public List<InscriptionDTO> getListeAttente(Long niveauId, String anneeScolaire) {
+    public List<InscriptionDTO> getListeAttente(UUID niveauId, String anneeScolaire) {
         String annee = anneeScolaire != null ? anneeScolaire : currentAnneeScolaire();
         List<ListeAttente> entries = listeAttenteRepository
                 .findByNiveauIdAndAnneeScolaireOrderByPosition(niveauId, annee);
@@ -185,7 +185,7 @@ public class InscriptionService {
      * Add inscription to waiting list.
      */
     @Transactional
-    public void addToListeAttente(Long inscriptionId) {
+    public void addToListeAttente(UUID inscriptionId) {
         Inscription inscription = inscriptionRepository.findById(inscriptionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inscription", inscriptionId));
 

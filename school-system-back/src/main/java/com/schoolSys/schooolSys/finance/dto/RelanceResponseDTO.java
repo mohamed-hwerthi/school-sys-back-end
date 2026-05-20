@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.finance.Relance;
 import lombok.*;
 
@@ -12,12 +14,12 @@ import java.time.LocalDateTime;
 @Builder
 public class RelanceResponseDTO {
 
-    private Long id;
-    private Long studentId;
+    private UUID id;
+    private UUID studentId;
     private String studentFirstName;
     private String studentLastName;
     private String studentClasse;
-    private Long paiementId;
+    private UUID paiementId;
     private String paiementReference;
     private Relance.TypeRelance type;
     private Relance.StatutRelance statut;

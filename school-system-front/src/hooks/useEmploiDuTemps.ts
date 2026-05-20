@@ -15,19 +15,19 @@ const EDT_KEY = "emploi-du-temps";
 const CRENEAUX_KEY = "creneaux";
 const REMPLACEMENTS_KEY = "remplacements";
 
-export function useEmploiByClasse(classeId: number) {
+export function useEmploiByClasse(classeId: string) {
   return useQuery<EmploiDuTempsEntry[]>({
     queryKey: [EDT_KEY, "classe", classeId],
     queryFn: () => emploiDuTempsApi.getByClasse(classeId),
-    enabled: classeId > 0,
+    enabled: !!classeId,
   });
 }
 
-export function useEmploiByEnseignant(enseignantId: number) {
+export function useEmploiByEnseignant(enseignantId: string) {
   return useQuery<EmploiDuTempsEntry[]>({
     queryKey: [EDT_KEY, "enseignant", enseignantId],
     queryFn: () => emploiDuTempsApi.getByEnseignant(enseignantId),
-    enabled: enseignantId > 0,
+    enabled: !!enseignantId,
   });
 }
 
@@ -49,7 +49,7 @@ export function useCreneaux() {
 export function useSaveEmploi() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ classeId, entries }: { classeId: number; entries: EmploiDuTempsEntry[] }) =>
+    mutationFn: ({ classeId, entries }: { classeId: string; entries: EmploiDuTempsEntry[] }) =>
       emploiDuTempsApi.saveAll(classeId, entries),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [EDT_KEY] });
@@ -58,7 +58,7 @@ export function useSaveEmploi() {
 }
 
 export function useCheckConflits() {
-  return useMutation<Conflit[], Error, { classeId: number; entries: EmploiDuTempsEntry[] }>({
+  return useMutation<Conflit[], Error, { classeId: string; entries: EmploiDuTempsEntry[] }>({
     mutationFn: ({ classeId, entries }) =>
       emploiDuTempsApi.checkConflits(classeId, entries),
   });
@@ -77,7 +77,7 @@ export function useCreateCreneau() {
 export function useDeleteCreneau() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => emploiDuTempsApi.deleteCreneau(id),
+    mutationFn: (id: string) => emploiDuTempsApi.deleteCreneau(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [CRENEAUX_KEY] });
     },
@@ -105,7 +105,7 @@ export function useCreateRemplacement() {
 export function useDeleteRemplacement() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => emploiDuTempsApi.deleteRemplacement(id),
+    mutationFn: (id: string) => emploiDuTempsApi.deleteRemplacement(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [REMPLACEMENTS_KEY] });
     },
@@ -124,7 +124,7 @@ export function useGenerateEmploi() {
 }
 
 export function useTimetablePreviewCheck(
-  params: { niveauId?: number; anneeScolaireId?: number },
+  params: { niveauId?: string; anneeScolaireId?: string },
   enabled = true
 ) {
   return useQuery<TimetablePreviewCheck>({

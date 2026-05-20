@@ -377,7 +377,7 @@ export default function Relances() {
               <Label>{t("common.student")} *</Label>
               <Select
                 value={form.studentId ? String(form.studentId) : ""}
-                onValueChange={(v) => setForm({ ...form, studentId: Number(v) })}
+                onValueChange={(v) => setForm({ ...form, studentId: v })}
               >
                 <SelectTrigger className={formErrors.studentId ? "border-red-500" : ""}>
                   <SelectValue placeholder={t("reminders.selectStudent")} />

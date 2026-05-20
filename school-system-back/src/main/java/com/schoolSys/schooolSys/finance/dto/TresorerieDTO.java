@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance.dto;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -37,7 +39,7 @@ public class TresorerieDTO {
     @Data
     @Builder
     public static class TopDebiteur {
-        private Long studentId;
+        private UUID studentId;
         private String studentName;
         private String classe;
         private BigDecimal montantDu;

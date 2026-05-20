@@ -1,6 +1,6 @@
 -- Catégories de dépenses
 CREATE TABLE IF NOT EXISTS categories_depense (
-    id              BIGSERIAL       PRIMARY KEY,
+    id              UUID       PRIMARY KEY DEFAULT gen_random_uuid(),
     nom             VARCHAR(255)    NOT NULL,
     type            VARCHAR(10)     NOT NULL DEFAULT 'VARIABLE' CHECK (type IN ('FIXE', 'VARIABLE')),
     description     TEXT,
@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS categories_depense (
 
 -- Dépenses (sorties financières)
 CREATE TABLE IF NOT EXISTS depenses (
-    id              BIGSERIAL       PRIMARY KEY,
-    categorie_id    BIGINT          NOT NULL REFERENCES categories_depense(id) ON DELETE RESTRICT,
+    id              UUID       PRIMARY KEY DEFAULT gen_random_uuid(),
+    categorie_id    UUID          NOT NULL REFERENCES categories_depense(id) ON DELETE RESTRICT,
     libelle         VARCHAR(255)    NOT NULL,
     montant         DECIMAL(10,2)   NOT NULL,
     date_depense    DATE            NOT NULL,

@@ -1,7 +1,7 @@
 import api from "./axios";
 
 export interface NiveauDTO {
-  id: number;
+  id: string;
   name: string;
   sections: string[];
 }
@@ -19,13 +19,13 @@ export const niveauxApi = {
     return res.data;
   },
 
-  delete: (id: number) => api.delete(`${BASE}/${id}`),
+  delete: (id: string) => api.delete(`${BASE}/${id}`),
 
-  addClasse: async (niveauId: number, letter: string): Promise<NiveauDTO> => {
+  addClasse: async (niveauId: string, letter: string): Promise<NiveauDTO> => {
     const res = await api.post<NiveauDTO>(`${BASE}/${niveauId}/classes`, { letter });
     return res.data;
   },
 
-  removeClasse: (niveauId: number, letter: string) =>
+  removeClasse: (niveauId: string, letter: string) =>
     api.delete(`${BASE}/${niveauId}/classes/${letter}`),
 };

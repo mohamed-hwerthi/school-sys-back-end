@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.bulletin.dto;
 
+import java.util.UUID;
+
 import lombok.*;
 
 import java.util.List;
@@ -9,10 +11,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BulletinModuleDTO {
-    private Long moduleId;
+    private UUID moduleId;
     private String moduleName;
     private String moduleNameAr;
-    private Long sousDomaineId;
+    private UUID sousDomaineId;
     private String sousDomaineName;
     private String sousDomaineNameAr;
     private Integer sousDomaineOrdre;

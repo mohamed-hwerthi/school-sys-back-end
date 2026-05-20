@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS baremes (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     label VARCHAR(100) NOT NULL,
     note_max DECIMAL(5,2) NOT NULL DEFAULT 20.0,
     note_min DECIMAL(5,2) NOT NULL DEFAULT 0.0,

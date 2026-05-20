@@ -3,8 +3,8 @@
 -- Sert de base au suivi des réinscriptions (ANN-050/051).
 
 CREATE TABLE IF NOT EXISTS scolarites (
-    id              BIGSERIAL    PRIMARY KEY,
-    student_id      BIGINT       NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    id              UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id      UUID       NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     annee_scolaire  VARCHAR(20)  NOT NULL,
     niveau          VARCHAR(100),
     classe          VARCHAR(50),

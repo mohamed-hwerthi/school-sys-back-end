@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS contrats_enseignant (
-    id BIGSERIAL PRIMARY KEY,
-    enseignant_id BIGINT NOT NULL REFERENCES teachers(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    enseignant_id UUID NOT NULL REFERENCES teachers(id) ON DELETE CASCADE,
     type_contrat VARCHAR(20) NOT NULL CHECK (type_contrat IN ('CDI','CDD','VACATAIRE')),
     date_debut DATE NOT NULL,
     date_fin DATE,
@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS contrats_enseignant (
 );
 
 CREATE TABLE IF NOT EXISTS conges (
-    id BIGSERIAL PRIMARY KEY,
-    enseignant_id BIGINT NOT NULL REFERENCES teachers(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    enseignant_id UUID NOT NULL REFERENCES teachers(id) ON DELETE CASCADE,
     type_conge VARCHAR(30) NOT NULL CHECK (type_conge IN ('ANNUEL','MALADIE','MATERNITE','EXCEPTIONNEL','SANS_SOLDE')),
     date_debut DATE NOT NULL,
     date_fin DATE NOT NULL,

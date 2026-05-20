@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.auth.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,8 +29,8 @@ public class MeResponseDTO {
     private List<String> permissions;
 
     /** Class IDs the current user can see (empty for staff with full scope). */
-    private Set<Long> scopedClasseIds;
+    private Set<UUID> scopedClasseIds;
 
     /** Student IDs the current user can see (PARENT only; empty otherwise). */
-    private Set<Long> scopedStudentIds;
+    private Set<UUID> scopedStudentIds;
 }

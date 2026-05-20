@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.meeting;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.meeting.dto.MeetingRequestDTO;
 import com.schoolSys.schooolSys.meeting.dto.MeetingResponseDTO;
@@ -29,25 +31,25 @@ public class MeetingController {
 
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<MeetingResponseDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<MeetingResponseDTO>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(meetingService.findById(id)));
     }
 
     @GetMapping("/teacher/{enseignantId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<List<MeetingResponseDTO>>> getByTeacher(@PathVariable Long enseignantId) {
+    public ResponseEntity<ApiResponse<List<MeetingResponseDTO>>> getByTeacher(@PathVariable UUID enseignantId) {
         return ResponseEntity.ok(ApiResponse.ok(meetingService.findByTeacher(enseignantId)));
     }
 
     @GetMapping("/parent/{parentId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<List<MeetingResponseDTO>>> getByParent(@PathVariable Long parentId) {
+    public ResponseEntity<ApiResponse<List<MeetingResponseDTO>>> getByParent(@PathVariable UUID parentId) {
         return ResponseEntity.ok(ApiResponse.ok(meetingService.findByParent(parentId)));
     }
 
     @GetMapping("/student/{studentId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<List<MeetingResponseDTO>>> getByStudent(@PathVariable Long studentId) {
+    public ResponseEntity<ApiResponse<List<MeetingResponseDTO>>> getByStudent(@PathVariable UUID studentId) {
         return ResponseEntity.ok(ApiResponse.ok(meetingService.findByStudent(studentId)));
     }
 
@@ -73,13 +75,13 @@ public class MeetingController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('MANAGE_SYSTEM', 'MANAGE_COMMUNICATION')")
-    public ResponseEntity<ApiResponse<MeetingResponseDTO>> update(@PathVariable Long id, @Valid @RequestBody MeetingRequestDTO dto) {
+    public ResponseEntity<ApiResponse<MeetingResponseDTO>> update(@PathVariable UUID id, @Valid @RequestBody MeetingRequestDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(meetingService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('MANAGE_SYSTEM', 'MANAGE_COMMUNICATION')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         meetingService.delete(id);
         return ResponseEntity.noContent().build();
     }

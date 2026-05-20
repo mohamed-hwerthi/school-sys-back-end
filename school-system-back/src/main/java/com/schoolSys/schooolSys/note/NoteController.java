@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.note;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.note.dto.*;
 import jakarta.validation.Valid;
@@ -21,14 +23,14 @@ public class NoteController {
     @GetMapping
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<NoteResponseDTO>>> getByExamen(
-            @RequestParam Long examenId, @RequestParam Integer trimestre) {
+            @RequestParam UUID examenId, @RequestParam Integer trimestre) {
         return ResponseEntity.ok(ApiResponse.ok(noteService.findByExamen(examenId, trimestre)));
     }
 
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<NoteResponseDTO>>> getByStudent(
-            @PathVariable Long studentId, @RequestParam Integer trimestre) {
+            @PathVariable UUID studentId, @RequestParam Integer trimestre) {
         return ResponseEntity.ok(ApiResponse.ok(noteService.findByStudent(studentId, trimestre)));
     }
 
@@ -41,13 +43,13 @@ public class NoteController {
     @GetMapping("/moyennes")
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<MoyenneDTO>>> getMoyennes(
-            @RequestParam Long classeId, @RequestParam Integer trimestre) {
+            @RequestParam UUID classeId, @RequestParam Integer trimestre) {
         return ResponseEntity.ok(ApiResponse.ok(noteService.getMoyennes(classeId, trimestre)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         noteService.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -67,14 +69,14 @@ public class NoteController {
 
     @PutMapping("/baremes/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
-    public ResponseEntity<ApiResponse<BaremeDTO>> updateBareme(@PathVariable Long id, @Valid @RequestBody BaremeDTO dto) {
+    public ResponseEntity<ApiResponse<BaremeDTO>> updateBareme(@PathVariable UUID id, @Valid @RequestBody BaremeDTO dto) {
         return ResponseEntity.ok(ApiResponse.ok(noteService.updateBareme(id, dto)));
     }
 
     // --- Compétences ---
     @GetMapping("/competences")
     @PreAuthorize("hasAuthority('READ_NOTES')")
-    public ResponseEntity<ApiResponse<List<CompetenceDTO>>> getCompetences(@RequestParam(required = false) Long moduleId) {
+    public ResponseEntity<ApiResponse<List<CompetenceDTO>>> getCompetences(@RequestParam(required = false) UUID moduleId) {
         return ResponseEntity.ok(ApiResponse.ok(noteService.getCompetences(moduleId)));
     }
 
@@ -86,7 +88,7 @@ public class NoteController {
 
     @DeleteMapping("/competences/{id}")
     @PreAuthorize("hasAuthority('WRITE_NOTES')")
-    public ResponseEntity<Void> deleteCompetence(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCompetence(@PathVariable UUID id) {
         noteService.deleteCompetence(id);
         return ResponseEntity.noContent().build();
     }
@@ -94,7 +96,7 @@ public class NoteController {
     @GetMapping("/evaluations-competences")
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<EvaluationCompetenceDTO>>> getEvaluations(
-            @RequestParam Long examenId, @RequestParam(required = false) Long eleveId) {
+            @RequestParam UUID examenId, @RequestParam(required = false) UUID eleveId) {
         return ResponseEntity.ok(ApiResponse.ok(noteService.getEvaluationsCompetences(examenId, eleveId)));
     }
 

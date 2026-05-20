@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.facture.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EcheanceDTO {
-    private Long id;
+    private UUID id;
     private Integer numero;
     private LocalDate dateEcheance;
     private BigDecimal montant;

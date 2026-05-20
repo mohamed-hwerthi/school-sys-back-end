@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.conseilclasse.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PropositionPassageDTO {
 
-    private Long studentId;
+    private UUID studentId;
     private String studentName;
 
     /** Current niveau name (matches {@code Niveau.name}). */

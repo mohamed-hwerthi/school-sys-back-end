@@ -19,7 +19,7 @@ export const absencesApi = {
     return res.data;
   },
 
-  getByClasseDate: async (classeId: number, date: string): Promise<Absence[]> => {
+  getByClasseDate: async (classeId: string, date: string): Promise<Absence[]> => {
     const params: Record<string, string | number> = { date };
     if (classeId > 0) params.classeId = classeId;
     const res = await api.get<Absence[]>(`${BASE}`, { params });
@@ -31,12 +31,12 @@ export const absencesApi = {
     return res.data;
   },
 
-  getByEleve: async (eleveId: number): Promise<Absence[]> => {
+  getByEleve: async (eleveId: string): Promise<Absence[]> => {
     const res = await api.get<Absence[]>(`${BASE}/eleve/${eleveId}`);
     return res.data;
   },
 
-  getStats: async (classeId?: number, dateDebut?: string, dateFin?: string): Promise<AbsenceStats> => {
+  getStats: async (classeId?: string, dateDebut?: string, dateFin?: string): Promise<AbsenceStats> => {
     const params = new URLSearchParams();
     if (classeId) params.set("classeId", String(classeId));
     if (dateDebut) params.set("dateDebut", dateDebut);
@@ -46,12 +46,12 @@ export const absencesApi = {
     return res.data;
   },
 
-  justifier: async (id: number, motif: string): Promise<Absence> => {
+  justifier: async (id: string, motif: string): Promise<Absence> => {
     const res = await api.patch<Absence>(`${BASE}/${id}/justifier`, { motif });
     return res.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await api.delete(`${BASE}/${id}`);
   },
 };

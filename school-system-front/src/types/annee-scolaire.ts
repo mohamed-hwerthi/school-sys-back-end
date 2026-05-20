@@ -1,5 +1,5 @@
 export interface AnneeScolaire {
-  id: number;
+  id: string;
   label: string;
   dateDebut: string;
   dateFin: string;
@@ -8,8 +8,8 @@ export interface AnneeScolaire {
 }
 
 export interface Trimestre {
-  id: number;
-  anneeScolaireId: number;
+  id: string;
+  anneeScolaireId: string;
   numero: number;
   label: string;
   dateDebut: string;
@@ -18,16 +18,16 @@ export interface Trimestre {
 }
 
 export interface Vacance {
-  id: number;
-  anneeScolaireId: number;
+  id: string;
+  anneeScolaireId: string;
   label: string;
   dateDebut: string;
   dateFin: string;
 }
 
 export interface JourFerie {
-  id: number;
-  anneeScolaireId: number;
+  id: string;
+  anneeScolaireId: string;
   label: string;
   date: string;
 }

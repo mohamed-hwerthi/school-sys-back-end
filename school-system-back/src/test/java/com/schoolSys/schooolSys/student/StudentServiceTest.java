@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.student;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.PagedResponse;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -71,7 +73,7 @@ class StudentServiceTest {
         lenient().when(currentUser.hasUnrestrictedAccess()).thenReturn(true);
 
         sampleStudent = Student.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .firstName("Ahmed")
                 .lastName("Benali")
                 .firstNameAr("أحمد")
@@ -99,7 +101,7 @@ class StudentServiceTest {
         sampleRequest.setNiveau("3ème année");
 
         sampleResponse = StudentResponseDTO.builder()
-                .id(1L)
+                .id(new UUID(0, 1))
                 .firstName("Ahmed")
                 .lastName("Benali")
                 .sex("M")
@@ -185,24 +187,24 @@ class StudentServiceTest {
         @Test
         @DisplayName("should return student when found")
         void shouldReturnStudentWhenFound() {
-            when(studentRepository.findById(1L)).thenReturn(Optional.of(sampleStudent));
+            when(studentRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleStudent));
             when(studentMapper.toResponseDTO(sampleStudent)).thenReturn(sampleResponse);
 
-            StudentResponseDTO result = studentService.findById(1L);
+            StudentResponseDTO result = studentService.findById(new UUID(0, 1));
 
-            assertThat(result.getId()).isEqualTo(1L);
+            assertThat(result.getId()).isEqualTo(new UUID(0, 1));
             assertThat(result.getFirstName()).isEqualTo("Ahmed");
         }
 
         @Test
         @DisplayName("should throw ResourceNotFoundException when not found")
         void shouldThrowWhenNotFound() {
-            when(studentRepository.findById(999L)).thenReturn(Optional.empty());
+            when(studentRepository.findById(new UUID(0, 999))).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> studentService.findById(999L))
+            assertThatThrownBy(() -> studentService.findById(new UUID(0, 999)))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Student")
-                    .hasMessageContaining("999");
+                    .hasMessageContaining("00000000-0000-0000-0000-0000000003e7");
         }
     }
 
@@ -237,11 +239,11 @@ class StudentServiceTest {
         @Test
         @DisplayName("should update existing student and preserve matricule")
         void shouldUpdateExistingStudent() {
-            when(studentRepository.findById(1L)).thenReturn(Optional.of(sampleStudent));
+            when(studentRepository.findById(new UUID(0, 1))).thenReturn(Optional.of(sampleStudent));
             when(studentRepository.save(any(Student.class))).thenReturn(sampleStudent);
             when(studentMapper.toResponseDTO(sampleStudent)).thenReturn(sampleResponse);
 
-            StudentResponseDTO result = studentService.update(1L, sampleRequest);
+            StudentResponseDTO result = studentService.update(new UUID(0, 1), sampleRequest);
 
             assertThat(result).isNotNull();
             verify(studentMapper).updateEntity(eq(sampleRequest), eq(sampleStudent));
@@ -251,12 +253,12 @@ class StudentServiceTest {
         @Test
         @DisplayName("should throw ResourceNotFoundException when updating non-existing student")
         void shouldThrowWhenUpdatingNonExisting() {
-            when(studentRepository.findById(999L)).thenReturn(Optional.empty());
+            when(studentRepository.findById(new UUID(0, 999))).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> studentService.update(999L, sampleRequest))
+            assertThatThrownBy(() -> studentService.update(new UUID(0, 999), sampleRequest))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Student")
-                    .hasMessageContaining("999");
+                    .hasMessageContaining("00000000-0000-0000-0000-0000000003e7");
 
             verify(studentRepository, never()).save(any());
         }
@@ -269,22 +271,22 @@ class StudentServiceTest {
         @Test
         @DisplayName("should delete existing student")
         void shouldDeleteExistingStudent() {
-            when(studentRepository.existsById(1L)).thenReturn(true);
+            when(studentRepository.existsById(new UUID(0, 1))).thenReturn(true);
 
-            studentService.delete(1L);
+            studentService.delete(new UUID(0, 1));
 
-            verify(studentRepository).deleteById(1L);
+            verify(studentRepository).deleteById(new UUID(0, 1));
         }
 
         @Test
         @DisplayName("should throw ResourceNotFoundException when deleting non-existing student")
         void shouldThrowWhenDeletingNonExisting() {
-            when(studentRepository.existsById(999L)).thenReturn(false);
+            when(studentRepository.existsById(new UUID(0, 999))).thenReturn(false);
 
-            assertThatThrownBy(() -> studentService.delete(999L))
+            assertThatThrownBy(() -> studentService.delete(new UUID(0, 999)))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Student")
-                    .hasMessageContaining("999");
+                    .hasMessageContaining("00000000-0000-0000-0000-0000000003e7");
 
             verify(studentRepository, never()).deleteById(any());
         }

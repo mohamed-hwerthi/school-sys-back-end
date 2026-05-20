@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.meeting.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -28,11 +30,11 @@ public class MeetingRequestDTO {
     @NotNull(message = "L'heure de fin est requise")
     private LocalTime heureFin;
 
-    private Long enseignantId;
+    private UUID enseignantId;
 
-    private Long parentId;
+    private UUID parentId;
 
-    private Long studentId;
+    private UUID studentId;
 
     private String statut;
 

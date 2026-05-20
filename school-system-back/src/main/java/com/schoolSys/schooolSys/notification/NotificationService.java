@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.notification;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.notification.dto.NotificationDTO;
 import lombok.RequiredArgsConstructor;
@@ -16,19 +18,19 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
 
-    public List<NotificationDTO> getByUser(Long userId) {
+    public List<NotificationDTO> getByUser(UUID userId) {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
-    public long getUnreadCount(Long userId) {
+    public long getUnreadCount(UUID userId) {
         return notificationRepository.countByUserIdAndIsReadFalse(userId);
     }
 
     @Transactional
-    public NotificationDTO markAsRead(Long id) {
+    public NotificationDTO markAsRead(UUID id) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Notification", id));
         notification.setIsRead(true);
@@ -36,7 +38,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public void markAllAsRead(Long userId) {
+    public void markAllAsRead(UUID userId) {
         notificationRepository.markAllAsReadByUserId(userId);
     }
 
@@ -55,7 +57,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!notificationRepository.existsById(id)) {
             throw new ResourceNotFoundException("Notification", id);
         }

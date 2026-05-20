@@ -9,8 +9,8 @@ const EXAMENS_KEY = "examens";
  * chosen — avoids loading every exam of every class/trimester at once.
  */
 export function useExamensRaw(
-  moduleId?: number,
-  classeId?: number,
+  moduleId?: string,
+  classeId?: string,
   trimestre?: number,
   enabled = true,
 ) {
@@ -32,7 +32,7 @@ export function useCreateExamen() {
 export function useUpdateExamen() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: ExamenRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: ExamenRequest }) =>
       examensApi.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [EXAMENS_KEY] }),
   });
@@ -41,7 +41,7 @@ export function useUpdateExamen() {
 export function useDeleteExamen() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => examensApi.delete(id),
+    mutationFn: (id: string) => examensApi.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [EXAMENS_KEY] }),
   });
 }
@@ -49,7 +49,7 @@ export function useDeleteExamen() {
 export function useDeleteExamensBulk() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (ids: number[]) => examensApi.deleteBulk(ids),
+    mutationFn: (ids: string[]) => examensApi.deleteBulk(ids),
     onSuccess: () => qc.invalidateQueries({ queryKey: [EXAMENS_KEY] }),
   });
 }

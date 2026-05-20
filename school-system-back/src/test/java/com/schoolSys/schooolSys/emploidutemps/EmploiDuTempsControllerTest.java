@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.emploidutemps;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.schoolSys.schooolSys.auth.JwtAuthenticationFilter;
@@ -64,22 +66,22 @@ class EmploiDuTempsControllerTest {
                 .when(jwtAuthenticationFilter).doFilter(any(), any(), any());
 
         sampleResponse = EmploiDuTempsResponseDTO.builder()
-                .id(1L)
-                .classeId(1L)
-                .creneauId(1L)
+                .id(new UUID(0, 1))
+                .classeId(new UUID(0, 1))
+                .creneauId(new UUID(0, 1))
                 .jourSemaine(1)
-                .moduleId(10L)
-                .enseignantId(100L)
+                .moduleId(new UUID(0, 10))
+                .enseignantId(new UUID(0, 100))
                 .salle("Salle A1")
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
 
         sampleRequest = new EmploiDuTempsRequestDTO();
-        sampleRequest.setCreneauId(1L);
+        sampleRequest.setCreneauId(new UUID(0, 1));
         sampleRequest.setJourSemaine(1);
-        sampleRequest.setModuleId(10L);
-        sampleRequest.setEnseignantId(100L);
+        sampleRequest.setModuleId(new UUID(0, 10));
+        sampleRequest.setEnseignantId(new UUID(0, 100));
         sampleRequest.setSalle("Salle A1");
     }
 
@@ -95,13 +97,13 @@ class EmploiDuTempsControllerTest {
         @WithMockUser(authorities = "READ_EMPLOI_DU_TEMPS")
         @DisplayName("should return 200 with timetable entries for a class")
         void shouldReturn200WithEntries() throws Exception {
-            when(emploiDuTempsService.getByClasse(1L)).thenReturn(List.of(sampleResponse));
+            when(emploiDuTempsService.getByClasse(new UUID(0, 1))).thenReturn(List.of(sampleResponse));
 
-            mockMvc.perform(get("/api/emploi-du-temps/classe/1"))
+            mockMvc.perform(get("/api/emploi-du-temps/classe/00000000-0000-0000-0000-000000000001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data").isArray())
-                    .andExpect(jsonPath("$.data[0].classeId").value(1))
+                    .andExpect(jsonPath("$.data[0].classeId").value("00000000-0000-0000-0000-000000000001"))
                     .andExpect(jsonPath("$.data[0].salle").value("Salle A1"))
                     .andExpect(jsonPath("$.data[0].jourSemaine").value(1));
         }
@@ -110,9 +112,9 @@ class EmploiDuTempsControllerTest {
         @WithMockUser(authorities = "READ_EMPLOI_DU_TEMPS")
         @DisplayName("should return 200 with empty list when no entries")
         void shouldReturn200WithEmptyList() throws Exception {
-            when(emploiDuTempsService.getByClasse(999L)).thenReturn(List.of());
+            when(emploiDuTempsService.getByClasse(new UUID(0, 999))).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/emploi-du-temps/classe/999"))
+            mockMvc.perform(get("/api/emploi-du-temps/classe/00000000-0000-0000-0000-0000000003e7"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data").isEmpty());
         }
@@ -130,12 +132,12 @@ class EmploiDuTempsControllerTest {
         @WithMockUser(authorities = "READ_EMPLOI_DU_TEMPS")
         @DisplayName("should return 200 with timetable entries for a teacher")
         void shouldReturn200WithEntries() throws Exception {
-            when(emploiDuTempsService.getByEnseignant(100L)).thenReturn(List.of(sampleResponse));
+            when(emploiDuTempsService.getByEnseignant(new UUID(0, 100))).thenReturn(List.of(sampleResponse));
 
-            mockMvc.perform(get("/api/emploi-du-temps/enseignant/100"))
+            mockMvc.perform(get("/api/emploi-du-temps/enseignant/00000000-0000-0000-0000-000000000064"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data[0].enseignantId").value(100));
+                    .andExpect(jsonPath("$.data[0].enseignantId").value("00000000-0000-0000-0000-000000000064"));
         }
     }
 
@@ -151,9 +153,9 @@ class EmploiDuTempsControllerTest {
         @WithMockUser(authorities = "WRITE_EMPLOI_DU_TEMPS")
         @DisplayName("should return 200 with saved entries on valid request")
         void shouldReturn200WithSavedEntries() throws Exception {
-            when(emploiDuTempsService.saveAll(eq(1L), any())).thenReturn(List.of(sampleResponse));
+            when(emploiDuTempsService.saveAll(eq(new UUID(0, 1)), any())).thenReturn(List.of(sampleResponse));
 
-            mockMvc.perform(put("/api/emploi-du-temps/classe/1")
+            mockMvc.perform(put("/api/emploi-du-temps/classe/00000000-0000-0000-0000-000000000001")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(List.of(sampleRequest))))
@@ -171,7 +173,7 @@ class EmploiDuTempsControllerTest {
             invalid.setJourSemaine(1);
             // creneauId is missing — @Valid on List<> doesn't validate items,
             // so the request reaches the service which may fail with 500
-            mockMvc.perform(put("/api/emploi-du-temps/classe/1")
+            mockMvc.perform(put("/api/emploi-du-temps/classe/00000000-0000-0000-0000-000000000001")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(List.of(invalid))))
@@ -211,8 +213,8 @@ class EmploiDuTempsControllerTest {
             ConflitDTO conflit = ConflitDTO.builder()
                     .typeConflit("ENSEIGNANT")
                     .jourSemaine(1)
-                    .creneauId(1L)
-                    .enseignantId(100L)
+                    .creneauId(new UUID(0, 1))
+                    .enseignantId(new UUID(0, 100))
                     .message("Enseignant déjà occupé sur ce créneau")
                     .build();
 
@@ -224,7 +226,7 @@ class EmploiDuTempsControllerTest {
                             .content(objectMapper.writeValueAsString(List.of(sampleRequest))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data[0].typeConflit").value("ENSEIGNANT"))
-                    .andExpect(jsonPath("$.data[0].enseignantId").value(100));
+                    .andExpect(jsonPath("$.data[0].enseignantId").value("00000000-0000-0000-0000-000000000064"));
         }
     }
 
@@ -250,7 +252,7 @@ class EmploiDuTempsControllerTest {
             TimetableGenerationRequestDTO request = TimetableGenerationRequestDTO.builder()
                     .assignments(List.of(
                             TeachingAssignmentDTO.builder()
-                                    .classeId(1L).moduleId(10L).enseignantId(100L).nbHeures(3)
+                                    .classeId(new UUID(0, 1)).moduleId(new UUID(0, 10)).enseignantId(new UUID(0, 100)).nbHeures(3)
                                     .build()
                     ))
                     .rooms(List.of("Salle A1", "Salle A2"))
@@ -285,7 +287,7 @@ class EmploiDuTempsControllerTest {
             TimetableGenerationRequestDTO request = TimetableGenerationRequestDTO.builder()
                     .assignments(List.of(
                             TeachingAssignmentDTO.builder()
-                                    .classeId(1L).moduleId(10L).enseignantId(100L).nbHeures(20)
+                                    .classeId(new UUID(0, 1)).moduleId(new UUID(0, 10)).enseignantId(new UUID(0, 100)).nbHeures(20)
                                     .build()
                     ))
                     .rooms(List.of("Salle A1"))
@@ -330,7 +332,7 @@ class EmploiDuTempsControllerTest {
             TimetableGenerationRequestDTO request = TimetableGenerationRequestDTO.builder()
                     .assignments(List.of(
                             TeachingAssignmentDTO.builder()
-                                    .classeId(1L).moduleId(10L).enseignantId(100L).nbHeures(3)
+                                    .classeId(new UUID(0, 1)).moduleId(new UUID(0, 10)).enseignantId(new UUID(0, 100)).nbHeures(3)
                                     .build()
                     ))
                     .rooms(List.of())
@@ -357,7 +359,7 @@ class EmploiDuTempsControllerTest {
         @DisplayName("GET /api/creneaux should return all time slots")
         void shouldReturnAllCreneaux() throws Exception {
             CreneauDTO creneau = new CreneauDTO();
-            creneau.setId(1L);
+            creneau.setId(new UUID(0, 1));
             creneau.setLabel("Session 1");
             creneau.setHeureDebut(LocalTime.of(8, 0));
             creneau.setHeureFin(LocalTime.of(9, 0));
@@ -382,7 +384,7 @@ class EmploiDuTempsControllerTest {
             input.setType("COURS");
 
             CreneauDTO created = new CreneauDTO();
-            created.setId(8L);
+            created.setId(new UUID(0, 8));
             created.setLabel("Session 8");
             created.setHeureDebut(LocalTime.of(16, 0));
             created.setHeureFin(LocalTime.of(17, 0));
@@ -395,7 +397,7 @@ class EmploiDuTempsControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(input)))
                     .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.data.id").value(8))
+                    .andExpect(jsonPath("$.data.id").value("00000000-0000-0000-0000-000000000008"))
                     .andExpect(jsonPath("$.data.label").value("Session 8"));
         }
 
@@ -403,11 +405,11 @@ class EmploiDuTempsControllerTest {
         @WithMockUser(authorities = "WRITE_EMPLOI_DU_TEMPS")
         @DisplayName("DELETE /api/creneaux/{id} should return 204")
         void shouldDeleteCreneau() throws Exception {
-            mockMvc.perform(delete("/api/creneaux/1")
+            mockMvc.perform(delete("/api/creneaux/00000000-0000-0000-0000-000000000001")
                             .with(csrf()))
                     .andExpect(status().isNoContent());
 
-            verify(emploiDuTempsService).deleteCreneau(1L);
+            verify(emploiDuTempsService).deleteCreneau(new UUID(0, 1));
         }
     }
 
@@ -424,16 +426,16 @@ class EmploiDuTempsControllerTest {
         @DisplayName("POST /api/emploi-du-temps/remplacements should create substitution")
         void shouldCreateRemplacement() throws Exception {
             RemplacementRequestDTO request = new RemplacementRequestDTO();
-            request.setEmploiDuTempsId(1L);
-            request.setEnseignantRemplacantId(200L);
+            request.setEmploiDuTempsId(new UUID(0, 1));
+            request.setEnseignantRemplacantId(new UUID(0, 200));
             request.setDateDebut(LocalDate.of(2026, 3, 15));
             request.setDateFin(LocalDate.of(2026, 3, 20));
             request.setMotif("Maladie");
 
             RemplacementResponseDTO response = RemplacementResponseDTO.builder()
-                    .id(1L)
-                    .emploiDuTempsId(1L)
-                    .enseignantRemplacantId(200L)
+                    .id(new UUID(0, 1))
+                    .emploiDuTempsId(new UUID(0, 1))
+                    .enseignantRemplacantId(new UUID(0, 200))
                     .dateDebut(LocalDate.of(2026, 3, 15))
                     .dateFin(LocalDate.of(2026, 3, 20))
                     .motif("Maladie")
@@ -448,8 +450,8 @@ class EmploiDuTempsControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.data.id").value(1))
-                    .andExpect(jsonPath("$.data.enseignantRemplacantId").value(200))
+                    .andExpect(jsonPath("$.data.id").value("00000000-0000-0000-0000-000000000001"))
+                    .andExpect(jsonPath("$.data.enseignantRemplacantId").value("00000000-0000-0000-0000-0000000000c8"))
                     .andExpect(jsonPath("$.data.motif").value("Maladie"));
         }
 
@@ -458,9 +460,9 @@ class EmploiDuTempsControllerTest {
         @DisplayName("GET /api/emploi-du-temps/remplacements should return all substitutions")
         void shouldReturnAllRemplacements() throws Exception {
             RemplacementResponseDTO response = RemplacementResponseDTO.builder()
-                    .id(1L)
-                    .emploiDuTempsId(1L)
-                    .enseignantRemplacantId(200L)
+                    .id(new UUID(0, 1))
+                    .emploiDuTempsId(new UUID(0, 1))
+                    .enseignantRemplacantId(new UUID(0, 200))
                     .dateDebut(LocalDate.of(2026, 3, 15))
                     .dateFin(LocalDate.of(2026, 3, 20))
                     .motif("Formation")
@@ -478,11 +480,11 @@ class EmploiDuTempsControllerTest {
         @WithMockUser(authorities = "WRITE_EMPLOI_DU_TEMPS")
         @DisplayName("DELETE /api/emploi-du-temps/remplacements/{id} should return 204")
         void shouldDeleteRemplacement() throws Exception {
-            mockMvc.perform(delete("/api/emploi-du-temps/remplacements/1")
+            mockMvc.perform(delete("/api/emploi-du-temps/remplacements/00000000-0000-0000-0000-000000000001")
                             .with(csrf()))
                     .andExpect(status().isNoContent());
 
-            verify(emploiDuTempsService).deleteRemplacement(1L);
+            verify(emploiDuTempsService).deleteRemplacement(new UUID(0, 1));
         }
     }
 }

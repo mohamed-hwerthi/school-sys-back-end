@@ -1,5 +1,5 @@
 CREATE TABLE budgets (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     annee_scolaire VARCHAR(20) NOT NULL,
     label VARCHAR(200) NOT NULL,
     type VARCHAR(20) NOT NULL CHECK (type IN ('RECETTE', 'DEPENSE')),

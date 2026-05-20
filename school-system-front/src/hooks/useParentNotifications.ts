@@ -11,7 +11,7 @@ const KEY = "parent-notifications";
 export function useNotifyForExamen() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ examenId, channels }: { examenId: number; channels: NotifChannel[] }) =>
+    mutationFn: ({ examenId, channels }: { examenId: string; channels: NotifChannel[] }) =>
       parentNotificationsApi.notifyForExamen(examenId, { channels }),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
@@ -20,7 +20,7 @@ export function useNotifyForExamen() {
 export function useNotifyForNote() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ noteId, channels }: { noteId: number; channels: NotifChannel[] }) =>
+    mutationFn: ({ noteId, channels }: { noteId: string; channels: NotifChannel[] }) =>
       parentNotificationsApi.notifyForNote(noteId, { channels }),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
@@ -34,7 +34,7 @@ export function useNotifyManual() {
       message,
       channels,
     }: {
-      studentId: number;
+      studentId: string;
       message: string;
       channels: NotifChannel[];
     }) => parentNotificationsApi.notifyManual(studentId, { message, channels }),
@@ -43,7 +43,7 @@ export function useNotifyManual() {
 }
 
 export function useNotificationLogs(params: {
-  recipientId?: number;
+  recipientId?: string;
   eventType?: NotifEvent;
   status?: NotifStatus;
   page?: number;

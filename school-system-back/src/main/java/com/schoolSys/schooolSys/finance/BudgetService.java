@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.finance.dto.BudgetDTO;
 import com.schoolSys.schooolSys.finance.dto.PrevisionDTO;
@@ -28,7 +30,7 @@ public class BudgetService {
         return budgets.stream().map(this::toDTO).toList();
     }
 
-    public BudgetDTO findById(Long id) {
+    public BudgetDTO findById(UUID id) {
         Budget budget = budgetRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Budget", id));
         return toDTO(budget);
@@ -52,7 +54,7 @@ public class BudgetService {
     }
 
     @Transactional
-    public BudgetDTO update(Long id, BudgetDTO dto) {
+    public BudgetDTO update(UUID id, BudgetDTO dto) {
         Budget budget = budgetRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Budget", id));
 
@@ -68,7 +70,7 @@ public class BudgetService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         if (!budgetRepository.existsById(id)) {
             throw new ResourceNotFoundException("Budget", id);
         }

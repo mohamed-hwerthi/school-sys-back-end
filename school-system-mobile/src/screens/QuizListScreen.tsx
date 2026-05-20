@@ -14,6 +14,7 @@ import { quizApi } from "@/api/quiz.api";
 import { ChildSelector } from "@/components/ChildSelector";
 import { EmptyState } from "@/components/EmptyState";
 import { Badge } from "@/components/ui/Badge";
+import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 interface Quiz {
@@ -42,6 +43,7 @@ function isPublished(statut: string): boolean {
 }
 
 export default function QuizListScreen() {
+  const { colors } = useTheme();
   const { selectedChild, isLoading: childrenLoading } = useChild();
   const navigation = useNavigation<any>();
 

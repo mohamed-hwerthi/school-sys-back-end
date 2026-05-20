@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.integration;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.integration.dto.*;
 import lombok.RequiredArgsConstructor;

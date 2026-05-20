@@ -17,7 +17,7 @@ export type ExportFormat = "csv" | "xlsx";
 export type ImportType = "students" | "teachers" | "notes";
 
 export interface ExportFilters {
-  classeId?: number;
+  classeId?: string;
   trimestre?: number;
   anneeScolaire?: string;
   from?: string;

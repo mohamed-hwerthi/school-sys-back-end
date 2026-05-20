@@ -1,7 +1,7 @@
 CREATE TABLE documents_generes (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     type_document VARCHAR(50) NOT NULL,
-    eleve_id BIGINT,
+    eleve_id UUID,
     file_name VARCHAR(300) NOT NULL,
     file_path VARCHAR(500),
     genere_par VARCHAR(200),

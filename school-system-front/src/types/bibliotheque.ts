@@ -1,5 +1,5 @@
 export interface Livre {
-  id: number;
+  id: string;
   titre: string;
   auteur: string | null;
   isbn: string | null;
@@ -31,10 +31,10 @@ export interface CreateLivreRequest {
 export type EmpruntStatut = "EN_COURS" | "RETOURNE" | "EN_RETARD" | "PERDU";
 
 export interface Emprunt {
-  id: number;
-  livreId: number;
+  id: string;
+  livreId: string;
   livreTitle: string;
-  eleveId: number;
+  eleveId: string;
   eleveName: string;
   dateEmprunt: string;
   dateRetourPrevue: string;
@@ -47,14 +47,14 @@ export interface Emprunt {
 }
 
 export interface CreateEmpruntRequest {
-  livreId: number;
-  eleveId: number;
+  livreId: string;
+  eleveId: string;
   dateRetourPrevue: string;
   notes?: string | null;
 }
 
 export interface LivreEmprunte {
-  livreId: number;
+  livreId: string;
   titre: string;
   count: number;
 }

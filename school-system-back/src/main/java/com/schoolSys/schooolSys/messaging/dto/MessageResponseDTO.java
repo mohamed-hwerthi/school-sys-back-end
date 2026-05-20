@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.messaging.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +15,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MessageResponseDTO {
-    private Long id;
-    private Long senderId;
+    private UUID id;
+    private UUID senderId;
     private String subject;
     private String body;
     private String type;
@@ -26,8 +28,8 @@ public class MessageResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class RecipientDTO {
-        private Long id;
-        private Long recipientId;
+        private UUID id;
+        private UUID recipientId;
         private LocalDateTime readAt;
         private Boolean deleted;
     }

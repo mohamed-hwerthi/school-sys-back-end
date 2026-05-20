@@ -1,5 +1,8 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,8 +22,9 @@ import org.hibernate.annotations.SQLRestriction;
 public class Budget {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    private UUID id;
 
     @Column(name = "annee_scolaire", nullable = false)
     private String anneeScolaire;

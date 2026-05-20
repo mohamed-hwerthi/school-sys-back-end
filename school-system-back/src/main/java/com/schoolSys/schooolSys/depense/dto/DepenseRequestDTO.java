@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.depense.dto;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.depense.Depense;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,7 +15,7 @@ import java.time.LocalDate;
 public class DepenseRequestDTO {
 
     @NotNull(message = "La catégorie est requise")
-    private Long categorieId;
+    private UUID categorieId;
 
     @NotBlank(message = "Le libellé est requis")
     private String libelle;

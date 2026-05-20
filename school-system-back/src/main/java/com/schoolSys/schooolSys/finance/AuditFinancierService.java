@@ -1,5 +1,7 @@
 package com.schoolSys.schooolSys.finance;
 
+import java.util.UUID;
+
 import com.schoolSys.schooolSys.finance.dto.AuditFinancierDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,8 +18,8 @@ public class AuditFinancierService {
     private final AuditFinancierRepository auditFinancierRepository;
 
     @Transactional
-    public AuditFinancierDTO log(String entityType, Long entityId, String action,
-                                  Long userId, String userName,
+    public AuditFinancierDTO log(String entityType, UUID entityId, String action,
+                                  UUID userId, String userName,
                                   String oldValues, String newValues) {
         AuditFinancier audit = AuditFinancier.builder()
                 .entityType(entityType)
@@ -33,7 +35,7 @@ public class AuditFinancierService {
         return toDTO(auditFinancierRepository.save(audit));
     }
 
-    public List<AuditFinancierDTO> getByEntity(String entityType, Long entityId) {
+    public List<AuditFinancierDTO> getByEntity(String entityType, UUID entityId) {
         return auditFinancierRepository.findByEntityTypeAndEntityId(entityType, entityId)
                 .stream().map(this::toDTO).toList();
     }
