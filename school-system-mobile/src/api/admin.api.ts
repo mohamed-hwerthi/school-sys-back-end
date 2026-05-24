@@ -110,4 +110,29 @@ export const adminApi = {
   /** A teacher's class/module assignments (`MANAGE_TEACHERS`). */
   getTeacherAffectations: (teacherId: string): Promise<Affectation[]> =>
     api.get("/affectations", { params: { teacherId } }),
+
+  /** MOB-FUNC-025 — 6 KPI agrégés pour l'accueil admin. */
+  getDashboardKpis: (anneeScolaire = "2025-2026"): Promise<DashboardKpis> =>
+    api.get("/admin/dashboard-kpis", { params: { anneeScolaire } }),
+
+  /** MOB-FUNC-028 — alertes opérationnelles (impayés en retard, absentees, classes sans titulaire). */
+  getOperationalAlerts: (anneeScolaire = "2025-2026"): Promise<OperationalAlerts> =>
+    api.get("/admin/operational-alerts", { params: { anneeScolaire } }),
 };
+
+// ---- Admin home types (mirror back AdminHomeDTO) ----
+
+export interface DashboardKpis {
+  effectifTotal: number;
+  tauxOccupation: number;
+  caDuMois: string;
+  impayes: string;
+  tauxPresence: number;
+  tauxReussite: number;
+}
+
+export interface OperationalAlerts {
+  impayes30j: number;
+  absenteesCeMois: number;
+  classesSansAffectation: number;
+}

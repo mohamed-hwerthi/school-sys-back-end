@@ -1,10 +1,14 @@
 import { View, Text, ScrollView, RefreshControl, Dimensions } from "react-native";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@/context/AuthContext";
 import { useSchoolYear } from "@/context/SchoolYearContext";
 import { YearPicker } from "@/components/YearPicker";
 import { reportingApi } from "@/api/reporting.api";
 import { financeApi } from "@/api/finance.api";
+import { adminApi } from "@/api/admin.api";
+import { AdminKpiGrid } from "@/components/AdminKpiGrid";
+import { OperationalAlertsCard } from "@/components/OperationalAlertsCard";
 import { GradientHeader } from "@/components/GradientHeader";
 import { StatCard } from "@/components/StatCard";
 import { ChartCard } from "@/components/ChartCard";
@@ -49,10 +53,15 @@ export default function AdminHomeScreen() {
   const { user } = useAuth();
   const { year } = useSchoolYear();
   const { colors } = useTheme();
+  const navigation = useNavigation<any>();
   const dashboardQ = useQuery({ queryKey: ["reporting", "dashboard", year], queryFn: () => reportingApi.getDashboard(year) });
   const trendsQ = useQuery({ queryKey: ["reporting", "trends", year], queryFn: () => reportingApi.getTrends(year) });
   const financeQ = useQuery({ queryKey: ["finance", "dashboard", year], queryFn: () => financeApi.getDashboard(year) });
   const depensesQ = useQuery({ queryKey: ["finance", "depenses", year], queryFn: () => financeApi.getDepenseStats(year) });
+  // MOB-FUNC-025 — 6 KPI dashboard
+  const kpisQ = useQuery({ queryKey: ["admin", "dashboard-kpis", year], queryFn: () => adminApi.getDashboardKpis(year) });
+  // MOB-FUNC-028 — operational alerts
+  const opAlertsQ = useQuery({ queryKey: ["admin", "operational-alerts", year], queryFn: () => adminApi.getOperationalAlerts(year) });
 
   if (dashboardQ.isLoading) return <DashboardSkeleton chartCount={3} />;
   if (dashboardQ.isError || !dashboardQ.data) return <ErrorView onRetry={() => dashboardQ.refetch()} />;
@@ -80,7 +89,7 @@ export default function AdminHomeScreen() {
         refreshControl={
           <RefreshControl
             refreshing={dashboardQ.isFetching || financeQ.isFetching || depensesQ.isFetching || trendsQ.isFetching}
-            onRefresh={() => { dashboardQ.refetch(); financeQ.refetch(); depensesQ.refetch(); trendsQ.refetch(); }}
+            onRefresh={() => { dashboardQ.refetch(); financeQ.refetch(); depensesQ.refetch(); trendsQ.refetch(); kpisQ.refetch(); opAlertsQ.refetch(); }}
             tintColor={colors.primary}
           />
         }
@@ -106,6 +115,17 @@ export default function AdminHomeScreen() {
             </Text>
             <YearPicker />
           </View>
+
+          {/* MOB-FUNC-025 — 6 KPI dashboard */}
+          <AdminKpiGrid data={kpisQ.data} />
+
+          {/* MOB-FUNC-028 — alertes opérationnelles */}
+          <OperationalAlertsCard
+            data={opAlertsQ.data}
+            onPressImpayes={() => navigation.navigate("AdminFinance")}
+            onPressAbsentees={() => navigation.navigate("AdminStudents")}
+            onPressClasses={() => navigation.navigate("AdminSchool")}
+          />
 
           {/* Pedagogical KPIs */}
           <View style={{ flexDirection: "row", gap: 10, marginBottom: spacing.lg }}>

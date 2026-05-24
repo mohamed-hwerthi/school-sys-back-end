@@ -1,5 +1,6 @@
 import { View, Text, ScrollView, RefreshControl } from "react-native";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@/context/AuthContext";
 import { teacherApi } from "@/api/teacher.api";
 import { GradientHeader } from "@/components/GradientHeader";
@@ -9,6 +10,9 @@ import { LessonCard } from "@/components/LessonCard";
 import { EmptyState } from "@/components/EmptyState";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { ErrorView } from "@/components/ErrorView";
+import { PendingCorrectionsCard } from "@/components/PendingCorrectionsCard";
+import { StudentsAtRiskCard } from "@/components/StudentsAtRiskCard";
+import { PendingTasksCard } from "@/components/PendingTasksCard";
 import { dayLabel, hhmm, todayJourSemaine } from "@/constants/calendar";
 import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing } from "@/constants/theme";
@@ -18,11 +22,28 @@ const TODAY = todayJourSemaine();
 export default function TeacherHomeScreen() {
   const { colors } = useTheme();
   const { user } = useAuth();
+  const navigation = useNavigation<any>();
 
   const classesQ = useQuery({ queryKey: ["teacher", "classes"], queryFn: teacherApi.getClasses });
   const timetableQ = useQuery({ queryKey: ["teacher", "timetable"], queryFn: teacherApi.getMyTimetable });
   const creneauxQ = useQuery({ queryKey: ["teacher", "creneaux"], queryFn: teacherApi.getCreneaux });
   const modulesQ = useQuery({ queryKey: ["teacher", "modules"], queryFn: teacherApi.getModules });
+
+  // MOB-FUNC-012 — devoirs/quiz à corriger
+  const pendingQ = useQuery({
+    queryKey: ["teacher", "pending-corrections"],
+    queryFn: teacherApi.getPendingCorrections,
+  });
+  // MOB-FUNC-013 — élèves à surveiller
+  const atRiskQ = useQuery({
+    queryKey: ["teacher", "students-at-risk"],
+    queryFn: () => teacherApi.getStudentsAtRisk(5),
+  });
+  // MOB-FUNC-014 — saisies en retard
+  const tasksQ = useQuery({
+    queryKey: ["teacher", "pending-tasks"],
+    queryFn: teacherApi.getPendingTasks,
+  });
 
   // Only the core data blocks the screen; module/créneau labels degrade gracefully.
   if (classesQ.isLoading || timetableQ.isLoading) return <DashboardSkeleton chartCount={1} />;
@@ -53,6 +74,9 @@ export default function TeacherHomeScreen() {
     timetableQ.refetch();
     creneauxQ.refetch();
     modulesQ.refetch();
+    pendingQ.refetch();
+    atRiskQ.refetch();
+    tasksQ.refetch();
   };
 
   return (
@@ -73,6 +97,25 @@ export default function TeacherHomeScreen() {
           <StatCard icon="🏫" label="Mes classes" value={classes.length} color={colors.primary} />
           <StatCard icon="📅" label="Aujourd'hui" value={todayEntries.length} color={colors.info} />
           <StatCard icon="🗓️" label="Cette semaine" value={timetable.length} color={colors.success} />
+        </View>
+
+        {/* Sprint A — cartes enrichies */}
+        <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
+          <PendingCorrectionsCard
+            data={pendingQ.data}
+            onPressDevoirs={() => navigation.navigate("TeacherDevoirsTab")}
+            onPressQuiz={() => navigation.navigate("TeacherDevoirsTab")}
+          />
+          <StudentsAtRiskCard
+            data={atRiskQ.data}
+            onPressStudent={(s) =>
+              navigation.navigate("TeacherStudentDetail", { studentId: s.studentId })
+            }
+          />
+          <PendingTasksCard
+            data={tasksQ.data}
+            onPressAction={() => navigation.navigate("TeacherClassesTab")}
+          />
         </View>
 
         {/* Today's lessons */}
