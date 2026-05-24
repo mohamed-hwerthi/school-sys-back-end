@@ -40,6 +40,9 @@ import QuizPassationScreen from "@/screens/QuizPassationScreen";
 import CantineScreen from "@/screens/CantineScreen";
 import TransportScreen from "@/screens/TransportScreen";
 import BulletinScreen from "@/screens/BulletinScreen";
+import ChildProgressScreen from "@/screens/ChildProgressScreen";
+import ChildCalendarScreen from "@/screens/ChildCalendarScreen";
+import ChildProfileScreen from "@/screens/ChildProfileScreen";
 import { colors } from "@/constants/theme";
 import type { RootStackParamList } from "@/types/navigation";
 
@@ -173,6 +176,21 @@ function MainStack() {
       <Stack.Screen
         name="Bulletin"
         component={BulletinScreen}
+        options={{ animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="ChildProgress"
+        component={ChildProgressScreen}
+        options={{ animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="ChildCalendar"
+        component={ChildCalendarScreen}
+        options={{ animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="ChildProfile"
+        component={ChildProfileScreen}
         options={{ animation: "slide_from_right" }}
       />
     </Stack.Navigator>

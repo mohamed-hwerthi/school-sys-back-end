@@ -8,9 +8,15 @@ import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.emploidutemps.dto.EmploiDuTempsResponseDTO;
 import com.schoolSys.schooolSys.note.dto.NoteResponseDTO;
 import com.schoolSys.schooolSys.parent.dto.AlertsDTO;
+import com.schoolSys.schooolSys.parent.dto.ChildCalendarDTO;
 import com.schoolSys.schooolSys.parent.dto.ChildDTO;
+import com.schoolSys.schooolSys.parent.dto.ChildProfileDTO;
+import com.schoolSys.schooolSys.parent.dto.ChildProgressDTO;
 import com.schoolSys.schooolSys.parent.dto.TrendDTO;
 import com.schoolSys.schooolSys.parent.dto.UpcomingDTO;
+
+import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -105,6 +111,39 @@ public class ParentPortalController {
         UUID parentUserId = extractUserId(auth);
         return ResponseEntity.ok(ApiResponse.ok(
                 parentPortalService.getChildAlerts(parentUserId, studentId)));
+    }
+
+    @GetMapping("/children/{studentId}/progress")
+    @PreAuthorize("hasAuthority('PARENT_ACCESS')")
+    public ResponseEntity<ApiResponse<ChildProgressDTO>> getChildProgress(
+            Authentication auth,
+            @PathVariable UUID studentId) {
+        UUID parentUserId = extractUserId(auth);
+        return ResponseEntity.ok(ApiResponse.ok(
+                parentPortalService.getChildProgress(parentUserId, studentId)));
+    }
+
+    @GetMapping("/children/{studentId}/calendar")
+    @PreAuthorize("hasAuthority('PARENT_ACCESS')")
+    public ResponseEntity<ApiResponse<ChildCalendarDTO>> getChildCalendar(
+            Authentication auth,
+            @PathVariable UUID studentId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        UUID parentUserId = extractUserId(auth);
+        return ResponseEntity.ok(ApiResponse.ok(
+                parentPortalService.getChildCalendar(parentUserId, studentId, from, to)));
+    }
+
+    @GetMapping("/children/{studentId}/full-profile")
+    @PreAuthorize("hasAuthority('PARENT_ACCESS')")
+    public ResponseEntity<ApiResponse<ChildProfileDTO>> getChildFullProfile(
+            Authentication auth,
+            @PathVariable UUID studentId,
+            @RequestParam(required = false, defaultValue = "1") Integer trimestre) {
+        UUID parentUserId = extractUserId(auth);
+        return ResponseEntity.ok(ApiResponse.ok(
+                parentPortalService.getChildFullProfile(parentUserId, studentId, trimestre)));
     }
 
     private UUID extractUserId(Authentication auth) {

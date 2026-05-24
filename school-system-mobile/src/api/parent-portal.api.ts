@@ -79,4 +79,66 @@ export const parentPortalApi = {
   /** MOB-FUNC-004 — compteurs d'alertes (absences non justifiées, retards, incidents) */
   getAlerts: (studentId: string): Promise<AlertsPayload> =>
     api.get(`/parent-portal/children/${studentId}/alerts`),
+
+  /** MOB-FUNC-007 — notes par matière sur les 3 trimestres */
+  getProgress: (studentId: string): Promise<ProgressPayload> =>
+    api.get(`/parent-portal/children/${studentId}/progress`),
+
+  /** MOB-FUNC-008 — événements calendrier entre deux dates */
+  getCalendar: (studentId: string, from: string, to: string): Promise<CalendarPayload> =>
+    api.get(`/parent-portal/children/${studentId}/calendar`, { params: { from, to } }),
+
+  /** MOB-FUNC-010 — profil complet enfant avec bulletin courant + classement */
+  getFullProfile: (studentId: string, trimestre = 1): Promise<FullProfilePayload> =>
+    api.get(`/parent-portal/children/${studentId}/full-profile`, { params: { trimestre } }),
 };
+
+// ---- MOB-FUNC-007 — progress ----
+
+export interface MatiereProgress {
+  moduleId: string;
+  moduleNom: string;
+  t1: number | null;
+  t2: number | null;
+  t3: number | null;
+  /** "haut" | "stable" | "bas" */
+  tendance: string;
+}
+
+export interface ProgressPayload {
+  matieres: MatiereProgress[];
+}
+
+// ---- MOB-FUNC-008 — calendar ----
+
+export interface CalendarEvent {
+  id: string;
+  type: "DEVOIR" | "EXAMEN" | "EVENEMENT";
+  titre: string;
+  subtitle: string | null;
+  date: string;
+  couleur: string;
+}
+
+export interface CalendarPayload {
+  events: CalendarEvent[];
+}
+
+// ---- MOB-FUNC-010 — full profile ----
+
+export interface FullProfilePayload {
+  id: string;
+  firstName: string;
+  lastName: string;
+  matricule: string | null;
+  niveau: string | null;
+  classe: string | null;
+  sexe: string | null;
+  dateOfBirth: string | null;
+  enrollmentDate: string | null;
+  status: string | null;
+  currentBulletin: any | null;
+  rangClasse: number | null;
+  effectifClasse: number | null;
+  moyenneTrimestre: number | null;
+}

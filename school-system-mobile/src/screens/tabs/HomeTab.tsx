@@ -95,6 +95,9 @@ export default function HomeTab() {
 
   // Quick action buttons
   const quickActions = [
+    { icon: "👤", label: "Profil élève", onPress: () => navigation.navigate("ChildProfile") },
+    { icon: "📈", label: "Progression", onPress: () => navigation.navigate("ChildProgress") },
+    { icon: "📅", label: "Calendrier", onPress: () => navigation.navigate("ChildCalendar") },
     { icon: "📊", label: "Voir les notes", onPress: () => navigation.navigate("Tabs", { screen: "Notes" }) },
     { icon: "🗓️", label: "Emploi du temps", onPress: () => navigation.navigate("Tabs", { screen: "EDT" }) },
     { icon: "💳", label: "Paiements", onPress: () => navigation.navigate("PaymentHistory") },

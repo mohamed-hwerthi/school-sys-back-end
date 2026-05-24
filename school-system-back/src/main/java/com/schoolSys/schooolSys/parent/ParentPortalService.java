@@ -24,8 +24,15 @@ import com.schoolSys.schooolSys.module.ModuleRepository;
 import com.schoolSys.schooolSys.note.Note;
 import com.schoolSys.schooolSys.note.NoteRepository;
 import com.schoolSys.schooolSys.note.dto.NoteResponseDTO;
+import com.schoolSys.schooolSys.evenement.EvenementCalendrier;
+import com.schoolSys.schooolSys.evenement.EvenementCalendrierRepository;
+import com.schoolSys.schooolSys.niveau.Classe;
+import com.schoolSys.schooolSys.niveau.ClasseRepository;
 import com.schoolSys.schooolSys.parent.dto.AlertsDTO;
+import com.schoolSys.schooolSys.parent.dto.ChildCalendarDTO;
 import com.schoolSys.schooolSys.parent.dto.ChildDTO;
+import com.schoolSys.schooolSys.parent.dto.ChildProfileDTO;
+import com.schoolSys.schooolSys.parent.dto.ChildProgressDTO;
 import com.schoolSys.schooolSys.parent.dto.TrendDTO;
 import com.schoolSys.schooolSys.parent.dto.UpcomingDTO;
 import com.schoolSys.schooolSys.student.Student;
@@ -50,6 +57,9 @@ public class ParentPortalService {
     private final PaiementRepository paiementRepository;
     private final IncidentRepository incidentRepository;
     private final ModuleRepository moduleRepository;
+    private final EvenementCalendrierRepository evenementRepository;
+    private final ClasseRepository classeRepository;
+    private final com.schoolSys.schooolSys.student.StudentRepository studentRepository;
 
     public List<ChildDTO> getChildren(UUID parentUserId) {
         return parentStudentRepository.findByParentUserId(parentUserId)
@@ -232,6 +242,206 @@ public class ParentPortalService {
                 .retards(retards)
                 .incidentsRecents(incidentsRecents)
                 .build();
+    }
+
+    /**
+     * MOB-FUNC-007 — progression de l'enfant par matière sur les 3 trimestres.
+     */
+    public ChildProgressDTO getChildProgress(UUID parentUserId, UUID studentId) {
+        verifyParentLink(parentUserId, studentId);
+
+        // 3 sets de notes par trimestre
+        List<Note> t1 = noteRepository.findByStudentIdAndTrimestre(studentId, 1);
+        List<Note> t2 = noteRepository.findByStudentIdAndTrimestre(studentId, 2);
+        List<Note> t3 = noteRepository.findByStudentIdAndTrimestre(studentId, 3);
+
+        // Indexer par module
+        java.util.Set<UUID> moduleIds = new java.util.HashSet<>();
+        java.util.stream.Stream.of(t1, t2, t3).flatMap(List::stream)
+                .filter(n -> n.getExamen() != null && n.getExamen().getModule() != null)
+                .forEach(n -> moduleIds.add(n.getExamen().getModule().getId()));
+
+        List<ChildProgressDTO.MatiereProgress> matieres = moduleIds.stream()
+                .map(mid -> {
+                    Module mod = moduleRepository.findById(mid).orElse(null);
+                    Double m1 = avgForModule(t1, mid);
+                    Double m2 = avgForModule(t2, mid);
+                    Double m3 = avgForModule(t3, mid);
+                    String tendance = computeTendance(m1, m2, m3);
+                    return ChildProgressDTO.MatiereProgress.builder()
+                            .moduleId(mid)
+                            .moduleNom(mod != null ? mod.getName() : "?")
+                            .t1(m1)
+                            .t2(m2)
+                            .t3(m3)
+                            .tendance(tendance)
+                            .build();
+                })
+                .sorted(Comparator.comparing(ChildProgressDTO.MatiereProgress::getModuleNom))
+                .collect(Collectors.toList());
+
+        return ChildProgressDTO.builder().matieres(matieres).build();
+    }
+
+    /**
+     * MOB-FUNC-008 — événements (devoirs, examens, événements école) de l'enfant
+     * entre deux dates incluses.
+     */
+    public ChildCalendarDTO getChildCalendar(UUID parentUserId, UUID studentId, LocalDate from, LocalDate to) {
+        verifyParentLink(parentUserId, studentId);
+        Student student = findChildOrThrow(parentUserId, studentId);
+        UUID classeId = parseClasseId(student.getClasse());
+
+        List<ChildCalendarDTO.CalendarEvent> events = new java.util.ArrayList<>();
+
+        // Devoirs
+        if (classeId != null) {
+            devoirRepository.findByClasseIdOrderByDateLimiteDesc(classeId).stream()
+                    .filter(d -> Boolean.FALSE.equals(d.getDeleted()))
+                    .filter(d -> d.getDateLimite() != null
+                            && !d.getDateLimite().isBefore(from)
+                            && !d.getDateLimite().isAfter(to))
+                    .forEach(d -> {
+                        String modName = moduleRepository.findById(d.getModuleId())
+                                .map(Module::getName).orElse(null);
+                        events.add(ChildCalendarDTO.CalendarEvent.builder()
+                                .id(d.getId())
+                                .type("DEVOIR")
+                                .titre(d.getTitre())
+                                .subtitle(modName)
+                                .date(d.getDateLimite())
+                                .couleur("#3b82f6")
+                                .build());
+                    });
+
+            examenRepository.findFiltered(null, classeId, null).stream()
+                    .filter(e -> Boolean.FALSE.equals(e.getDeleted()))
+                    .filter(e -> e.getDateLimiteSaisie() != null
+                            && !e.getDateLimiteSaisie().isBefore(from)
+                            && !e.getDateLimiteSaisie().isAfter(to))
+                    .forEach(e -> events.add(ChildCalendarDTO.CalendarEvent.builder()
+                            .id(e.getId())
+                            .type("EXAMEN")
+                            .titre(e.getName())
+                            .subtitle(e.getModule() != null ? e.getModule().getName() : null)
+                            .date(e.getDateLimiteSaisie())
+                            .couleur("#f59e0b")
+                            .build()));
+        }
+
+        // Événements école (pas de soft-delete sur EvenementCalendrier)
+        evenementRepository.findByDateDebutBetweenOrderByDateDebutAsc(from, to)
+                .forEach(e -> events.add(ChildCalendarDTO.CalendarEvent.builder()
+                        .id(e.getId())
+                        .type("EVENEMENT")
+                        .titre(e.getTitre())
+                        .subtitle(e.getLieu())
+                        .date(e.getDateDebut())
+                        .couleur(e.getCouleur() != null ? e.getCouleur() : "#10b981")
+                        .build()));
+
+        events.sort(Comparator.comparing(ChildCalendarDTO.CalendarEvent::getDate));
+        return ChildCalendarDTO.builder().events(events).build();
+    }
+
+    /**
+     * MOB-FUNC-010 — profil complet de l'enfant avec bulletin courant + classement.
+     */
+    public ChildProfileDTO getChildFullProfile(UUID parentUserId, UUID studentId, int trimestre) {
+        verifyParentLink(parentUserId, studentId);
+        Student student = findChildOrThrow(parentUserId, studentId);
+        UUID classeId = parseClasseId(student.getClasse());
+
+        // Bulletin courant (best-effort — peut échouer si pas de notes)
+        BulletinDTO bulletin = null;
+        if (classeId != null) {
+            try {
+                bulletin = bulletinService.getBulletin(classeId, studentId, trimestre, "etatique");
+            } catch (Exception ignored) {
+                // pas de bulletin disponible — on ignore
+            }
+        }
+
+        // Classement + effectif
+        Integer rang = null;
+        Integer effectif = null;
+        Double myAvg = null;
+        if (classeId != null) {
+            Classe c = classeRepository.findById(classeId).orElse(null);
+            if (c != null) {
+                String fullName = c.getNiveau().getName() + " " + c.getLetter();
+                // students dans cette classe via student.classe string ; fallback fullName=getClasse()
+                List<Student> classmates = studentRepository.findByClasse(student.getClasse());
+                effectif = classmates.size();
+
+                List<double[]> avgs = classmates.stream()
+                        .map(s -> {
+                            double a = noteRepository.findByStudentIdAndTrimestre(s.getId(), trimestre).stream()
+                                    .filter(n -> n.getValeur() != null)
+                                    .mapToDouble(n -> n.getValeur().doubleValue())
+                                    .average()
+                                    .orElse(-1.0);
+                            return new double[]{a, s.getId().equals(studentId) ? 1 : 0};
+                        })
+                        .filter(arr -> arr[0] >= 0)
+                        .sorted((a, b) -> Double.compare(b[0], a[0]))
+                        .collect(Collectors.toList());
+
+                for (int i = 0; i < avgs.size(); i++) {
+                    if (avgs.get(i)[1] == 1) {
+                        rang = i + 1;
+                        myAvg = Math.round(avgs.get(i)[0] * 10.0) / 10.0;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return ChildProfileDTO.builder()
+                .id(student.getId())
+                .firstName(student.getFirstName())
+                .lastName(student.getLastName())
+                .matricule(student.getMatricule())
+                .niveau(student.getNiveau())
+                .classe(student.getClasse())
+                .sexe(student.getSex())
+                .dateOfBirth(student.getDateOfBirth())
+                .enrollmentDate(student.getEnrollmentDate())
+                .status(student.getStatus())
+                .currentBulletin(bulletin)
+                .rangClasse(rang)
+                .effectifClasse(effectif)
+                .moyenneTrimestre(myAvg)
+                .build();
+    }
+
+    private Double avgForModule(List<Note> notes, UUID moduleId) {
+        double avg = notes.stream()
+                .filter(n -> n.getExamen() != null && n.getExamen().getModule() != null)
+                .filter(n -> moduleId.equals(n.getExamen().getModule().getId()))
+                .filter(n -> n.getValeur() != null)
+                .mapToDouble(n -> n.getValeur().doubleValue())
+                .average()
+                .orElse(-1.0);
+        return avg < 0 ? null : Math.round(avg * 10.0) / 10.0;
+    }
+
+    private String computeTendance(Double t1, Double t2, Double t3) {
+        // tendance basée sur la pente moyenne — neutre si données manquantes
+        double last = t3 != null ? t3 : (t2 != null ? t2 : (t1 != null ? t1 : 0));
+        double base = t1 != null && t2 != null ? (t1 + t2) / 2.0 : (t1 != null ? t1 : (t2 != null ? t2 : 0));
+        if (base == 0 || last == 0) return "stable";
+        if (last > base + 0.5) return "haut";
+        if (last < base - 0.5) return "bas";
+        return "stable";
+    }
+
+    private Student findChildOrThrow(UUID parentUserId, UUID studentId) {
+        return parentStudentRepository.findByParentUserId(parentUserId).stream()
+                .map(ParentStudent::getStudent)
+                .filter(s -> s.getId().equals(studentId))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
     }
 
     private UUID parseClasseId(String classeStr) {
