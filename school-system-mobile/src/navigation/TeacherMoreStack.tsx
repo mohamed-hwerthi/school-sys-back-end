@@ -1,5 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import TeacherMoreScreen from "@/screens/teacher/TeacherMoreScreen";
+import TeacherStatsScreen from "@/screens/teacher/TeacherStatsScreen";
+import ClassStatsDetailScreen from "@/screens/ClassStatsDetailScreen";
 import DisciplineScreen from "@/screens/teacher/DisciplineScreen";
 import QuizListScreen from "@/screens/teacher/QuizListScreen";
 import QuizDetailScreen from "@/screens/teacher/QuizDetailScreen";
@@ -26,6 +28,8 @@ export default function TeacherMoreStack() {
       }}
     >
       <Stack.Screen name="MoreMenu" component={TeacherMoreScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Stats" component={TeacherStatsScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="ClassStatsDetail" component={ClassStatsDetailScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Discipline" component={DisciplineScreen} options={{ headerShown: false }} />
       <Stack.Screen name="QuizList" component={QuizListScreen} options={{ headerShown: false }} />
       <Stack.Screen name="QuizDetail" component={QuizDetailScreen} options={{ title: "Quiz" }} />

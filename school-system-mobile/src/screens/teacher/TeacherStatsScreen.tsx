@@ -31,46 +31,33 @@ function colorForPresence(taux: number, palette: { success: string; warning: str
   return palette.error;
 }
 
-export default function AdminStatsScreen() {
+export default function TeacherStatsScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const [trimestre, setTrimestre] = useState("1");
 
   const statsQ = useQuery({
-    queryKey: ["admin", "class-stats", trimestre],
-    queryFn: () => reportingApi.getClassStats(Number(trimestre)),
+    queryKey: ["teacher", "my-class-stats", trimestre],
+    queryFn: () => reportingApi.getMyClassStats(Number(trimestre)),
   });
 
   const stats: ClassStats[] = statsQ.data ?? [];
 
   const totals = useMemo(() => {
-    if (stats.length === 0) {
-      return { moyenne: 0, reussite: 0, presence: 0, absences: 0, retards: 0 };
-    }
-    let moy = 0, reu = 0, pre = 0, abs = 0, ret = 0, withGrades = 0;
+    if (stats.length === 0) return { moyenne: 0, reussite: 0, presence: 0, absences: 0 };
+    let moy = 0, reu = 0, pre = 0, abs = 0, withGrades = 0;
     for (const c of stats) {
       if (c.moyenne > 0) { moy += c.moyenne; reu += c.tauxReussite; withGrades++; }
       pre += c.tauxPresence;
       abs += c.totalAbsences;
-      ret += c.totalRetards;
     }
     return {
       moyenne: withGrades > 0 ? Math.round((moy / withGrades) * 10) / 10 : 0,
       reussite: withGrades > 0 ? Math.round(reu / withGrades) : 0,
       presence: stats.length > 0 ? Math.round(pre / stats.length) : 0,
       absences: abs,
-      retards: ret,
     };
   }, [stats]);
-
-  const topReussite = useMemo(
-    () => [...stats].filter((s) => s.moyenne > 0).sort((a, b) => b.moyenne - a.moyenne).slice(0, 3),
-    [stats],
-  );
-  const topAbsenteistes = useMemo(
-    () => [...stats].filter((s) => s.totalAbsences > 0).sort((a, b) => b.totalAbsences - a.totalAbsences).slice(0, 3),
-    [stats],
-  );
 
   const reussiteBars = useMemo(
     () => stats
@@ -100,7 +87,7 @@ export default function AdminStatsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.surface }}>
-      <GradientHeader title="Stats école" subtitle="Réussite & présence par classe" showBack />
+      <GradientHeader title="Mes stats" subtitle="Réussite & présence de mes classes" showBack />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -113,20 +100,22 @@ export default function AdminStatsScreen() {
           />
         }
       >
-        {/* Trimestre selector */}
         <SegmentedControl options={TRIMESTRES} value={trimestre} onChange={setTrimestre} />
 
         {stats.length === 0 ? (
           <View style={{ marginTop: spacing.xl }}>
-            <EmptyState icon="📊" title="Aucune classe" subtitle="Aucune donnée pour ce trimestre." />
+            <EmptyState
+              icon="📊"
+              title="Aucune donnée"
+              subtitle="Vous n'êtes affecté à aucune classe ou aucune note saisie."
+            />
           </View>
         ) : (
           <>
-            {/* Top KPIs */}
             <View style={{ flexDirection: "row", gap: spacing.sm, marginTop: spacing.lg }}>
               <StatCard
                 icon="📊"
-                label="Moyenne école"
+                label="Moyenne"
                 value={totals.moyenne > 0 ? totals.moyenne.toFixed(1) : "—"}
                 color={colors.primary}
                 subtitle="/20"
@@ -147,89 +136,6 @@ export default function AdminStatsScreen() {
               />
             </View>
 
-            {/* Top reussite */}
-            {topReussite.length > 0 && (
-              <View style={{ marginTop: spacing.xl }}>
-                <Text style={{ fontSize: fontSize.xs, fontWeight: "800", color: colors.textMuted, letterSpacing: 1, marginBottom: spacing.sm }}>
-                  🏆 MEILLEURES CLASSES
-                </Text>
-                <View style={{ backgroundColor: colors.background, borderRadius: 16, padding: spacing.md, ...shadows.soft }}>
-                  {topReussite.map((c, i) => (
-                    <View
-                      key={c.classeId}
-                      style={{
-                        flexDirection: "row", alignItems: "center", paddingVertical: 8,
-                        borderBottomWidth: i < topReussite.length - 1 ? 1 : 0,
-                        borderBottomColor: colors.border,
-                      }}
-                    >
-                      <Text style={{ fontSize: fontSize.md, fontWeight: "900", color: colors.success, width: 30 }}>
-                        #{i + 1}
-                      </Text>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontSize: fontSize.sm, fontWeight: "700", color: colors.text }}>
-                          Classe {c.classeName}
-                        </Text>
-                        <Text style={{ fontSize: fontSize.xs, color: colors.textMuted }}>
-                          {c.niveauName} · {c.nbEleves} élèves
-                        </Text>
-                      </View>
-                      <View style={{ alignItems: "flex-end" }}>
-                        <Text style={{ fontSize: fontSize.md, fontWeight: "800", color: colors.success }}>
-                          {c.moyenne.toFixed(1)}
-                        </Text>
-                        <Text style={{ fontSize: fontSize.xs, color: colors.textMuted }}>
-                          {c.tauxReussite.toFixed(0)}% ≥ 10
-                        </Text>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
-
-            {/* Top absenteistes */}
-            {topAbsenteistes.length > 0 && (
-              <View style={{ marginTop: spacing.lg }}>
-                <Text style={{ fontSize: fontSize.xs, fontWeight: "800", color: colors.textMuted, letterSpacing: 1, marginBottom: spacing.sm }}>
-                  ⚠️ CLASSES À SURVEILLER
-                </Text>
-                <View style={{ backgroundColor: colors.background, borderRadius: 16, padding: spacing.md, ...shadows.soft }}>
-                  {topAbsenteistes.map((c, i) => (
-                    <View
-                      key={c.classeId}
-                      style={{
-                        flexDirection: "row", alignItems: "center", paddingVertical: 8,
-                        borderBottomWidth: i < topAbsenteistes.length - 1 ? 1 : 0,
-                        borderBottomColor: colors.border,
-                      }}
-                    >
-                      <Text style={{ fontSize: fontSize.md, fontWeight: "900", color: colors.error, width: 30 }}>
-                        #{i + 1}
-                      </Text>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontSize: fontSize.sm, fontWeight: "700", color: colors.text }}>
-                          Classe {c.classeName}
-                        </Text>
-                        <Text style={{ fontSize: fontSize.xs, color: colors.textMuted }}>
-                          {c.niveauName} · {c.nbEleves} élèves
-                        </Text>
-                      </View>
-                      <View style={{ alignItems: "flex-end" }}>
-                        <Text style={{ fontSize: fontSize.md, fontWeight: "800", color: colors.error }}>
-                          {c.totalAbsences}
-                        </Text>
-                        <Text style={{ fontSize: fontSize.xs, color: colors.textMuted }}>
-                          absences{c.totalRetards > 0 ? ` · ${c.totalRetards} retards` : ""}
-                        </Text>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
-
-            {/* Reussite par classe — bar chart */}
             {reussiteBars.length > 0 && (
               <View style={{ marginTop: spacing.xl }}>
                 <Text style={{ fontSize: fontSize.xs, fontWeight: "800", color: colors.textMuted, letterSpacing: 1, marginBottom: spacing.sm }}>
@@ -241,7 +147,6 @@ export default function AdminStatsScreen() {
               </View>
             )}
 
-            {/* Presence par classe — bar chart */}
             {presenceBars.length > 0 && (
               <View style={{ marginTop: spacing.lg }}>
                 <Text style={{ fontSize: fontSize.xs, fontWeight: "800", color: colors.textMuted, letterSpacing: 1, marginBottom: spacing.sm }}>
@@ -253,7 +158,6 @@ export default function AdminStatsScreen() {
               </View>
             )}
 
-            {/* Liste compacte */}
             <Text style={{ fontSize: fontSize.xs, fontWeight: "800", color: colors.textMuted, letterSpacing: 1, marginTop: spacing.xl, marginBottom: spacing.sm }}>
               DÉTAIL PAR CLASSE
             </Text>

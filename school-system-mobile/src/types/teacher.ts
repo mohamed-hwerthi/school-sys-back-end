@@ -62,6 +62,7 @@ export interface ClassRef {
 export type TeacherClassesStackParamList = {
   ClassesList: undefined;
   ClassStudents: ClassRef;
+  StudentDetail: { studentId: string; studentName: string; classeId: string };
   Attendance: ClassRef;
   ExamSelect: ClassRef;
   GradeEntry: ClassRef & { examenId: string; examenName: string; trimestre: number };
@@ -71,6 +72,8 @@ export type TeacherClassesStackParamList = {
 /** Navigation params for the teacher "Plus" stack. */
 export type TeacherMoreStackParamList = {
   MoreMenu: undefined;
+  Stats: undefined;
+  ClassStatsDetail: { classeId: string; classeName: string };
   Discipline: undefined;
   QuizList: undefined;
   QuizDetail: { quizId: string };

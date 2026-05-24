@@ -79,4 +79,63 @@ export const reportingApi = {
   /** Per-class stats for a given trimestre (`VIEW_REPORTS`). */
   getClassStats: (trimestre: number): Promise<ClassStats[]> =>
     api.get("/reporting/admin/class-stats", { params: { trimestre } }),
+
+  /** Teacher-scoped class stats (`READ_NOTES`) — limited to the caller's classes. */
+  getMyClassStats: (trimestre: number): Promise<ClassStats[]> =>
+    api.get("/reporting/teacher/my-class-stats", { params: { trimestre } }),
+
+  /** MOB-FUNC-016 — distribution des notes par tranches pour une classe. */
+  getGradeDistribution: (
+    classeId: string,
+    trimestre: number,
+    moduleId?: string,
+  ): Promise<GradeDistribution> =>
+    api.get(`/reporting/class/${classeId}/grade-distribution`, {
+      params: { trimestre, ...(moduleId ? { moduleId } : {}) },
+    }),
+
+  /** MOB-FUNC-017 — évolution trimestrielle d'une classe avec moyenne école. */
+  getTrimestreEvolution: (classeId: string): Promise<TrimestreEvolution> =>
+    api.get(`/reporting/class/${classeId}/trimestre-evolution`),
+
+  /** MOB-FUNC-018 — top et flop élèves d'une classe pour un trimestre. */
+  getTopFlop: (classeId: string, trimestre: number, limit = 5): Promise<TopFlop> =>
+    api.get(`/reporting/class/${classeId}/top-flop`, { params: { trimestre, limit } }),
 };
+
+// ---- Drill-down types (mirror back ClassDrillDownDTO) ----
+
+export interface GradeBucket {
+  range: string;
+  count: number;
+}
+
+export interface GradeDistribution {
+  buckets: GradeBucket[];
+  totalNotes: number;
+}
+
+export interface TrimestrePoint {
+  trimestre: number;
+  moyenne: number;
+  tauxReussite: number;
+  tauxPresence: number;
+  moyenneEcole: number;
+}
+
+export interface TrimestreEvolution {
+  points: TrimestrePoint[];
+}
+
+export interface StudentRank {
+  studentId: string;
+  prenom: string;
+  nom: string;
+  moyenne: number;
+  rang: number;
+}
+
+export interface TopFlop {
+  top: StudentRank[];
+  flop: StudentRank[];
+}

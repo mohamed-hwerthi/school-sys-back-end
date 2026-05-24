@@ -12,6 +12,7 @@ import com.schoolSys.schooolSys.niveau.ClasseRepository;
 import com.schoolSys.schooolSys.niveau.Niveau;
 import com.schoolSys.schooolSys.note.Note;
 import com.schoolSys.schooolSys.note.NoteRepository;
+import com.schoolSys.schooolSys.reporting.dto.ClassDrillDownDTO;
 import com.schoolSys.schooolSys.reporting.dto.ClassStatsDTO;
 import com.schoolSys.schooolSys.reporting.dto.DashboardStatsDTO;
 import com.schoolSys.schooolSys.reporting.dto.DayAttendanceDTO;
@@ -259,6 +260,117 @@ public class ReportingService {
         // Sort by fullName for stable display
         out.sort(Comparator.comparing(ClassStatsDTO::getClasseName));
         return out;
+    }
+
+    /**
+     * MOB-FUNC-016 — distribution des notes par tranches pour une classe + trimestre,
+     * optionnellement filtrée sur une matière.
+     */
+    public ClassDrillDownDTO.GradeDistribution getGradeDistribution(UUID classeId, int trimestre, UUID moduleId) {
+        List<Note> notes = noteRepository.findByExamenClasseIdAndTrimestre(classeId, trimestre);
+        if (moduleId != null) {
+            notes = notes.stream()
+                    .filter(n -> n.getExamen() != null && n.getExamen().getModule() != null)
+                    .filter(n -> moduleId.equals(n.getExamen().getModule().getId()))
+                    .collect(Collectors.toList());
+        }
+
+        int[] counts = new int[4]; // 0-5, 5-10, 10-15, 15-20
+        int total = 0;
+        for (Note n : notes) {
+            if (n.getValeur() == null) continue;
+            double v = n.getValeur().doubleValue();
+            int idx = v < 5 ? 0 : v < 10 ? 1 : v < 15 ? 2 : 3;
+            counts[idx]++;
+            total++;
+        }
+
+        String[] labels = {"0-5", "5-10", "10-15", "15-20"};
+        List<ClassDrillDownDTO.GradeBucket> buckets = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            buckets.add(ClassDrillDownDTO.GradeBucket.builder()
+                    .range(labels[i])
+                    .count(counts[i])
+                    .build());
+        }
+        return ClassDrillDownDTO.GradeDistribution.builder()
+                .buckets(buckets)
+                .totalNotes(total)
+                .build();
+    }
+
+    /**
+     * MOB-FUNC-017 — évolution trimestrielle (T1, T2, T3) pour une classe,
+     * avec la moyenne école comparée pour chaque trimestre.
+     */
+    public ClassDrillDownDTO.TrimestreEvolution getTrimestreEvolution(UUID classeId) {
+        List<ClassDrillDownDTO.TrimestrePoint> points = new ArrayList<>();
+        for (int t = 1; t <= 3; t++) {
+            List<ClassStatsDTO> all = getClassStats(t);
+            double moyenneEcole = all.stream()
+                    .filter(c -> c.getMoyenne() > 0)
+                    .mapToDouble(ClassStatsDTO::getMoyenne)
+                    .average()
+                    .orElse(0.0);
+            ClassStatsDTO mine = all.stream()
+                    .filter(c -> classeId.equals(c.getClasseId()))
+                    .findFirst()
+                    .orElse(null);
+            points.add(ClassDrillDownDTO.TrimestrePoint.builder()
+                    .trimestre(t)
+                    .moyenne(mine != null ? mine.getMoyenne() : 0.0)
+                    .tauxReussite(mine != null ? mine.getTauxReussite() : 0.0)
+                    .tauxPresence(mine != null ? mine.getTauxPresence() : 0.0)
+                    .moyenneEcole(Math.round(moyenneEcole * 10.0) / 10.0)
+                    .build());
+        }
+        return ClassDrillDownDTO.TrimestreEvolution.builder().points(points).build();
+    }
+
+    /**
+     * MOB-FUNC-018 — top {@code limit} et flop {@code limit} élèves d'une classe
+     * pour un trimestre donné (calcul de moyenne sur les notes du trimestre).
+     */
+    public ClassDrillDownDTO.TopFlop getTopFlop(UUID classeId, int trimestre, int limit) {
+        Classe c = classeRepository.findById(classeId).orElse(null);
+        if (c == null) {
+            return ClassDrillDownDTO.TopFlop.builder().top(List.of()).flop(List.of()).build();
+        }
+        String fullName = buildClasseFullName(c.getNiveau().getName(), c.getLetter());
+        List<com.schoolSys.schooolSys.student.Student> students = studentRepository.findByClasse(fullName);
+
+        List<ClassDrillDownDTO.StudentRank> ranks = students.stream()
+                .map(s -> {
+                    List<Note> notes = noteRepository.findByStudentIdAndTrimestre(s.getId(), trimestre);
+                    double avg = notes.stream()
+                            .filter(n -> n.getValeur() != null)
+                            .mapToDouble(n -> n.getValeur().doubleValue())
+                            .average()
+                            .orElse(-1.0);
+                    if (avg < 0) return null;
+                    return ClassDrillDownDTO.StudentRank.builder()
+                            .studentId(s.getId())
+                            .prenom(s.getFirstName())
+                            .nom(s.getLastName())
+                            .moyenne(Math.round(avg * 10.0) / 10.0)
+                            .build();
+                })
+                .filter(java.util.Objects::nonNull)
+                .sorted(Comparator.comparingDouble(ClassDrillDownDTO.StudentRank::getMoyenne).reversed())
+                .collect(Collectors.toList());
+
+        // assign rangs
+        for (int i = 0; i < ranks.size(); i++) {
+            ranks.get(i).setRang(i + 1);
+        }
+
+        List<ClassDrillDownDTO.StudentRank> top = ranks.stream().limit(limit).collect(Collectors.toList());
+        List<ClassDrillDownDTO.StudentRank> flop = ranks.size() <= limit ? List.of() : ranks.stream()
+                .skip(Math.max(0, ranks.size() - limit))
+                .sorted(Comparator.comparingDouble(ClassDrillDownDTO.StudentRank::getMoyenne))
+                .collect(Collectors.toList());
+
+        return ClassDrillDownDTO.TopFlop.builder().top(top).flop(flop).build();
     }
 
     private String buildClasseFullName(String niveauName, String letter) {
