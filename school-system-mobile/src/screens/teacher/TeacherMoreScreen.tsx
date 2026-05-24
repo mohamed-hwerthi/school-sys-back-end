@@ -8,9 +8,11 @@ import type { TeacherMoreStackParamList } from "@/types/teacher";
 
 type Nav = NativeStackNavigationProp<TeacherMoreStackParamList, "MoreMenu">;
 
-type MenuTarget = "Discipline" | "QuizList" | "Messages" | "Notifications" | "Profil";
+type MenuTarget = "Stats" | "AppreciationTemplates" | "Discipline" | "QuizList" | "Messages" | "Notifications" | "Profil";
 
 const ITEMS: { icon: string; label: string; screen: MenuTarget }[] = [
+  { icon: "📊", label: "Mes stats", screen: "Stats" },
+  { icon: "📝", label: "Mes appréciations", screen: "AppreciationTemplates" },
   { icon: "🛡️", label: "Discipline", screen: "Discipline" },
   { icon: "🎯", label: "Quiz", screen: "QuizList" },
   { icon: "💬", label: "Messagerie", screen: "Messages" },

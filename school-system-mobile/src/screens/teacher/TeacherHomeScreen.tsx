@@ -13,6 +13,7 @@ import { ErrorView } from "@/components/ErrorView";
 import { PendingCorrectionsCard } from "@/components/PendingCorrectionsCard";
 import { StudentsAtRiskCard } from "@/components/StudentsAtRiskCard";
 import { PendingTasksCard } from "@/components/PendingTasksCard";
+import { TeacherFAB } from "@/components/TeacherFAB";
 import { dayLabel, hhmm, todayJourSemaine } from "@/constants/calendar";
 import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing } from "@/constants/theme";
@@ -142,6 +143,9 @@ export default function TeacherHomeScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* MOB-FUNC-021 — bouton flottant quick actions */}
+      <TeacherFAB />
     </View>
   );
 }

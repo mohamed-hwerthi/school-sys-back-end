@@ -74,6 +74,7 @@ export type TeacherMoreStackParamList = {
   MoreMenu: undefined;
   Stats: undefined;
   ClassStatsDetail: { classeId: string; classeName: string };
+  AppreciationTemplates: undefined;
   Discipline: undefined;
   QuizList: undefined;
   QuizDetail: { quizId: string };
