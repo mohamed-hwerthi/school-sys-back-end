@@ -5,6 +5,9 @@ import { useChild } from "@/context/ChildContext";
 import { useNavigation } from "@react-navigation/native";
 import { ChildSelector } from "@/components/ChildSelector";
 import { StatCard } from "@/components/StatCard";
+import { UpcomingCard } from "@/components/UpcomingCard";
+import { TrendSparkline } from "@/components/TrendSparkline";
+import { AlertsCard } from "@/components/AlertsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorView } from "@/components/ErrorView";
 import { useTheme } from "@/context/ThemeContext";
@@ -40,6 +43,27 @@ export default function HomeTab() {
     enabled: !!selectedChild?.id,
   });
 
+  // MOB-FUNC-001 — devoirs / examens / paiements à venir
+  const { data: upcoming, refetch: refetchUpcoming } = useQuery({
+    queryKey: ["child-upcoming-home", selectedChild?.id],
+    queryFn: () => parentPortalApi.getUpcoming(selectedChild!.id, 7),
+    enabled: !!selectedChild?.id,
+  });
+
+  // MOB-FUNC-002 — moyenne par trimestre (sparkline)
+  const { data: trend, refetch: refetchTrend } = useQuery({
+    queryKey: ["child-trend-home", selectedChild?.id],
+    queryFn: () => parentPortalApi.getTrend(selectedChild!.id),
+    enabled: !!selectedChild?.id,
+  });
+
+  // MOB-FUNC-004 — compteurs d'alertes
+  const { data: alerts, refetch: refetchAlerts } = useQuery({
+    queryKey: ["child-alerts-home", selectedChild?.id],
+    queryFn: () => parentPortalApi.getAlerts(selectedChild!.id),
+    enabled: !!selectedChild?.id,
+  });
+
   const dataError = notesError || absencesError;
 
   const isRefreshing = childrenLoading || notesLoading || absencesLoading;
@@ -48,7 +72,10 @@ export default function HomeTab() {
     refetchChildren();
     refetchNotes();
     refetchAbsences();
-  }, [refetchChildren, refetchNotes, refetchAbsences]);
+    refetchUpcoming();
+    refetchTrend();
+    refetchAlerts();
+  }, [refetchChildren, refetchNotes, refetchAbsences, refetchUpcoming, refetchTrend, refetchAlerts]);
 
   // Compute grades average
   const gradesAverage = notes.length > 0
@@ -277,6 +304,24 @@ export default function HomeTab() {
               </View>
             </View>
           )}
+
+          {/* MOB-FUNC-004 — alertes */}
+          <AlertsCard
+            data={alerts}
+            onPressAbsences={() => navigation.navigate("Absences")}
+            onPressDiscipline={() => navigation.navigate("Discipline")}
+          />
+
+          {/* MOB-FUNC-001 — échéances à venir */}
+          <UpcomingCard
+            data={upcoming}
+            onPressDevoir={(d) => navigation.navigate("HomeworkDetail", { id: d.id })}
+            onPressExamen={() => navigation.navigate("Tabs", { screen: "Notes" })}
+            onPressPaiement={() => navigation.navigate("PaymentHistory")}
+          />
+
+          {/* MOB-FUNC-002 — sparkline évolution moyenne */}
+          <TrendSparkline data={trend} onPress={() => navigation.navigate("Bulletin")} />
 
           {/* Actions rapides */}
           <Text style={{ fontSize: fontSize.lg, fontWeight: "700", color: colors.text, marginBottom: spacing.md }}>

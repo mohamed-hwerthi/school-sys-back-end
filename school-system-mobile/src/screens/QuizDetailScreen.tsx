@@ -46,8 +46,8 @@ export default function QuizDetailScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const quizId = route.params?.quizId as number;
-  const eleveId = route.params?.eleveId as number;
+  const quizId = route.params?.quizId as string;
+  const eleveId = route.params?.eleveId as string;
 
   const {
     data: quiz,
@@ -70,7 +70,7 @@ export default function QuizDetailScreen() {
 
   // Filter attempts for this quiz
   const quizAttempts = attempts.filter(
-    (a: Attempt & { quizId?: number }) => a.quizId === quizId
+    (a: Attempt & { quizId?: string }) => a.quizId === quizId
   );
 
   const maxTentatives = quiz?.maxTentatives || 0;

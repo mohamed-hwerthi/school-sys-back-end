@@ -43,7 +43,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   scheme: "ecolenet",
   extra: {
-    apiBaseUrl: process.env.API_BASE_URL || "http://10.0.2.2:8080/api",
+    apiBaseUrl: process.env.API_BASE_URL || "http://10.0.2.2:8083/api",
     eas: {
       projectId: "your-eas-project-id",
     },

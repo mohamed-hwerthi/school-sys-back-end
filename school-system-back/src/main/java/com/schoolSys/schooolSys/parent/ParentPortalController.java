@@ -7,7 +7,10 @@ import com.schoolSys.schooolSys.bulletin.dto.BulletinDTO;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.emploidutemps.dto.EmploiDuTempsResponseDTO;
 import com.schoolSys.schooolSys.note.dto.NoteResponseDTO;
+import com.schoolSys.schooolSys.parent.dto.AlertsDTO;
 import com.schoolSys.schooolSys.parent.dto.ChildDTO;
+import com.schoolSys.schooolSys.parent.dto.TrendDTO;
+import com.schoolSys.schooolSys.parent.dto.UpcomingDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -71,6 +74,37 @@ public class ParentPortalController {
         UUID parentUserId = extractUserId(auth);
         return ResponseEntity.ok(ApiResponse.ok(
                 parentPortalService.getChildEmploiDuTemps(parentUserId, studentId)));
+    }
+
+    @GetMapping("/children/{studentId}/upcoming")
+    @PreAuthorize("hasAuthority('PARENT_ACCESS')")
+    public ResponseEntity<ApiResponse<UpcomingDTO>> getChildUpcoming(
+            Authentication auth,
+            @PathVariable UUID studentId,
+            @RequestParam(required = false, defaultValue = "7") Integer days) {
+        UUID parentUserId = extractUserId(auth);
+        return ResponseEntity.ok(ApiResponse.ok(
+                parentPortalService.getChildUpcoming(parentUserId, studentId, days)));
+    }
+
+    @GetMapping("/children/{studentId}/trend")
+    @PreAuthorize("hasAuthority('PARENT_ACCESS')")
+    public ResponseEntity<ApiResponse<TrendDTO>> getChildTrend(
+            Authentication auth,
+            @PathVariable UUID studentId) {
+        UUID parentUserId = extractUserId(auth);
+        return ResponseEntity.ok(ApiResponse.ok(
+                parentPortalService.getChildTrend(parentUserId, studentId)));
+    }
+
+    @GetMapping("/children/{studentId}/alerts")
+    @PreAuthorize("hasAuthority('PARENT_ACCESS')")
+    public ResponseEntity<ApiResponse<AlertsDTO>> getChildAlerts(
+            Authentication auth,
+            @PathVariable UUID studentId) {
+        UUID parentUserId = extractUserId(auth);
+        return ResponseEntity.ok(ApiResponse.ok(
+                parentPortalService.getChildAlerts(parentUserId, studentId)));
     }
 
     private UUID extractUserId(Authentication auth) {

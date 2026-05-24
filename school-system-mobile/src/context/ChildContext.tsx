@@ -4,11 +4,11 @@ import { parentPortalApi } from "@/api/parent-portal.api";
 import { useAuth } from "@/context/AuthContext";
 
 export interface Child {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   classe: string;
-  classeId: number;
+  classeId: string;
   niveau: string;
   matricule: string;
   status: string;

@@ -28,8 +28,8 @@ interface Homework {
 }
 
 interface Submission {
-  id: number;
-  devoirId: number;
+  id: string;
+  devoirId: string;
   note: number | null;
   statut: string;
   commentaire: string;
@@ -66,7 +66,7 @@ export default function HomeworkDetailScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation();
   const route = useRoute<any>();
-  const homeworkId = route.params?.homeworkId as number;
+  const homeworkId = route.params?.homeworkId as string;
   const { selectedChild } = useChild();
 
   const {

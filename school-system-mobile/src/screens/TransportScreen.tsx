@@ -19,8 +19,8 @@ import { useTheme } from "@/context/ThemeContext";
 import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 
 interface Affectation {
-  id: number;
-  circuitId: number;
+  id: string;
+  circuitId: string;
   circuitNom: string;
   numeroBus: string;
   arretNom: string;

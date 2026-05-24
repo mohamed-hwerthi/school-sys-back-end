@@ -23,7 +23,7 @@ import { colors, spacing, fontSize, borderRadius } from "@/constants/theme";
 type FilterType = "all" | "justified" | "unjustified";
 
 interface Absence {
-  id: number;
+  id: string;
   date: string;
   type: string;
   duree: number;
@@ -73,7 +73,7 @@ export default function AbsencesScreen() {
   });
 
   const justifyMutation = useMutation({
-    mutationFn: ({ absenceId, motif }: { absenceId: number; motif: string }) =>
+    mutationFn: ({ absenceId, motif }: { absenceId: string; motif: string }) =>
       absencesApi.getHistorique(absenceId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["absences", selectedChild?.id] });

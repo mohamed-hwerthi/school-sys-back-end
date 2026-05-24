@@ -1,7 +1,7 @@
 import api from "./axios";
 
 export const emploiDuTempsApi = {
-  getByClasse: (classeId: number): Promise<any[]> =>
+  getByClasse: (classeId: string): Promise<any[]> =>
     api.get(`/emploi-du-temps/classe/${classeId}`),
 
   getCreneaux: (): Promise<any[]> =>

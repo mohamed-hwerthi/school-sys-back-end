@@ -50,13 +50,13 @@ export default function QuizPassationScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const quizId = route.params?.quizId as number;
-  const eleveId = route.params?.eleveId as number;
+  const quizId = route.params?.quizId as string;
+  const eleveId = route.params?.eleveId as string;
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [timeLeft, setTimeLeft] = useState(0);
-  const [tentativeId, setTentativeId] = useState<number | null>(null);
+  const [tentativeId, setTentativeId] = useState<string | null>(null);
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -85,7 +85,7 @@ export default function QuizPassationScreen() {
 
   // Submit answers mutation
   const submitMutation = useMutation({
-    mutationFn: (data: { tentativeId: number; reponses: any[] }) =>
+    mutationFn: (data: { tentativeId: string; reponses: any[] }) =>
       quizApi.submitAnswers(data),
     onSuccess: (data: SubmitResult) => {
       setResult(data);
