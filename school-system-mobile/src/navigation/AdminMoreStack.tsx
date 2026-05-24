@@ -2,6 +2,9 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AdminMoreScreen from "@/screens/admin/AdminMoreScreen";
 import AdminStatsScreen from "@/screens/admin/AdminStatsScreen";
 import ClassStatsDetailScreen from "@/screens/ClassStatsDetailScreen";
+import ClassesComparisonScreen from "@/screens/admin/ClassesComparisonScreen";
+import SchoolYearlyTrendScreen from "@/screens/admin/SchoolYearlyTrendScreen";
+import TeachersPerformanceScreen from "@/screens/admin/TeachersPerformanceScreen";
 import DisciplineScreen from "@/screens/teacher/DisciplineScreen";
 import IncidentDetailScreen from "@/screens/admin/IncidentDetailScreen";
 import AdminInscriptionsScreen from "@/screens/admin/AdminInscriptionsScreen";
@@ -16,6 +19,9 @@ export type AdminMoreStackParamList = {
   MoreMenu: undefined;
   Stats: undefined;
   ClassStatsDetail: { classeId: string; classeName: string };
+  ClassesComparison: { niveauName: string };
+  YearlyTrend: undefined;
+  TeachersPerformance: undefined;
   Discipline: undefined;
   IncidentDetail: { incidentId: string };
   Inscriptions: undefined;
@@ -43,6 +49,9 @@ export default function AdminMoreStack() {
       <Stack.Screen name="MoreMenu" component={AdminMoreScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Stats" component={AdminStatsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="ClassStatsDetail" component={ClassStatsDetailScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="ClassesComparison" component={ClassesComparisonScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="YearlyTrend" component={SchoolYearlyTrendScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="TeachersPerformance" component={TeachersPerformanceScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Discipline" component={DisciplineScreen} options={{ headerShown: false }} />
       <Stack.Screen name="IncidentDetail" component={IncidentDetailScreen} options={{ title: "Incident" }} />
       <Stack.Screen name="Inscriptions" component={AdminInscriptionsScreen} options={{ headerShown: false }} />

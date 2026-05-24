@@ -118,6 +118,13 @@ export const adminApi = {
   /** MOB-FUNC-028 — alertes opérationnelles (impayés en retard, absentees, classes sans titulaire). */
   getOperationalAlerts: (anneeScolaire = "2025-2026"): Promise<OperationalAlerts> =>
     api.get("/admin/operational-alerts", { params: { anneeScolaire } }),
+
+  /** MOB-FUNC-033 — performance enseignants (saisies à jour, moyenne donnée). */
+  getTeachersPerformance: (
+    anneeScolaire = "2025-2026",
+    trimestre = 1,
+  ): Promise<TeacherPerformance[]> =>
+    api.get("/admin/teachers-performance", { params: { anneeScolaire, trimestre } }),
 };
 
 // ---- Admin home types (mirror back AdminHomeDTO) ----
@@ -135,4 +142,14 @@ export interface OperationalAlerts {
   impayes30j: number;
   absenteesCeMois: number;
   classesSansAffectation: number;
+}
+
+export interface TeacherPerformance {
+  teacherId: string;
+  prenom: string;
+  nom: string;
+  nbClasses: number;
+  saisiesAJour: number;
+  moyenneDonnee: number;
+  nbDevoirs: number;
 }

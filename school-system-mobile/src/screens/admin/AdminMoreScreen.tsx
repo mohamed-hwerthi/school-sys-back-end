@@ -181,6 +181,16 @@ export default function AdminMoreScreen() {
             onPress={() => navigation.navigate("Stats")}
           />
           <MenuRow
+            icon="trending-up-outline" label="Évolution annuelle" tint={colors.info}
+            subtitle="Inscriptions, paiements, absences sur 12 mois"
+            onPress={() => navigation.navigate("YearlyTrend")}
+          />
+          <MenuRow
+            icon="people-circle-outline" label="Performance enseignants" tint={colors.primary}
+            subtitle="Saisies à jour, moyennes données"
+            onPress={() => navigation.navigate("TeachersPerformance")}
+          />
+          <MenuRow
             icon="shield-checkmark-outline" label="Discipline" tint={colors.warning}
             subtitle="Incidents & sanctions"
             onPress={() => navigation.navigate("Discipline")}

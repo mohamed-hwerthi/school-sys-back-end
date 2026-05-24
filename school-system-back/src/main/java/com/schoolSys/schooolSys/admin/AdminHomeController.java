@@ -1,6 +1,7 @@
 package com.schoolSys.schooolSys.admin;
 
 import com.schoolSys.schooolSys.admin.dto.AdminHomeDTO;
+import com.schoolSys.schooolSys.admin.dto.TeacherPerformanceDTO;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * Endpoints alimentant les cartes du home admin (KPI + alertes opérationnelles).
@@ -34,5 +37,15 @@ public class AdminHomeController {
     public ResponseEntity<ApiResponse<AdminHomeDTO.OperationalAlerts>> getOperationalAlerts(
             @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(adminHomeService.getOperationalAlerts(anneeScolaire)));
+    }
+
+    /** MOB-FUNC-033 — tableau de performance enseignants. */
+    @GetMapping("/teachers-performance")
+    @PreAuthorize("hasAuthority('VIEW_REPORTS')")
+    public ResponseEntity<ApiResponse<List<TeacherPerformanceDTO>>> getTeachersPerformance(
+            @RequestParam(defaultValue = "2025-2026") String anneeScolaire,
+            @RequestParam(defaultValue = "1") int trimestre) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                adminHomeService.getTeachersPerformance(anneeScolaire, trimestre)));
     }
 }

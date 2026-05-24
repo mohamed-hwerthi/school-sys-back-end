@@ -253,6 +253,38 @@ export default function AdminStatsScreen() {
               </View>
             )}
 
+            {/* MOB-FUNC-030 — chips compare par niveau */}
+            {(() => {
+              const niveaux = Array.from(new Set(stats.map((c) => c.niveauName))).filter(Boolean);
+              if (niveaux.length === 0) return null;
+              return (
+                <View style={{ marginTop: spacing.xl }}>
+                  <Text style={{ fontSize: fontSize.xs, fontWeight: "800", color: colors.textMuted, letterSpacing: 1, marginBottom: spacing.sm }}>
+                    COMPARER LES CLASSES D'UN NIVEAU
+                  </Text>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                    {niveaux.map((nv) => (
+                      <TouchableOpacity
+                        key={nv}
+                        onPress={() => navigation.navigate("ClassesComparison", { niveauName: nv })}
+                        activeOpacity={0.7}
+                        style={{
+                          paddingHorizontal: spacing.md,
+                          paddingVertical: spacing.sm,
+                          borderRadius: 18,
+                          backgroundColor: colors.primary + "15",
+                          borderWidth: 1,
+                          borderColor: colors.primary + "30",
+                        }}
+                      >
+                        <Text style={{ fontSize: fontSize.sm, fontWeight: "700", color: colors.primary }}>{nv}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              );
+            })()}
+
             {/* Liste compacte */}
             <Text style={{ fontSize: fontSize.xs, fontWeight: "800", color: colors.textMuted, letterSpacing: 1, marginTop: spacing.xl, marginBottom: spacing.sm }}>
               DÉTAIL PAR CLASSE

@@ -75,4 +75,20 @@ public class ClassDrillDownDTO {
         private Double moyenne;
         private Integer rang;
     }
+
+    /** MOB-FUNC-029 — liste complète des élèves d'une classe avec leurs stats. */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StudentStats {
+        private UUID studentId;
+        private String prenom;
+        private String nom;
+        private String matricule;
+        private Double moyenne;
+        private Integer rang;
+        private Integer totalAbsences;
+        private Integer totalRetards;
+    }
 }

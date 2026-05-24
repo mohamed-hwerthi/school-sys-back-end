@@ -34,6 +34,8 @@ import java.time.Month;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -371,6 +373,62 @@ public class ReportingService {
                 .collect(Collectors.toList());
 
         return ClassDrillDownDTO.TopFlop.builder().top(top).flop(flop).build();
+    }
+
+    /**
+     * MOB-FUNC-029 — liste complète des élèves d'une classe avec moyenne + absences,
+     * triée par moyenne décroissante (rang assigné).
+     */
+    public List<ClassDrillDownDTO.StudentStats> getClassStudentsStats(UUID classeId, int trimestre) {
+        Classe c = classeRepository.findById(classeId).orElse(null);
+        if (c == null) return List.of();
+        String fullName = buildClasseFullName(c.getNiveau().getName(), c.getLetter());
+        List<com.schoolSys.schooolSys.student.Student> students = studentRepository.findByClasse(fullName);
+        if (students.isEmpty()) return List.of();
+
+        List<UUID> studentIds = students.stream().map(com.schoolSys.schooolSys.student.Student::getId).toList();
+        List<Absence> absences = absenceRepository.findByEleveIdIn(studentIds);
+        Map<UUID, long[]> absByStudent = new HashMap<>();
+        for (Absence a : absences) {
+            if (Boolean.TRUE.equals(a.getDeleted())) continue;
+            long[] counts = absByStudent.computeIfAbsent(a.getEleveId(), k -> new long[2]);
+            if ("RETARD".equals(a.getType())) counts[1]++;
+            else counts[0]++;
+        }
+
+        List<ClassDrillDownDTO.StudentStats> list = students.stream()
+                .map(s -> {
+                    List<Note> notes = noteRepository.findByStudentIdAndTrimestre(s.getId(), trimestre);
+                    double avg = notes.stream()
+                            .filter(n -> n.getValeur() != null)
+                            .mapToDouble(n -> n.getValeur().doubleValue())
+                            .average()
+                            .orElse(-1.0);
+                    long[] absCounts = absByStudent.getOrDefault(s.getId(), new long[]{0, 0});
+                    return ClassDrillDownDTO.StudentStats.builder()
+                            .studentId(s.getId())
+                            .prenom(s.getFirstName())
+                            .nom(s.getLastName())
+                            .matricule(s.getMatricule())
+                            .moyenne(avg < 0 ? null : Math.round(avg * 10.0) / 10.0)
+                            .totalAbsences((int) absCounts[0])
+                            .totalRetards((int) absCounts[1])
+                            .build();
+                })
+                .sorted((a, b) -> {
+                    Double am = a.getMoyenne();
+                    Double bm = b.getMoyenne();
+                    if (am == null && bm == null) return 0;
+                    if (am == null) return 1;
+                    if (bm == null) return -1;
+                    return Double.compare(bm, am);
+                })
+                .collect(Collectors.toList());
+
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getMoyenne() != null) list.get(i).setRang(i + 1);
+        }
+        return list;
     }
 
     private String buildClasseFullName(String niveauName, String letter) {

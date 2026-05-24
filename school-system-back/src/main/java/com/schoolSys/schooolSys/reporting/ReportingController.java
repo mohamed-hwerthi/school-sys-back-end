@@ -88,4 +88,29 @@ public class ReportingController {
             @RequestParam(defaultValue = "5") int limit) {
         return ResponseEntity.ok(ApiResponse.ok(reportingService.getTopFlop(classeId, trimestre, limit)));
     }
+
+    /** MOB-FUNC-029 — liste élèves d'une classe avec leurs stats (drill-down). */
+    @GetMapping("/class/{classeId}/students-stats")
+    @PreAuthorize("hasAuthority('READ_NOTES')")
+    public ResponseEntity<ApiResponse<List<ClassDrillDownDTO.StudentStats>>> getClassStudentsStats(
+            @PathVariable UUID classeId,
+            @RequestParam(defaultValue = "1") int trimestre) {
+        return ResponseEntity.ok(ApiResponse.ok(reportingService.getClassStudentsStats(classeId, trimestre)));
+    }
+
+    /**
+     * MOB-FUNC-030 — comparaison des classes d'un niveau pour un trimestre.
+     * Réutilise getClassStats et filtre par niveauName côté serveur.
+     */
+    @GetMapping("/niveau/{niveauName}/classes-comparison")
+    @PreAuthorize("hasAuthority('VIEW_REPORTS')")
+    public ResponseEntity<ApiResponse<List<ClassStatsDTO>>> getClassesComparison(
+            @PathVariable String niveauName,
+            @RequestParam(defaultValue = "1") int trimestre) {
+        List<ClassStatsDTO> all = reportingService.getClassStats(trimestre);
+        List<ClassStatsDTO> filtered = all.stream()
+                .filter(s -> niveauName.equalsIgnoreCase(s.getNiveauName()))
+                .toList();
+        return ResponseEntity.ok(ApiResponse.ok(filtered));
+    }
 }

@@ -11,7 +11,11 @@ import java.util.stream.Collectors;
 
 import com.schoolSys.schooolSys.absence.AbsenceRepository;
 import com.schoolSys.schooolSys.admin.dto.AdminHomeDTO;
+import com.schoolSys.schooolSys.admin.dto.TeacherPerformanceDTO;
 import com.schoolSys.schooolSys.affectation.AffectationRepository;
+import com.schoolSys.schooolSys.devoir.DevoirRepository;
+import com.schoolSys.schooolSys.examen.Examen;
+import com.schoolSys.schooolSys.examen.ExamenRepository;
 import com.schoolSys.schooolSys.finance.Paiement;
 import com.schoolSys.schooolSys.finance.PaiementRepository;
 import com.schoolSys.schooolSys.niveau.Classe;
@@ -20,6 +24,8 @@ import com.schoolSys.schooolSys.note.Note;
 import com.schoolSys.schooolSys.note.NoteRepository;
 import com.schoolSys.schooolSys.student.Student;
 import com.schoolSys.schooolSys.student.StudentRepository;
+import com.schoolSys.schooolSys.teacher.Teacher;
+import com.schoolSys.schooolSys.teacher.TeacherRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -41,6 +47,9 @@ public class AdminHomeService {
     private final PaiementRepository paiementRepository;
     private final AbsenceRepository absenceRepository;
     private final NoteRepository noteRepository;
+    private final TeacherRepository teacherRepository;
+    private final ExamenRepository examenRepository;
+    private final DevoirRepository devoirRepository;
 
     public AdminHomeDTO.DashboardKpis getDashboardKpis(String anneeScolaire) {
         List<Student> activeStudents = studentRepository.findAll().stream()
@@ -125,6 +134,61 @@ public class AdminHomeService {
                 .impayes(impayes.setScale(2, RoundingMode.HALF_UP))
                 .tauxPresence(tauxPresence)
                 .tauxReussite(tauxReussite)
+                .build();
+    }
+
+    /**
+     * MOB-FUNC-033 — tableau de performance enseignants (toutes affectations années courantes).
+     */
+    public List<TeacherPerformanceDTO> getTeachersPerformance(String anneeScolaire, int trimestre) {
+        return teacherRepository.findAll().stream()
+                .filter(t -> Boolean.FALSE.equals(t.getDeleted()))
+                .map(t -> buildPerformance(t, anneeScolaire, trimestre))
+                .sorted((a, b) -> Double.compare(
+                        b.getSaisiesAJour() != null ? b.getSaisiesAJour() : 0.0,
+                        a.getSaisiesAJour() != null ? a.getSaisiesAJour() : 0.0))
+                .collect(Collectors.toList());
+    }
+
+    private TeacherPerformanceDTO buildPerformance(Teacher t, String anneeScolaire, int trimestre) {
+        int nbClasses = (int) affectationRepository
+                .findByTeacherIdAndAnneeScolaire(t.getId(), anneeScolaire).stream()
+                .map(a -> a.getClasseId())
+                .distinct()
+                .count();
+
+        List<Examen> examens = examenRepository.findFiltered(null, null, trimestre).stream()
+                .filter(e -> Boolean.FALSE.equals(e.getDeleted()))
+                .filter(e -> e.getTeacher() != null && t.getId().equals(e.getTeacher().getId()))
+                .collect(Collectors.toList());
+
+        double saisiesAJour = 0.0;
+        if (!examens.isEmpty()) {
+            long withNotes = examens.stream()
+                    .filter(e -> noteRepository.countByExamenIdAndTrimestre(e.getId(), e.getTrimestre()) > 0)
+                    .count();
+            saisiesAJour = Math.round((withNotes * 100.0 / examens.size()) * 10.0) / 10.0;
+        }
+
+        double avg = examens.stream()
+                .flatMap(e -> noteRepository.findByExamenIdAndTrimestre(e.getId(), e.getTrimestre()).stream())
+                .filter(n -> n.getValeur() != null)
+                .mapToDouble(n -> n.getValeur().doubleValue())
+                .average()
+                .orElse(0.0);
+
+        int nbDevoirs = (int) devoirRepository.findByEnseignantIdOrderByDateLimiteDesc(t.getId()).stream()
+                .filter(d -> Boolean.FALSE.equals(d.getDeleted()))
+                .count();
+
+        return TeacherPerformanceDTO.builder()
+                .teacherId(t.getId())
+                .prenom(t.getFirstName())
+                .nom(t.getLastName())
+                .nbClasses(nbClasses)
+                .saisiesAJour(saisiesAJour)
+                .moyenneDonnee(Math.round(avg * 10.0) / 10.0)
+                .nbDevoirs(nbDevoirs)
                 .build();
     }
 

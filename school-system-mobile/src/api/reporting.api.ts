@@ -101,6 +101,16 @@ export const reportingApi = {
   /** MOB-FUNC-018 — top et flop élèves d'une classe pour un trimestre. */
   getTopFlop: (classeId: string, trimestre: number, limit = 5): Promise<TopFlop> =>
     api.get(`/reporting/class/${classeId}/top-flop`, { params: { trimestre, limit } }),
+
+  /** MOB-FUNC-029 — liste complète des élèves d'une classe avec stats. */
+  getClassStudentsStats: (classeId: string, trimestre: number): Promise<StudentStats[]> =>
+    api.get(`/reporting/class/${classeId}/students-stats`, { params: { trimestre } }),
+
+  /** MOB-FUNC-030 — comparaison des classes d'un niveau. */
+  getClassesComparison: (niveauName: string, trimestre: number): Promise<ClassStats[]> =>
+    api.get(`/reporting/niveau/${encodeURIComponent(niveauName)}/classes-comparison`, {
+      params: { trimestre },
+    }),
 };
 
 // ---- Drill-down types (mirror back ClassDrillDownDTO) ----
@@ -138,4 +148,15 @@ export interface StudentRank {
 export interface TopFlop {
   top: StudentRank[];
   flop: StudentRank[];
+}
+
+export interface StudentStats {
+  studentId: string;
+  prenom: string;
+  nom: string;
+  matricule: string | null;
+  moyenne: number | null;
+  rang: number | null;
+  totalAbsences: number;
+  totalRetards: number;
 }

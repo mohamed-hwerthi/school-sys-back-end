@@ -8,6 +8,7 @@ import {
   type TrimestreEvolution,
   type TopFlop,
   type StudentRank,
+  type StudentStats,
 } from "@/api/reporting.api";
 import { GradientHeader } from "@/components/GradientHeader";
 import { SegmentedControl } from "@/components/SegmentedControl";
@@ -106,11 +107,19 @@ export default function ClassStatsDetailScreen() {
     enabled: !!classeId,
   });
 
-  const refreshing = distQ.isFetching || evolQ.isFetching || tfQ.isFetching;
+  // MOB-FUNC-029 — liste complète des élèves
+  const studentsQ = useQuery({
+    queryKey: ["class-drill", classeId, "students", trimestreInt],
+    queryFn: () => reportingApi.getClassStudentsStats(classeId, trimestreInt),
+    enabled: !!classeId,
+  });
+
+  const refreshing = distQ.isFetching || evolQ.isFetching || tfQ.isFetching || studentsQ.isFetching;
   const onRefresh = () => {
     distQ.refetch();
     evolQ.refetch();
     tfQ.refetch();
+    studentsQ.refetch();
   };
 
   if (distQ.isLoading && evolQ.isLoading && tfQ.isLoading) {
@@ -261,6 +270,78 @@ export default function ClassStatsDetailScreen() {
               </>
             )}
           </View>
+
+          {/* MOB-FUNC-029 — tous les élèves */}
+          {studentsQ.data && studentsQ.data.length > 0 && (
+            <View
+              style={{
+                backgroundColor: colors.background,
+                borderRadius: borderRadius.lg,
+                padding: spacing.lg,
+                marginBottom: spacing.lg,
+                ...shadows.soft,
+              }}
+            >
+              <Text style={{ fontSize: fontSize.md, fontWeight: "800", color: colors.text, marginBottom: spacing.sm }}>
+                👥 Tous les élèves ({studentsQ.data.length})
+              </Text>
+              <View style={{ flexDirection: "row", paddingBottom: 6, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+                <Text style={{ flex: 2, fontSize: fontSize.xs, fontWeight: "700", color: colors.textMuted }}>
+                  Élève
+                </Text>
+                <Text style={{ flex: 0.7, fontSize: fontSize.xs, fontWeight: "700", color: colors.textMuted, textAlign: "right" }}>
+                  Moy
+                </Text>
+                <Text style={{ flex: 0.6, fontSize: fontSize.xs, fontWeight: "700", color: colors.textMuted, textAlign: "right" }}>
+                  Abs
+                </Text>
+              </View>
+              {studentsQ.data.map((s: StudentStats, i) => (
+                <TouchableOpacity
+                  key={s.studentId}
+                  onPress={() => navigation.navigate("TeacherStudentDetail", { studentId: s.studentId })}
+                  activeOpacity={0.7}
+                  style={{
+                    flexDirection: "row",
+                    paddingVertical: spacing.xs,
+                    borderBottomWidth: i < (studentsQ.data?.length ?? 0) - 1 ? 1 : 0,
+                    borderBottomColor: colors.border + "60",
+                  }}
+                >
+                  <View style={{ flex: 2 }}>
+                    <Text numberOfLines={1} style={{ fontSize: fontSize.sm, color: colors.text }}>
+                      {s.rang ? `#${s.rang} ` : ""}{s.prenom} {s.nom}
+                    </Text>
+                    {s.matricule && (
+                      <Text style={{ fontSize: 10, color: colors.textMuted }}>{s.matricule}</Text>
+                    )}
+                  </View>
+                  <Text
+                    style={{
+                      flex: 0.7,
+                      fontSize: fontSize.sm,
+                      fontWeight: "700",
+                      color: s.moyenne === null ? colors.textMuted : colorForMoyenne(s.moyenne, colors),
+                      textAlign: "right",
+                    }}
+                  >
+                    {s.moyenne === null ? "—" : s.moyenne.toFixed(1)}
+                  </Text>
+                  <Text
+                    style={{
+                      flex: 0.6,
+                      fontSize: fontSize.sm,
+                      fontWeight: "700",
+                      color: s.totalAbsences > 5 ? colors.error : colors.text,
+                      textAlign: "right",
+                    }}
+                  >
+                    {s.totalAbsences}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
