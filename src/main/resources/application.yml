@@ -2,7 +2,7 @@ spring:
   application:
     name: school-system
   profiles:
-    active: dev
+    active: prod
   jpa:
     open-in-view: false
   servlet:
