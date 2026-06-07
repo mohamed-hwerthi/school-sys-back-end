@@ -34,7 +34,7 @@ export function useUser(id: string) {
   return useQuery<UserItem>({
     queryKey: [USERS_KEY, id],
     queryFn: () => usersApi.getById(id),
-    enabled: id > 0,
+    enabled: !!id,
   });
 }
 

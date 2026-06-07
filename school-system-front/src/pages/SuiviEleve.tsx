@@ -10,12 +10,10 @@ import {
   Clock,
   Shield,
   CreditCard,
-  Search,
   Activity,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import StudentCombobox from "@/components/StudentCombobox";
 import { useSuiviEleve } from "@/hooks/useAnalytics";
 import { useAbsencesByEleve } from "@/hooks/useAbsences";
 import { useNotesByStudent } from "@/hooks/useNotes";
@@ -74,8 +72,7 @@ const T_COLORS = ["#6366f1", "#f59e0b", "#10b981"];
 
 export default function SuiviEleve() {
   const loading = useSimulatedLoading(600);
-  const [eleveId, setEleveId] = useState<number>(0);
-  const [searchInput, setSearchInput] = useState("");
+  const [eleveId, setEleveId] = useState<string>("");
   const { data: suivi, isLoading, isError } = useSuiviEleve(eleveId);
 
   // Fetch real notes for all 3 trimesters
@@ -85,13 +82,6 @@ export default function SuiviEleve() {
 
   // Fetch real absences
   const { data: absences = [] } = useAbsencesByEleve(eleveId);
-
-  const handleSearch = () => {
-    const id = parseInt(searchInput, 10);
-    if (!isNaN(id) && id) {
-      setEleveId(id);
-    }
-  };
 
   // Compute grade entries from real notes data
   const gradeEntries: GradeEntry[] = useMemo(() => {
@@ -187,32 +177,23 @@ export default function SuiviEleve() {
       <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible"
         className="rounded-xl border border-border/50 bg-card p-4 shadow-sm"
       >
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              placeholder="ID de l'eleve..."
-              className="ps-9"
-            />
-          </div>
-          <Button onClick={handleSearch} size="sm" className="gap-1.5">
-            <Search className="h-4 w-4" />
-            Rechercher
-          </Button>
+        <div className="max-w-xl">
+          <StudentCombobox
+            value={eleveId}
+            onChange={setEleveId}
+            placeholder="Sélectionner un élève"
+          />
         </div>
       </motion.div>
 
       {/* No student selected */}
-      {!suivi && !isLoading && !isError && (
+      {!eleveId && !isLoading && !isError && (
         <motion.div custom={2} variants={fadeUp} initial="hidden" animate="visible"
           className="rounded-xl border border-border/50 bg-card p-12 text-center"
         >
           <User className="h-12 w-12 mx-auto mb-3 text-muted-foreground/30" />
           <p className="text-muted-foreground">
-            Entrez l'ID d'un eleve pour voir son suivi complet
+            Sélectionnez un niveau, une classe puis un élève pour voir son suivi complet
           </p>
         </motion.div>
       )}

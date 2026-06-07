@@ -76,7 +76,7 @@ public class SecurityConfig {
                         // an <img src> / <a href> cannot carry the JWT header.
                         // Paths contain a UUID, so they are not guessable.
                         // Upload/delete stay authenticated.
-                        .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/files/**", "/uploads/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

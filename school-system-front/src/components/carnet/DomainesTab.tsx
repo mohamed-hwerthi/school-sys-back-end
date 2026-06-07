@@ -14,6 +14,7 @@ import { notify } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -71,6 +72,10 @@ export default function DomainesTab() {
     name: "",
     nameAr: "",
     ordre: 1,
+    coeffEtatique: 1,
+    coeffPrive: 1,
+    versionEtatique: true,
+    versionPrivee: true,
     niveauId: "",
   });
   const [deleteTarget, setDeleteTarget] = useState<DomaineDTO | null>(null);
@@ -106,7 +111,16 @@ export default function DomainesTab() {
       return;
     }
     setEditDomId(null);
-    setDomForm({ name: "", nameAr: "", ordre: domaines.length + 1, niveauId: selectedNiveauId });
+    setDomForm({
+      name: "",
+      nameAr: "",
+      ordre: domaines.length + 1,
+      coeffEtatique: 1,
+      coeffPrive: 1,
+      versionEtatique: true,
+      versionPrivee: true,
+      niveauId: selectedNiveauId,
+    });
     setShowDomDialog(true);
   };
 
@@ -116,6 +130,10 @@ export default function DomainesTab() {
       name: d.name,
       nameAr: d.nameAr || "",
       ordre: d.ordre,
+      coeffEtatique: d.coeffEtatique,
+      coeffPrive: d.coeffPrive,
+      versionEtatique: d.versionEtatique,
+      versionPrivee: d.versionPrivee,
       niveauId: d.niveauId,
     });
     setShowDomDialog(true);
@@ -312,6 +330,18 @@ export default function DomainesTab() {
                       Ordre: {d.ordre} · {d.sousDomaines.length} sous-domaine
                       {d.sousDomaines.length !== 1 ? "s" : ""}
                     </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      {d.versionEtatique && (
+                        <span className="inline-flex items-center rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700">
+                          Étatique · coeff {d.coeffEtatique}
+                        </span>
+                      )}
+                      {d.versionPrivee && (
+                        <span className="inline-flex items-center rounded-md bg-purple-50 px-1.5 py-0.5 text-[10px] font-medium text-purple-700">
+                          Privé · coeff {d.coeffPrive}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   {canManage && (
                     <div className="flex items-center gap-1">
@@ -447,6 +477,67 @@ export default function DomainesTab() {
                   setDomForm({ ...domForm, ordre: Number(e.target.value) })
                 }
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Coefficient étatique</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  value={domForm.coeffEtatique}
+                  onChange={(e) =>
+                    setDomForm({
+                      ...domForm,
+                      coeffEtatique: Number(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label>Coefficient privé</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  value={domForm.coeffPrive}
+                  onChange={(e) =>
+                    setDomForm({
+                      ...domForm,
+                      coeffPrive: Number(e.target.value),
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <div>
+              <Label className="mb-2 block">Affichage</Label>
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="dom-ve"
+                    checked={domForm.versionEtatique}
+                    onCheckedChange={(checked) =>
+                      setDomForm({ ...domForm, versionEtatique: !!checked })
+                    }
+                  />
+                  <Label htmlFor="dom-ve" className="cursor-pointer">
+                    Version étatique
+                  </Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="dom-vp"
+                    checked={domForm.versionPrivee}
+                    onCheckedChange={(checked) =>
+                      setDomForm({ ...domForm, versionPrivee: !!checked })
+                    }
+                  />
+                  <Label htmlFor="dom-vp" className="cursor-pointer">
+                    Version privée
+                  </Label>
+                </div>
+              </div>
             </div>
           </div>
           <DialogFooter className="mt-4">

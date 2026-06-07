@@ -23,4 +23,7 @@ public interface AbonnementCantineRepository extends JpaRepository<AbonnementCan
 
     @Query("SELECT COALESCE(SUM(a.montant), 0) FROM AbonnementCantine a WHERE a.actif = true")
     java.math.BigDecimal sumMontantActifs();
+
+    @Query("SELECT a.typeAbonnement, COUNT(a) FROM AbonnementCantine a WHERE a.actif = true GROUP BY a.typeAbonnement")
+    List<Object[]> countActifsByType();
 }

@@ -70,6 +70,17 @@ export function useDeleteMenu() {
   });
 }
 
+export function useUploadMenuImage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) =>
+      menusApi.uploadImage(id, file),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [MENUS_KEY] });
+    },
+  });
+}
+
 // ---- Abonnements Cantine ----
 
 export function useAbonnementsCantine() {

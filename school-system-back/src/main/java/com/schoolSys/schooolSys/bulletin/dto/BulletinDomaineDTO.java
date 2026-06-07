@@ -15,6 +15,7 @@ public class BulletinDomaineDTO {
     private String domaineName;
     private String domaineNameAr;
     private Integer ordre;
+    private Double coeff;
     private List<BulletinModuleDTO> modules;
     private Double moyenneDomaine;
     private String recommandation;

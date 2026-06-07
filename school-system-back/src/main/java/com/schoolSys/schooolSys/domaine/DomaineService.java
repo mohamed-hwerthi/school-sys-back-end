@@ -54,6 +54,10 @@ public class DomaineService {
                 .name(dto.getName())
                 .nameAr(dto.getNameAr())
                 .ordre(dto.getOrdre())
+                .coeffEtatique(dto.getCoeffEtatique())
+                .coeffPrive(dto.getCoeffPrive())
+                .versionEtatique(dto.getVersionEtatique())
+                .versionPrivee(dto.getVersionPrivee())
                 .niveau(niveau)
                 .build();
 
@@ -74,6 +78,10 @@ public class DomaineService {
         domaine.setName(dto.getName());
         domaine.setNameAr(dto.getNameAr());
         domaine.setOrdre(dto.getOrdre());
+        domaine.setCoeffEtatique(dto.getCoeffEtatique());
+        domaine.setCoeffPrive(dto.getCoeffPrive());
+        domaine.setVersionEtatique(dto.getVersionEtatique());
+        domaine.setVersionPrivee(dto.getVersionPrivee());
 
         return toResponse(domaineRepository.save(domaine));
     }
@@ -142,6 +150,10 @@ public class DomaineService {
                 .name(d.getName())
                 .nameAr(d.getNameAr())
                 .ordre(d.getOrdre())
+                .coeffEtatique(d.getCoeffEtatique())
+                .coeffPrive(d.getCoeffPrive())
+                .versionEtatique(d.getVersionEtatique())
+                .versionPrivee(d.getVersionPrivee())
                 .niveauId(d.getNiveau().getId())
                 .niveauName(d.getNiveau().getName())
                 .sousDomaines(d.getSousDomaines().stream().map(this::toSousDomaineDTO).toList())

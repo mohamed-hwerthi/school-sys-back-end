@@ -22,7 +22,7 @@ export function useTeacherEvaluation(id: string) {
   return useQuery<TeacherEvaluation>({
     queryKey: [EVALUATIONS_KEY, id],
     queryFn: () => teacherEvaluationsApi.getById(id),
-    enabled: id > 0,
+    enabled: !!id,
   });
 }
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const depenseSchema = z.object({
-  categorieId: z.coerce.number().int().positive("Catégorie requise"),
+  categorieId: z.string().min(1, "Catégorie requise"),
   libelle: z.string().trim().min(3, "Libellé requis (min 3 caractères)"),
   montant: z.coerce.number().positive("Montant > 0"),
   dateDepense: z.string().min(1, "Date requise"),
@@ -16,7 +16,7 @@ export const depenseSchema = z.object({
 export type DepenseFormValues = z.infer<typeof depenseSchema>;
 
 export const relanceSchema = z.object({
-  studentId: z.coerce.number().int().positive("Élève requis"),
+  studentId: z.string().min(1, "Élève requis"),
   type: z.string().min(1, "Type requis"),
   message: z.string().trim().min(5, "Message trop court (min 5 caractères)"),
   destinataire: z.string().trim().min(1, "Destinataire requis"),
@@ -26,7 +26,7 @@ export const relanceSchema = z.object({
 export type RelanceFormValues = z.infer<typeof relanceSchema>;
 
 export const factureSchema = z.object({
-  eleveId: z.coerce.number().int().positive("Élève requis"),
+  eleveId: z.string().min(1, "Élève requis"),
   montantTotal: z.coerce.number().positive("Montant > 0"),
   dateEmission: z.string().optional(),
   dateEcheance: z.string().optional(),
@@ -38,7 +38,7 @@ export type FactureFormValues = z.infer<typeof factureSchema>;
 
 export const echeancierSchema = z
   .object({
-    eleveId: z.coerce.number().int().positive("Élève requis"),
+    eleveId: z.string().min(1, "Élève requis"),
     montantTotal: z.coerce.number().positive("Montant > 0"),
     nombreEcheances: z.coerce.number().int().min(2, "Min 2 échéances").max(24, "Max 24"),
     dateDebut: z.string().min(1, "Date début requise"),
@@ -48,7 +48,7 @@ export const echeancierSchema = z
 export type EcheancierFormValues = z.infer<typeof echeancierSchema>;
 
 export const remiseSchema = z.object({
-  eleveId: z.coerce.number().int().positive("Élève requis"),
+  eleveId: z.string().min(1, "Élève requis"),
   motif: z.string().trim().min(3, "Motif requis (min 3 caractères)"),
   pourcentage: z.coerce.number().min(0, "Min 0%").max(100, "Max 100%").optional(),
   montant: z.coerce.number().min(0, "Min 0").optional(),
@@ -60,7 +60,7 @@ export const remiseSchema = z.object({
 export type RemiseFormValues = z.infer<typeof remiseSchema>;
 
 export const penaliteSchema = z.object({
-  eleveId: z.coerce.number().int().positive("Élève requis"),
+  eleveId: z.string().min(1, "Élève requis"),
   motif: z.string().trim().min(3, "Motif requis (min 3 caractères)"),
   montant: z.coerce.number().positive("Montant > 0"),
   dateEmission: z.string().optional(),

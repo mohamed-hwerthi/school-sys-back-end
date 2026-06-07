@@ -66,10 +66,13 @@ function DomaineBlock({ domaine, bulletins }: { domaine: BulletinDomaineDTO; bul
         {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         <span className="font-semibold text-sm text-foreground">{domaine.domaineName}</span>
         {domaine.domaineNameAr && (
-          <span className="text-xs text-muted-foreground me-auto" dir="rtl">
+          <span className="text-xs text-muted-foreground" dir="rtl">
             {domaine.domaineNameAr}
           </span>
         )}
+        <span className="ms-auto inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+          coeff {domaine.coeff}
+        </span>
       </button>
 
       {expanded && (

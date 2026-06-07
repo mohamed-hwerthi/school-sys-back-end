@@ -3,6 +3,7 @@ package com.schoolSys.schooolSys.vitrine;
 import java.util.UUID;
 
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.settings.SchoolSettingsRepository;
 import com.schoolSys.schooolSys.vitrine.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,14 +28,32 @@ public class VitrineService {
     private final VitrineAnnouncementRepository announcementRepository;
     private final VitrineContactRepository contactRepository;
     private final VitrinePageViewRepository pageViewRepository;
+    private final SchoolSettingsRepository schoolSettingsRepository;
     private final VitrineMapper mapper;
+
+    // Placeholder seeded by V28 — we override it with the real school name
+    // until the admin sets a custom display name.
+    private static final String DEFAULT_PLACEHOLDER_NAME = "Notre École";
+
+    /** If the display name is empty or still the seed placeholder, fall back
+     *  to the tenant's actual school name from school_settings. */
+    private VitrineConfigDTO withResolvedDisplayName(VitrineConfigDTO dto) {
+        String current = dto.getSchoolDisplayName();
+        if (current == null || current.isBlank() || DEFAULT_PLACEHOLDER_NAME.equals(current)) {
+            schoolSettingsRepository.findAll().stream().findFirst()
+                    .map(s -> s.getSchoolName())
+                    .filter(n -> n != null && !n.isBlank())
+                    .ifPresent(dto::setSchoolDisplayName);
+        }
+        return dto;
+    }
 
     // ======================== CONFIG ========================
 
     public VitrineConfigDTO getConfig() {
         VitrineConfig config = configRepository.findFirstByOrderByIdAsc()
                 .orElseThrow(() -> new ResourceNotFoundException("Vitrine config not found"));
-        return mapper.toConfigDTO(config);
+        return withResolvedDisplayName(mapper.toConfigDTO(config));
     }
 
     @Transactional

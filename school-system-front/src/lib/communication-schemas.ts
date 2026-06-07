@@ -31,7 +31,7 @@ export const reunionSchema = z
 export type ReunionFormValues = z.infer<typeof reunionSchema>;
 
 export const fichePaieSchema = z.object({
-  employeId: z.coerce.number().int().positive("Employé requis"),
+  employeId: z.string().min(1, "Employé requis"),
   employeType: z.string().optional(),
   mois: z.coerce.number().int().min(1, "Min 1").max(12, "Max 12"),
   annee: z.coerce.number().int().min(2000, "Année invalide").max(2100, "Année invalide"),
@@ -47,7 +47,7 @@ export type FichePaieFormValues = z.infer<typeof fichePaieSchema>;
 
 export const contratSchema = z
   .object({
-    enseignantId: z.coerce.number().int().positive("Enseignant requis"),
+    enseignantId: z.string().min(1, "Enseignant requis"),
     typeContrat: z.string().min(1, "Type requis"),
     dateDebut: z.string().min(1, "Date début requise"),
     dateFin: z.string().optional(),
@@ -62,7 +62,7 @@ export type ContratFormValues = z.infer<typeof contratSchema>;
 
 export const congeSchema = z
   .object({
-    enseignantId: z.coerce.number().int().positive("Enseignant requis"),
+    enseignantId: z.string().min(1, "Enseignant requis"),
     type: z.string().optional(),
     dateDebut: z.string().min(1, "Date début requise"),
     dateFin: z.string().min(1, "Date fin requise"),

@@ -156,7 +156,6 @@
     "ranking": "General Ranking",
     "noAveragesAvailable": "No averages available",
     "enterNotesToSee": "Enter grades to see averages",
-    "loading": "Loading...",
     "annual": "Annual",
     "months": {
       "january": "January",
@@ -210,7 +209,8 @@
       "transfer": "Bank transfer",
       "card": "Credit card",
       "debit": "Direct debit"
-    }
+    },
+    "confirmDeletion": "Confirm deletion"
   },
   "nav": {
     "home": "Home",
@@ -293,7 +293,8 @@
     "levels": "Levels",
     "messages": "Messages",
     "scholarships": "Scholarships",
-    "forecasts": "Forecasts"
+    "forecasts": "Forecasts",
+    "personnel": "Staff"
   },
   "auth": {
     "login": "Login",
@@ -1879,5 +1880,20 @@
   "app": {
     "name": "EcoleNet",
     "subtitle": "School Management"
+  },
+  "personnel": {
+    "title": "Staff",
+    "subtitle": "Manage non-teaching staff (secretaries, accountants, guards…)",
+    "addPersonnel": "Add employee",
+    "editPersonnel": "Edit employee",
+    "fillInfo": "Fill in the employee information",
+    "employee": "Employee",
+    "fonction": "Role",
+    "totalPersonnel": "Total staff",
+    "noPersonnelFound": "No employee found",
+    "personnelDetails": "Employee details",
+    "personnelNotFound": "Employee not found",
+    "personnelNotFoundDesc": "This employee does not exist or has been deleted.",
+    "confirmDeleteText": "Are you sure you want to delete the employee"
   }
 }

@@ -7,12 +7,15 @@ import com.schoolSys.schooolSys.cantine.dto.PointageBatchRequest;
 import com.schoolSys.schooolSys.cantine.dto.PointageRepasDTO;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +24,7 @@ public class PointageRepasService {
 
     private final PointageRepasRepository pointageRepository;
     private final AbonnementCantineRepository abonnementRepository;
+    private final MenuRepository menuRepository;
     private final CurrentUserContext currentUserContext;
 
     public List<PointageRepasDTO> getByDate(LocalDate date) {
@@ -70,11 +74,40 @@ public class PointageRepasService {
                 : 0.0;
         BigDecimal revenuesMensuel = abonnementRepository.sumMontantActifs();
 
+        Map<String, Long> repartitionTypeAbonnement = new LinkedHashMap<>();
+        for (Object[] row : abonnementRepository.countActifsByType()) {
+            repartitionTypeAbonnement.put((String) row[0], ((Number) row[1]).longValue());
+        }
+
+        LocalDate weekStart = today.minusDays(6);
+        Map<LocalDate, Long> evolutionMap = new LinkedHashMap<>();
+        for (int i = 0; i < 7; i++) {
+            evolutionMap.put(weekStart.plusDays(i), 0L);
+        }
+        for (Object[] row : pointageRepository.countPresentsBetweenGrouped(weekStart, today)) {
+            evolutionMap.put((LocalDate) row[0], ((Number) row[1]).longValue());
+        }
+        List<CantineStatsDTO.RepasJourDTO> evolutionRepas = evolutionMap.entrySet().stream()
+                .map(e -> CantineStatsDTO.RepasJourDTO.builder().date(e.getKey()).count(e.getValue()).build())
+                .collect(Collectors.toList());
+
+        LocalDate monthStart = today.withDayOfMonth(1);
+        List<CantineStatsDTO.TopPlatDTO> topPlats = menuRepository
+                .topPlatsBetween(monthStart, today, PageRequest.of(0, 5)).stream()
+                .map(row -> CantineStatsDTO.TopPlatDTO.builder()
+                        .platPrincipal((String) row[0])
+                        .count(((Number) row[1]).longValue())
+                        .build())
+                .collect(Collectors.toList());
+
         return CantineStatsDTO.builder()
                 .totalAbonnes(totalAbonnes)
                 .repasAujourdHui(repasAujourdHui)
                 .tauxPresence(tauxPresence)
                 .revenuesMensuel(revenuesMensuel != null ? revenuesMensuel : BigDecimal.ZERO)
+                .repartitionTypeAbonnement(repartitionTypeAbonnement)
+                .evolutionRepas(evolutionRepas)
+                .topPlats(topPlats)
                 .build();
     }
 

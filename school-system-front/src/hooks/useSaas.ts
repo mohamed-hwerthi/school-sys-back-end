@@ -39,7 +39,7 @@ export function useTenantUsage(id: string, enabled = true) {
   return useQuery<TenantUsage>({
     queryKey: [USAGE_KEY, id],
     queryFn: () => saasApi.getTenantUsage(id),
-    enabled: enabled && id > 0,
+    enabled: enabled && !!id,
   });
 }
 

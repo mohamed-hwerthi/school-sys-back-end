@@ -4,6 +4,7 @@ import {
   type AffectationDTO,
   type AffectationFilters,
   type AffectationRequest,
+  type AffectationBulkRequest,
 } from "@/api/affectations.api";
 
 const KEY = "affectations";
@@ -19,6 +20,14 @@ export function useCreateAffectation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (req: AffectationRequest) => affectationsApi.create(req),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
+}
+
+export function useBulkCreateAffectation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (req: AffectationBulkRequest) => affectationsApi.bulkCreate(req),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }

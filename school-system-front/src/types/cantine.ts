@@ -13,6 +13,7 @@ export interface Menu {
   allergenes: string[];
   typeRegime: TypeRegime;
   semaine?: number;
+  imageUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -27,6 +28,7 @@ export interface CreateMenuRequest {
   allergenes?: string[];
   typeRegime?: TypeRegime;
   semaine?: number;
+  imageUrl?: string;
 }
 
 export interface AbonnementCantine {
@@ -76,4 +78,7 @@ export interface CantineStats {
   repasAujourdHui: number;
   tauxPresence: number;
   revenuesMensuel: number;
+  repartitionTypeAbonnement: Record<string, number>;
+  evolutionRepas: Array<{ date: string; count: number }>;
+  topPlats: Array<{ platPrincipal: string; count: number }>;
 }

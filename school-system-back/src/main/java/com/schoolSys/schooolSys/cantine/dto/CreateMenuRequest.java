@@ -27,4 +27,5 @@ public class CreateMenuRequest {
     private List<String> allergenes;
     private String typeRegime;
     private Integer semaine;
+    private String imageUrl;
 }

@@ -70,13 +70,19 @@ api.interceptors.response.use(
     // If 401 and not already retrying, try refresh token
     if (error.response?.status === 401 && !originalRequest._retry) {
       const refreshToken = localStorage.getItem("refreshToken");
+      const hadToken = !!localStorage.getItem("token");
 
       // No refresh token or it's the auth endpoint itself — redirect to login
       if (!refreshToken || originalRequest.url?.includes("/auth/")) {
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
-        window.location.href = "/";
+        // Only force-redirect anonymous visitors away from auth-protected
+        // pages — public pages (vitrine, /inscription) must just reject the
+        // promise so they can render with limited data.
+        if (hadToken) {
+          window.location.href = "/";
+        }
         return Promise.reject(error);
       }
 

@@ -23,7 +23,7 @@ export function useIncident(id: string) {
   return useQuery<Incident>({
     queryKey: [INCIDENTS_KEY, id],
     queryFn: () => disciplineApi.getIncidentById(id),
-    enabled: id > 0,
+    enabled: !!id,
   });
 }
 

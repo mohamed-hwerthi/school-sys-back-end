@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    @Value("${app.frontend-url:http://localhost:5173}")
+    @Value("${app.frontend-url:http://localhost:5000}")
     private String frontendUrl;
 
     @Value("${spring.mail.enabled:false}")

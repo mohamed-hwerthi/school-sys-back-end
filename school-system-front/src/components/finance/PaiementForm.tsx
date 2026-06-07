@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { paiementSchema, type PaiementFormValues } from "@/lib/finance-schema";
@@ -43,8 +44,8 @@ export function PaiementForm({
   } = useForm<PaiementFormValues>({
     resolver: zodResolver(paiementSchema),
     defaultValues: {
-      eleveId: 0,
-      typeFraisId: 0,
+      eleveId: "",
+      typeFraisId: "",
       mois: "",
       montantDu: 0,
       montantPaye: 0,
@@ -63,10 +64,54 @@ export function PaiementForm({
   const modePaiement = watch("modePaiement");
   const statut = watch("statut");
 
+  // ── Cascade Niveau → Classe → Élève ──────────────────────────────
+  const [selectedNiveau, setSelectedNiveau] = useState<string>("");
+  const [selectedClasse, setSelectedClasse] = useState<string>("");
+
+  const niveaux = useMemo(
+    () => Array.from(new Set(activeStudents.map((s) => s.niveau).filter(Boolean))).sort(),
+    [activeStudents]
+  );
+
+  const classes = useMemo(() => {
+    const filtered = selectedNiveau
+      ? activeStudents.filter((s) => s.niveau === selectedNiveau)
+      : activeStudents;
+    return Array.from(new Set(filtered.map((s) => s.classe).filter(Boolean))).sort();
+  }, [activeStudents, selectedNiveau]);
+
+  const filteredStudents = useMemo(() => {
+    return activeStudents.filter((s) => {
+      if (selectedNiveau && s.niveau !== selectedNiveau) return false;
+      if (selectedClasse && s.classe !== selectedClasse) return false;
+      return true;
+    });
+  }, [activeStudents, selectedNiveau, selectedClasse]);
+
+  // En edition: si un eleveId est deja set, pre-remplir niveau/classe a partir de l'eleve
+  useEffect(() => {
+    if (!eleveId) return;
+    const current = activeStudents.find((s) => String(s.id) === String(eleveId));
+    if (current) {
+      if (!selectedNiveau) setSelectedNiveau(current.niveau ?? "");
+      if (!selectedClasse) setSelectedClasse(current.classe ?? "");
+    }
+  }, [eleveId, activeStudents, selectedNiveau, selectedClasse]);
+
+  const handleNiveauChange = (v: string) => {
+    setSelectedNiveau(v);
+    setSelectedClasse("");
+    setValue("eleveId", "", { shouldValidate: false });
+  };
+
+  const handleClasseChange = (v: string) => {
+    setSelectedClasse(v);
+    setValue("eleveId", "", { shouldValidate: false });
+  };
+
   const handleTypeFraisChange = (value: string) => {
-    const id = Number(value);
-    setValue("typeFraisId", id, { shouldValidate: true });
-    const tf = typesFrais.find((t) => t.id === id);
+    setValue("typeFraisId", value, { shouldValidate: true });
+    const tf = typesFrais.find((t) => String(t.id) === value);
     if (tf) {
       setValue("montantDu", tf.montantMensuel);
     }
@@ -77,18 +122,59 @@ export function PaiementForm({
       <div className="rounded-xl border border-border/50 bg-card p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div className="space-y-1.5">
+            <Label>Niveau *</Label>
+            <Select value={selectedNiveau} onValueChange={handleNiveauChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Choisir le niveau" />
+              </SelectTrigger>
+              <SelectContent>
+                {niveaux.map((n) => (
+                  <SelectItem key={n} value={n}>
+                    {n}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Classe *</Label>
+            <Select
+              value={selectedClasse}
+              onValueChange={handleClasseChange}
+              disabled={!selectedNiveau}
+            >
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={selectedNiveau ? "Choisir la classe" : "Choisir d'abord un niveau"}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {classes.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
             <Label>Élève *</Label>
             <Select
               value={eleveId ? String(eleveId) : ""}
               onValueChange={(v) => setValue("eleveId", v, { shouldValidate: true })}
+              disabled={!selectedClasse}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Choisir un élève" />
+                <SelectValue
+                  placeholder={selectedClasse ? "Choisir un élève" : "Choisir d'abord une classe"}
+                />
               </SelectTrigger>
               <SelectContent>
-                {activeStudents.map((s) => (
+                {filteredStudents.map((s) => (
                   <SelectItem key={s.id} value={String(s.id)}>
-                    {s.prenom} {s.nom} ({s.classe})
+                    {s.prenom} {s.nom}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -4,7 +4,6 @@ import { validate, type FormErrors } from "@/lib/validate";
 import { menuSchema } from "@/lib/services-schemas";
 import {
   UtensilsCrossed,
-  CalendarDays,
   Users,
   BarChart3,
   Plus,
@@ -16,16 +15,30 @@ import {
   ChevronRight,
   CheckCircle,
   XCircle,
-  ClipboardCheck,
   DollarSign,
   Salad,
   UserPlus,
+  ImageOff,
+  Trophy,
 } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  CartesianGrid,
+} from "recharts";
+import { resolveFileUrl } from "@/api/storage.api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Tabs,
   TabsContent,
@@ -53,22 +66,21 @@ import {
   useCreateMenu,
   useUpdateMenu,
   useDeleteMenu,
+  useUploadMenuImage,
   useAbonnementsCantine,
   useCreateAbonnement,
   useUpdateAbonnement,
   useDeactivateAbonnement,
   useDeleteAbonnement,
-  usePointagesRepas,
-  usePointerRepas,
   useCantineStats,
 } from "@/hooks/useCantine";
 import { useAllStudents } from "@/hooks/useStudents";
+import StudentCombobox from "@/components/StudentCombobox";
 import type {
   Menu,
   CreateMenuRequest,
   AbonnementCantine,
   CreateAbonnementRequest,
-  PointageRepas,
   TypeRegime,
   TypeAbonnement,
 } from "@/types/cantine";
@@ -112,7 +124,7 @@ export default function CantinePage() {
           Cantine Scolaire
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Gerez les menus, abonnements et pointages de la cantine
+          Gerez les menus et abonnements de la cantine
         </p>
       </motion.div>
 
@@ -124,9 +136,6 @@ export default function CantinePage() {
           <TabsTrigger value="abonnements" className="gap-1.5">
             <Users className="h-4 w-4" /> Abonnements
           </TabsTrigger>
-          <TabsTrigger value="pointage" className="gap-1.5">
-            <ClipboardCheck className="h-4 w-4" /> Pointage
-          </TabsTrigger>
           <TabsTrigger value="statistiques" className="gap-1.5">
             <BarChart3 className="h-4 w-4" /> Statistiques
           </TabsTrigger>
@@ -137,9 +146,6 @@ export default function CantinePage() {
         </TabsContent>
         <TabsContent value="abonnements">
           <AbonnementsTab />
-        </TabsContent>
-        <TabsContent value="pointage">
-          <PointageTab />
         </TabsContent>
         <TabsContent value="statistiques">
           <CantineStatsTab />
@@ -156,12 +162,14 @@ function MenusTab() {
   const createMutation = useCreateMenu();
   const updateMutation = useUpdateMenu();
   const deleteMutation = useDeleteMenu();
+  const uploadImageMutation = useUploadMenuImage();
 
   const [showDialog, setShowDialog] = useState(false);
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Menu | null>(null);
   const [filterRegime, setFilterRegime] = useState("all");
   const [selectedWeek, setSelectedWeek] = useState("");
+  const [pendingImage, setPendingImage] = useState<File | null>(null);
 
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [form, setForm] = useState<CreateMenuRequest>({
@@ -198,12 +206,14 @@ function MenusTab() {
 
   const openCreate = () => {
     setEditingMenu(null);
+    setPendingImage(null);
     setForm({ dateMenu: "", jourSemaine: "LUNDI", platPrincipal: "", entree: "", accompagnement: "", dessert: "", typeRegime: "STANDARD" });
     setShowDialog(true);
   };
 
   const openEdit = (menu: Menu) => {
     setEditingMenu(menu);
+    setPendingImage(null);
     setForm({
       dateMenu: menu.dateMenu,
       jourSemaine: menu.jourSemaine,
@@ -214,8 +224,27 @@ function MenusTab() {
       typeRegime: menu.typeRegime,
       semaine: menu.semaine || undefined,
       allergenes: menu.allergenes || [],
+      imageUrl: menu.imageUrl,
     });
     setShowDialog(true);
+  };
+
+  const finalizeWithImage = (menuId: string) => {
+    if (!pendingImage) {
+      setShowDialog(false);
+      return;
+    }
+    uploadImageMutation.mutate(
+      { id: menuId, file: pendingImage },
+      {
+        onSuccess: () => {
+          setPendingImage(null);
+          setShowDialog(false);
+        },
+        onError: (err: Error & { response?: { data?: { message?: string } } }) =>
+          setFormErrors({ _root: err.response?.data?.message ?? "Erreur upload image" }),
+      },
+    );
   };
 
   const handleSubmit = () => {
@@ -224,9 +253,15 @@ function MenusTab() {
     setFormErrors({});
     const onError = (err: Error & { response?: { data?: { message?: string } } }) => setFormErrors({ _root: err.response?.data?.message ?? "Erreur" });
     if (editingMenu) {
-      updateMutation.mutate({ id: editingMenu.id, data: form }, { onSuccess: () => setShowDialog(false), onError });
+      updateMutation.mutate(
+        { id: editingMenu.id, data: form },
+        { onSuccess: () => finalizeWithImage(editingMenu.id), onError },
+      );
     } else {
-      createMutation.mutate(form, { onSuccess: () => setShowDialog(false), onError });
+      createMutation.mutate(form, {
+        onSuccess: (created) => finalizeWithImage(created.id),
+        onError,
+      });
     }
   };
 
@@ -296,8 +331,15 @@ function MenusTab() {
                 </p>
               </div>
               {dayMenus.map((menu) => (
-                <div key={menu.id} className="p-4 border-b border-border/50 last:border-0">
-                  <div className="flex items-start justify-between gap-2">
+                <div key={menu.id} className="border-b border-border/50 last:border-0">
+                  {menu.imageUrl && (
+                    <img
+                      src={resolveFileUrl(menu.imageUrl)}
+                      alt={menu.platPrincipal}
+                      className="w-full h-32 object-cover"
+                    />
+                  )}
+                  <div className="p-4 flex items-start justify-between gap-2">
                     <div className="flex-1 space-y-1">
                       <Badge variant="outline" className={REGIME_COLORS[menu.typeRegime] || ""}>
                         {menu.typeRegime}
@@ -401,13 +443,40 @@ function MenusTab() {
                 <Input type="number" value={form.semaine || ""} onChange={(e) => setForm({ ...form, semaine: e.target.value ? Number(e.target.value) : undefined })} placeholder="1-52" />
               </div>
             </div>
+            <div className="space-y-1.5">
+              <Label>Image du plat</Label>
+              <div className="flex items-center gap-3">
+                {(pendingImage || form.imageUrl) ? (
+                  <img
+                    src={pendingImage ? URL.createObjectURL(pendingImage) : resolveFileUrl(form.imageUrl)}
+                    alt="Aperçu"
+                    className="h-16 w-16 object-cover rounded-md border border-border/50"
+                  />
+                ) : (
+                  <div className="h-16 w-16 rounded-md border border-dashed border-border/50 flex items-center justify-center text-muted-foreground">
+                    <ImageOff className="h-5 w-5" />
+                  </div>
+                )}
+                <div className="flex-1 space-y-1">
+                  <Input
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    onChange={(e) => setPendingImage(e.target.files?.[0] ?? null)}
+                  />
+                  <p className="text-[11px] text-muted-foreground">JPEG, PNG, GIF ou WebP, 5 Mo max.</p>
+                </div>
+              </div>
+            </div>
+            {formErrors._root && (
+              <p className="text-sm text-red-600">{formErrors._root}</p>
+            )}
           </div>
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">Annuler</Button>
             </DialogClose>
-            <Button onClick={handleSubmit} disabled={!form.platPrincipal.trim() || !form.dateMenu || createMutation.isPending || updateMutation.isPending}>
-              {(createMutation.isPending || updateMutation.isPending) ? "Enregistrement..." : editingMenu ? "Modifier" : "Creer"}
+            <Button onClick={handleSubmit} disabled={!form.platPrincipal.trim() || !form.dateMenu || createMutation.isPending || updateMutation.isPending || uploadImageMutation.isPending}>
+              {(createMutation.isPending || updateMutation.isPending || uploadImageMutation.isPending) ? "Enregistrement..." : editingMenu ? "Modifier" : "Creer"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -667,23 +736,11 @@ function AbonnementsTab() {
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
               <Label>Élève</Label>
-              <Select
+              <StudentCombobox
                 value={form.eleveId ? String(form.eleveId) : ""}
-                onValueChange={(v) => setForm({ ...form, eleveId: v })}
+                onChange={(v) => setForm({ ...form, eleveId: v })}
                 disabled={!!editingAbonnement}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un élève" />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {students.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>
-                      {s.prenom} {s.nom}
-                      {s.classe ? ` — ${s.classe}` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -702,7 +759,19 @@ function AbonnementsTab() {
               </div>
               <div className="space-y-1.5">
                 <Label>Montant (TND)</Label>
-                <Input type="number" value={form.montant || ""} onChange={(e) => setForm({ ...form, montant: Number(e.target.value) })} />
+                <Input
+                  type="number"
+                  min={0}
+                  max={99999999.99}
+                  step={0.01}
+                  value={form.montant || ""}
+                  onChange={(e) => setForm({ ...form, montant: Number(e.target.value) })}
+                />
+                {form.montant && form.montant > 99999999.99 ? (
+                  <p className="text-xs text-red-600">
+                    Le montant doit être inférieur à 100 000 000 TND.
+                  </p>
+                ) : null}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -740,7 +809,7 @@ function AbonnementsTab() {
             <DialogClose asChild>
               <Button variant="outline">Annuler</Button>
             </DialogClose>
-            <Button onClick={handleSubmit} disabled={!form.eleveId || !form.dateDebut || createMutation.isPending || updateMutation.isPending}>
+            <Button onClick={handleSubmit} disabled={!form.eleveId || !form.dateDebut || (form.montant ?? 0) < 0 || (form.montant ?? 0) > 99999999.99 || createMutation.isPending || updateMutation.isPending}>
               {(createMutation.isPending || updateMutation.isPending) ? "Enregistrement..." : editingAbonnement ? "Modifier" : "Creer"}
             </Button>
           </DialogFooter>
@@ -766,215 +835,6 @@ function AbonnementsTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-// ---- Pointage Tab ----
-
-function PointageTab() {
-  const today = new Date().toISOString().split("T")[0];
-  const [selectedDate, setSelectedDate] = useState(today);
-  const [selectedType, setSelectedType] = useState("DEJEUNER");
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(25);
-
-  const { data: pointages = [], isLoading } = usePointagesRepas(selectedDate, selectedType);
-  const { data: abonnementsActifs = [] } = useAbonnementsCantine();
-  const { data: students = [] } = useAllStudents();
-  const studentNameById = useMemo(() => {
-    const m = new Map<number, string>();
-    students.forEach((s) => m.set(s.id, `${s.prenom} ${s.nom}`.trim()));
-    return m;
-  }, [students]);
-  const studentLabel = (id: string) => studentNameById.get(id) || `#${id}`;
-  const pointerMutation = usePointerRepas();
-
-  const [localPointages, setLocalPointages] = useState<Record<number, boolean>>({});
-
-  // Initialize local pointages from fetched data
-  const pointageMap = useMemo(() => {
-    const map: Record<number, boolean> = {};
-    for (const p of pointages) {
-      map[p.eleveId] = p.present;
-    }
-    return { ...map, ...localPointages };
-  }, [pointages, localPointages]);
-
-  // Get list of subscribed students
-  const subscribedStudents = useMemo(() => {
-    const seen = new Set<number>();
-    return abonnementsActifs.filter((a) => {
-      if (a.actif && !seen.has(a.eleveId)) {
-        seen.add(a.eleveId);
-        return true;
-      }
-      return false;
-    });
-  }, [abonnementsActifs]);
-
-  // Pagination
-  const totalCount = subscribedStudents.length;
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const safePage = Math.min(page, totalPages - 1);
-  const pageStart = safePage * pageSize;
-  const pageEnd = Math.min(pageStart + pageSize, totalCount);
-  const paginatedStudents = subscribedStudents.slice(pageStart, pageEnd);
-
-  const togglePresence = (eleveId: string) => {
-    setLocalPointages((prev) => ({
-      ...prev,
-      [eleveId]: !(pointageMap[eleveId] ?? true),
-    }));
-  };
-
-  const handleSavePointage = () => {
-    const items = subscribedStudents.map((a) => ({
-      eleveId: a.eleveId,
-      present: pointageMap[a.eleveId] ?? true,
-    }));
-    pointerMutation.mutate({
-      dateRepas: selectedDate,
-      typeRepas: selectedType as "DEJEUNER",
-      pointages: items,
-    });
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 flex-wrap">
-        <Input
-          type="date"
-          value={selectedDate}
-          onChange={(e) => { setSelectedDate(e.target.value); setLocalPointages({}); setPage(0); }}
-          className="w-[180px]"
-        />
-        <Select value={selectedType} onValueChange={(v) => { setSelectedType(v); setPage(0); }}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="PETIT_DEJEUNER">Petit dejeuner</SelectItem>
-            <SelectItem value="DEJEUNER">Dejeuner</SelectItem>
-            <SelectItem value="GOUTER">Gouter</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button onClick={handleSavePointage} disabled={pointerMutation.isPending || subscribedStudents.length === 0} className="gap-1.5">
-          <ClipboardCheck className="h-4 w-4" />
-          {pointerMutation.isPending ? "Enregistrement..." : "Enregistrer le pointage"}
-        </Button>
-      </div>
-
-      {isLoading ? (
-        <div className="flex h-[30vh] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : subscribedStudents.length === 0 ? (
-        <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="rounded-xl border border-border/50 bg-card shadow-sm p-16 text-center">
-          <ClipboardCheck className="h-10 w-10 mx-auto mb-3 opacity-30 text-muted-foreground" />
-          <p className="font-medium text-muted-foreground">Aucun abonne actif</p>
-          <p className="text-xs text-muted-foreground mt-1">Ajoutez des abonnements pour pouvoir faire le pointage</p>
-        </motion.div>
-      ) : (
-        <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Élève</th>
-                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Type abonnement</th>
-                  <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Regime</th>
-                  <th className="py-3 px-4 text-center text-xs font-semibold text-muted-foreground">Present</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedStudents.map((a) => (
-                  <tr key={a.eleveId} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
-                    <td className="py-3 px-4 font-medium text-foreground">{studentLabel(a.eleveId)}</td>
-                    <td className="py-3 px-4">
-                      <Badge variant="outline" className={ABONNEMENT_COLORS[a.typeAbonnement] || ""}>
-                        {a.typeAbonnement}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4 hidden md:table-cell">
-                      <Badge variant="outline" className={REGIME_COLORS[a.regime] || ""}>
-                        {a.regime}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <Checkbox
-                        checked={pointageMap[a.eleveId] ?? true}
-                        onCheckedChange={() => togglePresence(a.eleveId)}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="border-t border-border px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3 text-xs text-muted-foreground">
-            <div>
-              {totalCount === 0 ? (
-                <>0 élève abonné</>
-              ) : (
-                <>
-                  Affichage de <span className="font-semibold text-foreground tabular-nums">{pageStart + 1}</span> à{" "}
-                  <span className="font-semibold text-foreground tabular-nums">{pageEnd}</span> sur{" "}
-                  <span className="font-semibold text-foreground tabular-nums">{totalCount}</span> élève{totalCount !== 1 ? "s" : ""}
-                  {" — "}
-                  <span className="font-semibold text-emerald-600 tabular-nums">
-                    {Object.values(pointageMap).filter(Boolean).length}
-                  </span>{" "}
-                  présent{Object.values(pointageMap).filter(Boolean).length !== 1 ? "s" : ""}
-                </>
-              )}
-            </div>
-            <div className="sm:ms-auto flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span>Lignes par page</span>
-                <Select
-                  value={String(pageSize)}
-                  onValueChange={(v) => { setPageSize(Number(v)); setPage(0); }}
-                >
-                  <SelectTrigger className="h-8 w-[72px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[10, 25, 50, 100].map((n) => (
-                      <SelectItem key={n} value={String(n)}>{n}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setPage(safePage - 1)}
-                  disabled={safePage <= 0}
-                  aria-label="Page précédente"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="px-2 tabular-nums">
-                  Page <span className="font-semibold text-foreground">{safePage + 1}</span> / {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setPage(safePage + 1)}
-                  disabled={safePage >= totalPages - 1}
-                  aria-label="Page suivante"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
     </div>
   );
 }
@@ -1023,24 +883,144 @@ function CantineStatsTab() {
     },
   ];
 
+  const repartitionData = Object.entries(stats?.repartitionTypeAbonnement ?? {})
+    .map(([name, value]) => ({ name, value }));
+
+  const evolutionData = (stats?.evolutionRepas ?? []).map((p) => ({
+    date: p.date.slice(5),
+    count: p.count,
+  }));
+
+  const topPlats = stats?.topPlats ?? [];
+
+  const PIE_COLORS = ["#6366f1", "#10b981", "#a855f7", "#f59e0b"];
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {statCards.map((stat, i) => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {statCards.map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            custom={i}
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            className="rounded-xl border border-border/50 bg-card p-5 shadow-sm"
+          >
+            <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.color}`}>
+              <stat.icon className={`h-5 w-5 ${stat.textColor}`} />
+            </div>
+            <p className="mt-3 font-heading text-2xl font-bold text-foreground">{stat.value}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <motion.div
-          key={stat.label}
-          custom={i}
+          custom={0}
           variants={fadeUp}
           initial="hidden"
           animate="visible"
           className="rounded-xl border border-border/50 bg-card p-5 shadow-sm"
         >
-          <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.color}`}>
-            <stat.icon className={`h-5 w-5 ${stat.textColor}`} />
-          </div>
-          <p className="mt-3 font-heading text-2xl font-bold text-foreground">{stat.value}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+          <h3 className="font-heading text-sm font-semibold text-foreground mb-3">
+            Répartition par type d'abonnement
+          </h3>
+          {repartitionData.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-12">Aucun abonnement actif</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <PieChart>
+                <Pie
+                  data={repartitionData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={90}
+                  paddingAngle={2}
+                >
+                  {repartitionData.map((_, idx) => (
+                    <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </motion.div>
-      ))}
+
+        <motion.div
+          custom={1}
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          className="rounded-xl border border-border/50 bg-card p-5 shadow-sm"
+        >
+          <h3 className="font-heading text-sm font-semibold text-foreground mb-3">
+            Évolution des repas (7 derniers jours)
+          </h3>
+          {evolutionData.every((d) => d.count === 0) ? (
+            <p className="text-xs text-muted-foreground text-center py-12">Aucun repas servi sur la période</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={evolutionData} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </motion.div>
+      </div>
+
+      <motion.div
+        custom={2}
+        variants={fadeUp}
+        initial="hidden"
+        animate="visible"
+        className="rounded-xl border border-border/50 bg-card p-5 shadow-sm"
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <Trophy className="h-4 w-4 text-amber-500" />
+          <h3 className="font-heading text-sm font-semibold text-foreground">
+            Top plats du mois
+          </h3>
+        </div>
+        {topPlats.length === 0 ? (
+          <p className="text-xs text-muted-foreground text-center py-8">Aucun menu enregistré ce mois-ci</p>
+        ) : (
+          <ul className="space-y-2">
+            {topPlats.map((p, idx) => {
+              const max = topPlats[0]?.count || 1;
+              const pct = (p.count / max) * 100;
+              return (
+                <li key={p.platPrincipal} className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-foreground">
+                      {idx + 1}. {p.platPrincipal}
+                    </span>
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      {p.count} {p.count > 1 ? "fois" : "fois"}
+                    </span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </motion.div>
     </div>
   );
 }

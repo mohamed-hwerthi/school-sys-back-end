@@ -35,7 +35,7 @@ export function useInscription(id: string) {
   return useQuery<Inscription>({
     queryKey: [INSCRIPTIONS_KEY, id],
     queryFn: () => inscriptionsApi.getById(id),
-    enabled: id > 0,
+    enabled: !!id,
   });
 }
 

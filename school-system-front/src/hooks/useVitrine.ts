@@ -4,12 +4,12 @@ import { vitrinePublicApi } from "@/api/vitrine.api";
 /**
  * Hook for public vitrine data (no auth).
  */
-export function useVitrine(slug: string | undefined) {
+export function useVitrine(slug: string | undefined, preview = false) {
   return useQuery({
-    queryKey: ["vitrine", slug],
-    queryFn: () => vitrinePublicApi.getFullVitrine(slug!),
+    queryKey: ["vitrine", slug, preview ? "preview" : "public"],
+    queryFn: () => vitrinePublicApi.getFullVitrine(slug!, { preview }),
     enabled: !!slug,
-    staleTime: 10 * 60 * 1000, // 10 min cache for public data
+    staleTime: preview ? 0 : 10 * 60 * 1000,
   });
 }
 

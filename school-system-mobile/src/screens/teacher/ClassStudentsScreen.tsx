@@ -88,9 +88,10 @@ export default function ClassStudentsScreen() {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() =>
-                navigation.navigate("NotifyParent", {
+                navigation.navigate("StudentDetail", {
                   studentId: item.id,
                   studentName: `${item.firstName} ${item.lastName}`,
+                  classeId: params.classeId,
                 })
               }
               style={{

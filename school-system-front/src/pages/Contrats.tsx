@@ -117,7 +117,7 @@ export default function ContratsPage() {
   const [contratFormOpen, setContratFormOpen] = useState(false);
   const [editContrat, setEditContrat] = useState<ContratEnseignant | null>(null);
   const [contratForm, setContratForm] = useState({
-    enseignantId: 0,
+    enseignantId: "",
     typeContrat: "CDD" as TypeContrat,
     dateDebut: new Date().toISOString().split("T")[0],
     dateFin: "",
@@ -127,7 +127,7 @@ export default function ContratsPage() {
   // Conge form
   const [congeFormOpen, setCongeFormOpen] = useState(false);
   const [congeForm, setCongeForm] = useState({
-    enseignantId: 0,
+    enseignantId: "",
     typeConge: "ANNUEL" as TypeConge,
     dateDebut: "",
     dateFin: "",
@@ -203,7 +203,7 @@ export default function ContratsPage() {
 
   const openCreateContrat = () => {
     setEditContrat(null);
-    setContratForm({ enseignantId: 0, typeContrat: "CDD", dateDebut: new Date().toISOString().split("T")[0], dateFin: "", salaire: 0 });
+    setContratForm({ enseignantId: "", typeContrat: "CDD", dateDebut: new Date().toISOString().split("T")[0], dateFin: "", salaire: 0 });
     setContratErrors({});
     setContratFormOpen(true);
   };
@@ -292,7 +292,7 @@ export default function ContratsPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
-            setCongeForm({ enseignantId: 0, typeConge: "ANNUEL", dateDebut: "", dateFin: "", motif: "" });
+            setCongeForm({ enseignantId: "", typeConge: "ANNUEL", dateDebut: "", dateFin: "", motif: "" });
             setCongeFormOpen(true);
           }}>
             <CalendarDays className="h-4 w-4" />
@@ -529,7 +529,7 @@ export default function ContratsPage() {
               <p className="text-sm text-red-600">{contratErrors._root}</p>
             )}
             <div className="space-y-1.5">
-              <Label>{t("common.teacher")}</Label>
+              <Label>{t("common.teacher")} <span className="text-red-500">*</span></Label>
               <Select value={contratForm.enseignantId ? String(contratForm.enseignantId) : ""} onValueChange={(v) => setContratForm({ ...contratForm, enseignantId: v })}>
                 <SelectTrigger><SelectValue placeholder={t("common.select")} /></SelectTrigger>
                 <SelectContent>
@@ -541,7 +541,7 @@ export default function ContratsPage() {
               {contratErrors.enseignantId && <p className="text-xs text-red-600">{contratErrors.enseignantId}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label>{t("common.type")}</Label>
+              <Label>{t("common.type")} <span className="text-red-500">*</span></Label>
               <Select value={contratForm.typeContrat} onValueChange={(v) => setContratForm({ ...contratForm, typeContrat: v as TypeContrat })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -554,7 +554,7 @@ export default function ContratsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="contratDebut">{t("common.startDate")}</Label>
+                <Label htmlFor="contratDebut">{t("common.startDate")} <span className="text-red-500">*</span></Label>
                 <Input id="contratDebut" type="date" value={contratForm.dateDebut} onChange={(e) => setContratForm({ ...contratForm, dateDebut: e.target.value })} />
                 {contratErrors.dateDebut && <p className="text-xs text-red-600">{contratErrors.dateDebut}</p>}
               </div>
@@ -565,7 +565,7 @@ export default function ContratsPage() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="salaire">{t("contracts.baseSalary")}</Label>
+              <Label htmlFor="salaire">{t("contracts.baseSalary")} <span className="text-red-500">*</span></Label>
               <Input id="salaire" type="number" value={contratForm.salaire || ""} onChange={(e) => setContratForm({ ...contratForm, salaire: Number(e.target.value) })} placeholder="0" />
               {contratErrors.salaire && <p className="text-xs text-red-600">{contratErrors.salaire}</p>}
             </div>
@@ -588,7 +588,7 @@ export default function ContratsPage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>{t("common.teacher")}</Label>
+              <Label>{t("common.teacher")} <span className="text-red-500">*</span></Label>
               <Select value={congeForm.enseignantId ? String(congeForm.enseignantId) : ""} onValueChange={(v) => setCongeForm({ ...congeForm, enseignantId: v })}>
                 <SelectTrigger><SelectValue placeholder={t("common.select")} /></SelectTrigger>
                 <SelectContent>
@@ -611,11 +611,11 @@ export default function ContratsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="congeDebut">{t("common.startDate")}</Label>
+                <Label htmlFor="congeDebut">{t("common.startDate")} <span className="text-red-500">*</span></Label>
                 <Input id="congeDebut" type="date" value={congeForm.dateDebut} onChange={(e) => setCongeForm({ ...congeForm, dateDebut: e.target.value })} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="congeFin">{t("common.endDate")}</Label>
+                <Label htmlFor="congeFin">{t("common.endDate")} <span className="text-red-500">*</span></Label>
                 <Input id="congeFin" type="date" value={congeForm.dateFin} onChange={(e) => setCongeForm({ ...congeForm, dateFin: e.target.value })} />
               </div>
             </div>

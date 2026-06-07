@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import TeacherClassesScreen from "@/screens/teacher/TeacherClassesScreen";
 import ClassStudentsScreen from "@/screens/teacher/ClassStudentsScreen";
+import TeacherStudentDetailScreen from "@/screens/teacher/TeacherStudentDetailScreen";
 import AttendanceScreen from "@/screens/teacher/AttendanceScreen";
 import ExamSelectScreen from "@/screens/teacher/ExamSelectScreen";
 import GradeEntryScreen from "@/screens/teacher/GradeEntryScreen";
@@ -32,6 +33,11 @@ export default function TeacherClassesStack() {
         name="ClassStudents"
         component={ClassStudentsScreen}
         options={({ route }) => ({ title: `Classe ${route.params.fullName}`, animation: "slide_from_right" })}
+      />
+      <Stack.Screen
+        name="StudentDetail"
+        component={TeacherStudentDetailScreen}
+        options={({ route }) => ({ title: route.params.studentName, animation: "slide_from_right" })}
       />
       <Stack.Screen
         name="Attendance"

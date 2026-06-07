@@ -13,6 +13,10 @@ export interface DomaineDTO {
   name: string;
   nameAr: string | null;
   ordre: number;
+  coeffEtatique: number;
+  coeffPrive: number;
+  versionEtatique: boolean;
+  versionPrivee: boolean;
   niveauId: string;
   niveauName: string;
   sousDomaines: SousDomaineDTO[];
@@ -22,6 +26,10 @@ export interface DomaineRequest {
   name: string;
   nameAr?: string;
   ordre: number;
+  coeffEtatique: number;
+  coeffPrive: number;
+  versionEtatique: boolean;
+  versionPrivee: boolean;
   niveauId: string;
 }
 

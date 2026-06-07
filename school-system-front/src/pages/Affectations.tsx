@@ -12,6 +12,7 @@ import {
   BookOpen,
   UserCog,
   CalendarRange,
+  Layers,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -35,6 +36,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { teachersApi } from "@/api/teachers.api";
 import { useNiveaux } from "@/hooks/useNiveaux";
@@ -44,6 +47,7 @@ import { useActiveAnneeScolaire, useAllAnneesScolaires } from "@/hooks/useAnneeS
 import {
   useAffectations,
   useCreateAffectation,
+  useBulkCreateAffectation,
   useDeleteAffectation,
   useUpdateAffectation,
 } from "@/hooks/useAffectations";
@@ -57,6 +61,18 @@ interface FormState {
   niveauId: string | "";
   classeId: string | "";
   moduleId: string | null;
+  anneeScolaire: string;
+  dateDebut: string;
+  dateFin: string;
+  notes: string;
+}
+
+interface BulkState {
+  teacherId: string | "";
+  niveauIds: string[];
+  classeIds: string[];
+  /** NONE | `dom:<domaineName>` | `mod:<matiereName>` */
+  target: string;
   anneeScolaire: string;
   dateDebut: string;
   dateFin: string;
@@ -131,10 +147,136 @@ export default function AffectationsPage() {
   const createMutation = useCreateAffectation();
   const updateMutation = useUpdateAffectation();
   const deleteMutation = useDeleteAffectation();
+  const bulkMutation = useBulkCreateAffectation();
 
-  const openCreate = () => {
-    setForm(emptyForm(filterAnnee || defaultAnnee));
-    setOpen(true);
+  // ── bulk create state (multi niveau / multi classe / domaine) ──────
+  const { data: allClasses = [] } = useClasses();
+  const { data: allModules = [] } = useModules();
+
+  const emptyBulk = (annee: string): BulkState => ({
+    teacherId: "",
+    niveauIds: [],
+    classeIds: [],
+    target: NONE,
+    anneeScolaire: annee,
+    dateDebut: "",
+    dateFin: "",
+    notes: "",
+  });
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulk, setBulk] = useState<BulkState>(emptyBulk(defaultAnnee));
+
+  const openBulk = () => {
+    setBulk(emptyBulk(filterAnnee || defaultAnnee));
+    setBulkOpen(true);
+  };
+
+  // Modules/domaines available across the selected niveaux.
+  const bulkModules = useMemo(
+    () => allModules.filter((m) => bulk.niveauIds.includes(m.niveauId)),
+    [allModules, bulk.niveauIds]
+  );
+  const bulkDomaines = useMemo(
+    () => Array.from(new Set(bulkModules.map((m) => m.domaineName).filter(Boolean) as string[])).sort(),
+    [bulkModules]
+  );
+  const bulkMatieres = useMemo(
+    () => Array.from(new Set(bulkModules.map((m) => m.name).filter(Boolean))).sort(),
+    [bulkModules]
+  );
+
+  const toggleBulkNiveau = (id: string) =>
+    setBulk((b) => {
+      const niveauIds = b.niveauIds.includes(id)
+        ? b.niveauIds.filter((x) => x !== id)
+        : [...b.niveauIds, id];
+      // Drop selected classes whose niveau is no longer selected.
+      const classeIds = b.classeIds.filter((cid) => {
+        const c = allClasses.find((x) => x.id === cid);
+        return c && niveauIds.includes(c.niveauId);
+      });
+      return { ...b, niveauIds, classeIds };
+    });
+
+  const toggleBulkClasse = (id: string) =>
+    setBulk((b) => ({
+      ...b,
+      classeIds: b.classeIds.includes(id)
+        ? b.classeIds.filter((x) => x !== id)
+        : [...b.classeIds, id],
+    }));
+
+  const toggleAllClassesOfNiveau = (niveauId: string) =>
+    setBulk((b) => {
+      const ids = allClasses.filter((c) => c.niveauId === niveauId).map((c) => c.id);
+      const allSelected = ids.length > 0 && ids.every((id) => b.classeIds.includes(id));
+      return {
+        ...b,
+        classeIds: allSelected
+          ? b.classeIds.filter((id) => !ids.includes(id))
+          : Array.from(new Set([...b.classeIds, ...ids])),
+      };
+    });
+
+  // Expand the (classes × target) selection into explicit affectation items.
+  const expandBulkItems = (): { classeId: string; moduleId: string | null }[] => {
+    const items: { classeId: string; moduleId: string | null }[] = [];
+    for (const classeId of bulk.classeIds) {
+      const classe = allClasses.find((c) => c.id === classeId);
+      if (!classe) continue;
+      if (bulk.target === NONE) {
+        items.push({ classeId, moduleId: null });
+      } else if (bulk.target.startsWith("dom:")) {
+        const dom = bulk.target.slice(4);
+        allModules
+          .filter((m) => m.niveauId === classe.niveauId && m.domaineName === dom)
+          .forEach((m) => items.push({ classeId, moduleId: m.id }));
+      } else if (bulk.target.startsWith("mod:")) {
+        const name = bulk.target.slice(4);
+        const m = allModules.find((mm) => mm.niveauId === classe.niveauId && mm.name === name);
+        if (m) items.push({ classeId, moduleId: m.id });
+      }
+    }
+    return items;
+  };
+
+  const bulkPreviewCount = useMemo(
+    () => expandBulkItems().length,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [bulk, allClasses, allModules]
+  );
+
+  const bulkValid =
+    bulk.teacherId !== "" && bulk.classeIds.length > 0 && bulk.anneeScolaire.trim() !== "";
+
+  const submitBulk = () => {
+    if (!bulkValid) return;
+    const items = expandBulkItems();
+    if (items.length === 0) {
+      toast.error("Aucune matière correspondante pour la sélection.");
+      return;
+    }
+    bulkMutation.mutate(
+      {
+        teacherId: bulk.teacherId,
+        anneeScolaire: bulk.anneeScolaire,
+        dateDebut: bulk.dateDebut || null,
+        dateFin: bulk.dateFin || null,
+        notes: bulk.notes || null,
+        items,
+      },
+      {
+        onSuccess: (res) => {
+          toast.success(
+            `${res.created} affectation(s) créée(s)` +
+              (res.skipped ? `, ${res.skipped} ignorée(s) (déjà existante(s))` : "")
+          );
+          setBulkOpen(false);
+        },
+        onError: (err: any) =>
+          toast.error(err?.response?.data?.message || err?.message || "Erreur"),
+      }
+    );
   };
 
   const openEdit = (a: AffectationDTO) => {
@@ -234,7 +376,7 @@ export default function AffectationsPage() {
             Liez chaque enseignant aux classes et matières qu'il enseigne. Modifiable à tout moment.
           </p>
         </div>
-        <Button onClick={openCreate} className="gap-1.5">
+        <Button onClick={openBulk} className="gap-1.5">
           <Plus className="h-4 w-4" />
           Nouvelle affectation
         </Button>
@@ -425,7 +567,191 @@ export default function AffectationsPage() {
         </div>
       </motion.div>
 
-      {/* ── Form dialog ────────────────────────────────────── */}
+      {/* ── Bulk create dialog ─────────────────────────────── */}
+      <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Nouvelle affectation</DialogTitle>
+            <DialogDescription>
+              Affectez un enseignant à plusieurs niveaux et classes en une seule fois.
+              Choisissez une matière précise, un domaine entier, ou « professeur principal ».
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {/* Enseignant */}
+            <div className="space-y-1.5">
+              <Label>Enseignant *</Label>
+              <Select value={bulk.teacherId || ""} onValueChange={(v) => setBulk({ ...bulk, teacherId: v })}>
+                <SelectTrigger><SelectValue placeholder="Sélectionner un enseignant…" /></SelectTrigger>
+                <SelectContent>
+                  {teachers.map((t) => (
+                    <SelectItem key={t.id} value={String(t.id)}>
+                      {t.prenom} {t.nom}{t.specialite ? ` — ${t.specialite}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Niveaux (multi) */}
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5"><Layers className="h-3.5 w-3.5" /> Niveaux * (plusieurs possibles)</Label>
+              <div className="rounded-lg border border-border/60 p-2 flex flex-wrap gap-2">
+                {niveaux.length === 0 && <span className="text-xs text-muted-foreground p-1">Aucun niveau</span>}
+                {niveaux.map((n) => {
+                  const checked = bulk.niveauIds.includes(String(n.id));
+                  return (
+                    <button
+                      type="button"
+                      key={n.id}
+                      onClick={() => toggleBulkNiveau(String(n.id))}
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors ${
+                        checked
+                          ? "border-cyan-300 bg-cyan-50 text-cyan-700"
+                          : "border-border bg-background text-muted-foreground hover:bg-muted/40"
+                      }`}
+                    >
+                      <Checkbox checked={checked} className="h-3.5 w-3.5 pointer-events-none" />
+                      {n.nom}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Classes (multi, grouped by niveau) */}
+            {bulk.niveauIds.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5"><GraduationCap className="h-3.5 w-3.5" /> Classes *</Label>
+                <ScrollArea className="max-h-56 rounded-lg border border-border/60">
+                  <div className="p-2 space-y-3">
+                    {bulk.niveauIds.map((nid) => {
+                      const niveau = niveaux.find((n) => String(n.id) === nid);
+                      const classes = allClasses.filter((c) => c.niveauId === nid);
+                      const allSel = classes.length > 0 && classes.every((c) => bulk.classeIds.includes(c.id));
+                      return (
+                        <div key={nid}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-semibold text-foreground">{niveau?.nom ?? "Niveau"}</span>
+                            {classes.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => toggleAllClassesOfNiveau(nid)}
+                                className="text-[11px] text-cyan-600 hover:underline"
+                              >
+                                {allSel ? "Tout désélectionner" : "Tout sélectionner"}
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {classes.length === 0 && <span className="text-[11px] text-muted-foreground">Aucune classe</span>}
+                            {classes.map((c) => {
+                              const checked = bulk.classeIds.includes(c.id);
+                              return (
+                                <button
+                                  type="button"
+                                  key={c.id}
+                                  onClick={() => toggleBulkClasse(c.id)}
+                                  className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs transition-colors ${
+                                    checked
+                                      ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                                      : "border-border bg-background text-muted-foreground hover:bg-muted/40"
+                                  }`}
+                                >
+                                  <Checkbox checked={checked} className="h-3.5 w-3.5 pointer-events-none" />
+                                  {c.fullName}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
+
+            {/* Matière / Domaine target */}
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5" /> Matière / Domaine</Label>
+              <Select value={bulk.target} onValueChange={(v) => setBulk({ ...bulk, target: v })} disabled={bulk.niveauIds.length === 0}>
+                <SelectTrigger>
+                  <SelectValue placeholder={bulk.niveauIds.length === 0 ? "Choisir un niveau d'abord" : "Aucune (prof principal)"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE}>Aucune (prof principal)</SelectItem>
+                  {bulkDomaines.length > 0 && (
+                    <>
+                      <div className="px-2 py-1 text-[11px] font-semibold uppercase text-muted-foreground">Domaines entiers</div>
+                      {bulkDomaines.map((d) => (
+                        <SelectItem key={`dom:${d}`} value={`dom:${d}`}>📚 {d} (toutes les matières)</SelectItem>
+                      ))}
+                    </>
+                  )}
+                  {bulkMatieres.length > 0 && (
+                    <>
+                      <div className="px-2 py-1 text-[11px] font-semibold uppercase text-muted-foreground">Matières</div>
+                      {bulkMatieres.map((m) => (
+                        <SelectItem key={`mod:${m}`} value={`mod:${m}`}>{m}</SelectItem>
+                      ))}
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground">
+                Un domaine crée une affectation pour chacune de ses matières, dans chaque classe choisie.
+              </p>
+            </div>
+
+            {/* Année + période */}
+            <div className="space-y-1.5">
+              <Label>Année scolaire *</Label>
+              <Select value={bulk.anneeScolaire} onValueChange={(v) => setBulk({ ...bulk, anneeScolaire: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {(allAnnees.length ? allAnnees.map((a) => a.label) : [defaultAnnee]).map((label) => (
+                    <SelectItem key={label} value={label}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Date début</Label>
+                <Input type="date" value={bulk.dateDebut} onChange={(e) => setBulk({ ...bulk, dateDebut: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Date fin</Label>
+                <Input type="date" value={bulk.dateFin} onChange={(e) => setBulk({ ...bulk, dateFin: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Notes</Label>
+              <Input value={bulk.notes} onChange={(e) => setBulk({ ...bulk, notes: e.target.value })} placeholder="Optionnel" />
+            </div>
+          </div>
+
+          <DialogFooter className="items-center sm:justify-between">
+            <span className="text-xs text-muted-foreground">
+              {bulkPreviewCount > 0
+                ? `${bulkPreviewCount} affectation(s) seront créées`
+                : "Sélectionnez classe(s) et matière"}
+            </span>
+            <div className="flex gap-2">
+              <DialogClose asChild><Button variant="outline">Annuler</Button></DialogClose>
+              <Button onClick={submitBulk} disabled={!bulkValid || bulkPreviewCount === 0 || bulkMutation.isPending}>
+                {bulkMutation.isPending ? "Création…" : "Créer les affectations"}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Form dialog (edit) ─────────────────────────────── */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -479,7 +805,7 @@ export default function AffectationsPage() {
                 <Label>Matière (optionnel)</Label>
                 <Select
                   value={form.moduleId == null ? NONE : String(form.moduleId)}
-                  onValueChange={(v) => setForm({ ...form, moduleId: v === NONE ? null : Number(v) })}
+                  onValueChange={(v) => setForm({ ...form, moduleId: v === NONE ? null : v })}
                   disabled={form.niveauId === ""}
                 >
                   <SelectTrigger><SelectValue placeholder={form.niveauId === "" ? "Choisir un niveau" : "Aucune (prof principal)"} /></SelectTrigger>

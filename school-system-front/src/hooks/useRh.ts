@@ -141,7 +141,7 @@ export function useFormation(id: string) {
   return useQuery<Formation>({
     queryKey: [FORMATIONS_KEY, id],
     queryFn: () => rhApi.getFormationById(id),
-    enabled: id > 0,
+    enabled: !!id,
   });
 }
 

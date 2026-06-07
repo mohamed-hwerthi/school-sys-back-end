@@ -21,7 +21,7 @@ export function useRoom(id: string) {
   return useQuery<Room>({
     queryKey: [ROOMS_KEY, id],
     queryFn: () => roomsApi.getById(id),
-    enabled: id > 0,
+    enabled: !!id,
   });
 }
 

@@ -156,7 +156,6 @@
     "ranking": "الترتيب العام",
     "noAveragesAvailable": "لا توجد معدلات",
     "enterNotesToSee": "أدخل العلامات لعرض المعدلات",
-    "loading": "جاري التحميل...",
     "annual": "سنوي",
     "months": {
       "january": "يناير",
@@ -210,7 +209,8 @@
       "transfer": "تحويل بنكي",
       "card": "بطاقة بنكية",
       "debit": "خصم مباشر"
-    }
+    },
+    "confirmDeletion": "تأكيد الحذف"
   },
   "nav": {
     "home": "الرئيسية",
@@ -293,7 +293,8 @@
     "levels": "المستويات",
     "messages": "الرسائل",
     "scholarships": "المنح",
-    "forecasts": "التوقعات"
+    "forecasts": "التوقعات",
+    "personnel": "الموظفون"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -1877,5 +1878,20 @@
   "app": {
     "name": "EcoleNet",
     "subtitle": "إدارة مدرسية"
+  },
+  "personnel": {
+    "title": "الموظفون",
+    "subtitle": "إدارة الموظفين غير المدرّسين (السكرتارية، المحاسبون، الحراس…)",
+    "addPersonnel": "إضافة موظف",
+    "editPersonnel": "تعديل الموظف",
+    "fillInfo": "املأ معلومات الموظف",
+    "employee": "الموظف",
+    "fonction": "الوظيفة",
+    "totalPersonnel": "إجمالي الموظفين",
+    "noPersonnelFound": "لم يتم العثور على موظف",
+    "personnelDetails": "تفاصيل الموظف",
+    "personnelNotFound": "الموظف غير موجود",
+    "personnelNotFoundDesc": "هذا الموظف غير موجود أو تم حذفه.",
+    "confirmDeleteText": "هل أنت متأكد من حذف الموظف"
   }
 }

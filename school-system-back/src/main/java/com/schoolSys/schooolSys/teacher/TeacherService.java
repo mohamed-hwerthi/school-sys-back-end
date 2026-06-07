@@ -59,6 +59,13 @@ public class TeacherService {
 
     @Transactional
     public TeacherResponseDTO create(TeacherRequestDTO dto) {
+        String email = dto.getEmail();
+        if (email != null && !email.isBlank() && userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException(
+                "Un compte utilisateur existe déjà avec l'email « " + email + " ». "
+                + "Utilisez « Mot de passe oublié » sur la page de connexion pour récupérer l'accès."
+            );
+        }
         Teacher teacher = teacherMapper.toEntity(dto);
         Teacher saved = teacherRepository.save(teacher);
         provisionTeacherAccount(saved);

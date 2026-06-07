@@ -1,27 +1,20 @@
-const CACHE_NAME = 'ecolenet-v2';
-const STATIC_ASSETS = ['/', '/index.html'];
+// Kill-switch service worker.
+// Any previously installed SW (ecolenet-v1, v2, …) will fetch this file on
+// the next page load, install it, and the activate handler below will wipe
+// every cache + unregister itself, then force-reload all open tabs.
+// After that one reload, no SW intercepts requests anymore until we ship a
+// fresh PWA build with a real fetch handler again.
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
-  );
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((names) =>
-      Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n)))
-    ).then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-  if (event.request.method !== 'GET' || url.origin !== self.location.origin) {
-    return;
-  }
-  event.respondWith(
-    caches.match(event.request).then((response) => response || fetch(event.request))
+    caches.keys()
+      .then((names) => Promise.all(names.map((n) => caches.delete(n))))
+      .then(() => self.registration.unregister())
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then((clients) => clients.forEach((client) => client.navigate(client.url)))
   );
 });

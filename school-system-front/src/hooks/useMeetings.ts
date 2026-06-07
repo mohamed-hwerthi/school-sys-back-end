@@ -14,7 +14,7 @@ export function useMeetingById(id: string) {
   return useQuery<MeetingResponse>({
     queryKey: [MEETINGS_KEY, id],
     queryFn: () => meetingsApi.getById(id),
-    enabled: id > 0,
+    enabled: !!id,
   });
 }
 

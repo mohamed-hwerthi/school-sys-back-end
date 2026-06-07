@@ -11,6 +11,7 @@ import {
   useDeleteVitrineGalleryItem,
   useVitrineUpload,
 } from "@/hooks/useVitrineAdmin";
+import { resolveFileUrl } from "@/api/storage.api";
 
 export default function GalleryManager() {
   const { data: gallery = [], isLoading } = useVitrineGallery();
@@ -93,7 +94,7 @@ export default function GalleryManager() {
           <Card key={item.id} className="group relative overflow-hidden">
             <CardContent className="p-0">
               <img
-                src={item.imageUrl}
+                src={resolveFileUrl(item.imageUrl)}
                 alt={item.caption || ""}
                 className="aspect-square w-full object-cover"
               />

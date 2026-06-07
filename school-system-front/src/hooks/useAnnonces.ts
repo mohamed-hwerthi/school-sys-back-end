@@ -15,7 +15,7 @@ export function useAnnonceById(id: string) {
   return useQuery<Annonce>({
     queryKey: [ANNONCES_KEY, id],
     queryFn: () => annoncesApi.getById(id),
-    enabled: id > 0,
+    enabled: !!id,
   });
 }
 

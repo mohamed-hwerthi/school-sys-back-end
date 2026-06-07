@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   FileText,
@@ -9,7 +9,6 @@ import {
   Loader2,
   Download,
   History,
-  Settings,
   Search,
   Users,
   ChevronLeft,
@@ -39,8 +38,6 @@ import {
 import { useAllStudents } from "@/hooks/useStudents";
 import {
   useDocumentHistory,
-  useTemplateConfig,
-  useUpdateTemplateConfig,
   useGenerateCertificatScolarite,
   useGenerateCarteScolaire,
   useGenerateAttestation,
@@ -48,7 +45,7 @@ import {
   useGenerateRecuPaiement,
   useGenerateBulk,
 } from "@/hooks/useDocuments";
-import type { DocumentType, DocumentTemplateConfig } from "@/types/document";
+import type { DocumentType } from "@/types/document";
 import { DOCUMENT_TYPE_LABELS } from "@/types/document";
 import { useLanguage } from "@/hooks/useLanguage";
 
@@ -119,15 +116,12 @@ export default function GenerationDocuments() {
   const [selectedTrimestre, setSelectedTrimestre] = useState<number>(0);
   const [paiementId, setPaiementId] = useState("");
   const [studentSearch, setStudentSearch] = useState("");
+  const [filterNiveau, setFilterNiveau] = useState<string>("all");
+  const [filterClasse, setFilterClasse] = useState<string>("all");
   const [historyPage, setHistoryPage] = useState(0);
-
-  // Template config state
-  const [configForm, setConfigForm] = useState<DocumentTemplateConfig | null>(null);
 
   const { data: students = [] } = useAllStudents();
   const { data: history = [], isLoading: historyLoading } = useDocumentHistory();
-  const { data: templateConfig } = useTemplateConfig();
-  const updateConfigMutation = useUpdateTemplateConfig();
 
   const genCertificat = useGenerateCertificatScolarite();
   const genCarte = useGenerateCarteScolaire();
@@ -144,7 +138,25 @@ export default function GenerationDocuments() {
     genRecu.isPending ||
     genBulk.isPending;
 
+  const niveauOptions = useMemo(() => {
+    const set = new Set<string>();
+    students.forEach((s) => { if (s.niveau) set.add(s.niveau); });
+    return Array.from(set).sort();
+  }, [students]);
+
+  const classeOptions = useMemo(() => {
+    const set = new Set<string>();
+    students.forEach((s) => {
+      if (!s.classe) return;
+      if (filterNiveau !== "all" && s.niveau !== filterNiveau) return;
+      set.add(s.classe);
+    });
+    return Array.from(set).sort();
+  }, [students, filterNiveau]);
+
   const filteredStudents = students.filter((s) => {
+    if (filterNiveau !== "all" && s.niveau !== filterNiveau) return false;
+    if (filterClasse !== "all" && s.classe !== filterClasse) return false;
     if (!studentSearch) return true;
     const q = studentSearch.toLowerCase();
     return (
@@ -194,19 +206,6 @@ export default function GenerationDocuments() {
     setPaiementId("");
   };
 
-  const handleConfigSave = () => {
-    if (configForm) {
-      updateConfigMutation.mutate(configForm);
-    }
-  };
-
-  const openConfigTab = () => {
-    if (templateConfig && !configForm) {
-      setConfigForm({ ...templateConfig });
-    }
-    setActiveTab("config");
-  };
-
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
       {/* Header */}
@@ -226,19 +225,13 @@ export default function GenerationDocuments() {
         </div>
       </motion.div>
 
-      <Tabs value={activeTab} onValueChange={(v) => {
-        if (v === "config") openConfigTab();
-        else setActiveTab(v);
-      }}>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="generate" className="gap-1.5">
             <FileText className="h-4 w-4" /> Generer
           </TabsTrigger>
           <TabsTrigger value="history" className="gap-1.5">
             <History className="h-4 w-4" /> Historique
-          </TabsTrigger>
-          <TabsTrigger value="config" className="gap-1.5">
-            <Settings className="h-4 w-4" /> Configuration
           </TabsTrigger>
         </TabsList>
 
@@ -258,6 +251,9 @@ export default function GenerationDocuments() {
                   setSelectedStudentId(0);
                   setSelectedTrimestre(0);
                   setPaiementId("");
+                  setStudentSearch("");
+                  setFilterNiveau("all");
+                  setFilterClasse("all");
                 }}
               >
                 <div
@@ -385,119 +381,6 @@ export default function GenerationDocuments() {
           </motion.div>
         </TabsContent>
 
-        {/* Config Tab */}
-        <TabsContent value="config" className="mt-4">
-          <motion.div
-            custom={0}
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            className="rounded-xl border border-border/50 bg-card p-6 shadow-sm max-w-2xl"
-          >
-            <h3 className="font-semibold text-foreground mb-4">
-              Configuration du template
-            </h3>
-            {configForm ? (
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="schoolName">Nom de l'ecole</Label>
-                  <Input
-                    id="schoolName"
-                    value={configForm.schoolName}
-                    onChange={(e) =>
-                      setConfigForm({ ...configForm, schoolName: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="schoolLogo">URL du logo</Label>
-                  <Input
-                    id="schoolLogo"
-                    value={configForm.schoolLogo}
-                    onChange={(e) =>
-                      setConfigForm({ ...configForm, schoolLogo: e.target.value })
-                    }
-                    placeholder="https://example.com/logo.png"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="address">Adresse</Label>
-                  <Input
-                    id="address"
-                    value={configForm.address}
-                    onChange={(e) =>
-                      setConfigForm({ ...configForm, address: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="directorName">Nom du directeur</Label>
-                  <Input
-                    id="directorName"
-                    value={configForm.directorName}
-                    onChange={(e) =>
-                      setConfigForm({
-                        ...configForm,
-                        directorName: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="headerText">Texte d'en-tete</Label>
-                  <Input
-                    id="headerText"
-                    value={configForm.headerText}
-                    onChange={(e) =>
-                      setConfigForm({
-                        ...configForm,
-                        headerText: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="footerText">Texte de pied de page</Label>
-                  <Input
-                    id="footerText"
-                    value={configForm.footerText}
-                    onChange={(e) =>
-                      setConfigForm({
-                        ...configForm,
-                        footerText: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="signatures">Signatures</Label>
-                  <Input
-                    id="signatures"
-                    value={configForm.signatures}
-                    onChange={(e) =>
-                      setConfigForm({
-                        ...configForm,
-                        signatures: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <Button
-                  onClick={handleConfigSave}
-                  disabled={updateConfigMutation.isPending}
-                >
-                  {updateConfigMutation.isPending
-                    ? "Enregistrement..."
-                    : "Enregistrer"}
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              </div>
-            )}
-          </motion.div>
-        </TabsContent>
       </Tabs>
 
       {/* Student Selection Dialog */}
@@ -519,6 +402,43 @@ export default function GenerationDocuments() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Niveau</Label>
+                <Select
+                  value={filterNiveau}
+                  onValueChange={(v) => { setFilterNiveau(v); setFilterClasse("all"); }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Tous les niveaux" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les niveaux</SelectItem>
+                    {niveauOptions.map((n) => (
+                      <SelectItem key={n} value={n}>{n}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Classe</Label>
+                <Select
+                  value={filterClasse}
+                  onValueChange={setFilterClasse}
+                  disabled={classeOptions.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Toutes les classes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les classes</SelectItem>
+                    {classeOptions.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <div className="relative">
               <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input

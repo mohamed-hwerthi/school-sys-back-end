@@ -37,7 +37,7 @@ export function useFacture(id: string) {
   return useQuery<Facture>({
     queryKey: [FACTURES_KEY, id],
     queryFn: () => facturesApi.getById(id),
-    enabled: id > 0,
+    enabled: !!id,
   });
 }
 
@@ -138,7 +138,7 @@ export function useEcheancier(id: string) {
   return useQuery<Echeancier>({
     queryKey: [ECHEANCIERS_KEY, id],
     queryFn: () => facturesApi.getEcheancierById(id),
-    enabled: id > 0,
+    enabled: !!id,
   });
 }
 

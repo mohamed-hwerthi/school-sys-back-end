@@ -24,6 +24,26 @@ export interface AffectationRequest {
   notes?: string | null;
 }
 
+export interface AffectationBulkItem {
+  classeId: string;
+  moduleId: string | null;
+}
+
+export interface AffectationBulkRequest {
+  teacherId: string;
+  anneeScolaire: string;
+  dateDebut?: string | null;
+  dateFin?: string | null;
+  notes?: string | null;
+  items: AffectationBulkItem[];
+}
+
+export interface AffectationBulkResult {
+  created: number;
+  skipped: number;
+  affectations: AffectationDTO[];
+}
+
 export interface AffectationFilters {
   teacherId?: string;
   classeId?: string;
@@ -52,6 +72,11 @@ export const affectationsApi = {
 
   create: async (req: AffectationRequest): Promise<AffectationDTO> => {
     const res = await api.post<AffectationDTO>(BASE, req);
+    return res.data;
+  },
+
+  bulkCreate: async (req: AffectationBulkRequest): Promise<AffectationBulkResult> => {
+    const res = await api.post<AffectationBulkResult>(`${BASE}/bulk`, req);
     return res.data;
   },
 

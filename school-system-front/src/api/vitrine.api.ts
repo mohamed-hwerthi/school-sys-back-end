@@ -30,8 +30,10 @@ publicApi.interceptors.response.use((response) => {
 });
 
 export const vitrinePublicApi = {
-  getFullVitrine: async (slug: string): Promise<VitrinePublicData> => {
-    const res = await publicApi.get<VitrinePublicData>(`/public/vitrine/${slug}`);
+  getFullVitrine: async (slug: string, options: { preview?: boolean } = {}): Promise<VitrinePublicData> => {
+    const res = await publicApi.get<VitrinePublicData>(`/public/vitrine/${slug}`, {
+      params: options.preview ? { preview: "true" } : undefined,
+    });
     return res.data;
   },
 

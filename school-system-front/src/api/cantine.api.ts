@@ -47,6 +47,15 @@ export const menusApi = {
   delete: async (id: string): Promise<void> => {
     await api.delete(`/cantine/menus/${id}`);
   },
+
+  uploadImage: async (id: string, file: File): Promise<Menu> => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await api.post<Menu>(`/cantine/menus/${id}/image`, form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data;
+  },
 };
 
 // ---- Abonnements Cantine ----

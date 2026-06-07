@@ -274,7 +274,7 @@ interface DomaineBlockProps {
   domaine: Pick<
     BulletinDomaineDTO,
     "domaineId" | "domaineName" | "domaineNameAr" | "modules" | "moyenneDomaine" | "recommandation"
-  >;
+  > & { coeff?: number };
 }
 
 function DomaineBlock({ domaine }: DomaineBlockProps) {
@@ -320,6 +320,12 @@ function DomaineBlock({ domaine }: DomaineBlockProps) {
         }}
       >
         {formatDomaineTitle(domaine.domaineNameAr, domaine.domaineName)}
+        {domaine.coeff != null && (
+          <span style={{ fontWeight: "normal", fontSize: "10px", opacity: 0.85 }}>
+            {" "}
+            (coeff {domaine.coeff})
+          </span>
+        )}
       </div>
       <table
         style={{

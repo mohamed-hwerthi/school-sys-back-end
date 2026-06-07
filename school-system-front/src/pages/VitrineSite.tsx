@@ -25,7 +25,7 @@ export default function VitrineSite() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const isPreview = searchParams.get("preview") === "true";
-  const { data, isLoading, isError } = useVitrine(slug);
+  const { data, isLoading, isError } = useVitrine(slug, isPreview);
 
   if (isLoading) {
     return <VitrineSkeleton />;
@@ -57,7 +57,7 @@ export default function VitrineSite() {
     return (
       <div className="flex min-h-screen flex-col">
         <VitrineSEO config={config} slug={slug!} />
-        <VitrineNavbar config={config} pages={pages} />
+        <VitrineNavbar config={config} pages={pages} isPreview={isPreview} />
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900">{t("showcase.pageNotFound")}</h1>
@@ -77,7 +77,7 @@ export default function VitrineSite() {
       {/* Preview mode banner */}
       {isPreview && <VitrinePreviewBanner />}
 
-      <VitrineNavbar config={config} pages={pages} />
+      <VitrineNavbar config={config} pages={pages} isPreview={isPreview} />
 
       <main className={`flex-1 ${isPreview ? "mt-10" : ""}`}>
         {!pageSlug ? (
@@ -85,6 +85,7 @@ export default function VitrineSite() {
             config={config}
             announcements={announcements}
             gallery={gallery}
+            slug={slug ?? ""}
           />
         ) : (
           <>

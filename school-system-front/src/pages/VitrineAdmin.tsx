@@ -33,9 +33,12 @@ import {
 } from "@/hooks/useVitrineAdmin";
 import type { VitrineConfig, VitrinePage, VitrineAnnouncement, VitrineContact } from "@/types/vitrine";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
+import { buildVitrineUrl } from "@/lib/vitrine-routing";
 
 export default function VitrineAdmin() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const { data: config, isLoading: configLoading } = useVitrineConfig();
   const { data: pages, isLoading: pagesLoading } = useVitrinePages();
   const { data: announcements, isLoading: annLoading } = useVitrineAnnouncements();
@@ -62,10 +65,17 @@ export default function VitrineAdmin() {
           ) : (
             <Badge variant="secondary">Brouillon</Badge>
           )}
-          <Button variant="outline" size="sm" asChild>
-            <a href={`/vitrine/${config?.schoolDisplayName ? encodeURIComponent(config.schoolDisplayName.toLowerCase().replace(/\s+/g, "-")) : "preview"}`} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="me-2 h-4 w-4" /> Pr&eacute;visualiser
-            </a>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!user?.tenantSlug && !user?.tenantId}
+            onClick={() => {
+              const slug = user?.tenantSlug || user?.tenantId?.replaceAll("_", "-");
+              if (!slug) return;
+              window.open(buildVitrineUrl(slug, { preview: true }), "_blank", "noopener,noreferrer");
+            }}
+          >
+            <ExternalLink className="me-2 h-4 w-4" /> Pr&eacute;visualiser
           </Button>
         </div>
       </div>
@@ -73,7 +83,6 @@ export default function VitrineAdmin() {
       <Tabs defaultValue="config">
         <TabsList>
           <TabsTrigger value="config"><Globe className="me-2 h-4 w-4" /> Configuration</TabsTrigger>
-          <TabsTrigger value="pages"><FileText className="me-2 h-4 w-4" /> Pages</TabsTrigger>
           <TabsTrigger value="gallery"><Image className="me-2 h-4 w-4" /> Galerie</TabsTrigger>
           <TabsTrigger value="announcements"><Megaphone className="me-2 h-4 w-4" /> Annonces</TabsTrigger>
           <TabsTrigger value="analytics"><BarChart3 className="me-2 h-4 w-4" /> Statistiques</TabsTrigger>
@@ -271,6 +280,64 @@ function ConfigTab({ config }: { config: VitrineConfig }) {
             <Label>Adresse</Label>
             <Textarea value={form.contactAddress || ""} onChange={(e) => set("contactAddress", e.target.value)} rows={2} />
           </div>
+          <div>
+            <Label>Horaires d'ouverture</Label>
+            <Input value={form.contactHours || ""} onChange={(e) => set("contactHours", e.target.value)} placeholder="Lun - Ven : 8h - 17h" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Latitude</Label>
+              <Input
+                type="number"
+                step="0.0000001"
+                value={form.contactLatitude ?? ""}
+                onChange={(e) => set("contactLatitude", e.target.value === "" ? null : Number(e.target.value))}
+                placeholder="33.5731"
+              />
+            </div>
+            <div>
+              <Label>Longitude</Label>
+              <Input
+                type="number"
+                step="0.0000001"
+                value={form.contactLongitude ?? ""}
+                onChange={(e) => set("contactLongitude", e.target.value === "" ? null : Number(e.target.value))}
+                placeholder="-7.5898"
+              />
+            </div>
+          </div>
+          <a
+            href={
+              form.contactAddress
+                ? `https://www.openstreetmap.org/search?query=${encodeURIComponent(form.contactAddress)}`
+                : "https://www.openstreetmap.org/"
+            }
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex text-xs text-blue-600 hover:underline"
+          >
+            Trouver les coordonn&eacute;es sur OpenStreetMap &rarr;
+          </a>
+          {form.contactLatitude != null && form.contactLongitude != null && (
+            <div className="overflow-hidden rounded-lg border">
+              {(() => {
+                const lat = Number(form.contactLatitude);
+                const lon = Number(form.contactLongitude);
+                const d = 0.005;
+                const bbox = `${lon - d},${lat - d},${lon + d},${lat + d}`;
+                return (
+                  <iframe
+                    title="Aper&ccedil;u localisation"
+                    width="100%"
+                    height="200"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lon}`}
+                  />
+                );
+              })()}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -298,6 +365,241 @@ function ConfigTab({ config }: { config: VitrineConfig }) {
               <p className="text-sm text-muted-foreground">Rendre le site visible aux visiteurs</p>
             </div>
             <Switch checked={form.published || false} onCheckedChange={(v) => set("published", v)} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Hero — stats + badge */}
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>Hero (en-t&ecirc;te du site)</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label>Badge - libell&eacute;</Label>
+              <Input value={form.heroBadgeLabel || ""} onChange={(e) => set("heroBadgeLabel", e.target.value)} placeholder="Certifie" />
+            </div>
+            <div>
+              <Label>Badge - valeur</Label>
+              <Input value={form.heroBadgeValue || ""} onChange={(e) => set("heroBadgeValue", e.target.value)} placeholder="Ministere de l'Education" />
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="space-y-2 rounded-lg border p-3">
+                <p className="text-xs font-semibold text-muted-foreground">Stat {n}</p>
+                <Input
+                  value={(form[`heroStat${n}Value` as keyof VitrineConfig] as string) || ""}
+                  onChange={(e) => set(`heroStat${n}Value`, e.target.value)}
+                  placeholder="Valeur (ex. 1500+)"
+                />
+                <Input
+                  value={(form[`heroStat${n}Label` as keyof VitrineConfig] as string) || ""}
+                  onChange={(e) => set(`heroStat${n}Label`, e.target.value)}
+                  placeholder="Label (ex. Eleves)"
+                />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Marquee */}
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>Bandeau d&eacute;filant (marquee)</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((n) => (
+            <Input
+              key={n}
+              value={(form[`marqueeItem${n}` as keyof VitrineConfig] as string) || ""}
+              onChange={(e) => set(`marqueeItem${n}`, e.target.value)}
+              placeholder={`Item ${n}`}
+            />
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Trust strip */}
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>Bande de confiance (4 chiffres cl&eacute;s)</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} className="space-y-2 rounded-lg border p-3">
+              <p className="text-xs font-semibold text-muted-foreground">Stat {n}</p>
+              <Input
+                value={(form[`trustStat${n}Value` as keyof VitrineConfig] as string) || ""}
+                onChange={(e) => set(`trustStat${n}Value`, e.target.value)}
+                placeholder="Valeur (ex. 1500+)"
+              />
+              <Input
+                value={(form[`trustStat${n}Label` as keyof VitrineConfig] as string) || ""}
+                onChange={(e) => set(`trustStat${n}Label`, e.target.value)}
+                placeholder="Label"
+              />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* About */}
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>Section &laquo; A propos &raquo;</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <Label>Surtitre</Label>
+              <Input value={form.aboutEyebrow || ""} onChange={(e) => set("aboutEyebrow", e.target.value)} placeholder="A propos de nous" />
+            </div>
+            <div>
+              <Label>Titre (ligne 1)</Label>
+              <Input value={form.aboutTitle || ""} onChange={(e) => set("aboutTitle", e.target.value)} placeholder="Une education exigeante," />
+            </div>
+            <div>
+              <Label>Titre (ligne 2, en couleur)</Label>
+              <Input value={form.aboutTitleAccent || ""} onChange={(e) => set("aboutTitleAccent", e.target.value)} placeholder="tournee vers l'avenir." />
+            </div>
+          </div>
+          <div>
+            <Label>Description</Label>
+            <Textarea value={form.aboutDescription || ""} onChange={(e) => set("aboutDescription", e.target.value)} rows={3} />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n}>
+                <Label>Puce {n}</Label>
+                <Input
+                  value={(form[`aboutFeature${n}` as keyof VitrineConfig] as string) || ""}
+                  onChange={(e) => set(`aboutFeature${n}`, e.target.value)}
+                  placeholder={`Avantage ${n}`}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label>Badge flottant - valeur</Label>
+              <Input value={form.aboutBadgeValue || ""} onChange={(e) => set("aboutBadgeValue", e.target.value)} placeholder="98%" />
+            </div>
+            <div>
+              <Label>Badge flottant - label</Label>
+              <Input value={form.aboutBadgeLabel || ""} onChange={(e) => set("aboutBadgeLabel", e.target.value)} placeholder="Taux de reussite" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Values */}
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>Nos valeurs (3 cartes)</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-3">
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="space-y-2 rounded-lg border p-3">
+              <p className="text-xs font-semibold text-muted-foreground">Valeur {n}</p>
+              <Input
+                value={(form[`value${n}Title` as keyof VitrineConfig] as string) || ""}
+                onChange={(e) => set(`value${n}Title`, e.target.value)}
+                placeholder="Titre"
+              />
+              <Textarea
+                value={(form[`value${n}Text` as keyof VitrineConfig] as string) || ""}
+                onChange={(e) => set(`value${n}Text`, e.target.value)}
+                rows={2}
+                placeholder="Description"
+              />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Programs */}
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>Nos programmes (3 cartes)</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-3">
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="space-y-2 rounded-lg border p-3">
+              <p className="text-xs font-semibold text-muted-foreground">Programme {n}</p>
+              <Input
+                value={(form[`program${n}Title` as keyof VitrineConfig] as string) || ""}
+                onChange={(e) => set(`program${n}Title`, e.target.value)}
+                placeholder="Titre (ex. Maternelle)"
+              />
+              <Input
+                value={(form[`program${n}Level` as keyof VitrineConfig] as string) || ""}
+                onChange={(e) => set(`program${n}Level`, e.target.value)}
+                placeholder="Niveau / age (ex. 3 - 5 ans)"
+              />
+              <Textarea
+                value={(form[`program${n}Text` as keyof VitrineConfig] as string) || ""}
+                onChange={(e) => set(`program${n}Text`, e.target.value)}
+                rows={2}
+                placeholder="Description"
+              />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Testimonial */}
+      <Card>
+        <CardHeader>
+          <CardTitle>T&eacute;moignage</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <Label>Citation</Label>
+            <Textarea value={form.testimonialQuote || ""} onChange={(e) => set("testimonialQuote", e.target.value)} rows={4} />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label>Auteur</Label>
+              <Input value={form.testimonialAuthor || ""} onChange={(e) => set("testimonialAuthor", e.target.value)} placeholder="Salma B." />
+            </div>
+            <div>
+              <Label>R&ocirc;le</Label>
+              <Input value={form.testimonialRole || ""} onChange={(e) => set("testimonialRole", e.target.value)} placeholder="Parent d'eleve" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* CTA */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Appel &agrave; l'action (CTA inscription)</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <Label>Surtitre</Label>
+            <Input value={form.ctaEyebrow || ""} onChange={(e) => set("ctaEyebrow", e.target.value)} placeholder="Inscriptions ouvertes" />
+          </div>
+          <div>
+            <Label>Titre</Label>
+            <Input value={form.ctaTitle || ""} onChange={(e) => set("ctaTitle", e.target.value)} placeholder="Prets a rejoindre notre famille ?" />
+          </div>
+          <div>
+            <Label>Description</Label>
+            <Textarea value={form.ctaDescription || ""} onChange={(e) => set("ctaDescription", e.target.value)} rows={2} />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label>Texte du bouton</Label>
+              <Input value={form.ctaPrimaryLabel || ""} onChange={(e) => set("ctaPrimaryLabel", e.target.value)} placeholder="Pre-inscription en ligne" />
+            </div>
+            <div>
+              <Label>URL du bouton</Label>
+              <Input value={form.ctaPrimaryUrl || ""} onChange={(e) => set("ctaPrimaryUrl", e.target.value)} placeholder="/inscription" />
+            </div>
           </div>
         </CardContent>
       </Card>

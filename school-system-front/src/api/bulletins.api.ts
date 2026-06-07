@@ -29,6 +29,7 @@ export interface BulletinDomaineDTO {
   domaineName: string;
   domaineNameAr: string | null;
   ordre: number;
+  coeff: number;
   modules: BulletinModuleDTO[];
   moyenneDomaine: number;
   recommandation: string | null;

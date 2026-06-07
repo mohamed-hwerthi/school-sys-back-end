@@ -26,6 +26,7 @@ public class MenuDTO {
     private List<String> allergenes;
     private String typeRegime;
     private Integer semaine;
+    private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

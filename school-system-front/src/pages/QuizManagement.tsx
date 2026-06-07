@@ -135,6 +135,13 @@ export default function QuizManagementPage() {
     }
   }, []);
 
+  useEffect(() => {
+    const urlTab = searchParams.get("tab");
+    if (urlTab && (QUIZ_TABS as readonly string[]).includes(urlTab) && urlTab !== activeTab) {
+      setActiveTab(urlTab);
+    }
+  }, [searchParams]);
+
   // Quiz form
   const [quizFormOpen, setQuizFormOpen] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
@@ -147,7 +154,7 @@ export default function QuizManagementPage() {
   });
 
   // Quiz builder
-  const [selectedQuizId, setSelectedQuizId] = useState<number | undefined>();
+  const [selectedQuizId, setSelectedQuizId] = useState<string | undefined>();
   const [questionFormOpen, setQuestionFormOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<QuestionDTO | null>(null);
   const [questionForm, setQuestionForm] = useState<CreateQuestionRequest>({
@@ -161,7 +168,7 @@ export default function QuizManagementPage() {
   const [questionErrors, setQuestionErrors] = useState<FormErrors>({});
 
   // Results
-  const [selectedResultQuizId, setSelectedResultQuizId] = useState<number | undefined>();
+  const [selectedResultQuizId, setSelectedResultQuizId] = useState<string | undefined>();
   const [tentativesPage, setTentativesPage] = useState(0);
 
   // Delete
@@ -184,15 +191,15 @@ export default function QuizManagementPage() {
     (tentativesPage + 1) * ITEMS_PER_PAGE
   );
   const { niveaux } = useNiveaux();
-  const [quizNiveauId, setQuizNiveauId] = useState<number | undefined>();
+  const [quizNiveauId, setQuizNiveauId] = useState<string | undefined>();
   const { data: allClasses = [] } = useClasses();
   const { data: allModules = [] } = useModules();
   const quizClasses = useMemo(
-    () => (quizNiveauId ? allClasses.filter((c) => c.niveauId === quizNiveauId) : []),
+    () => (quizNiveauId ? allClasses.filter((c) => c.niveauId === quizNiveauId) : allClasses),
     [allClasses, quizNiveauId]
   );
   const quizModules = useMemo(
-    () => (quizNiveauId ? allModules.filter((m) => m.niveauId === quizNiveauId) : []),
+    () => (quizNiveauId ? allModules.filter((m) => m.niveauId === quizNiveauId) : allModules),
     [allModules, quizNiveauId]
   );
 
@@ -431,25 +438,25 @@ export default function QuizManagementPage() {
               </div>
             )}
             {activeTab === "builder" && (
-              <Select value={selectedQuizId ? String(selectedQuizId) : ""} onValueChange={(v) => setSelectedQuizId(v ? Number(v) : undefined)}>
+              <Select value={selectedQuizId ?? ""} onValueChange={(v) => setSelectedQuizId(v || undefined)}>
                 <SelectTrigger className="w-[300px]">
                   <SelectValue placeholder="Selectionner un quiz" />
                 </SelectTrigger>
                 <SelectContent>
                   {quizzes.map((q) => (
-                    <SelectItem key={q.id} value={String(q.id)}>{q.titre}</SelectItem>
+                    <SelectItem key={q.id} value={q.id}>{q.titre}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             )}
             {activeTab === "results" && (
-              <Select value={selectedResultQuizId ? String(selectedResultQuizId) : ""} onValueChange={(v) => setSelectedResultQuizId(v ? Number(v) : undefined)}>
+              <Select value={selectedResultQuizId ?? ""} onValueChange={(v) => setSelectedResultQuizId(v || undefined)}>
                 <SelectTrigger className="w-[300px]">
                   <SelectValue placeholder="Selectionner un quiz" />
                 </SelectTrigger>
                 <SelectContent>
                   {quizzes.map((q) => (
-                    <SelectItem key={q.id} value={String(q.id)}>{q.titre}</SelectItem>
+                    <SelectItem key={q.id} value={q.id}>{q.titre}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -810,9 +817,9 @@ export default function QuizManagementPage() {
               <div className="space-y-1.5">
                 <Label htmlFor="quizNiveau">Niveau</Label>
                 <Select
-                  value={quizNiveauId ? String(quizNiveauId) : "none"}
+                  value={quizNiveauId ?? "none"}
                   onValueChange={(v) => {
-                    const nid = v === "none" ? undefined : Number(v);
+                    const nid = v === "none" ? undefined : v;
                     setQuizNiveauId(nid);
                     setQuizForm({ ...quizForm, classeId: undefined, moduleId: undefined });
                   }}
@@ -821,7 +828,7 @@ export default function QuizManagementPage() {
                   <SelectContent>
                     <SelectItem value="none">Aucun</SelectItem>
                     {niveaux.map((n) => (
-                      <SelectItem key={n.id} value={String(n.id)}>{n.nom}</SelectItem>
+                      <SelectItem key={n.id} value={n.id}>{n.nom}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -831,15 +838,14 @@ export default function QuizManagementPage() {
               <div className="space-y-1.5">
                 <Label htmlFor="classeId">Classe</Label>
                 <Select
-                  value={quizForm.classeId ? String(quizForm.classeId) : "none"}
-                  onValueChange={(v) => setQuizForm({ ...quizForm, classeId: v === "none" ? undefined : Number(v) })}
-                  disabled={!quizNiveauId}
+                  value={quizForm.classeId ?? "none"}
+                  onValueChange={(v) => setQuizForm({ ...quizForm, classeId: v === "none" ? undefined : v })}
                 >
-                  <SelectTrigger id="classeId"><SelectValue placeholder={quizNiveauId ? "Selectionner une classe" : "Choisissez un niveau"} /></SelectTrigger>
+                  <SelectTrigger id="classeId"><SelectValue placeholder="Selectionner une classe" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Aucune</SelectItem>
                     {quizClasses.map((c) => (
-                      <SelectItem key={c.id} value={String(c.id)}>{c.fullName}</SelectItem>
+                      <SelectItem key={c.id} value={c.id}>{c.fullName}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -847,15 +853,16 @@ export default function QuizManagementPage() {
               <div className="space-y-1.5">
                 <Label htmlFor="moduleIdQuiz">Matière</Label>
                 <Select
-                  value={quizForm.moduleId ? String(quizForm.moduleId) : "none"}
-                  onValueChange={(v) => setQuizForm({ ...quizForm, moduleId: v === "none" ? undefined : Number(v) })}
-                  disabled={!quizNiveauId}
+                  value={quizForm.moduleId ?? "none"}
+                  onValueChange={(v) => setQuizForm({ ...quizForm, moduleId: v === "none" ? undefined : v })}
                 >
-                  <SelectTrigger id="moduleIdQuiz"><SelectValue placeholder={quizNiveauId ? "Selectionner un module" : "Choisissez un niveau"} /></SelectTrigger>
+                  <SelectTrigger id="moduleIdQuiz"><SelectValue placeholder="Selectionner une matière" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Aucun</SelectItem>
+                    <SelectItem value="none">Aucune</SelectItem>
                     {quizModules.map((m) => (
-                      <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name}{!quizNiveauId && m.niveauName ? ` (${m.niveauName})` : ""}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

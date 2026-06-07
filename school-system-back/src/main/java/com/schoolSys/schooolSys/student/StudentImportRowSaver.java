@@ -2,6 +2,7 @@ package com.schoolSys.schooolSys.student;
 
 import java.util.UUID;
 
+import com.schoolSys.schooolSys.parent.ParentAccountAutoProvisionService;
 import com.schoolSys.schooolSys.student.dto.StudentRequestDTO;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -27,6 +28,7 @@ public class StudentImportRowSaver {
 
     private final StudentRepository studentRepository;
     private final StudentMapper studentMapper;
+    private final ParentAccountAutoProvisionService parentAutoProvisioner;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -35,7 +37,9 @@ public class StudentImportRowSaver {
     public Student saveNew(StudentRequestDTO dto) {
         Student student = studentMapper.toEntity(dto);
         student.setMatricule(generateMatricule());
-        return studentRepository.save(student);
+        Student saved = studentRepository.save(student);
+        parentAutoProvisioner.ensureLinked(saved);
+        return saved;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -44,7 +48,9 @@ public class StudentImportRowSaver {
         String matricule = existing.getMatricule();
         studentMapper.updateEntity(dto, existing);
         if (matricule != null) existing.setMatricule(matricule);
-        return studentRepository.save(existing);
+        Student saved = studentRepository.save(existing);
+        parentAutoProvisioner.ensureLinked(saved);
+        return saved;
     }
 
     private String generateMatricule() {

@@ -55,6 +55,7 @@ public class MenuService {
                 .allergenes(request.getAllergenes() != null ? request.getAllergenes().toArray(new String[0]) : null)
                 .typeRegime(request.getTypeRegime() != null ? request.getTypeRegime() : "STANDARD")
                 .semaine(request.getSemaine())
+                .imageUrl(request.getImageUrl())
                 .build();
         return toDto(menuRepository.save(menu));
     }
@@ -72,6 +73,15 @@ public class MenuService {
         menu.setAllergenes(request.getAllergenes() != null ? request.getAllergenes().toArray(new String[0]) : null);
         if (request.getTypeRegime() != null) menu.setTypeRegime(request.getTypeRegime());
         if (request.getSemaine() != null) menu.setSemaine(request.getSemaine());
+        if (request.getImageUrl() != null) menu.setImageUrl(request.getImageUrl());
+        return toDto(menuRepository.save(menu));
+    }
+
+    @Transactional
+    public MenuDTO setImage(UUID id, String imageUrl) {
+        Menu menu = menuRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Menu", id));
+        menu.setImageUrl(imageUrl);
         return toDto(menuRepository.save(menu));
     }
 
@@ -95,6 +105,7 @@ public class MenuService {
                 .allergenes(m.getAllergenes() != null ? Arrays.asList(m.getAllergenes()) : List.of())
                 .typeRegime(m.getTypeRegime())
                 .semaine(m.getSemaine())
+                .imageUrl(m.getImageUrl())
                 .createdAt(m.getCreatedAt())
                 .updatedAt(m.getUpdatedAt())
                 .build();

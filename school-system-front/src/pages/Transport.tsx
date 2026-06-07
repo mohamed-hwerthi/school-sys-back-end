@@ -63,6 +63,8 @@ import {
   useTransportStats,
 } from "@/hooks/useTransport";
 import type { Vehicule, Circuit, AffectationTransport, CreateCircuitRequest, CreateAffectationRequest } from "@/types/transport";
+import { useAllStudents } from "@/hooks/useStudents";
+import StudentCombobox from "@/components/StudentCombobox";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -657,9 +659,15 @@ function VehiculesTab() {
 function AffectationsTab() {
   const { data: affectations = [], isLoading } = useAffectationsTransport();
   const { data: circuits = [] } = useCircuits();
+  const { data: students = [] } = useAllStudents();
   const affecterMutation = useAffecterTransport();
   const desaffecterMutation = useDesaffecterTransport();
   const deleteMutation = useDeleteAffectation();
+
+  const studentLabel = (id: string | number) => {
+    const s = students.find((st) => String(st.id) === String(id));
+    return s ? `${s.prenom} ${s.nom}${s.matricule ? ` · ${s.matricule}` : ""}` : `#${id}`;
+  };
 
   const [search, setSearch] = useState("");
   const [filterCircuit, setFilterCircuit] = useState("all");
@@ -684,7 +692,8 @@ function AffectationsTab() {
         (a) =>
           a.circuitNom?.toLowerCase().includes(q) ||
           a.arretNom?.toLowerCase().includes(q) ||
-          String(a.eleveId).includes(q)
+          String(a.eleveId).includes(q) ||
+          studentLabel(a.eleveId).toLowerCase().includes(q)
       );
     }
     return list;
@@ -740,7 +749,7 @@ function AffectationsTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Eleve ID</th>
+                <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Élève</th>
                 <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground">Circuit</th>
                 <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden md:table-cell">Arret</th>
                 <th className="py-3 px-4 text-start text-xs font-semibold text-muted-foreground hidden lg:table-cell">Annee scolaire</th>
@@ -759,7 +768,7 @@ function AffectationsTab() {
               ) : (
                 paginated.map((a) => (
                   <tr key={a.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
-                    <td className="py-3 px-4 font-medium text-foreground">#{a.eleveId}</td>
+                    <td className="py-3 px-4 font-medium text-foreground">{studentLabel(a.eleveId)}</td>
                     <td className="py-3 px-4 text-muted-foreground">{a.circuitNom || "-"}</td>
                     <td className="py-3 px-4 hidden md:table-cell text-muted-foreground">{a.arretNom || "-"}</td>
                     <td className="py-3 px-4 hidden lg:table-cell text-muted-foreground">{a.anneeScolaire}</td>
@@ -816,8 +825,11 @@ function AffectationsTab() {
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
-              <Label>ID Eleve</Label>
-              <Input type="number" value={form.eleveId || ""} onChange={(e) => setForm({ ...form, eleveId: e.target.value })} placeholder="ID de l'eleve" />
+              <Label>Élève</Label>
+              <StudentCombobox
+                value={form.eleveId ? String(form.eleveId) : ""}
+                onChange={(v) => setForm({ ...form, eleveId: v })}
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Circuit</Label>

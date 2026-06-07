@@ -156,7 +156,6 @@
     "ranking": "Classement Général",
     "noAveragesAvailable": "Aucune moyenne disponible",
     "enterNotesToSee": "Saisissez des notes pour voir les moyennes",
-    "loading": "Chargement...",
     "annual": "Annuel",
     "months": {
       "january": "Janvier",
@@ -210,7 +209,8 @@
       "transfer": "Virement",
       "card": "Carte bancaire",
       "debit": "Prélèvement"
-    }
+    },
+    "confirmDeletion": "Confirmer la suppression"
   },
   "nav": {
     "home": "Accueil",
@@ -293,7 +293,8 @@
     "levels": "Niveaux",
     "messages": "Messagerie",
     "scholarships": "Bourses",
-    "forecasts": "Prévisions"
+    "forecasts": "Prévisions",
+    "personnel": "Personnel"
   },
   "auth": {
     "login": "Connexion",
@@ -1879,5 +1880,20 @@
   "app": {
     "name": "EcoleNet",
     "subtitle": "Gestion Scolaire"
+  },
+  "personnel": {
+    "title": "Personnel",
+    "subtitle": "Gérez le personnel non-enseignant (secrétaires, comptables, gardiens…)",
+    "addPersonnel": "Ajouter un employé",
+    "editPersonnel": "Modifier l'employé",
+    "fillInfo": "Remplissez les informations de l'employé",
+    "employee": "Employé",
+    "fonction": "Fonction",
+    "totalPersonnel": "Total personnel",
+    "noPersonnelFound": "Aucun employé trouvé",
+    "personnelDetails": "Détails de l'employé",
+    "personnelNotFound": "Employé introuvable",
+    "personnelNotFoundDesc": "Cet employé n'existe pas ou a été supprimé.",
+    "confirmDeleteText": "Êtes-vous sûr de vouloir supprimer l'employé"
   }
 }

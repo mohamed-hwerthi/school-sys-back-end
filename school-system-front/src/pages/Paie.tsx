@@ -91,7 +91,7 @@ export default function PaiePage() {
     11: t("common.months.november"),
     12: t("common.months.december"),
   };
-  const [filterMois, setFilterMois] = useState(String(currentMonth));
+  const [filterMois, setFilterMois] = useState("all");
   const [filterAnnee, setFilterAnnee] = useState(String(currentYear));
   const [search, setSearch] = useState("");
   const [filterPaye, setFilterPaye] = useState("all");
@@ -101,7 +101,7 @@ export default function PaiePage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<FichePaie | null>(null);
   const [form, setForm] = useState<CreateFichePaieRequest>({
-    employeId: 0,
+    employeId: "",
     employeType: "ENSEIGNANT",
     mois: currentMonth,
     annee: currentYear,
@@ -241,7 +241,7 @@ export default function PaiePage() {
   const openCreate = () => {
     setEditTarget(null);
     setForm({
-      employeId: 0,
+      employeId: "",
       employeType: "ENSEIGNANT",
       mois: currentMonth,
       annee: currentYear,
@@ -666,12 +666,12 @@ export default function PaiePage() {
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>{t("common.type")}</Label>
+                <Label>{t("common.type")} <span className="text-red-500">*</span></Label>
                 <Select
                   value={form.employeType}
                   onValueChange={(v) =>
                     // Switching type invalidates the previously chosen employé
-                    setForm({ ...form, employeType: v, employeId: 0 })
+                    setForm({ ...form, employeType: v, employeId: "" })
                   }
                 >
                   <SelectTrigger>
@@ -685,7 +685,7 @@ export default function PaiePage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="paieEmployeId">Employé</Label>
+                <Label htmlFor="paieEmployeId">Employé <span className="text-red-500">*</span></Label>
                 {(() => {
                   const options =
                     form.employeType === "ENSEIGNANT"
@@ -738,7 +738,7 @@ export default function PaiePage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>{t("finance.month")}</Label>
+                <Label>{t("finance.month")} <span className="text-red-500">*</span></Label>
                 <Select
                   value={String(form.mois)}
                   onValueChange={(v) =>
@@ -758,7 +758,7 @@ export default function PaiePage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="paieAnnee">{t("payroll.year")}</Label>
+                <Label htmlFor="paieAnnee">{t("payroll.year")} <span className="text-red-500">*</span></Label>
                 <Input
                   id="paieAnnee"
                   type="number"
@@ -770,7 +770,7 @@ export default function PaiePage() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="salaireBase">{t("payroll.baseSalary")}</Label>
+              <Label htmlFor="salaireBase">{t("payroll.baseSalary")} <span className="text-red-500">*</span></Label>
               <Input
                 id="salaireBase"
                 type="number"

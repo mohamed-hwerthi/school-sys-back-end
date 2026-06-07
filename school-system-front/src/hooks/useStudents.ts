@@ -35,7 +35,7 @@ export function useStudent(id: string) {
   return useQuery<Student>({
     queryKey: [STUDENTS_KEY, id],
     queryFn: () => studentsApi.getById(id),
-    enabled: id > 0,
+    enabled: !!id,
   });
 }
 

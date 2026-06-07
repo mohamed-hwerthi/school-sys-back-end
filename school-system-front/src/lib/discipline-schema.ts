@@ -8,15 +8,15 @@ export const incidentSchema = z.object({
   gravite: z.string().min(1, "Gravité requise"),
   lieu: z.string().optional().default(""),
   elevesImpliques: z.array(z.any()).optional().default([]),
-  signaleParId: z.number().optional(),
+  signaleParId: z.string().optional(),
 });
 
 export type IncidentFormValues = z.infer<typeof incidentSchema>;
 
 export const sanctionSchema = z
   .object({
-    eleveId: z.number().int().positive("Sélectionnez un élève"),
-    incidentId: z.number().int().positive().optional(),
+    eleveId: z.string().min(1, "Sélectionnez un élève"),
+    incidentId: z.string().optional(),
     typeSanction: z.string().min(1, "Type requis"),
     description: z.string().optional().default(""),
     dateDebut: z.string().min(1, "Date début requise"),

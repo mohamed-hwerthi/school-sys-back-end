@@ -32,6 +32,9 @@ const Teachers = lazy(() => import("./pages/Teachers"));
 const Affectations = lazy(() => import("./pages/Affectations"));
 const AddTeacher = lazy(() => import("./pages/AddTeacher"));
 const EditTeacher = lazy(() => import("./pages/EditTeacher"));
+const PersonnelPage = lazy(() => import("./pages/Personnel"));
+const AddPersonnel = lazy(() => import("./pages/AddPersonnel"));
+const EditPersonnel = lazy(() => import("./pages/EditPersonnel"));
 const EmploiSalles = lazy(() => import("./pages/EmploiSalles"));
 const AddRoom = lazy(() => import("./pages/AddRoom"));
 const EditRoom = lazy(() => import("./pages/EditRoom"));
@@ -39,7 +42,7 @@ const Niveaux = lazy(() => import("./pages/Niveaux"));
 const SchoolInfo = lazy(() => import("./pages/SchoolInfo"));
 const FinancePaiement = lazy(() => import("./pages/FinancePaiement"));
 const CarnetNotes = lazy(() => import("./pages/CarnetNotes"));
-const Rapports = lazy(() => import("./pages/Rapports"));
+// const Rapports = lazy(() => import("./pages/Rapports"));
 const Circulaires = lazy(() => import("./pages/Circulaires"));
 const Configuration = lazy(() => import("./pages/Configuration"));
 const Tracabilite = lazy(() => import("./pages/Tracabilite"));
@@ -162,6 +165,7 @@ const App = () => (
           {subdomainVitrineSlug ? (
             <Routes>
               <Route path="/" element={<Suspense fallback={<PageLoader />}><VitrineSite /></Suspense>} />
+              <Route path="/inscription" element={<Suspense fallback={<PageLoader />}><InscriptionPubliquePage /></Suspense>} />
               <Route path="/:pageSlug" element={<Suspense fallback={<PageLoader />}><VitrineSite /></Suspense>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
@@ -219,6 +223,9 @@ const App = () => (
               <Route path="enseignants/ajouter" element={<G roles={MANAGEMENT_ROLES}><AddTeacher /></G>} />
               <Route path="enseignants/modifier/:id" element={<G roles={MANAGEMENT_ROLES}><EditTeacher /></G>} />
               <Route path="affectations" element={<G roles={MANAGEMENT_ROLES}><Affectations /></G>} />
+              <Route path="personnel" element={<G roles={MANAGEMENT_ROLES}><PersonnelPage /></G>} />
+              <Route path="personnel/ajouter" element={<G roles={MANAGEMENT_ROLES}><AddPersonnel /></G>} />
+              <Route path="personnel/modifier/:id" element={<G roles={MANAGEMENT_ROLES}><EditPersonnel /></G>} />
 
               {/* Absences */}
               <Route path="absences" element={<G roles={STAFF_ROLES}><AbsencesPage /></G>} />
@@ -276,7 +283,7 @@ const App = () => (
               <Route path="cantine" element={<G roles={MANAGEMENT_ROLES}><CantinePage /></G>} />
 
               {/* Documents */}
-              <Route path="rapports" element={<G roles={MANAGEMENT_ROLES}><Rapports /></G>} />
+              {/* <Route path="rapports" element={<G roles={MANAGEMENT_ROLES}><Rapports /></G>} /> */}
               <Route path="circulaires" element={<G roles={MANAGEMENT_ROLES}><Circulaires /></G>} />
               <Route path="documents" element={<G roles={MANAGEMENT_ROLES}><GenerationDocumentsPage /></G>} />
 

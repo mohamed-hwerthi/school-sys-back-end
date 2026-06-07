@@ -24,4 +24,9 @@ public interface PointageRepasRepository extends JpaRepository<PointageRepas, UU
 
     @Query("SELECT COUNT(p) FROM PointageRepas p WHERE p.dateRepas = :date")
     long countByDate(@Param("date") LocalDate date);
+
+    @Query("SELECT p.dateRepas, COUNT(p) FROM PointageRepas p " +
+            "WHERE p.present = true AND p.dateRepas BETWEEN :start AND :end " +
+            "GROUP BY p.dateRepas ORDER BY p.dateRepas")
+    List<Object[]> countPresentsBetweenGrouped(@Param("start") LocalDate start, @Param("end") LocalDate end);
 }

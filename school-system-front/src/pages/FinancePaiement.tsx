@@ -74,6 +74,7 @@ import {
   useDeletePaiement,
 } from "@/hooks/useFinance";
 import { useAllStudents } from "@/hooks/useStudents";
+import StudentCombobox from "@/components/StudentCombobox";
 import ExportButton from "@/components/ExportButton";
 import { FinanceSkeleton } from "@/components/skeletons/FinanceSkeleton";
 import { PaiementForm } from "@/components/finance/PaiementForm";
@@ -183,7 +184,7 @@ export default function FinancePaiement() {
   const tauxRecouvrement = totalDu > 0 ? Math.round((totalPaye / totalDu) * 100) : 0;
 
   const eleveSoldes = useMemo(() => {
-    const map: Record<number, { du: number; paye: number }> = {};
+    const map: Record<string, { du: number; paye: number }> = {};
     for (const p of paiements) {
       if (!map[p.eleveId]) map[p.eleveId] = { du: 0, paye: 0 };
       map[p.eleveId].du += p.montantDu;
@@ -246,7 +247,7 @@ export default function FinancePaiement() {
         (student && `${student.prenom} ${student.nom}`.toLowerCase().includes(search.toLowerCase())) ||
         (tf && tf.nom.toLowerCase().includes(search.toLowerCase())) ||
         p.reference.toLowerCase().includes(search.toLowerCase());
-      const matchType = filterTypeFrais === "all" || p.typeFraisId === Number(filterTypeFrais);
+      const matchType = filterTypeFrais === "all" || p.typeFraisId === filterTypeFrais;
       const matchMois = filterMois === "all" || p.mois === filterMois;
       const matchStatut = filterStatut === "all" || p.statut === filterStatut;
       return matchSearch && matchType && matchMois && matchStatut;
@@ -837,20 +838,12 @@ export default function FinancePaiement() {
             animate="visible"
             className="rounded-xl border border-border/50 bg-card p-4 shadow-sm"
           >
-            <div className="flex items-center gap-3">
-              <Select value={selectedEleveId} onValueChange={setSelectedEleveId}>
-                <SelectTrigger className="w-[300px]">
-                  <Users className="h-3.5 w-3.5 me-1.5 text-muted-foreground" />
-                  <SelectValue placeholder="Sélectionner un élève..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {activeStudents.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>
-                      {s.prenom} {s.nom} ({s.classe})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="w-full max-w-md">
+              <StudentCombobox
+                value={selectedEleveId}
+                onChange={setSelectedEleveId}
+                filter={(s) => activeStudents.some((a) => String(a.id) === String(s.id))}
+              />
             </div>
           </motion.div>
 

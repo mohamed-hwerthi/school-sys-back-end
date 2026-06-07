@@ -5,14 +5,10 @@ import {
   School,
   GraduationCap,
   Clock,
-  Bell,
-  Shield,
   Palette,
-  Database,
   Save,
   RotateCcw,
   ChevronRight,
-  Check,
   Globe,
   Calendar,
   Users,
@@ -46,7 +42,7 @@ const fadeUp = {
   }),
 };
 
-type ConfigSection = "general" | "horaires" | "niveaux" | "notifications" | "securite" | "apparence" | "sauvegarde";
+type ConfigSection = "general" | "horaires" | "niveaux" | "apparence";
 
 export default function Configuration() {
   const { t } = useLanguage();
@@ -55,10 +51,7 @@ export default function Configuration() {
     { key: "general", label: t("nav.home"), icon: School, description: t("configuration.title") },
     { key: "horaires", label: t("configuration.schedule"), icon: Clock, description: t("configuration.schedule") },
     { key: "niveaux", label: t("nav.levelsClasses"), icon: GraduationCap, description: t("configuration.levelManagement") },
-    { key: "notifications", label: t("configuration.notificationsSection"), icon: Bell, description: t("configuration.notificationsSection") },
-    { key: "securite", label: t("auth.twoFactor"), icon: Shield, description: t("auth.twoFactor") },
     { key: "apparence", label: t("configuration.theme"), icon: Palette, description: t("configuration.theme") },
-    { key: "sauvegarde", label: t("configuration.backupRestore"), icon: Database, description: t("configuration.backupRestore") },
   ], [t]);
   const loading = useSimulatedLoading(800);
   const { niveaux } = useNiveaux();
@@ -101,16 +94,6 @@ export default function Configuration() {
   const [heureFin, setHeureFin] = useState("17:00");
   const [dureeSeance, setDureeSeance] = useState("60");
   const [dureeRecreation, setDureeRecreation] = useState("15");
-
-  // Notifications
-  const [notifEmail, setNotifEmail] = useState(true);
-  const [notifSMS, setNotifSMS] = useState(true);
-  const [notifPush, setNotifPush] = useState(false);
-  const [rappelPaiement, setRappelPaiement] = useState("7");
-
-  // Security
-  const [sessionTimeout, setSessionTimeout] = useState("30");
-  const [doubleAuth, setDoubleAuth] = useState(false);
 
   // Appearance
   const [theme, setTheme] = useState("light");
@@ -340,91 +323,6 @@ export default function Configuration() {
             </div>
           )}
 
-          {/* NOTIFICATIONS */}
-          {activeSection === "notifications" && (
-            <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm space-y-6">
-              <div>
-                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><Bell className="h-5 w-5 text-primary" />{t("configuration.notificationsSection")}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">{t("configuration.notificationsSection")}</p>
-              </div>
-              <div className="space-y-4">
-                {[
-                  { label: t("configuration.emailNotifications"), desc: t("configuration.emailAlerts"), value: notifEmail, onChange: setNotifEmail },
-                  { label: t("configuration.smsNotifications"), desc: t("configuration.smsToParents"), value: notifSMS, onChange: setNotifSMS },
-                  { label: t("configuration.pushNotifications"), desc: t("configuration.browserNotifications"), value: notifPush, onChange: setNotifPush },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between rounded-lg bg-muted/40 p-4">
-                    <div>
-                      <p className="font-medium text-sm">{item.label}</p>
-                      <p className="text-xs text-muted-foreground">{item.desc}</p>
-                    </div>
-                    <button
-                      onClick={() => item.onChange(!item.value)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${item.value ? "bg-primary" : "bg-muted-foreground/30"}`}
-                    >
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${item.value ? "translate-x-6" : "translate-x-1"}`} />
-                    </button>
-                  </div>
-                ))}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Rappel paiement (jours avant échéance)</label>
-                  <Select value={rappelPaiement} onValueChange={setRappelPaiement}>
-                    <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="3">3 jours</SelectItem>
-                      <SelectItem value="5">5 jours</SelectItem>
-                      <SelectItem value="7">7 jours</SelectItem>
-                      <SelectItem value="14">14 jours</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* SÉCURITÉ */}
-          {activeSection === "securite" && (
-            <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm space-y-6">
-              <div>
-                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Sécurité</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Paramètres de sécurité du système</p>
-              </div>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Expiration de session (minutes)</label>
-                  <Select value={sessionTimeout} onValueChange={setSessionTimeout}>
-                    <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="15">15 minutes</SelectItem>
-                      <SelectItem value="30">30 minutes</SelectItem>
-                      <SelectItem value="60">1 heure</SelectItem>
-                      <SelectItem value="120">2 heures</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center justify-between rounded-lg bg-muted/40 p-4">
-                  <div>
-                    <p className="font-medium text-sm">Authentification à deux facteurs</p>
-                    <p className="text-xs text-muted-foreground">Ajouter une couche de sécurité supplémentaire</p>
-                  </div>
-                  <button
-                    onClick={() => setDoubleAuth(!doubleAuth)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${doubleAuth ? "bg-primary" : "bg-muted-foreground/30"}`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${doubleAuth ? "translate-x-6" : "translate-x-1"}`} />
-                  </button>
-                </div>
-                <div className="rounded-lg bg-emerald-50 p-4 flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
-                  <div className="text-sm">
-                    <p className="font-medium text-emerald-700">Système sécurisé</p>
-                    <p className="text-xs text-emerald-600 mt-0.5">Toutes les connexions sont chiffrées. Dernière vérification : aujourd'hui</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* APPARENCE */}
           {activeSection === "apparence" && (
             <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm space-y-6">
@@ -464,45 +362,6 @@ export default function Configuration() {
             </div>
           )}
 
-          {/* SAUVEGARDE */}
-          {activeSection === "sauvegarde" && (
-            <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm space-y-6">
-              <div>
-                <h2 className="font-heading text-lg font-semibold flex items-center gap-2"><Database className="h-5 w-5 text-primary" />{t("configuration.backupRestore")}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">{t("configuration.backupRestore")}</p>
-              </div>
-              <div className="space-y-4">
-                <div className="rounded-lg bg-muted/40 p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-sm">Dernière sauvegarde</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">23 Février 2026 à 02:00</p>
-                    </div>
-                    <Badge className="bg-emerald-100 text-emerald-700">Réussie</Badge>
-                  </div>
-                </div>
-                <div className="rounded-lg bg-muted/40 p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-sm">{t("configuration.autoBackup")}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">Tous les jours à 02:00</p>
-                    </div>
-                    <Badge className="bg-blue-100 text-blue-700">Active</Badge>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => notify.success("Sauvegarde manuelle lancée (simulation)")}>
-                    <Database className="h-4 w-4" />
-                    Sauvegarder maintenant
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => notify.info("Restauration à venir")}>
-                    <RotateCcw className="h-4 w-4" />
-                    Restaurer
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
         </motion.div>
       </div>
     </div>

@@ -9,9 +9,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,6 +24,7 @@ import java.util.List;
 public class MenuController {
 
     private final MenuService menuService;
+    private final CantineFileService cantineFileService;
 
     @GetMapping
     @PreAuthorize("hasAuthority('MANAGE_CANTINE')")
@@ -67,5 +70,14 @@ public class MenuController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         menuService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAuthority('MANAGE_CANTINE')")
+    public ResponseEntity<ApiResponse<MenuDTO>> uploadImage(
+            @PathVariable UUID id,
+            @RequestParam("file") MultipartFile file) {
+        String url = cantineFileService.upload(file);
+        return ResponseEntity.ok(ApiResponse.ok(menuService.setImage(id, url)));
     }
 }

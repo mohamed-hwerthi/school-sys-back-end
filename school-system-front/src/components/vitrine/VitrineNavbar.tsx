@@ -1,23 +1,64 @@
-import { Link, useParams } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Phone } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { VitrineConfig, VitrinePage } from "@/types/vitrine";
 import { Button } from "@/components/ui/button";
-import { getSubdomainSlug, vitrineHomeUrl, vitrinePageUrl } from "@/lib/vitrine-routing";
 import { resolveFileUrl } from "@/api/storage.api";
+import { vitrineHomeUrl, isSubdomainMode } from "@/lib/vitrine-routing";
+
+/** Maps a page slug to the matching anchor inside the single-page landing.
+ *  Unknown slugs fall back to `#<slug>` so custom pages can target their own id. */
+function pageSlugToAnchor(slug: string): string {
+  const map: Record<string, string> = {
+    accueil: "#top",
+    "a-propos": "#about",
+    contact: "#contact",
+  };
+  return map[slug] ?? `#${slug}`;
+}
 
 interface Props {
   config: VitrineConfig;
   pages: VitrinePage[];
+  isPreview?: boolean;
 }
 
-export default function VitrineNavbar({ config, pages }: Props) {
+export default function VitrineNavbar({ config, pages, isPreview = false }: Props) {
   const params = useParams<{ slug?: string; pageSlug?: string }>();
-  const slug = getSubdomainSlug() ?? params.slug ?? "";
   const pageSlug = params.pageSlug;
+  const location = useLocation();
+  const navigate = useNavigate();
+  const homePath = vitrineHomeUrl(params.slug ?? "");
+  const isOnHome = isSubdomainMode()
+    ? location.pathname === "/"
+    : location.pathname === homePath;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setMobileOpen(false);
+    if (isOnHome) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      navigate(homePath);
+    }
+  };
+
+  const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, anchor: string) => {
+    if (anchor === "#top") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      const target = document.querySelector(anchor);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+    setMobileOpen(false);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,7 +79,8 @@ export default function VitrineNavbar({ config, pages }: Props) {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      style={{ top: isPreview ? "2.5rem" : 0 }}
+      className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? "bg-white/95 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-white/90"
           : "bg-transparent"
@@ -46,8 +88,9 @@ export default function VitrineNavbar({ config, pages }: Props) {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-20 lg:px-8">
         {/* Logo + Name */}
-        <Link
-          to={vitrineHomeUrl(slug)}
+        <a
+          href={homePath}
+          onClick={handleLogoClick}
           className="group flex items-center gap-3"
         >
           {config.logoUrl && (
@@ -66,16 +109,18 @@ export default function VitrineNavbar({ config, pages }: Props) {
           >
             {config.schoolDisplayName}
           </span>
-        </Link>
+        </a>
 
         {/* Desktop Nav */}
         <div className="hidden items-center gap-1 md:flex">
           {pages.map((page) => {
             const active = isActivePage(page);
+            const anchor = pageSlugToAnchor(page.slug);
             return (
-              <Link
+              <a
                 key={page.id}
-                to={vitrinePageUrl(slug, page.slug)}
+                href={anchor}
+                onClick={(e) => handleAnchorClick(e, anchor)}
                 className={`relative px-4 py-2 text-sm font-medium transition-colors duration-300 ${
                   scrolled
                     ? active
@@ -95,7 +140,7 @@ export default function VitrineNavbar({ config, pages }: Props) {
                   animate={{ width: active ? "60%" : "0%" }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                 />
-              </Link>
+              </a>
             );
           })}
           {config.contactPhone && (
@@ -166,6 +211,7 @@ export default function VitrineNavbar({ config, pages }: Props) {
                   <div className="space-y-1">
                     {pages.map((page, index) => {
                       const active = isActivePage(page);
+                      const anchor = pageSlugToAnchor(page.slug);
                       return (
                         <motion.div
                           key={page.id}
@@ -173,8 +219,9 @@ export default function VitrineNavbar({ config, pages }: Props) {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.05 }}
                         >
-                          <Link
-                            to={vitrinePageUrl(slug, page.slug)}
+                          <a
+                            href={anchor}
+                            onClick={(e) => handleAnchorClick(e, anchor)}
                             className={`flex items-center rounded-lg px-4 py-3 text-base font-medium transition-colors ${
                               active
                                 ? "text-white"
@@ -185,10 +232,9 @@ export default function VitrineNavbar({ config, pages }: Props) {
                                 ? { backgroundColor: config.primaryColor }
                                 : undefined
                             }
-                            onClick={() => setMobileOpen(false)}
                           >
                             {page.title}
-                          </Link>
+                          </a>
                         </motion.div>
                       );
                     })}

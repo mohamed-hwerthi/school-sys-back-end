@@ -41,6 +41,7 @@ public class StudentService {
     private final StudentImportRowSaver rowSaver;
     private final CurrentUserContext currentUser;
     private final ClasseRepository classeRepository;
+    private final com.schoolSys.schooolSys.parent.ParentAccountAutoProvisionService parentAutoProvisioner;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -134,7 +135,9 @@ public class StudentService {
     public StudentResponseDTO create(StudentRequestDTO dto) {
         Student student = studentMapper.toEntity(dto);
         student.setMatricule(generateMatricule());
-        return studentMapper.toResponseDTO(studentRepository.save(student));
+        Student saved = studentRepository.save(student);
+        parentAutoProvisioner.ensureLinked(saved);
+        return studentMapper.toResponseDTO(saved);
     }
 
     private String generateMatricule() {
@@ -154,7 +157,9 @@ public class StudentService {
         if (existingMatricule != null) {
             student.setMatricule(existingMatricule);
         }
-        return studentMapper.toResponseDTO(studentRepository.save(student));
+        Student saved = studentRepository.save(student);
+        parentAutoProvisioner.ensureLinked(saved);
+        return studentMapper.toResponseDTO(saved);
     }
 
     @Transactional

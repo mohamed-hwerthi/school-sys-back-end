@@ -41,6 +41,7 @@ const ROUTE_I18N_KEYS: Record<string, string> = {
   niveaux: "nav.levels",
   messages: "nav.messages",
   enseignants: "nav.teachers",
+  personnel: "nav.personnel",
   absences: "nav.absences",
   discipline: "nav.discipline",
   calendrier: "nav.calendar",
@@ -75,15 +76,21 @@ function Breadcrumb() {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const segments = location.pathname.split("/").filter(Boolean);
+  const allSegments = location.pathname.split("/").filter(Boolean);
+  // Hide id segments (numeric or UUID) from the breadcrumb — keep cumulative paths intact.
+  const isIdSegment = (seg: string) =>
+    /^\d+$/.test(seg) ||
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(seg);
+  const segments = allSegments.filter((seg) => !isIdSegment(seg));
 
   if (segments.length <= 1) return null;
 
   const crumbs = segments.map((seg, i) => {
-    const isId = /^\d+$/.test(seg);
     const i18nKey = ROUTE_I18N_KEYS[seg];
-    const label = isId ? `#${seg}` : (i18nKey ? t(i18nKey) : seg);
-    const path = "/" + segments.slice(0, i + 1).join("/");
+    const label = i18nKey ? t(i18nKey) : seg;
+    // Build the path from the original (unfiltered) segments up to this crumb.
+    const origIndex = allSegments.indexOf(seg);
+    const path = "/" + allSegments.slice(0, origIndex + 1).join("/");
     const isLast = i === segments.length - 1;
 
     return { label, path, isLast };

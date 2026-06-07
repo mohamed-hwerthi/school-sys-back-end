@@ -2,6 +2,8 @@ package com.schoolSys.schooolSys.affectation;
 
 import java.util.UUID;
 
+import com.schoolSys.schooolSys.affectation.dto.AffectationBulkRequestDTO;
+import com.schoolSys.schooolSys.affectation.dto.AffectationBulkResultDTO;
 import com.schoolSys.schooolSys.affectation.dto.AffectationDTO;
 import com.schoolSys.schooolSys.affectation.dto.AffectationRequestDTO;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
@@ -45,6 +47,14 @@ public class AffectationController {
             @Valid @RequestBody AffectationRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(affectationService.create(request)));
+    }
+
+    @PostMapping("/bulk")
+    @PreAuthorize("hasAuthority('MANAGE_TEACHERS')")
+    public ResponseEntity<ApiResponse<AffectationBulkResultDTO>> bulkCreate(
+            @Valid @RequestBody AffectationBulkRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(affectationService.bulkCreate(request)));
     }
 
     @PutMapping("/{id}")

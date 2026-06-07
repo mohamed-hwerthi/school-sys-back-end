@@ -107,6 +107,7 @@ export const sidebarSections: NavSection[] = [
     roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"],
     items: [
       { title: "Enseignants", titleKey: "nav.teachers", icon: UserCog, url: "/dashboard/enseignants" },
+      { title: "Personnel", titleKey: "nav.personnel", icon: Users, url: "/dashboard/personnel" },
       { title: "Affectations", titleKey: "nav.assignments", icon: ClipboardList, url: "/dashboard/affectations" },
       { title: "Contrats & Congés", titleKey: "nav.contractsLeaves", icon: Briefcase, url: "/dashboard/contrats" },
       { title: "Paie", titleKey: "nav.payroll", icon: Banknote, url: "/dashboard/rh/paie" },
@@ -181,7 +182,6 @@ export const sidebarSections: NavSection[] = [
     color: "text-amber-500",
     roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"],
     items: [
-      { title: "Bibliothèque", titleKey: "nav.library", icon: Library, url: "/dashboard/bibliotheque" },
       { title: "Transport", titleKey: "nav.transport", icon: Bus, url: "/dashboard/transport" },
       { title: "Cantine", titleKey: "nav.canteen", icon: UtensilsCrossed, url: "/dashboard/cantine" },
     ],
@@ -211,7 +211,6 @@ export const sidebarSections: NavSection[] = [
     roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR", "ENSEIGNANT", "PARENT"],
     items: [
       { title: "Annonces", titleKey: "nav.announcements", icon: Megaphone, url: "/dashboard/annonces" },
-      { title: "Notifications", titleKey: "nav.notifications", icon: BellRing, url: "/dashboard/notifications" },
       { title: "Reunions", titleKey: "nav.meetings", icon: CalendarDays, url: "/dashboard/reunions" },
       { title: "Circulaires", titleKey: "nav.circulars", icon: Newspaper, url: "/dashboard/circulaires", roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"] },
     ],
@@ -235,7 +234,6 @@ export const sidebarSections: NavSection[] = [
     color: "text-slate-500",
     roles: ["SUPER_ADMIN", "ADMIN", "DIRECTEUR"],
     items: [
-      { title: "Rapports", titleKey: "nav.reports", icon: FileText, url: "/dashboard/rapports" },
       { title: "Génération", titleKey: "nav.generation", icon: FileDown, url: "/dashboard/documents" },
       { title: "Vitrine web", titleKey: "nav.webShowcase", icon: Eye, url: "/dashboard/vitrine" },
     ],

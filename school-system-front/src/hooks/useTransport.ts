@@ -66,7 +66,7 @@ export function useCircuit(id: string) {
   return useQuery<Circuit>({
     queryKey: [CIRCUITS_KEY, id],
     queryFn: () => circuitsApi.getById(id),
-    enabled: id > 0,
+    enabled: !!id,
   });
 }
 
