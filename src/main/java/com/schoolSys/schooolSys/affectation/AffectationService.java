@@ -2,6 +2,8 @@ package com.schoolSys.schooolSys.affectation;
 
 import java.util.UUID;
 
+import com.schoolSys.schooolSys.affectation.dto.AffectationBulkRequestDTO;
+import com.schoolSys.schooolSys.affectation.dto.AffectationBulkResultDTO;
 import com.schoolSys.schooolSys.affectation.dto.AffectationDTO;
 import com.schoolSys.schooolSys.affectation.dto.AffectationRequestDTO;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
@@ -53,6 +55,66 @@ public class AffectationService {
                 .build();
         Affectation saved = affectationRepository.save(a);
         return hydrate(List.of(saved)).get(0);
+    }
+
+    /**
+     * Creates many affectations for a single teacher in one transaction. Items that
+     * would duplicate an existing assignment are silently skipped (not errors), so
+     * re-running a bulk assignment is safe. Referenced classes/modules must exist.
+     */
+    @Transactional
+    public AffectationBulkResultDTO bulkCreate(AffectationBulkRequestDTO req) {
+        if (!teacherRepository.existsById(req.getTeacherId())) {
+            throw new ResourceNotFoundException("Teacher", req.getTeacherId());
+        }
+        if (req.getAnneeScolaire() == null || req.getAnneeScolaire().isBlank()) {
+            throw new IllegalArgumentException("L'année scolaire est requise.");
+        }
+        if (req.getDateDebut() != null && req.getDateFin() != null
+                && req.getDateFin().isBefore(req.getDateDebut())) {
+            throw new IllegalArgumentException("La date de fin doit être postérieure à la date de début.");
+        }
+        if (req.getItems() == null || req.getItems().isEmpty()) {
+            throw new IllegalArgumentException("Aucune classe sélectionnée.");
+        }
+
+        List<Affectation> toSave = new java.util.ArrayList<>();
+        java.util.Set<String> seenInBatch = new java.util.HashSet<>();
+        int skipped = 0;
+
+        for (AffectationBulkRequestDTO.Item item : req.getItems()) {
+            if (item.getClasseId() == null) { skipped++; continue; }
+            if (!classeRepository.existsById(item.getClasseId())) { skipped++; continue; }
+            if (item.getModuleId() != null && !moduleRepository.existsById(item.getModuleId())) {
+                skipped++;
+                continue;
+            }
+            // De-dupe within the submitted batch itself.
+            String key = item.getClasseId() + "|" + (item.getModuleId() == null ? "" : item.getModuleId());
+            if (!seenInBatch.add(key)) { skipped++; continue; }
+            // Skip rows that already exist in the database.
+            long dup = affectationRepository.countDuplicate(
+                    req.getTeacherId(), item.getClasseId(), item.getModuleId(),
+                    req.getAnneeScolaire(), null);
+            if (dup > 0) { skipped++; continue; }
+
+            toSave.add(Affectation.builder()
+                    .teacherId(req.getTeacherId())
+                    .classeId(item.getClasseId())
+                    .moduleId(item.getModuleId())
+                    .anneeScolaire(req.getAnneeScolaire())
+                    .dateDebut(req.getDateDebut())
+                    .dateFin(req.getDateFin())
+                    .notes(req.getNotes())
+                    .build());
+        }
+
+        List<Affectation> saved = toSave.isEmpty() ? List.of() : affectationRepository.saveAll(toSave);
+        return AffectationBulkResultDTO.builder()
+                .created(saved.size())
+                .skipped(skipped)
+                .affectations(hydrate(saved))
+                .build();
     }
 
     @Transactional
