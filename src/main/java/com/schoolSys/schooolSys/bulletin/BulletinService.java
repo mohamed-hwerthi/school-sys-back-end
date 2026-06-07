@@ -107,12 +107,13 @@ public class BulletinService {
                     .collect(Collectors.groupingBy(n -> n.getExamen().getModule().getId()));
 
             Map<UUID, Double> moduleAvgs = new LinkedHashMap<>();
-            double totalWeighted = 0;
-            double totalCoeff = 0;
+            // moduleId -> its Module entity (for domaine grouping + coefficients)
+            Map<UUID, Module> moduleById = new LinkedHashMap<>();
 
             for (Map.Entry<UUID, List<Note>> moduleEntry : byModule.entrySet()) {
                 List<Note> moduleNotes = moduleEntry.getValue();
                 Module module = moduleNotes.get(0).getExamen().getModule();
+                moduleById.put(moduleEntry.getKey(), module);
 
                 double sumWeighted = 0;
                 double sumCoeff = 0;
@@ -126,14 +127,11 @@ public class BulletinService {
 
                 double avg = sumCoeff > 0 ? round2(sumWeighted / sumCoeff) : 0;
                 moduleAvgs.put(moduleEntry.getKey(), avg);
-
-                double mc = prive ? module.getCoeffPrive() : module.getCoeffEtatique();
-                totalWeighted += avg * mc;
-                totalCoeff += mc;
             }
 
             studentModuleAvgs.put(studentId, moduleAvgs);
-            studentGeneralAvgs.put(studentId, totalCoeff > 0 ? round2(totalWeighted / totalCoeff) : 0.0);
+            studentGeneralAvgs.put(studentId,
+                    computeGeneralAverage(moduleAvgs, moduleById, domaineMap, prive));
         }
 
         // 6. Compute class-level stats per module
@@ -272,6 +270,7 @@ public class BulletinService {
                         .domaineName(domaine.getName())
                         .domaineNameAr(domaine.getNameAr())
                         .ordre(domaine.getOrdre())
+                        .coeff(prive ? domaine.getCoeffPrive() : domaine.getCoeffEtatique())
                         .modules(domaineModules)
                         .moyenneDomaine(domaineAvg)
                         .recommandation(recoTexts.get(domaine.getId()))
@@ -887,5 +886,50 @@ public class BulletinService {
 
     private double round2(double val) {
         return Math.round(val * 100.0) / 100.0;
+    }
+
+    /**
+     * General average as the domaine-coefficient-weighted mean of domaine averages.
+     * A domaine's own average is the module-coefficient-weighted mean of its graded
+     * modules; each domaine then weighs into the general average by its own
+     * coefficient (étatique/privé). Modules attached to no domaine fall back to
+     * contributing individually, weighted by their module coefficient.
+     */
+    private double computeGeneralAverage(Map<UUID, Double> moduleAvgs,
+                                         Map<UUID, Module> moduleById,
+                                         Map<UUID, Domaine> domaineMap,
+                                         boolean prive) {
+        // domaineId -> [sum(moduleAvg * moduleCoeff), sum(moduleCoeff)]
+        Map<UUID, double[]> perDomaine = new LinkedHashMap<>();
+        double generalWeighted = 0;
+        double generalCoeff = 0;
+
+        for (Map.Entry<UUID, Double> e : moduleAvgs.entrySet()) {
+            Module module = moduleById.get(e.getKey());
+            double avg = e.getValue();
+            double mc = prive ? module.getCoeffPrive() : module.getCoeffEtatique();
+            Domaine domaine = module.getDomaine();
+            if (domaine != null) {
+                double[] acc = perDomaine.computeIfAbsent(domaine.getId(), k -> new double[2]);
+                acc[0] += avg * mc;
+                acc[1] += mc;
+            } else {
+                // Orphan module (no domaine): counts as its own unit.
+                generalWeighted += avg * mc;
+                generalCoeff += mc;
+            }
+        }
+
+        for (Map.Entry<UUID, double[]> e : perDomaine.entrySet()) {
+            double[] acc = e.getValue();
+            double domaineAvg = acc[1] > 0 ? acc[0] / acc[1] : 0;
+            Domaine domaine = domaineMap.get(e.getKey());
+            double dc = domaine == null ? 1.0
+                    : (prive ? domaine.getCoeffPrive() : domaine.getCoeffEtatique());
+            generalWeighted += domaineAvg * dc;
+            generalCoeff += dc;
+        }
+
+        return generalCoeff > 0 ? round2(generalWeighted / generalCoeff) : 0.0;
     }
 }

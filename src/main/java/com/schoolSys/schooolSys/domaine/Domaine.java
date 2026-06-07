@@ -38,6 +38,22 @@ public class Domaine {
     @Builder.Default
     private Integer ordre = 1;
 
+    @Column(name = "coeff_etatique", nullable = false)
+    @Builder.Default
+    private Double coeffEtatique = 1.0;
+
+    @Column(name = "coeff_prive", nullable = false)
+    @Builder.Default
+    private Double coeffPrive = 1.0;
+
+    @Column(name = "version_etatique", nullable = false)
+    @Builder.Default
+    private Boolean versionEtatique = true;
+
+    @Column(name = "version_privee", nullable = false)
+    @Builder.Default
+    private Boolean versionPrivee = true;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "niveau_id", nullable = false)
     @ToString.Exclude
