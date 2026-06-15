@@ -147,7 +147,7 @@ export default function EmploiSalles() {
   // ─── Derived data (Emploi tab) ─────────────────────────
   const filteredSlots = useMemo(() => {
     return timeSlots.filter((ts) => {
-      const matchRoom = selectedRoom === "all" || ts.salleId === Number(selectedRoom);
+      const matchRoom = selectedRoom === "all" || ts.salleId === selectedRoom;
       const matchJour = selectedJour === "all" || ts.jour === selectedJour;
       return matchRoom && matchJour;
     });

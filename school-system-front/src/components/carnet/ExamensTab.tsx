@@ -91,10 +91,14 @@ export default function ExamensTab() {
   const { data: modules = [] } = useModules(filterNiveauId || undefined);
   // Examens are fetched only once a class is selected — prevents loading
   // every exam of every class and trimester in one shot.
-  const hasSelection = !!filterClasseId;
+  // "0" is the "Toutes/Tous" sentinel of the Select filters; it is NOT a valid
+  // UUID, so it must be treated as "no filter" (otherwise the API returns 400).
+  const realClasseId = filterClasseId && filterClasseId !== "0" ? filterClasseId : undefined;
+  const realModuleId = filterModuleId && String(filterModuleId) !== "0" ? String(filterModuleId) : undefined;
+  const hasSelection = !!realClasseId;
   const { data: examens = [], isLoading } = useExamensRaw(
-    filterModuleId || undefined,
-    filterClasseId || undefined,
+    realModuleId,
+    realClasseId,
     filterTrimestre || undefined,
     hasSelection
   );

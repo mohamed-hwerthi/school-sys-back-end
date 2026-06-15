@@ -51,7 +51,7 @@ export default function GenerationWizard({ open, onClose }: Props) {
   const { data: activeAnnee } = useActiveAnneeScolaire();
 
   const [step, setStep] = useState<Step>("check");
-  const [niveauId, setNiveauId] = useState<number | undefined>(undefined);
+  const [niveauId, setNiveauId] = useState<string | undefined>(undefined);
   const [timeout, setTimeout] = useState(60);
   const [result, setResult] = useState<TimetableGenerateResponse | null>(null);
 
@@ -149,7 +149,7 @@ export default function GenerationWizard({ open, onClose }: Props) {
                 <Label>Niveau (optionnel)</Label>
                 <Select
                   value={niveauId ? String(niveauId) : "all"}
-                  onValueChange={(v) => setNiveauId(v === "all" ? undefined : Number(v))}
+                  onValueChange={(v) => setNiveauId(v === "all" ? undefined : v)}
                 >
                   <SelectTrigger>
                     <SelectValue />
