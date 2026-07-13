@@ -87,4 +87,15 @@ export const inscriptionsApi = {
     );
     return res.data;
   },
+
+  /**
+   * Convert an accepted inscription into a student (admin).
+   */
+  convertToStudent: async (id: string, classe?: string, sexe?: string) => {
+    const params: Record<string, string> = {};
+    if (classe) params.classe = classe;
+    if (sexe) params.sexe = sexe;
+    const res = await api.post(`${BASE}/${id}/convert-to-student`, null, { params });
+    return res.data as import("@/types/student").Student;
+  },
 };

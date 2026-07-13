@@ -126,8 +126,8 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 export default function Dashboard() {
   const { t } = useLanguage();
   const loading = useSimulatedLoading(800);
-  const { data: dashboardStats, isLoading: statsLoading } = useDashboardStats("2025-2026");
-  const { data: monthlyTrends } = useMonthlyTrends("2025-2026");
+  const { data: dashboardStats, isLoading: statsLoading } = useDashboardStats();
+  const { data: monthlyTrends } = useMonthlyTrends();
   const { data: schoolSettings } = useSchoolSettings();
 
   const STAT_META = useMemo(() => [

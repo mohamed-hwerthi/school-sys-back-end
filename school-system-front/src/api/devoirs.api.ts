@@ -16,10 +16,11 @@ const RESSOURCES_BASE = "/ressources";
 
 export const devoirsApi = {
   // Devoirs
-  getAll: async (classeId?: string, moduleId?: string): Promise<Devoir[]> => {
+  getAll: async (classeId?: string, moduleId?: string, anneeScolaire?: string): Promise<Devoir[]> => {
     const params = new URLSearchParams();
     if (classeId) params.set("classeId", String(classeId));
     if (moduleId) params.set("moduleId", String(moduleId));
+    if (anneeScolaire) params.set("anneeScolaire", anneeScolaire);
     const qs = params.toString();
     const res = await api.get<Devoir[]>(`${DEVOIRS_BASE}${qs ? `?${qs}` : ""}`);
     return res.data;
@@ -76,9 +77,10 @@ export const devoirsApi = {
   deleteSoumission: (id: string) => api.delete(`${SOUMISSIONS_BASE}/${id}`),
 
   // Ressources
-  getRessources: async (moduleId?: string): Promise<RessourcePedagogique[]> => {
+  getRessources: async (moduleId?: string, anneeScolaire?: string): Promise<RessourcePedagogique[]> => {
     const params = new URLSearchParams();
     if (moduleId) params.set("moduleId", String(moduleId));
+    if (anneeScolaire) params.set("anneeScolaire", anneeScolaire);
     const qs = params.toString();
     const res = await api.get<RessourcePedagogique[]>(`${RESSOURCES_BASE}${qs ? `?${qs}` : ""}`);
     return res.data;

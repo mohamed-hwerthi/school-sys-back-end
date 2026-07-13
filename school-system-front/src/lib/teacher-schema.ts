@@ -3,7 +3,7 @@ import { z } from "zod";
 export const teacherSchema = z.object({
   prenom: z.string().min(1, "Le prénom est requis"),
   nom: z.string().min(1, "Le nom est requis"),
-  specialite: z.string().min(1, "La spécialité est requise"),
+  specialite: z.string().optional().default(""),
   sexe: z.enum(["M", "F"], { required_error: "Le sexe est requis" }),
   dateNaissance: z.string().min(1, "La date de naissance est requise"),
   telephone: z.string().optional().default(""),

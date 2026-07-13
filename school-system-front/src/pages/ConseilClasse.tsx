@@ -35,6 +35,7 @@ import { useNiveaux } from "@/hooks/useNiveaux";
 import { useClasses } from "@/hooks/useClasses";
 import { useConseilClasse, useBulkCreatePassages } from "@/hooks/useConseilClasse";
 import { notify } from "@/lib/toast";
+import { getSelectedAnneeScolaire } from "@/lib/utils";
 import { DECISIONS, type DecisionType } from "@/types/passage";
 import type { PropositionPassage } from "@/types/conseil-classe";
 
@@ -52,7 +53,7 @@ const DECISION_STYLES: Record<DecisionType, string> = {
   TRANSFERT: "bg-blue-100 text-blue-700 border-blue-200",
 };
 
-const FALLBACK_ANNEE = "2025-2026";
+const FALLBACK_ANNEE = getSelectedAnneeScolaire();
 
 type RowEdit = { decision: DecisionType; motif: string };
 

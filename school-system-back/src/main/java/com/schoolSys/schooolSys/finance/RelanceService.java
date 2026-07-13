@@ -2,6 +2,7 @@ package com.schoolSys.schooolSys.finance;
 
 import java.util.UUID;
 
+import com.schoolSys.schooolSys.common.annee.AnneeScolaireProvider;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.finance.dto.RelanceRequestDTO;
 import com.schoolSys.schooolSys.finance.dto.RelanceResponseDTO;
@@ -21,27 +22,26 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class RelanceService {
 
-    private static final String DEFAULT_ANNEE = "2025-2026";
-
+    private final AnneeScolaireProvider anneeScolaireProvider;
     private final RelanceRepository relanceRepository;
     private final PaiementRepository paiementRepository;
     private final StudentRepository studentRepository;
     private final RelanceMapper relanceMapper;
 
     public List<RelanceResponseDTO> findByAnneeScolaire(String anneeScolaire) {
-        String annee = anneeScolaire != null ? anneeScolaire : DEFAULT_ANNEE;
+        String annee = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
         return relanceMapper.toResponseDTOList(
                 relanceRepository.findByAnneeScolaireOrderByCreatedAtDesc(annee));
     }
 
     public List<RelanceResponseDTO> findByStudent(UUID studentId, String anneeScolaire) {
-        String annee = anneeScolaire != null ? anneeScolaire : DEFAULT_ANNEE;
+        String annee = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
         return relanceMapper.toResponseDTOList(
                 relanceRepository.findByStudentIdAndAnneeScolaireOrderByCreatedAtDesc(studentId, annee));
     }
 
     public List<RelanceResponseDTO> findPending(String anneeScolaire) {
-        String annee = anneeScolaire != null ? anneeScolaire : DEFAULT_ANNEE;
+        String annee = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
         return relanceMapper.toResponseDTOList(
                 relanceRepository.findByStatutAndAnneeScolaireOrderByDatePrevueAsc(
                         Relance.StatutRelance.EN_ATTENTE, annee));
@@ -64,7 +64,7 @@ public class RelanceService {
                     .orElseThrow(() -> new ResourceNotFoundException("Paiement", dto.getPaiementId()));
         }
 
-        String annee = dto.getAnneeScolaire() != null ? dto.getAnneeScolaire() : DEFAULT_ANNEE;
+        String annee = anneeScolaireProvider.resolveAnneeScolaire(dto.getAnneeScolaire());
 
         Integer maxNum = relanceRepository.findMaxNumeroRelanceByStudentAndAnnee(student.getId(), annee);
         int numero = dto.getNumeroRelance() != null ? dto.getNumeroRelance() : (maxNum != null ? maxNum + 1 : 1);
@@ -121,7 +121,7 @@ public class RelanceService {
      */
     @Transactional
     public List<RelanceResponseDTO> generateRelances(String anneeScolaire, Relance.TypeRelance type) {
-        String annee = anneeScolaire != null ? anneeScolaire : DEFAULT_ANNEE;
+        String annee = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
 
         List<Paiement> overdue = paiementRepository.findByAnneeScolaireAndStatutIn(
                 annee, List.of(Paiement.StatutPaiement.EN_RETARD, Paiement.StatutPaiement.EN_ATTENTE));
@@ -165,7 +165,7 @@ public class RelanceService {
     }
 
     public RelanceStatsDTO getStats(String anneeScolaire) {
-        String annee = anneeScolaire != null ? anneeScolaire : DEFAULT_ANNEE;
+        String annee = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
         long total = relanceRepository.countByAnneeScolaire(annee);
         long enAttente = relanceRepository.countByAnneeScolaireAndStatut(annee, Relance.StatutRelance.EN_ATTENTE);
         long envoyees = relanceRepository.countByAnneeScolaireAndStatut(annee, Relance.StatutRelance.ENVOYEE);

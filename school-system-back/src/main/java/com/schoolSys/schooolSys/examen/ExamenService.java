@@ -6,6 +6,7 @@ import com.schoolSys.schooolSys.anneescolaire.AnneeScolaireRepository;
 import com.schoolSys.schooolSys.anneescolaire.Trimestre;
 import com.schoolSys.schooolSys.anneescolaire.TrimestreRepository;
 import com.schoolSys.schooolSys.auth.UserRole;
+import com.schoolSys.schooolSys.common.annee.AnneeScolaireProvider;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.examen.dto.ExamenRequestDTO;
@@ -39,10 +40,12 @@ public class ExamenService {
     private final StudentRepository studentRepository;
     private final AnneeScolaireRepository anneeScolaireRepository;
     private final TrimestreRepository trimestreRepository;
+    private final AnneeScolaireProvider anneeScolaireProvider;
     private final CurrentUserContext currentUser;
 
-    public List<ExamenResponseDTO> findAll(UUID moduleId, UUID classeId, Integer trimestre) {
-        List<Examen> list = examenRepository.findFiltered(moduleId, classeId, trimestre);
+    public List<ExamenResponseDTO> findAll(UUID moduleId, UUID classeId, Integer trimestre, String anneeScolaire) {
+        String resolved = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
+        List<Examen> list = examenRepository.findFiltered(moduleId, classeId, trimestre, resolved);
         // Row-level scoping: an ENSEIGNANT only sees exams in his own classes and subjects.
         if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
             Set<UUID> scopedClasses = currentUser.getScopedClasseIdsForTeacher();
@@ -84,6 +87,7 @@ public class ExamenService {
                 .ordreEtatique(dto.getOrdreEtatique())
                 .ordrePrive(dto.getOrdrePrive())
                 .trimestre(dto.getTrimestre())
+                .anneeScolaire(anneeScolaireProvider.getCurrentAnneeScolaire())
                 .classe(classe)
                 .teacher(teacher)
                 .module(module)
@@ -109,11 +113,12 @@ public class ExamenService {
         }
         List<Integer> trimestres = resolveTrimestreNumeros();
 
+        String currentAnnee = anneeScolaireProvider.getCurrentAnneeScolaire();
         List<Examen> toCreate = new ArrayList<>();
         for (Classe classe : classes) {
             for (Integer trimestre : trimestres) {
                 boolean alreadyThere = examenRepository
-                        .existsByModuleIdAndClasseIdAndTrimestre(module.getId(), classe.getId(), trimestre);
+                        .existsByModuleIdAndClasseIdAndTrimestreAndAnneeScolaire(module.getId(), classe.getId(), trimestre, currentAnnee);
                 if (alreadyThere) {
                     continue;
                 }
@@ -125,6 +130,7 @@ public class ExamenService {
                         .ordreEtatique(1)
                         .ordrePrive(1)
                         .trimestre(trimestre)
+                        .anneeScolaire(currentAnnee)
                         .classe(classe)
                         .module(module)
                         .versionEtatique(module.getVersionEtatique())
@@ -239,6 +245,7 @@ public class ExamenService {
                 .moduleName(examen.getModule().getName())
                 .versionEtatique(examen.getVersionEtatique())
                 .versionPrivee(examen.getVersionPrivee())
+                .anneeScolaire(examen.getAnneeScolaire())
                 .nbNotes(nbNotes)
                 .nbEleves(nbEleves)
                 .build();

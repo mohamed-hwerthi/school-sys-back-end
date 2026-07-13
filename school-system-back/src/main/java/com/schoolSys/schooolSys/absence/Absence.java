@@ -33,6 +33,9 @@ public class Absence {
     @Column(nullable = false)
     private LocalDate date;
 
+    @Column(name = "annee_scolaire", nullable = false)
+    private String anneeScolaire;
+
     @Column(nullable = false, length = 20)
     private String type; // ABSENCE or RETARD
 

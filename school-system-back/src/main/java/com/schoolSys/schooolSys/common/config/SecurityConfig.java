@@ -72,6 +72,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_PATHS).permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Serving uploaded files (logo, documents…) must be public:
                         // an <img src> / <a href> cannot carry the JWT header.
                         // Paths contain a UUID, so they are not guessable.

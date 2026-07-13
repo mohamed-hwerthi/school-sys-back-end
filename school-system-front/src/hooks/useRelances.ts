@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { relancesApi, RelanceRequest, TypeRelance } from "@/api/relances.api";
+import { useAnneeContext } from "./useAnneeContext";
 import { notify } from "@/lib/toast";
 
 const KEYS = {
@@ -9,32 +10,44 @@ const KEYS = {
   stats: (annee: string) => ["relances", "stats", annee] as const,
 };
 
-export function useRelances(anneeScolaire = "2025-2026") {
+function useYear(provided?: string) {
+  const { selectedAnnee } = useAnneeContext();
+  return provided ?? selectedAnnee?.label ?? "";
+}
+
+export function useRelances(anneeScolaire?: string) {
+  const year = useYear(anneeScolaire);
   return useQuery({
-    queryKey: KEYS.all(anneeScolaire),
-    queryFn: () => relancesApi.getAll(anneeScolaire),
+    queryKey: KEYS.all(year),
+    queryFn: () => relancesApi.getAll(year),
+    enabled: !!year,
   });
 }
 
-export function useRelancesByStudent(studentId: string, anneeScolaire = "2025-2026") {
+export function useRelancesByStudent(studentId: string, anneeScolaire?: string) {
+  const year = useYear(anneeScolaire);
   return useQuery({
-    queryKey: KEYS.byStudent(studentId, anneeScolaire),
-    queryFn: () => relancesApi.getByStudent(studentId, anneeScolaire),
-    enabled: !!studentId,
+    queryKey: KEYS.byStudent(studentId, year),
+    queryFn: () => relancesApi.getByStudent(studentId, year),
+    enabled: !!studentId && !!year,
   });
 }
 
-export function useRelancesPending(anneeScolaire = "2025-2026") {
+export function useRelancesPending(anneeScolaire?: string) {
+  const year = useYear(anneeScolaire);
   return useQuery({
-    queryKey: KEYS.pending(anneeScolaire),
-    queryFn: () => relancesApi.getPending(anneeScolaire),
+    queryKey: KEYS.pending(year),
+    queryFn: () => relancesApi.getPending(year),
+    enabled: !!year,
   });
 }
 
-export function useRelanceStats(anneeScolaire = "2025-2026") {
+export function useRelanceStats(anneeScolaire?: string) {
+  const year = useYear(anneeScolaire);
   return useQuery({
-    queryKey: KEYS.stats(anneeScolaire),
-    queryFn: () => relancesApi.getStats(anneeScolaire),
+    queryKey: KEYS.stats(year),
+    queryFn: () => relancesApi.getStats(year),
+    enabled: !!year,
   });
 }
 
@@ -50,10 +63,12 @@ export function useCreateRelance(anneeScolaire = "2025-2026") {
   });
 }
 
-export function useGenerateRelances(anneeScolaire = "2025-2026") {
+export function useGenerateRelances(anneeScolaire?: string) {
+  const { selectedAnnee } = useAnneeContext();
+  const year = anneeScolaire ?? selectedAnnee?.label ?? "";
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (type: TypeRelance) => relancesApi.generate(anneeScolaire, type),
+    mutationFn: (type: TypeRelance) => relancesApi.generate(year, type),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["relances"] });
       notify.success(`${data.length} relance(s) generee(s)`);

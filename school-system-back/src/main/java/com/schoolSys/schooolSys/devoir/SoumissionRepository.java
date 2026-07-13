@@ -19,4 +19,7 @@ public interface SoumissionRepository extends JpaRepository<Soumission, UUID> {
     long countByDevoirIdAndCorrigeTrue(UUID devoirId);
 
     long countByDevoirIdAndEnRetardTrue(UUID devoirId);
+
+    // Year-aware queries
+    List<Soumission> findByEleveIdAndAnneeScolaireOrderByDateSoumissionDesc(UUID eleveId, String anneeScolaire);
 }

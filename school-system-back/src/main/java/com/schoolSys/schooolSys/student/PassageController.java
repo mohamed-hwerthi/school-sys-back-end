@@ -23,7 +23,7 @@ public class PassageController {
     @GetMapping
     @PreAuthorize("hasAuthority('MANAGE_ANNEE_SCOLAIRE')")
     public ResponseEntity<ApiResponse<List<PassageDTO>>> getByAnneeScolaire(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
+            @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(passageService.findByAnneeScolaire(anneeScolaire)));
     }
 

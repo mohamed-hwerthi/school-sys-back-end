@@ -64,6 +64,7 @@ import {
 } from "@/hooks/useTransport";
 import type { Vehicule, Circuit, AffectationTransport, CreateCircuitRequest, CreateAffectationRequest } from "@/types/transport";
 import { useAllStudents } from "@/hooks/useStudents";
+import { getSelectedAnneeScolaire } from "@/lib/utils";
 import StudentCombobox from "@/components/StudentCombobox";
 
 const fadeUp = {
@@ -314,9 +315,13 @@ function CircuitsTab() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
+            {formErrors._root && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{formErrors._root}</div>
+            )}
             <div className="space-y-1.5">
               <Label>Nom du circuit</Label>
-              <Input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} placeholder="Ex: Circuit Nord" />
+              <Input value={form.nom} onChange={(e) => { setForm({ ...form, nom: e.target.value }); setFormErrors({}); }} placeholder="Ex: Circuit Nord" aria-invalid={!!formErrors.nom} />
+              {formErrors.nom && <p className="text-xs text-red-600">{formErrors.nom}</p>}
             </div>
             <div className="space-y-1.5">
               <Label>Description</Label>
@@ -325,7 +330,7 @@ function CircuitsTab() {
             <div className="space-y-1.5">
               <Label>Vehicule</Label>
               <Select value={form.vehiculeId ? String(form.vehiculeId) : ""} onValueChange={(v) => setForm({ ...form, vehiculeId: v ? Number(v) : undefined })}>
-                <SelectTrigger>
+                <SelectTrigger className={formErrors.vehiculeId ? "border-red-500" : ""}>
                   <SelectValue placeholder="Selectionner un vehicule" />
                 </SelectTrigger>
                 <SelectContent>
@@ -336,15 +341,18 @@ function CircuitsTab() {
                   ))}
                 </SelectContent>
               </Select>
+              {formErrors.vehiculeId && <p className="text-xs text-red-600">{formErrors.vehiculeId}</p>}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Heure depart</Label>
-                <Input type="time" value={form.heureDepart || ""} onChange={(e) => setForm({ ...form, heureDepart: e.target.value })} />
+                <Input type="time" value={form.heureDepart || ""} onChange={(e) => setForm({ ...form, heureDepart: e.target.value })} aria-invalid={!!formErrors.heureDepart} className={formErrors.heureDepart ? "border-red-500" : ""} />
+                {formErrors.heureDepart && <p className="text-xs text-red-600">{formErrors.heureDepart}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label>Heure retour</Label>
-                <Input type="time" value={form.heureRetour || ""} onChange={(e) => setForm({ ...form, heureRetour: e.target.value })} />
+                <Input type="time" value={form.heureRetour || ""} onChange={(e) => setForm({ ...form, heureRetour: e.target.value })} aria-invalid={!!formErrors.heureRetour} className={formErrors.heureRetour ? "border-red-500" : ""} />
+                {formErrors.heureRetour && <p className="text-xs text-red-600">{formErrors.heureRetour}</p>}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -678,7 +686,7 @@ function AffectationsTab() {
   const [form, setForm] = useState<CreateAffectationRequest>({
     eleveId: 0,
     circuitId: 0,
-    anneeScolaire: "2025-2026",
+    anneeScolaire: getSelectedAnneeScolaire(),
   });
 
   const filtered = useMemo(() => {
@@ -739,7 +747,7 @@ function AffectationsTab() {
             </SelectContent>
           </Select>
         </div>
-        <Button onClick={() => { setForm({ eleveId: 0, circuitId: 0, anneeScolaire: "2025-2026" }); setShowDialog(true); }} className="gap-1.5">
+        <Button onClick={() => { setForm({ eleveId: 0, circuitId: 0, anneeScolaire: getSelectedAnneeScolaire() }); setShowDialog(true); }} className="gap-1.5">
           <UserPlus className="h-4 w-4" /> Nouvelle affectation
         </Button>
       </div>
@@ -846,7 +854,7 @@ function AffectationsTab() {
             </div>
             <div className="space-y-1.5">
               <Label>Annee scolaire</Label>
-              <Input value={form.anneeScolaire} onChange={(e) => setForm({ ...form, anneeScolaire: e.target.value })} placeholder="2025-2026" />
+              <Input value={form.anneeScolaire} onChange={(e) => setForm({ ...form, anneeScolaire: e.target.value })} placeholder={getSelectedAnneeScolaire()} />
             </div>
           </div>
           <DialogFooter>

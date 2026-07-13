@@ -3,6 +3,7 @@ package com.schoolSys.schooolSys.student;
 import java.util.UUID;
 
 import com.schoolSys.schooolSys.anneescolaire.AnneeScolaireRepository;
+import com.schoolSys.schooolSys.common.annee.AnneeScolaireProvider;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.niveau.Niveau;
 import com.schoolSys.schooolSys.niveau.NiveauRepository;
@@ -22,13 +23,15 @@ public class PassageService {
 
     private static final Pattern LEADING_DIGITS = Pattern.compile("(\\d+)");
 
+    private final AnneeScolaireProvider anneeScolaireProvider;
     private final PassageRepository passageRepository;
     private final StudentRepository studentRepository;
     private final NiveauRepository niveauRepository;
     private final AnneeScolaireRepository anneeScolaireRepository;
 
     public List<PassageDTO> findByAnneeScolaire(String anneeScolaire) {
-        return passageRepository.findByAnneeScolaire(anneeScolaire).stream()
+        String annee = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
+        return passageRepository.findByAnneeScolaire(annee).stream()
                 .map(this::toDTO)
                 .toList();
     }

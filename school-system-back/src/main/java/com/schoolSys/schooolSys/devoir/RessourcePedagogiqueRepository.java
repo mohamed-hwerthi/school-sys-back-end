@@ -15,4 +15,9 @@ public interface RessourcePedagogiqueRepository extends JpaRepository<RessourceP
     List<RessourcePedagogique> findByTypeOrderByCreatedAtDesc(String type);
 
     List<RessourcePedagogique> findAllByOrderByCreatedAtDesc();
+
+    // Year-aware queries
+    List<RessourcePedagogique> findByAnneeScolaireOrderByCreatedAtDesc(String anneeScolaire);
+
+    List<RessourcePedagogique> findByModuleIdAndAnneeScolaireOrderByCreatedAtDesc(UUID moduleId, String anneeScolaire);
 }

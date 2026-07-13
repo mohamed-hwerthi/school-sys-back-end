@@ -25,8 +25,9 @@ public class DevoirController {
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<DevoirDTO>>> getAll(
             @RequestParam(required = false) UUID classeId,
-            @RequestParam(required = false) UUID moduleId) {
-        return ResponseEntity.ok(ApiResponse.ok(devoirService.findAll(classeId, moduleId)));
+            @RequestParam(required = false) UUID moduleId,
+            @RequestParam(required = false) String anneeScolaire) {
+        return ResponseEntity.ok(ApiResponse.ok(devoirService.findAll(classeId, moduleId, anneeScolaire)));
     }
 
     @GetMapping("/{id}")

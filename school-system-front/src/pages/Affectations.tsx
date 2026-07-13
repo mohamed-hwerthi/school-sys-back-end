@@ -44,6 +44,7 @@ import { useNiveaux } from "@/hooks/useNiveaux";
 import { useClasses } from "@/hooks/useClasses";
 import { useModules } from "@/hooks/useModules";
 import { useActiveAnneeScolaire, useAllAnneesScolaires } from "@/hooks/useAnneeScolaire";
+import { getSelectedAnneeScolaire } from "@/lib/utils";
 import {
   useAffectations,
   useCreateAffectation,
@@ -103,7 +104,7 @@ export default function AffectationsPage() {
 
   const defaultAnnee = activeAnnee?.label
     ?? allAnnees[0]?.label
-    ?? "2025-2026";
+    ?? getSelectedAnneeScolaire();
 
   // ── filters ──────────────────────────────────────────────
   const [filterAnnee, setFilterAnnee] = useState<string>(defaultAnnee);

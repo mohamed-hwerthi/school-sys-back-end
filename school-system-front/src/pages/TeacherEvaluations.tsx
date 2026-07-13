@@ -55,6 +55,7 @@ import {
   useTeacherEvaluationStats,
 } from "@/hooks/useTeacherEvaluations";
 import type { TeacherEvaluation } from "@/types/teacher-evaluation";
+import { getSelectedAnneeScolaire } from "@/lib/utils";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -114,7 +115,7 @@ export default function TeacherEvaluationsPage() {
 
   // 0 = "all teachers" (default view: list every teacher's evaluations)
   const [selectedTeacherId, setSelectedTeacherId] = useState<string | number>(0);
-  const [anneeScolaire, setAnneeScolaire] = useState("2025-2026");
+  const [anneeScolaire, setAnneeScolaire] = useState(getSelectedAnneeScolaire());
   const [activeTab, setActiveTab] = useState("evaluations");
 
   // Form state
@@ -255,7 +256,7 @@ export default function TeacherEvaluationsPage() {
             type="text"
             value={anneeScolaire}
             onChange={(e) => setAnneeScolaire(e.target.value)}
-            placeholder="2025-2026"
+            placeholder={getSelectedAnneeScolaire()}
             className="w-32"
           />
           {selectedTeacherId && (

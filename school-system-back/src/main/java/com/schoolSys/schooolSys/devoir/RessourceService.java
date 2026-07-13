@@ -2,6 +2,7 @@ package com.schoolSys.schooolSys.devoir;
 
 import java.util.UUID;
 
+import com.schoolSys.schooolSys.common.annee.AnneeScolaireProvider;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.devoir.dto.CreateRessourceRequest;
 import com.schoolSys.schooolSys.devoir.dto.RessourceDTO;
@@ -17,13 +18,15 @@ import java.util.List;
 public class RessourceService {
 
     private final RessourcePedagogiqueRepository ressourceRepository;
+    private final AnneeScolaireProvider anneeScolaireProvider;
 
-    public List<RessourceDTO> findAll(UUID moduleId) {
+    public List<RessourceDTO> findAll(UUID moduleId, String anneeScolaire) {
+        String year = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
         List<RessourcePedagogique> ressources;
         if (moduleId != null) {
-            ressources = ressourceRepository.findByModuleIdOrderByCreatedAtDesc(moduleId);
+            ressources = ressourceRepository.findByModuleIdAndAnneeScolaireOrderByCreatedAtDesc(moduleId, year);
         } else {
-            ressources = ressourceRepository.findAllByOrderByCreatedAtDesc();
+            ressources = ressourceRepository.findByAnneeScolaireOrderByCreatedAtDesc(year);
         }
         return ressources.stream().map(this::toDTO).toList();
     }
@@ -50,6 +53,7 @@ public class RessourceService {
                 .lienExterne(request.getLienExterne())
                 .enseignantId(request.getEnseignantId())
                 .tailleFichier(request.getTailleFichier())
+                .anneeScolaire(anneeScolaireProvider.resolveAnneeScolaire(request.getAnneeScolaire()))
                 .build();
         return toDTO(ressourceRepository.save(ressource));
     }
@@ -67,6 +71,9 @@ public class RessourceService {
         ressource.setLienExterne(request.getLienExterne());
         ressource.setEnseignantId(request.getEnseignantId());
         ressource.setTailleFichier(request.getTailleFichier());
+        if (request.getAnneeScolaire() != null) {
+            ressource.setAnneeScolaire(request.getAnneeScolaire());
+        }
 
         return toDTO(ressourceRepository.save(ressource));
     }
@@ -90,6 +97,7 @@ public class RessourceService {
                 .lienExterne(ressource.getLienExterne())
                 .enseignantId(ressource.getEnseignantId())
                 .tailleFichier(ressource.getTailleFichier())
+                .anneeScolaire(ressource.getAnneeScolaire())
                 .createdAt(ressource.getCreatedAt())
                 .build();
     }

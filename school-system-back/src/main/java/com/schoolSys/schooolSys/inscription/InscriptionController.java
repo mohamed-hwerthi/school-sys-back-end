@@ -5,6 +5,7 @@ import java.util.UUID;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.common.dto.PagedResponse;
 import com.schoolSys.schooolSys.inscription.dto.*;
+import com.schoolSys.schooolSys.student.dto.StudentResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -86,5 +87,17 @@ public class InscriptionController {
             @PathVariable UUID niveauId,
             @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(inscriptionService.getListeAttente(niveauId, anneeScolaire)));
+    }
+
+    /**
+     * POST /api/inscriptions/{id}/convert-to-student — Convert an accepted inscription into a student.
+     */
+    @PostMapping("/{id}/convert-to-student")
+    @PreAuthorize("hasAuthority('MANAGE_INSCRIPTIONS')")
+    public ResponseEntity<ApiResponse<StudentResponseDTO>> convertToStudent(
+            @PathVariable UUID id,
+            @RequestParam(required = false) String classe,
+            @RequestParam(required = false) String sexe) {
+        return ResponseEntity.ok(ApiResponse.ok(inscriptionService.convertToStudent(id, classe, sexe)));
     }
 }

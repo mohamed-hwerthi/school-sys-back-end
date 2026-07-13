@@ -2,6 +2,7 @@ package com.schoolSys.schooolSys.finance;
 
 import java.util.UUID;
 
+import com.schoolSys.schooolSys.common.annee.AnneeScolaireProvider;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.finance.dto.PenaliteRequestDTO;
 import com.schoolSys.schooolSys.finance.dto.PenaliteResponseDTO;
@@ -20,6 +21,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PenaliteService {
 
+    private final AnneeScolaireProvider anneeScolaireProvider;
     private final PenaliteRepository penaliteRepository;
     private final PenaliteMapper penaliteMapper;
     private final StudentRepository studentRepository;
@@ -57,7 +59,7 @@ public class PenaliteService {
                 .montant(dto.getMontant())
                 .motif(dto.getMotif())
                 .dateApplication(dto.getDateApplication() != null ? dto.getDateApplication() : LocalDate.now())
-                .anneeScolaire(dto.getAnneeScolaire() != null ? dto.getAnneeScolaire() : "2025-2026")
+                .anneeScolaire(anneeScolaireProvider.resolveAnneeScolaire(dto.getAnneeScolaire()))
                 .payee(dto.getPayee() != null ? dto.getPayee() : false)
                 .createdAt(LocalDateTime.now())
                 .build();

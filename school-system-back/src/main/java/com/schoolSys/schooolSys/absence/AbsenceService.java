@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.schoolSys.schooolSys.absence.dto.*;
 import com.schoolSys.schooolSys.auth.UserRole;
+import com.schoolSys.schooolSys.common.annee.AnneeScolaireProvider;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.niveau.Classe;
@@ -31,6 +32,7 @@ public class AbsenceService {
     private final AbsenceSettingsRepository settingsRepository;
     private final AbsenceNotificationService notificationService;
     private final ClasseRepository classeRepository;
+    private final AnneeScolaireProvider anneeScolaireProvider;
     private final CurrentUserContext currentUser;
 
     /** Silent filter for list endpoints. */
@@ -48,11 +50,13 @@ public class AbsenceService {
         // Block writes on students outside the current user's scope.
         request.getAbsences().forEach(dto ->
                 currentUser.assertCanAccessStudent(dto.getEleveId()));
+        String currentAnnee = anneeScolaireProvider.getCurrentAnneeScolaire();
         List<Absence> absences = request.getAbsences().stream()
             .map(dto -> Absence.builder()
                 .eleveId(dto.getEleveId())
                 .date(dto.getDate())
                 .type(dto.getType())
+                .anneeScolaire(currentAnnee)
                 .seance(dto.getSeance())
                 .heureArrivee(dto.getHeureArrivee())
                 .justifie(dto.getJustifie() != null ? dto.getJustifie() : false)

@@ -13,7 +13,7 @@ type Statut = "PRESENT" | "ABSENCE" | "RETARD";
 export default function FeuilleDetailsPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const classeId = Number(params.get("classeId") ?? 0);
+  const classeId = params.get("classeId") ?? "";
   const date = params.get("date") ?? new Date().toISOString().split("T")[0];
 
   const { data: classes = [] } = useClasses();
@@ -30,7 +30,7 @@ export default function FeuilleDetailsPage() {
   }, [allStudents, classe]);
 
   const absencesByEleve = useMemo(() => {
-    const m = new Map<number, typeof absences>();
+    const m = new Map<string, typeof absences>();
     absences.forEach((a) => {
       const list = m.get(a.eleveId) ?? [];
       list.push(a);

@@ -55,6 +55,7 @@ import {
 import { CURRENCY } from "@/config/currency";
 import { useTeachers } from "@/hooks/useTeachers";
 import { useAllUsers } from "@/hooks/useUsers";
+import { usePersonnelList } from "@/hooks/usePersonnel";
 import { useSchool } from "@/hooks/useSchool";
 import { generateFichePaiePDF, moisLabel } from "@/lib/generateFichePaiePDF";
 import { notify } from "@/lib/toast";
@@ -124,6 +125,7 @@ export default function PaiePage() {
   // Employé selectors backing data
   const { teachers } = useTeachers();
   const { data: allUsers = [] } = useAllUsers();
+  const { data: personnelList = [] } = usePersonnelList();
   const { school } = useSchool();
 
   /** Resolve a display name from an employeId + employeType pair, with a graceful fallback. */
@@ -131,10 +133,13 @@ export default function PaiePage() {
     if (employeType === "ENSEIGNANT") {
       const teacher = teachers.find((t) => t.id === employeId);
       if (teacher) return `${teacher.prenom} ${teacher.nom}`;
-    } else {
-      const user = allUsers.find((u) => u.id === employeId);
-      if (user) return `${user.firstName} ${user.lastName}`;
     }
+    if (employeType === "PERSONNEL") {
+      const p = personnelList.find((p) => p.id === employeId);
+      if (p) return `${p.prenom} ${p.nom}`;
+    }
+    const user = allUsers.find((u) => u.id === employeId);
+    if (user) return `${user.firstName} ${user.lastName}`;
     return `#${employeId}`;
   };
 
@@ -702,12 +707,10 @@ export default function PaiePage() {
                             id: u.id,
                             label: `${u.firstName} ${u.lastName} (${u.role})`,
                           }))
-                      : allUsers
-                          .filter((u) => !["ENSEIGNANT", "PARENT"].includes(u.role))
-                          .map((u) => ({
-                            id: u.id,
-                            label: `${u.firstName} ${u.lastName} (${u.role})`,
-                          }));
+                      : personnelList.map((p) => ({
+                          id: p.id,
+                          label: `${p.prenom} ${p.nom}${p.fonction ? ` — ${p.fonction}` : ""}`,
+                        }));
                   return (
                     <Select
                       value={form.employeId ? String(form.employeId) : ""}
@@ -721,7 +724,7 @@ export default function PaiePage() {
                       <SelectContent>
                         {options.length === 0 ? (
                           <div className="px-2 py-3 text-xs text-muted-foreground text-center">
-                            Aucun {form.employeType === "ENSEIGNANT" ? "enseignant" : "utilisateur"} trouvé
+                            Aucun {form.employeType === "ENSEIGNANT" ? "enseignant" : form.employeType === "ADMIN" ? "administrateur" : "personnel"} trouvé
                           </div>
                         ) : (
                           options.map((o) => (

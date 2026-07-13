@@ -29,8 +29,6 @@ import {
 import { useTresorerie } from "@/hooks/useTresorerie";
 import { CURRENCY } from "@/config/currency";
 
-const ANNEE = "2025-2026";
-
 const MOIS_LABELS: Record<string, string> = {
   Sep: "Sep", Oct: "Oct", Nov: "Nov", Dec: "Dec",
   Jan: "Jan", Feb: "Fev", Mar: "Mar", Apr: "Avr",
@@ -73,7 +71,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 }
 
 export default function Tresorerie() {
-  const { data, isLoading } = useTresorerie(ANNEE);
+  const { data, isLoading } = useTresorerie();
 
   if (isLoading || !data) {
     return (

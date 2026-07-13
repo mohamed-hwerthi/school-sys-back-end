@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, CalendarDays, Clock, Eye, Loader2, UserCheck, UserX } from "lucide-react";
+import { CalendarDays, Clock, Eye, List, Loader2, UserCheck, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,9 +31,6 @@ export default function FeuillesJourPage() {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard/absences")}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
           <div>
             <h1 className="font-heading text-xl md:text-2xl font-bold text-foreground">Feuilles du jour</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
@@ -41,6 +38,10 @@ export default function FeuillesJourPage() {
             </p>
           </div>
         </div>
+        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate("/dashboard/absences")}>
+          <List className="h-4 w-4" />
+          Voir les absences
+        </Button>
       </motion.div>
 
       <div className="rounded-xl border border-border/50 bg-card p-4 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-3 items-end">

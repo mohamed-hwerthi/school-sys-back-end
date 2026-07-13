@@ -24,7 +24,7 @@ public class PenaliteController {
     @GetMapping
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<PenaliteResponseDTO>>> getAll(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
+            @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(penaliteService.findByAnneeScolaire(anneeScolaire)));
     }
 
@@ -32,7 +32,7 @@ public class PenaliteController {
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<PenaliteResponseDTO>>> getByStudent(
             @PathVariable UUID studentId,
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
+            @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(penaliteService.findByStudentId(studentId, anneeScolaire)));
     }
 

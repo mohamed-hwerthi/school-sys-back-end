@@ -24,8 +24,9 @@ public class RessourceController {
     @GetMapping
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<RessourceDTO>>> getAll(
-            @RequestParam(required = false) UUID moduleId) {
-        return ResponseEntity.ok(ApiResponse.ok(ressourceService.findAll(moduleId)));
+            @RequestParam(required = false) UUID moduleId,
+            @RequestParam(required = false) String anneeScolaire) {
+        return ResponseEntity.ok(ApiResponse.ok(ressourceService.findAll(moduleId, anneeScolaire)));
     }
 
     @GetMapping("/{id}")

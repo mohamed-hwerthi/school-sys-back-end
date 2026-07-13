@@ -64,6 +64,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getSelectedAnneeScolaire } from "@/lib/utils";
 import { CURRENCY } from "@/config/currency";
 import { useAllStudents } from "@/hooks/useStudents";
 import { useTypesFrais } from "@/hooks/useFinance";
@@ -79,8 +80,6 @@ import {
   useDeletePenalite,
 } from "@/hooks/useRemisesPenalites";
 import type { RemiseDTO, RemiseRequest, PenaliteDTO, PenaliteRequest } from "@/api/remises-penalites.api";
-
-const ANNEE = "2025-2026";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -115,8 +114,8 @@ export default function RemisesPenalites() {
   const [activeTab, setActiveTab] = useState<TabKey>("remises");
   const { data: students = [] } = useAllStudents();
   const { data: typesFrais = [] } = useTypesFrais();
-  const { data: remises = [], isLoading: loadingRemises } = useRemises(ANNEE);
-  const { data: penalites = [], isLoading: loadingPenalites } = usePenalites(ANNEE);
+  const { data: remises = [], isLoading: loadingRemises } = useRemises();
+  const { data: penalites = [], isLoading: loadingPenalites } = usePenalites();
 
   const createRemise = useCreateRemise();
   const updateRemise = useUpdateRemise();
@@ -140,7 +139,7 @@ export default function RemisesPenalites() {
     valeur: 0,
     estPourcentage: false,
     motif: "",
-    anneeScolaire: ANNEE,
+    anneeScolaire: getSelectedAnneeScolaire(),
     active: true,
   };
   const [remiseForm, setRemiseForm] = useState<RemiseRequest>(emptyRemiseForm);
@@ -207,7 +206,7 @@ export default function RemisesPenalites() {
     montant: 0,
     motif: "",
     dateApplication: new Date().toISOString().split("T")[0],
-    anneeScolaire: ANNEE,
+    anneeScolaire: getSelectedAnneeScolaire(),
     payee: false,
   };
   const [penaliteForm, setPenaliteForm] = useState<PenaliteRequest>(emptyPenaliteForm);
@@ -288,7 +287,7 @@ export default function RemisesPenalites() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t("discountsPage.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {t("discountsPage.title")} — {ANNEE}
+            {t("discountsPage.title")} — {getSelectedAnneeScolaire()}
           </p>
         </div>
         <Button

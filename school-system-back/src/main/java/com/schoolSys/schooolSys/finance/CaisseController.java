@@ -23,14 +23,14 @@ public class CaisseController {
     @GetMapping
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<CaisseResponseDTO>>> getAll(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
+            @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(caisseService.findAll(anneeScolaire)));
     }
 
     @GetMapping("/ouverte")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<CaisseResponseDTO>> getOuverte(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
+            @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(caisseService.findOuverte(anneeScolaire)));
     }
 

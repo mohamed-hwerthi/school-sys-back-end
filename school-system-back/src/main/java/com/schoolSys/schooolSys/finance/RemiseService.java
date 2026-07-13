@@ -2,6 +2,7 @@ package com.schoolSys.schooolSys.finance;
 
 import java.util.UUID;
 
+import com.schoolSys.schooolSys.common.annee.AnneeScolaireProvider;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.finance.dto.RemiseRequestDTO;
 import com.schoolSys.schooolSys.finance.dto.RemiseResponseDTO;
@@ -19,6 +20,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class RemiseService {
 
+    private final AnneeScolaireProvider anneeScolaireProvider;
     private final RemiseRepository remiseRepository;
     private final RemiseMapper remiseMapper;
     private final StudentRepository studentRepository;
@@ -57,7 +59,7 @@ public class RemiseService {
                 .valeur(dto.getValeur())
                 .estPourcentage(dto.getEstPourcentage() != null ? dto.getEstPourcentage() : false)
                 .motif(dto.getMotif())
-                .anneeScolaire(dto.getAnneeScolaire() != null ? dto.getAnneeScolaire() : "2025-2026")
+                .anneeScolaire(anneeScolaireProvider.resolveAnneeScolaire(dto.getAnneeScolaire()))
                 .active(dto.getActive() != null ? dto.getActive() : true)
                 .createdAt(LocalDateTime.now())
                 .build();

@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { teacherSchema, type TeacherFormValues } from "@/lib/teacher-schema";
-import { SPECIALITES, STATUTS_ENSEIGNANT } from "@/types/teacher";
+import { STATUTS_ENSEIGNANT } from "@/types/teacher";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -47,7 +47,6 @@ export function TeacherForm({
     },
   });
 
-  const specialite = watch("specialite");
   const sexe = watch("sexe");
   const statut = watch("statut");
 
@@ -67,25 +66,6 @@ export function TeacherForm({
             <Input id="nom" {...register("nom")} placeholder="Nom" />
             {errors.nom && (
               <p className="text-xs text-destructive">{errors.nom.message}</p>
-            )}
-          </div>
-          <div className="space-y-1.5">
-            <Label>Spécialité *</Label>
-            <Select
-              value={specialite}
-              onValueChange={(v) => setValue("specialite", v, { shouldValidate: true })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Choisir la spécialité" />
-              </SelectTrigger>
-              <SelectContent>
-                {SPECIALITES.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.specialite && (
-              <p className="text-xs text-destructive">{errors.specialite.message}</p>
             )}
           </div>
           <div className="space-y-1.5">

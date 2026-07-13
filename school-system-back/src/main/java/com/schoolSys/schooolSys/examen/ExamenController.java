@@ -26,8 +26,9 @@ public class ExamenController {
     public ResponseEntity<ApiResponse<List<ExamenResponseDTO>>> getAll(
             @RequestParam(required = false) UUID moduleId,
             @RequestParam(required = false) UUID classeId,
-            @RequestParam(required = false) Integer trimestre) {
-        return ResponseEntity.ok(ApiResponse.ok(examenService.findAll(moduleId, classeId, trimestre)));
+            @RequestParam(required = false) Integer trimestre,
+            @RequestParam(required = false) String anneeScolaire) {
+        return ResponseEntity.ok(ApiResponse.ok(examenService.findAll(moduleId, classeId, trimestre, anneeScolaire)));
     }
 
     @GetMapping("/{id}")

@@ -31,6 +31,13 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // School year header
+  const anneeScolaire = localStorage.getItem("selected_annee_label");
+  if (anneeScolaire) {
+    config.headers["X-Annee-Scolaire"] = anneeScolaire;
+  }
+
   return config;
 });
 

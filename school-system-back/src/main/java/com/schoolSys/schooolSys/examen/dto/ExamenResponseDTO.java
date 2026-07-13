@@ -29,6 +29,7 @@ public class ExamenResponseDTO {
     private String moduleName;
     private Boolean versionEtatique;
     private Boolean versionPrivee;
+    private String anneeScolaire;
     private Long nbNotes;
     private Long nbEleves;
 }

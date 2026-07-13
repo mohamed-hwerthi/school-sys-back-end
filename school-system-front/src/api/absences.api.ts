@@ -21,7 +21,7 @@ export const absencesApi = {
 
   getByClasseDate: async (classeId: string, date: string): Promise<Absence[]> => {
     const params: Record<string, string | number> = { date };
-    if (classeId > 0) params.classeId = classeId;
+    if (classeId) params.classeId = classeId;
     const res = await api.get<Absence[]>(`${BASE}`, { params });
     return res.data;
   },

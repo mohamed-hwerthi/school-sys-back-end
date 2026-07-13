@@ -18,6 +18,7 @@ import SuperAdminLayout from "./components/layout/SuperAdminLayout";
 import { TeachersProvider } from "./hooks/useTeachers";
 import { MessagesProvider } from "./hooks/useMessages";
 import { SchoolProvider } from "./hooks/useSchool";
+import { AnneeProvider } from "./hooks/useAnneeContext";
 import { Loader2 } from "lucide-react";
 
 // Lazy loaded pages for code splitting
@@ -200,11 +201,13 @@ const App = () => (
               element={
                 <PrivateRoute>
                   <SchoolProvider>
+                    <AnneeProvider>
                     <MessagesProvider>
                       <TeachersProvider>
                           <DashboardLayout />
                       </TeachersProvider>
                     </MessagesProvider>
+                    </AnneeProvider>
                   </SchoolProvider>
                 </PrivateRoute>
               }

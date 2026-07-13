@@ -10,9 +10,9 @@ export const devoirSchema = z.object({
   pointsMax: z.coerce.number().int().positive("Doit être > 0").max(100, "Max 100"),
   statut: z.string().optional().default("PUBLIE"),
   description: z.string().optional(),
-  classeId: z.number().int().positive().optional(),
-  enseignantId: z.number().int().positive().optional(),
-  moduleId: z.number().int().positive().optional(),
+  classeId: z.string().optional(),
+  enseignantId: z.string().optional(),
+  moduleId: z.string().optional(),
   fichierUrl: z.string().optional(),
 });
 
@@ -24,8 +24,8 @@ export const ressourceSchema = z.object({
   description: z.string().optional(),
   url: z.string().optional(),
   fichierUrl: z.string().optional(),
-  classeId: z.number().int().positive().optional(),
-  moduleId: z.number().int().positive().optional(),
+  classeId: z.string().optional(),
+  moduleId: z.string().optional(),
 });
 
 export type RessourceFormValues = z.infer<typeof ressourceSchema>;

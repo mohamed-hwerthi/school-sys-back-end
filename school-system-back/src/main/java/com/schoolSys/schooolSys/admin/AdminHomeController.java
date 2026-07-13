@@ -2,6 +2,7 @@ package com.schoolSys.schooolSys.admin;
 
 import com.schoolSys.schooolSys.admin.dto.AdminHomeDTO;
 import com.schoolSys.schooolSys.admin.dto.TeacherPerformanceDTO;
+import com.schoolSys.schooolSys.common.annee.AnneeScolaireProvider;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,30 +23,34 @@ import java.util.List;
 public class AdminHomeController {
 
     private final AdminHomeService adminHomeService;
+    private final AnneeScolaireProvider anneeScolaireProvider;
 
     /** MOB-FUNC-025 — 6 KPI agrégés pour l'accueil admin (effectif, CA, impayés…). */
     @GetMapping("/dashboard-kpis")
     @PreAuthorize("hasAuthority('VIEW_REPORTS')")
     public ResponseEntity<ApiResponse<AdminHomeDTO.DashboardKpis>> getDashboardKpis(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
-        return ResponseEntity.ok(ApiResponse.ok(adminHomeService.getDashboardKpis(anneeScolaire)));
+            @RequestParam(required = false) String anneeScolaire) {
+        String resolved = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
+        return ResponseEntity.ok(ApiResponse.ok(adminHomeService.getDashboardKpis(resolved)));
     }
 
     /** MOB-FUNC-028 — alertes opérationnelles (impayés en retard, absentees, classes sans titulaire). */
     @GetMapping("/operational-alerts")
     @PreAuthorize("hasAuthority('VIEW_REPORTS')")
     public ResponseEntity<ApiResponse<AdminHomeDTO.OperationalAlerts>> getOperationalAlerts(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
-        return ResponseEntity.ok(ApiResponse.ok(adminHomeService.getOperationalAlerts(anneeScolaire)));
+            @RequestParam(required = false) String anneeScolaire) {
+        String resolved = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
+        return ResponseEntity.ok(ApiResponse.ok(adminHomeService.getOperationalAlerts(resolved)));
     }
 
     /** MOB-FUNC-033 — tableau de performance enseignants. */
     @GetMapping("/teachers-performance")
     @PreAuthorize("hasAuthority('VIEW_REPORTS')")
     public ResponseEntity<ApiResponse<List<TeacherPerformanceDTO>>> getTeachersPerformance(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire,
+            @RequestParam(required = false) String anneeScolaire,
             @RequestParam(defaultValue = "1") int trimestre) {
+        String resolved = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
         return ResponseEntity.ok(ApiResponse.ok(
-                adminHomeService.getTeachersPerformance(anneeScolaire, trimestre)));
+                adminHomeService.getTeachersPerformance(resolved, trimestre)));
     }
 }

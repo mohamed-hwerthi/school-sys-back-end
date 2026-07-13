@@ -89,6 +89,21 @@ export function useListeAttente(niveauId: string, anneeScolaire?: string) {
 }
 
 /**
+ * Convert an accepted inscription into a student (admin).
+ */
+export function useConvertInscriptionToStudent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, classe, sexe }: { id: string; classe?: string; sexe?: string }) =>
+      inscriptionsApi.convertToStudent(id, classe, sexe),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [INSCRIPTIONS_KEY] });
+      qc.invalidateQueries({ queryKey: ["students"] });
+    },
+  });
+}
+
+/**
  * Check inscription status by dossier number (public).
  */
 export function useCheckInscription(numeroDossier: string) {

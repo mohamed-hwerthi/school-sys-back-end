@@ -112,7 +112,7 @@ public class AdminHomeService {
         long withNotes = 0;
         long withPassing = 0;
         for (Student s : activeStudents) {
-            List<Note> notes = noteRepository.findByStudentIdAndTrimestre(s.getId(), CURRENT_TRIMESTRE);
+            List<Note> notes = noteRepository.findByStudentIdAndTrimestreAndAnneeScolaire(s.getId(), CURRENT_TRIMESTRE, anneeScolaire);
             if (notes.isEmpty()) continue;
             double avg = notes.stream()
                     .filter(n -> n.getValeur() != null)
@@ -157,7 +157,7 @@ public class AdminHomeService {
                 .distinct()
                 .count();
 
-        List<Examen> examens = examenRepository.findFiltered(null, null, trimestre).stream()
+        List<Examen> examens = examenRepository.findFiltered(null, null, trimestre, anneeScolaire).stream()
                 .filter(e -> Boolean.FALSE.equals(e.getDeleted()))
                 .filter(e -> e.getTeacher() != null && t.getId().equals(e.getTeacher().getId()))
                 .collect(Collectors.toList());
@@ -165,13 +165,13 @@ public class AdminHomeService {
         double saisiesAJour = 0.0;
         if (!examens.isEmpty()) {
             long withNotes = examens.stream()
-                    .filter(e -> noteRepository.countByExamenIdAndTrimestre(e.getId(), e.getTrimestre()) > 0)
+                    .filter(e -> noteRepository.countByExamenIdAndTrimestreAndAnneeScolaire(e.getId(), e.getTrimestre(), anneeScolaire) > 0)
                     .count();
             saisiesAJour = Math.round((withNotes * 100.0 / examens.size()) * 10.0) / 10.0;
         }
 
         double avg = examens.stream()
-                .flatMap(e -> noteRepository.findByExamenIdAndTrimestre(e.getId(), e.getTrimestre()).stream())
+                .flatMap(e -> noteRepository.findByExamenIdAndTrimestreAndAnneeScolaire(e.getId(), e.getTrimestre(), anneeScolaire).stream())
                 .filter(n -> n.getValeur() != null)
                 .mapToDouble(n -> n.getValeur().doubleValue())
                 .average()

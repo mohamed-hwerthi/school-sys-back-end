@@ -2,6 +2,7 @@ package com.schoolSys.schooolSys.devoir;
 
 import java.util.UUID;
 
+import com.schoolSys.schooolSys.common.annee.AnneeScolaireProvider;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.devoir.dto.CorrectionRequest;
@@ -26,6 +27,7 @@ public class SoumissionService {
     private final SoumissionRepository soumissionRepository;
     private final DevoirRepository devoirRepository;
     private final CurrentUserContext currentUserContext;
+    private final AnneeScolaireProvider anneeScolaireProvider;
 
     public List<SoumissionDTO> findByDevoir(UUID devoirId) {
         return soumissionRepository.findByDevoirIdOrderByDateSoumissionDesc(devoirId)
@@ -35,6 +37,13 @@ public class SoumissionService {
     public List<SoumissionDTO> findByEleve(UUID eleveId) {
         currentUserContext.assertCanAccessStudent(eleveId);
         return soumissionRepository.findByEleveIdOrderByDateSoumissionDesc(eleveId)
+                .stream().map(this::toDTO).toList();
+    }
+
+    public List<SoumissionDTO> findByEleveAndAnnee(UUID eleveId, String anneeScolaire) {
+        currentUserContext.assertCanAccessStudent(eleveId);
+        String year = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
+        return soumissionRepository.findByEleveIdAndAnneeScolaireOrderByDateSoumissionDesc(eleveId, year)
                 .stream().map(this::toDTO).toList();
     }
 
@@ -57,6 +66,7 @@ public class SoumissionService {
                 .contenu(request.getContenu())
                 .fichierUrl(request.getFichierUrl())
                 .enRetard(enRetard)
+                .anneeScolaire(anneeScolaireProvider.resolveAnneeScolaire(devoir.getAnneeScolaire()))
                 .build();
 
         return toDTO(soumissionRepository.save(soumission));
@@ -127,6 +137,7 @@ public class SoumissionService {
                 .commentaireCorrection(soumission.getCommentaireCorrection())
                 .corrige(soumission.getCorrige())
                 .enRetard(soumission.getEnRetard())
+                .anneeScolaire(soumission.getAnneeScolaire())
                 .createdAt(soumission.getCreatedAt())
                 .build();
     }

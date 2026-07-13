@@ -160,7 +160,7 @@ public class ParentPortalService {
                         .collect(Collectors.toList());
 
         List<UpcomingDTO.UpcomingExamen> examens = classeId == null ? List.of()
-                : examenRepository.findFiltered(null, classeId, null).stream()
+                : examenRepository.findFiltered(null, classeId, null, null).stream()
                         .filter(e -> Boolean.FALSE.equals(e.getDeleted()))
                         .filter(e -> e.getDateLimiteSaisie() != null
                                 && !e.getDateLimiteSaisie().isBefore(today)
@@ -314,7 +314,7 @@ public class ParentPortalService {
                                 .build());
                     });
 
-            examenRepository.findFiltered(null, classeId, null).stream()
+            examenRepository.findFiltered(null, classeId, null, null).stream()
                     .filter(e -> Boolean.FALSE.equals(e.getDeleted()))
                     .filter(e -> e.getDateLimiteSaisie() != null
                             && !e.getDateLimiteSaisie().isBefore(from)

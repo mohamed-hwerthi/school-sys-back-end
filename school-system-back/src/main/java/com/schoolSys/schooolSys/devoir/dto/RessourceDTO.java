@@ -24,5 +24,6 @@ public class RessourceDTO {
     private String lienExterne;
     private UUID enseignantId;
     private Long tailleFichier;
+    private String anneeScolaire;
     private LocalDateTime createdAt;
 }

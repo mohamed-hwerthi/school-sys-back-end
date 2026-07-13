@@ -28,6 +28,7 @@ public class DevoirDTO {
     private Integer pointsMax;
     private String fichierUrl;
     private String statut;
+    private String anneeScolaire;
     private long totalSoumissions;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -90,6 +90,7 @@ import type { Paiement, ModePaiement, StatutPaiement } from "@/types/finance";
 import type { Student } from "@/types/student";
 import type { PaiementFormValues } from "@/lib/finance-schema";
 import { CURRENCY } from "@/config/currency";
+import { getSelectedAnneeScolaire } from "@/lib/utils";
 import { useSchool } from "@/hooks/useSchool";
 import { generateRecuPDF, type RecuData } from "@/lib/generateRecuPDF";
 import { FileDown } from "lucide-react";
@@ -136,7 +137,7 @@ export default function FinancePaiement() {
       classe: student?.classe ?? "—",
       typeFrais: tf?.nom ?? "—",
       mois: p.mois,
-      anneeScolaire: "2025-2026",
+       anneeScolaire: p.anneeScolaire || getSelectedAnneeScolaire(),
       montantDu: p.montantDu,
       montantPaye: p.montantPaye,
       datePaiement: p.datePaiement,
@@ -412,7 +413,7 @@ export default function FinancePaiement() {
           <ExportButton
             type="paiements"
             label="Exporter"
-            filters={{ anneeScolaire: "2025-2026" }}
+            filters={{ anneeScolaire: getSelectedAnneeScolaire() }}
           />
           <Button
             size="sm"

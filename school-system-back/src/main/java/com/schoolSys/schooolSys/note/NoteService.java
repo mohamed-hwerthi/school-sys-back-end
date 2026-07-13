@@ -2,6 +2,7 @@ package com.schoolSys.schooolSys.note;
 
 import java.util.UUID;
 
+import com.schoolSys.schooolSys.common.annee.AnneeScolaireProvider;
 import com.schoolSys.schooolSys.common.audit.AuditService;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
@@ -32,18 +33,21 @@ public class NoteService {
     private final CompetenceRepository competenceRepository;
     private final EvaluationCompetenceRepository evaluationCompetenceRepository;
     private final ParentNotificationService parentNotificationService;
+    private final AnneeScolaireProvider anneeScolaireProvider;
     private final CurrentUserContext currentUser;
     private final AuditService auditService;
 
-    public List<NoteResponseDTO> findByExamen(UUID examenId, Integer trimestre) {
-        return noteRepository.findByExamenIdAndTrimestre(examenId, trimestre).stream()
+    public List<NoteResponseDTO> findByExamen(UUID examenId, Integer trimestre, String anneeScolaire) {
+        String resolved = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
+        return noteRepository.findByExamenIdAndTrimestreAndAnneeScolaire(examenId, trimestre, resolved).stream()
                 .filter(n -> isInScope(n.getStudent().getId()))
                 .map(this::toResponse).toList();
     }
 
-    public List<NoteResponseDTO> findByStudent(UUID studentId, Integer trimestre) {
+    public List<NoteResponseDTO> findByStudent(UUID studentId, Integer trimestre, String anneeScolaire) {
         currentUser.assertCanAccessStudent(studentId);
-        return noteRepository.findByStudentIdAndTrimestre(studentId, trimestre).stream()
+        String resolved = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
+        return noteRepository.findByStudentIdAndTrimestreAndAnneeScolaire(studentId, trimestre, resolved).stream()
                 .map(this::toResponse).toList();
     }
 
@@ -83,8 +87,8 @@ public class NoteService {
                 }
             });
 
-            Optional<Note> existing = noteRepository.findByStudentIdAndExamenIdAndTrimestre(
-                    dto.getStudentId(), dto.getExamenId(), dto.getTrimestre());
+            Optional<Note> existing = noteRepository.findByStudentIdAndExamenIdAndTrimestreAndAnneeScolaire(
+                    dto.getStudentId(), dto.getExamenId(), dto.getTrimestre(), examen.getAnneeScolaire());
 
             String statut = dto.getStatut() != null ? dto.getStatut() : "PRESENT";
             // ABSENT => note forcée à 0 (compte dans la moyenne comme 0)
@@ -102,6 +106,7 @@ public class NoteService {
                         .orElseThrow(() -> new ResourceNotFoundException("Student", dto.getStudentId()));
                 Note note = Note.builder()
                         .student(student).examen(examen).trimestre(dto.getTrimestre())
+                        .anneeScolaire(examen.getAnneeScolaire())
                         .valeur(valeur).observation(dto.getObservation())
                         .statut(statut).build();
                 saved.add(noteRepository.save(note));
@@ -118,8 +123,9 @@ public class NoteService {
         return saved.stream().map(this::toResponse).toList();
     }
 
-    public List<MoyenneDTO> getMoyennes(UUID classeId, Integer trimestre) {
-        List<Note> notes = noteRepository.findByExamenClasseIdAndTrimestre(classeId, trimestre);
+    public List<MoyenneDTO> getMoyennes(UUID classeId, Integer trimestre, String anneeScolaire) {
+        String resolved = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
+        List<Note> notes = noteRepository.findByExamenClasseIdAndTrimestreAndAnneeScolaire(classeId, trimestre, resolved);
         Map<UUID, List<Note>> byStudent = notes.stream()
                 .collect(Collectors.groupingBy(n -> n.getStudent().getId()));
 

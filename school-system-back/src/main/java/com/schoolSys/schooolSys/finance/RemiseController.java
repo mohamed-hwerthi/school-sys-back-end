@@ -24,7 +24,7 @@ public class RemiseController {
     @GetMapping
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<RemiseResponseDTO>>> getAll(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
+            @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(remiseService.findByAnneeScolaire(anneeScolaire)));
     }
 
@@ -32,7 +32,7 @@ public class RemiseController {
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<RemiseResponseDTO>>> getByStudent(
             @PathVariable UUID studentId,
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
+            @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(remiseService.findByStudentId(studentId, anneeScolaire)));
     }
 

@@ -5,12 +5,16 @@ import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.inscription.dto.*;
 import com.schoolSys.schooolSys.niveau.Niveau;
 import com.schoolSys.schooolSys.niveau.NiveauRepository;
+import com.schoolSys.schooolSys.student.StudentService;
+import com.schoolSys.schooolSys.student.dto.StudentRequestDTO;
+import com.schoolSys.schooolSys.student.dto.StudentResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
@@ -24,6 +28,7 @@ public class InscriptionService {
     private final InscriptionRepository inscriptionRepository;
     private final ListeAttenteRepository listeAttenteRepository;
     private final NiveauRepository niveauRepository;
+    private final StudentService studentService;
 
     /**
      * Create a new inscription (public - no auth required).
@@ -196,6 +201,50 @@ public class InscriptionService {
         inscription.setStatut("LISTE_ATTENTE");
         inscriptionRepository.save(inscription);
         addToListeAttenteInternal(inscription);
+    }
+
+    /**
+     * Convert an accepted inscription into a student.
+     */
+    @Transactional
+    public StudentResponseDTO convertToStudent(UUID inscriptionId, String classe, String sexe) {
+        Inscription inscription = inscriptionRepository.findById(inscriptionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Inscription", inscriptionId));
+
+        if (!"ACCEPTEE".equals(inscription.getStatut())) {
+            throw new IllegalStateException("Seules les inscriptions acceptees peuvent etre converties en eleves");
+        }
+
+        String resolvedSexe = sexe != null ? sexe : inscription.getSexe();
+        if (resolvedSexe == null || resolvedSexe.isBlank()) {
+            throw new IllegalArgumentException("Le champ « sexe » est obligatoire pour convertir en élève. Veuillez sélectionner le genre.");
+        }
+
+        String niveauNom = null;
+        if (inscription.getNiveauId() != null) {
+            niveauNom = niveauRepository.findById(inscription.getNiveauId())
+                    .map(Niveau::getName)
+                    .orElse(null);
+        }
+
+        StudentRequestDTO dto = new StudentRequestDTO();
+        dto.setFirstName(inscription.getPrenom());
+        dto.setLastName(inscription.getNom());
+        dto.setSex(resolvedSexe);
+        dto.setDateOfBirth(inscription.getDateNaissance());
+        dto.setBirthPlace(inscription.getLieuNaissance());
+        dto.setAddress(inscription.getAdresse());
+        dto.setParentFirstName(inscription.getPrenomParent());
+        dto.setParentLastName(inscription.getNomParent());
+        dto.setParentPhone(inscription.getTelephoneParent());
+        dto.setParentEmail(inscription.getEmailParent());
+        dto.setNiveau(niveauNom);
+        dto.setClasse(classe);
+        dto.setEnrollmentDate(LocalDate.now());
+        dto.setStatus("Actif");
+        dto.setIsBlocked(false);
+
+        return studentService.create(dto);
     }
 
     // ── Private helpers ────────────────────────────────────────────

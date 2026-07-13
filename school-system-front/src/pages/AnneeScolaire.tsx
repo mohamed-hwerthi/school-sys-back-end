@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { validate, type FormErrors } from "@/lib/validate";
 import { anneeScolaireSchema, trimestreSchema, vacanceSchema, jourFerieSchema } from "@/lib/annee-schema";
@@ -66,6 +66,7 @@ import {
 import { usePassages, useCreatePassage, useBulkCreatePassages } from "@/hooks/usePassages";
 import { useAllStudents } from "@/hooks/useStudents";
 import { useNiveaux } from "@/hooks/useNiveaux";
+import { DataTable } from "@/components/DataTable";
 import type { AnneeScolaire, Trimestre, Vacance, JourFerie } from "@/types/annee-scolaire";
 import type { Passage, DECISIONS } from "@/types/passage";
 
@@ -138,7 +139,7 @@ export default function AnneeScolairePage() {
   // Passage form
   const [passageFormOpen, setPassageFormOpen] = useState(false);
   const [passageForm, setPassageForm] = useState({
-    studentId: 0,
+    studentId: "",
     ancienNiveau: "",
     nouveauNiveau: "",
     ancienneClasse: "",
@@ -146,6 +147,8 @@ export default function AnneeScolairePage() {
     decision: "PASSAGE" as "PASSAGE" | "REDOUBLEMENT" | "EXCLUSION" | "TRANSFERT",
     motif: "",
   });
+  const [passageNiveauFiltre, setPassageNiveauFiltre] = useState("");
+  const [passageClasseFiltre, setPassageClasseFiltre] = useState("");
 
   // Bulk passage state
   const [bulkPassageOpen, setBulkPassageOpen] = useState(false);
@@ -190,6 +193,40 @@ export default function AnneeScolairePage() {
   const { data: allStudents = [] } = useAllStudents();
   const studentsInClasse = bulkClasse ? allStudents.filter((s) => s.classe === bulkClasse) : [];
   const { niveaux, getClassesForNiveau } = useNiveaux();
+  const passageClasses = passageNiveauFiltre ? getClassesForNiveau(passageNiveauFiltre) : [];
+  const passageFilteredStudents = useMemo(() => {
+    if (passageClasseFiltre) return allStudents.filter((s) => s.classe === passageClasseFiltre);
+    if (passageNiveauFiltre) return allStudents.filter((s) => s.niveau === passageNiveauFiltre);
+    return allStudents;
+  }, [allStudents, passageNiveauFiltre, passageClasseFiltre]);
+
+  // Passage table pagination & filters
+  const [passagePage, setPassagePage] = useState(0);
+  const [passageTableNiveau, setPassageTableNiveau] = useState("");
+  const [passageTableClasse, setPassageTableClasse] = useState("");
+  const PASSAGE_PAGE_SIZE = 10;
+
+  const filteredPassages = useMemo(() => {
+    let result = passages;
+    if (passageTableNiveau) result = result.filter((p) => p.ancienNiveau === passageTableNiveau);
+    if (passageTableClasse) result = result.filter((p) => p.ancienneClasse === passageTableClasse);
+    return result;
+  }, [passages, passageTableNiveau, passageTableClasse]);
+
+  const totalPassagePages = Math.ceil(filteredPassages.length / PASSAGE_PAGE_SIZE);
+
+  const paginatedPassages = useMemo(() => {
+    const start = passagePage * PASSAGE_PAGE_SIZE;
+    return filteredPassages.slice(start, start + PASSAGE_PAGE_SIZE);
+  }, [filteredPassages, passagePage]);
+
+  const passageFilterClasses = useMemo(() => {
+    const niveauPassages = passageTableNiveau ? passages.filter((p) => p.ancienNiveau === passageTableNiveau) : passages;
+    return [...new Set(niveauPassages.map((p) => p.ancienneClasse).filter(Boolean))];
+  }, [passages, passageTableNiveau]);
+
+  // Reset page when filters change
+  useEffect(() => { setPassagePage(0); }, [passageTableNiveau, passageTableClasse]);
 
   const selectedAnnee = annees.find((a) => a.id === selectedAnneeId);
 
@@ -560,46 +597,82 @@ export default function AnneeScolairePage() {
                   Passage en masse
                 </Button>
                 <Button size="sm" variant="outline" className="gap-1.5" onClick={() => {
-                  setPassageForm({ studentId: 0, ancienNiveau: "", nouveauNiveau: "", ancienneClasse: "", nouvelleClasse: "", decision: "PASSAGE", motif: "" });
+                  setPassageForm({ studentId: "", ancienNiveau: "", nouveauNiveau: "", ancienneClasse: "", nouvelleClasse: "", decision: "PASSAGE", motif: "" });
+                  setPassageNiveauFiltre("");
+                  setPassageClasseFiltre("");
                   setPassageFormOpen(true);
                 }}>
                   <Plus className="h-4 w-4" />
                   Ajouter un passage
                 </Button>
               </div>
-              {passages.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  <ArrowRightLeft className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">Aucun passage enregistre pour cette annee</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {passages.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/10 p-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-foreground">{p.studentName}</p>
-                          <Badge variant="outline" className={
-                            p.decision === "PASSAGE" ? "bg-emerald-100 text-emerald-700" :
-                            p.decision === "REDOUBLEMENT" ? "bg-amber-100 text-amber-700" :
-                            p.decision === "EXCLUSION" ? "bg-red-100 text-red-700" :
-                            "bg-blue-100 text-blue-700"
-                          }>
-                            {p.decision}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {p.ancienneClasse || p.ancienNiveau} &rarr; {p.nouvelleClasse || p.nouveauNiveau}
-                          {p.motif && <span className="ms-2 italic">- {p.motif}</span>}
-                        </p>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {p.createdAt ? new Date(p.createdAt).toLocaleDateString("fr-FR") : ""}
+              {/* Filtres */}
+              <div className="flex gap-3">
+                <Select value={passageTableNiveau} onValueChange={(v) => { setPassageTableNiveau(v); setPassageTableClasse(""); }}>
+                  <SelectTrigger className="w-48"><SelectValue placeholder="Niveau" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Tous les niveaux</SelectItem>
+                    {niveaux.map((n) => (
+                      <SelectItem key={n.id} value={n.nom}>{n.nom}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={passageTableClasse} onValueChange={setPassageTableClasse} disabled={!passageTableNiveau}>
+                  <SelectTrigger className="w-48"><SelectValue placeholder="Classe" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Toutes les classes</SelectItem>
+                    {passageFilterClasses.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <DataTable
+                columns={[
+                  { key: "studentName", header: "Eleve" },
+                  {
+                    key: "decision",
+                    header: "Decision",
+                    render: (p) => (
+                      <Badge variant="outline" className={
+                        p.decision === "PASSAGE" ? "bg-emerald-100 text-emerald-700" :
+                        p.decision === "REDOUBLEMENT" ? "bg-amber-100 text-amber-700" :
+                        p.decision === "EXCLUSION" ? "bg-red-100 text-red-700" :
+                        "bg-blue-100 text-blue-700"
+                      }>
+                        {p.decision}
+                      </Badge>
+                    ),
+                  },
+                  {
+                    key: "parcours",
+                    header: "Parcours",
+                    render: (p) => (
+                      <span className="text-sm">
+                        {p.ancienneClasse || p.ancienNiveau} &rarr; {p.nouvelleClasse || p.nouveauNiveau}
                       </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ),
+                  },
+                  {
+                    key: "motif",
+                    header: "Motif",
+                    render: (p) => p.motif ? <span className="text-sm italic">{p.motif}</span> : <span className="text-sm text-muted-foreground">-</span>,
+                  },
+                  {
+                    key: "createdAt",
+                    header: "Date",
+                    render: (p) => p.createdAt ? new Date(p.createdAt).toLocaleDateString("fr-FR") : "-",
+                  },
+                ]}
+                data={paginatedPassages}
+                emptyMessage="Aucun passage enregistre pour cette annee"
+                emptyDescription="Ajoutez un passage via le bouton ci-dessus."
+                pagination={{
+                  page: passagePage,
+                  totalPages: totalPassagePages,
+                  onPageChange: setPassagePage,
+                }}
+              />
             </TabsContent>
           </motion.div>
         </Tabs>
@@ -615,10 +688,43 @@ export default function AnneeScolairePage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Niveau</Label>
+                <Select value={passageNiveauFiltre || "all"} onValueChange={(v) => {
+                  setPassageNiveauFiltre(v === "all" ? "" : v);
+                  setPassageClasseFiltre("");
+                  setPassageForm({ ...passageForm, studentId: "", ancienNiveau: v === "all" ? "" : v, ancienneClasse: "" });
+                }}>
+                  <SelectTrigger><SelectValue placeholder="Filtrer par niveau..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les niveaux</SelectItem>
+                    {niveaux.map((n) => (
+                      <SelectItem key={n.id} value={n.nom}>{n.nom}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Classe</Label>
+                <Select value={passageClasseFiltre || "all"} onValueChange={(v) => {
+                  setPassageClasseFiltre(v === "all" ? "" : v);
+                  setPassageForm({ ...passageForm, studentId: "" });
+                }} disabled={!passageNiveauFiltre}>
+                  <SelectTrigger><SelectValue placeholder="Filtrer par classe..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les classes</SelectItem>
+                    {passageClasses.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <div className="space-y-1.5">
               <Label>Eleve</Label>
-              <Select value={passageForm.studentId ? String(passageForm.studentId) : ""} onValueChange={(v) => {
-                const student = allStudents.find((s) => s.id === Number(v));
+              <Select value={passageForm.studentId || ""} onValueChange={(v) => {
+                const student = passageFilteredStudents.find((s) => s.id === v);
                 const ancien = student?.niveau || "";
                 const auto = passageForm.decision === "PASSAGE"
                   ? (nextNiveauName(ancien, niveaux) ?? "")
@@ -636,8 +742,8 @@ export default function AnneeScolairePage() {
               }}>
                 <SelectTrigger><SelectValue placeholder="Selectionner un eleve..." /></SelectTrigger>
                 <SelectContent>
-                  {allStudents.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>{s.prenom} {s.nom} ({s.classe})</SelectItem>
+                  {passageFilteredStudents.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.prenom} {s.nom} ({s.classe})</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

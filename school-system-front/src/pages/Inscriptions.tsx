@@ -57,6 +57,7 @@ import {
   useInscriptionStats,
   useUpdateStatut,
   useCreateInscription,
+  useConvertInscriptionToStudent,
 } from "@/hooks/useInscriptions";
 import { useNiveaux } from "@/hooks/useNiveaux";
 import type { Inscription, InscriptionStatut, CreateInscriptionRequest } from "@/types/inscription";
@@ -133,7 +134,13 @@ export default function InscriptionsPage() {
   const { data: stats } = useInscriptionStats(filterAnnee || undefined);
   const updateStatutMutation = useUpdateStatut();
   const createInscriptionMutation = useCreateInscription();
-  const { niveaux } = useNiveaux();
+  const convertInscriptionMutation = useConvertInscriptionToStudent();
+  const { niveaux, getClassesForNiveau } = useNiveaux();
+
+  // Convert dialog state
+  const [convertTarget, setConvertTarget] = useState<Inscription | null>(null);
+  const [convertClasse, setConvertClasse] = useState("");
+  const [convertSexe, setConvertSexe] = useState("");
 
   const defaultAnnee = (() => {
     const now = new Date();
@@ -316,20 +323,6 @@ export default function InscriptionsPage() {
               <div className="flex flex-col">
                 <span className="font-medium">Saisir un dossier</span>
                 <span className="text-xs text-muted-foreground">Créer une inscription à valider (statut: Soumise)</span>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={copyPublicLink} className="gap-2.5 py-2.5">
-              <Link2 className="h-4 w-4 text-primary" />
-              <div className="flex flex-col">
-                <span className="font-medium">Copier le lien public</span>
-                <span className="text-xs text-muted-foreground">À envoyer au parent pour remplir le dossier</span>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => window.open(publicInscriptionUrl, "_blank", "noopener")} className="gap-2.5 py-2.5">
-              <Eye className="h-4 w-4 text-muted-foreground" />
-              <div className="flex flex-col">
-                <span className="font-medium">Voir le formulaire public</span>
-                <span className="text-xs text-muted-foreground">Ouvrir dans un nouvel onglet</span>
               </div>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -537,6 +530,21 @@ export default function InscriptionsPage() {
                         >
                           {t("common.changeStatus")}
                         </Button>
+                        {inscription.statut === "ACCEPTEE" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-emerald-600 hover:text-emerald-700"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConvertTarget(inscription);
+                              setConvertClasse("");
+                            }}
+                          >
+                            <UserPlus className="h-4 w-4 me-1" />
+                            Eleve
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -603,13 +611,29 @@ export default function InscriptionsPage() {
                     {getStatutBadge(selectedInscription.statut)}
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openChangeStatut(selectedInscription)}
-                >
-                  {t("common.changeStatus")}
-                </Button>
+                <div className="flex gap-2">
+                  {selectedInscription.statut === "ACCEPTEE" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-emerald-600 border-emerald-300 hover:bg-emerald-50"
+                      onClick={() => {
+                        setConvertTarget(selectedInscription);
+                        setConvertClasse("");
+                      }}
+                    >
+                      <UserPlus className="h-4 w-4 me-1" />
+                      Convertir en élève
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openChangeStatut(selectedInscription)}
+                  >
+                    {t("common.changeStatus")}
+                  </Button>
+                </div>
               </div>
 
               {/* Informations eleve */}
@@ -818,6 +842,75 @@ export default function InscriptionsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Convert to student dialog */}
+      <Dialog open={!!convertTarget} onOpenChange={(o) => !o && setConvertTarget(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Convertir en élève</DialogTitle>
+            <DialogDescription>
+              {convertTarget?.prenom} {convertTarget?.nom} — {convertTarget?.niveauNom}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label>Classe <span className="text-red-500">*</span></Label>
+              <Select value={convertClasse} onValueChange={setConvertClasse}>
+                <SelectTrigger><SelectValue placeholder="Selectionner une classe..." /></SelectTrigger>
+                <SelectContent>
+                  {convertTarget?.niveauNom && getClassesForNiveau(convertTarget.niveauNom).map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {(!convertTarget?.sexe) && (
+              <div className="space-y-1.5">
+                <Label>Genre <span className="text-red-500">*</span></Label>
+                <Select value={convertSexe} onValueChange={setConvertSexe}>
+                  <SelectTrigger><SelectValue placeholder="Selectionner le genre..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="M">Masculin</SelectItem>
+                    <SelectItem value="F">Féminin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Annuler</Button>
+            </DialogClose>
+            <Button
+              onClick={() => {
+                if (!convertTarget) return;
+                const sexeValue = convertTarget.sexe || convertSexe || undefined;
+                if (!sexeValue) {
+                  notify.error("Veuillez sélectionner le genre");
+                  return;
+                }
+                convertInscriptionMutation.mutate(
+                  { id: convertTarget.id, classe: convertClasse || undefined, sexe: sexeValue },
+                  {
+                    onSuccess: () => {
+                      notify.success("Élève créé avec succès");
+                      setConvertTarget(null);
+                      setConvertClasse("");
+                      setConvertSexe("");
+                    },
+                    onError: (err: any) => {
+                      notify.error(err?.response?.data?.message || err?.message || "Erreur lors de la conversion");
+                    },
+                  }
+                );
+              }}
+              disabled={convertInscriptionMutation.isPending || !convertClasse || (!convertTarget?.sexe && !convertSexe)}
+            >
+              {convertInscriptionMutation.isPending ? "Conversion..." : "Convertir"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Create inscription dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-xl">
@@ -870,18 +963,19 @@ export default function InscriptionsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Niveau souhaité</Label>
+                <Label>Niveau souhaité *</Label>
                 <Select
                   value={createForm.niveauId ? String(createForm.niveauId) : undefined}
                   onValueChange={(v) => setCreateForm({ ...createForm, niveauId: v })}
                 >
-                  <SelectTrigger><SelectValue placeholder="Choisir" /></SelectTrigger>
+                  <SelectTrigger className={createErrors.niveauId ? "border-red-500" : ""}><SelectValue placeholder="Choisir" /></SelectTrigger>
                   <SelectContent>
                     {niveaux.map((n) => (
                       <SelectItem key={n.id} value={String(n.id)}>{n.nom}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {createErrors.niveauId && <p className="text-xs text-red-600">{createErrors.niveauId}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label>Année scolaire *</Label>

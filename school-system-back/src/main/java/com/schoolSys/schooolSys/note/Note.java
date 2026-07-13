@@ -40,6 +40,9 @@ public class Note extends AuditableEntity {
     @EqualsAndHashCode.Exclude
     private Examen examen;
 
+    @Column(name = "annee_scolaire", nullable = false)
+    private String anneeScolaire;
+
     @Column(nullable = false)
     private Integer trimestre;
 

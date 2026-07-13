@@ -73,6 +73,9 @@ public class Examen {
     @EqualsAndHashCode.Exclude
     private Module module;
 
+    @Column(name = "annee_scolaire", nullable = false)
+    private String anneeScolaire;
+
     @Column(name = "date_limite_saisie")
     private LocalDate dateLimiteSaisie;
 

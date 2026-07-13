@@ -17,7 +17,7 @@ public class RapportFinancierController {
     @GetMapping
     @PreAuthorize("hasAuthority('READ_RAPPORTS')")
     public ResponseEntity<ApiResponse<RapportFinancierDTO>> generer(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
+            @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(rapportFinancierService.generer(anneeScolaire)));
     }
 }

@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Présentation — Schooly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070b16; --card:rgba(255,255,255,.045); --stroke:rgba(255,255,255,.10);
+    --primary:#6366f1; --primary2:#22d3ee; --accent:#22d3ee;
+    --text:#eef2ff; --muted:#9aa6c4; --good:#34d399; --warn:#fbbf24; --pink:#f472b6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Inter","Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased;
+  }
+  h1,h2{font-family:"Sora","Inter","Segoe UI",sans-serif}
+  /* ---- background decor ---- */
+  .bgfx{position:fixed;inset:0;z-index:0;overflow:hidden}
+  .bgfx .orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55;animation:float 20s ease-in-out infinite}
+  .orb.a{width:46vw;height:46vw;background:radial-gradient(circle,#4f46e5,transparent 70%);top:-14vw;right:-10vw}
+  .orb.b{width:40vw;height:40vw;background:radial-gradient(circle,#06b6d4,transparent 70%);bottom:-16vw;left:-12vw;animation-duration:26s;animation-delay:-6s}
+  .orb.c{width:26vw;height:26vw;background:radial-gradient(circle,#db2777,transparent 70%);top:40%;left:55%;opacity:.30;animation-duration:32s;animation-delay:-12s}
+  @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(3vw,-4vh) scale(1.06)}66%{transform:translate(-3vw,3vh) scale(.96)}}
+  /* subtle film grain */
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .grid{position:fixed;inset:0;z-index:0;
+    background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+    background-size:46px 46px;mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,#000 40%,transparent 100%)}
+
+  .deck{position:relative;z-index:2;height:100vh;width:100vw}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;padding:4vh 4vw}
+  .slide.active{display:flex;animation:slideIn .55s cubic-bezier(.22,1,.36,1)}
+  .deck.back .slide.active{animation:slideInBack .55s cubic-bezier(.22,1,.36,1)}
+  @keyframes slideIn{from{opacity:0;transform:translateX(60px) scale(.985);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+  @keyframes slideInBack{from{opacity:0;transform:translateX(-60px) scale(.985);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+  .slide.active .anim{animation:rise .6s cubic-bezier(.22,1,.36,1) both}
+  .slide.active .anim:nth-child(2){animation-delay:.07s}
+  .slide.active .anim:nth-child(3){animation-delay:.14s}
+  .slide.active .anim:nth-child(4){animation-delay:.21s}
+  .slide.active .anim:nth-child(5){animation-delay:.28s}
+  @keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+
+  h1{font-size:clamp(2.6rem,7vw,5.5rem);line-height:1;letter-spacing:-2px;font-weight:800}
+  h2{font-size:clamp(1.8rem,4.2vw,3.4rem);line-height:1.05;letter-spacing:-1px;font-weight:800;margin-bottom:.5em}
+  h3{font-size:clamp(1rem,1.7vw,1.35rem);color:var(--accent);margin-bottom:.7em;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  p,li{font-size:clamp(1rem,1.7vw,1.4rem);color:var(--text);line-height:1.55}
+  .muted{color:var(--muted)}
+  .grad{background:linear-gradient(100deg,#818cf8,#22d3ee 45%,#34d399 70%,#818cf8);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear infinite}
+  @keyframes shine{to{background-position:200% center}}
+  .baseline{font-size:clamp(1.2rem,2.6vw,2rem);color:var(--muted);margin-top:.7em;font-weight:400}
+
+  .tag{display:inline-flex;align-items:center;gap:.5em;background:rgba(99,102,241,.14);border:1px solid rgba(129,140,248,.35);color:#c7d2fe;border-radius:999px;padding:.45em 1.1em;font-size:clamp(.8rem,1.4vw,1rem);font-weight:600;margin-bottom:1.6rem;width:fit-content}
+  .tag .dot{width:.55em;height:.55em;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+
+  .pills{display:flex;gap:.9rem;flex-wrap:wrap;margin-top:2.2rem;justify-content:center}
+  .pill{background:var(--card);border:1px solid var(--stroke);border-radius:999px;padding:.65em 1.3em;font-size:clamp(.9rem,1.5vw,1.15rem);backdrop-filter:blur(8px)}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1.4rem;margin-top:1.8rem}
+  .card{background:var(--card);border:1px solid var(--stroke);border-radius:20px;padding:1.7rem;backdrop-filter:blur(10px);transition:transform .3s,border-color .3s}
+  .card:hover{transform:translateY(-6px);border-color:rgba(129,140,248,.5)}
+  .card .ico{font-size:2.4rem;margin-bottom:.55rem;display:block}
+  .card b{font-size:1.15rem}
+
+  .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.3rem;margin-top:2.4rem}
+  .kpi .box{background:var(--card);border:1px solid var(--stroke);border-radius:20px;padding:1.6rem 1.4rem;backdrop-filter:blur(10px)}
+  .kpi .n{font-size:clamp(2.2rem,4.6vw,3.6rem);font-weight:800;line-height:1}
+  .kpi .l{color:var(--muted);margin-top:.45em;font-size:1rem}
+
+  ul{list-style:none;margin-top:1.2rem}
+  ul li{padding:.5em 0;padding-left:2.5rem;position:relative;font-size:clamp(1.05rem,1.7vw,1.4rem)}
+  ul li::before{content:"✓";display:flex;align-items:center;justify-content:center;position:absolute;left:0;top:.7em;width:1.5rem;height:1.5rem;border-radius:50%;color:#fff;font-size:.8rem;font-weight:900;background:linear-gradient(135deg,var(--primary),var(--accent));box-shadow:0 4px 16px rgba(34,211,238,.45)}
+
+  .center{align-items:center;text-align:center}
+  .roles{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;margin-top:2.4rem;width:100%;max-width:1100px}
+  .role{background:var(--card);border:1px solid var(--stroke);border-radius:20px;padding:1.6rem 1rem;backdrop-filter:blur(10px);transition:transform .3s}
+  .role:hover{transform:translateY(-8px)}
+  .role .ico{font-size:2.6rem;display:block;margin-bottom:.4rem}
+  .role h3{margin:0;text-transform:none;font-size:1.05rem;color:var(--text)}
+  .role span.sub{color:var(--muted);font-size:.85rem}
+
+  /* fake browser window around screenshots */
+  .two{display:grid;grid-template-columns:.66fr 1.34fr;gap:2.8rem;align-items:center}
+  .two > div:first-child{position:relative;padding:2.2rem 2.1rem 2.2rem 2.6rem;background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid var(--stroke);border-radius:24px;backdrop-filter:blur(14px);box-shadow:0 24px 60px rgba(0,0,0,.3)}
+  .two > div:first-child::before{content:"";position:absolute;left:0;top:2rem;bottom:2rem;width:6px;border-radius:6px;background:linear-gradient(180deg,var(--primary),var(--accent));box-shadow:0 0 24px rgba(34,211,238,.5)}
+  .two h3{display:inline-flex;align-items:center;gap:.4em;background:rgba(99,102,241,.16);border:1px solid rgba(129,140,248,.32);color:#c7d2fe;padding:.45em 1em;border-radius:999px;font-size:clamp(.78rem,1.2vw,.95rem);text-transform:none;letter-spacing:0}
+  .two h2{font-size:clamp(1.5rem,2.8vw,2.7rem);margin-bottom:.3em}
+  .browser{border-radius:16px;overflow:hidden;border:1px solid var(--stroke);background:#0d1426;box-shadow:0 40px 100px rgba(0,0,0,.65),0 0 90px -25px rgba(99,102,241,.6),0 0 0 1px rgba(99,102,241,.08);transition:transform .45s cubic-bezier(.22,1,.36,1)}
+  .slide.active .browser{animation:rise .7s cubic-bezier(.22,1,.36,1) both}
+  .browser:hover{transform:translateY(-6px) scale(1.012)}
+  .browser .bar{position:static;height:auto;display:flex;align-items:center;gap:.5rem;padding:.75rem 1.1rem;background:#121a30;border-bottom:1px solid var(--stroke)}
+  .browser .bar i{width:.75rem;height:.75rem;border-radius:50%;display:inline-block}
+  .browser .bar i:nth-child(1){background:#ff5f57}.browser .bar i:nth-child(2){background:#febc2e}.browser .bar i:nth-child(3){background:#28c840}
+  .browser .url{margin-left:.9rem;flex:1;background:#0a1122;border:1px solid var(--stroke);border-radius:8px;padding:.35em .9em;font-size:.85rem;color:var(--muted)}
+  /* phone mockup for mobile screenshots */
+  .two-phone{grid-template-columns:1fr .8fr}
+  .phone{position:relative;justify-self:center;width:min(310px,30vh);border-radius:44px;padding:12px;background:linear-gradient(160deg,#1a2138,#0b1020);border:1px solid rgba(255,255,255,.14);box-shadow:0 45px 100px rgba(0,0,0,.7),0 0 100px -25px rgba(99,102,241,.7)}
+  .phone::before{content:"";position:absolute;top:14px;left:50%;transform:translateX(-50%);width:38%;height:22px;background:#0b1020;border-radius:0 0 16px 16px;z-index:3}
+  .phone img{display:block;width:100%;max-height:78vh;object-fit:cover;object-position:top;border-radius:34px}
+  .browser{position:relative}
+  .browser img{display:block;width:100%;max-height:80vh;object-fit:cover;object-position:top left}
+  .browser::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.10),transparent 14%),linear-gradient(110deg,rgba(255,255,255,.06) 0%,transparent 30%)}
+  .cap{color:var(--muted);font-size:.9rem;margin-top:1rem}
+
+  .demo-box{background:linear-gradient(135deg,rgba(99,102,241,.16),rgba(6,182,212,.12));border:1px solid rgba(34,211,238,.32);border-radius:20px;padding:1.8rem 2.2rem;margin-top:1.8rem;font-size:clamp(1rem,1.7vw,1.35rem);backdrop-filter:blur(10px)}
+  .demo-box code{background:rgba(0,0,0,.4);padding:.18em .6em;border-radius:8px;color:var(--accent);font-size:.95em}
+
+  .cta{display:inline-flex;align-items:center;gap:.6em;margin-top:2rem;background:linear-gradient(100deg,var(--primary),var(--primary2));color:#fff;padding:.95em 2.2em;border-radius:16px;font-size:clamp(1.05rem,1.9vw,1.4rem);font-weight:700;box-shadow:0 16px 40px rgba(99,102,241,.45)}
+
+  /* logo mark */
+  .logo{position:relative;width:96px;height:96px;border-radius:26px;background:linear-gradient(135deg,#6366f1,#22d3ee);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:3rem;color:#fff;box-shadow:0 20px 60px rgba(99,102,241,.55);margin-bottom:1.6rem}
+  .logo::before{content:"";position:absolute;inset:-7px;border-radius:32px;background:conic-gradient(from 0deg,#6366f1,#22d3ee,#34d399,#db2777,#6366f1);filter:blur(10px);opacity:.55;z-index:-1;animation:spin 7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* chrome */
+  .pbar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--accent));transition:width .35s;z-index:60}
+  .foot{position:fixed;bottom:20px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 34px;color:var(--muted);font-size:.85rem;pointer-events:none;z-index:40}
+  .nav{position:fixed;bottom:16px;right:34px;display:flex;gap:8px;z-index:50}
+  .nav button{display:flex;align-items:center;justify-content:center;background:var(--card);color:var(--text);border:1px solid var(--stroke);border-radius:50%;width:48px;height:48px;font-size:1.3rem;cursor:pointer;backdrop-filter:blur(8px);transition:all .2s}
+  .nav button:hover{background:linear-gradient(135deg,var(--primary),var(--accent));border-color:transparent;transform:translateY(-2px);box-shadow:0 10px 24px rgba(99,102,241,.45)}
+  @media(max-width:820px){.roles{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr;gap:1.6rem}.browser{transform:none}}
+</style>
+</head>
+<body>
+<div class="bgfx"><div class="orb a"></div><div class="orb b"></div><div class="orb c"></div></div>
+<div class="grid"></div>
+<div class="grain"></div>
+<div class="pbar" id="bar"></div>
+
+<div class="deck" id="deck">
+
+  <!-- 1 -->
+  <section class="slide center">
+    <div class="logo anim">S</div>
+    <div class="tag anim"><span class="dot"></span> Solution de gestion scolaire · SaaS</div>
+    <h1 class="anim">School<span class="grad">y</span></h1>
+    <p class="baseline anim">La gestion de votre école, enfin simple.</p>
+    <div class="pills anim">
+      <span class="pill">🏫 Multi-écoles</span>
+      <span class="pill">📱 Web &amp; Mobile</span>
+      <span class="pill">🇫🇷 / 🇦🇪 Bilingue</span>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide center">
+    <h3 class="anim">La solution</h3>
+    <h2 class="anim">Une seule plateforme.<br><span class="grad">Tout le monde connecté.</span></h2>
+    <div class="roles anim">
+      <div class="role"><span class="ico">🎓</span><h3>Direction</h3><span class="sub">Pilotage</span></div>
+      <div class="role"><span class="ico">👩‍🏫</span><h3>Enseignants</h3><span class="sub">Notes &amp; appel</span></div>
+      <div class="role"><span class="ico">💼</span><h3>Comptabilité</h3><span class="sub">Paiements</span></div>
+      <div class="role"><span class="ico">👨‍👩‍👧</span><h3>Parents</h3><span class="sub">Suivi temps réel</span></div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION SCOLARITÉ ============ -->
+
+  <!-- Divider -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Visite guidée · Module 1</div>
+    <h1 class="anim">Module <span class="grad">Scolarité</span></h1>
+    <p class="baseline anim">Le cœur de la gestion quotidienne de l'école.</p>
+    <div class="pills anim">
+      <span class="pill">📊 Tableau de bord</span>
+      <span class="pill">👥 Élèves</span>
+      <span class="pill">📝 Inscriptions</span>
+      <span class="pill">🗓️ Absences</span>
+      <span class="pill">⚠️ Discipline</span>
+      <span class="pill">📅 Calendrier</span>
+    </div>
+  </section>
+
+  <!-- S1 Tableau de bord -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📊 Tableau de bord</h3>
+        <h2 class="anim">L'école en temps réel</h2>
+        <ul class="anim">
+          <li>Effectifs, présences, recettes, classes</li>
+          <li>Présence hebdomadaire &amp; répartition par niveau</li>
+          <li>Tendances mensuelles &amp; événements à venir</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard</span></div>
+        <img src="./captures/dashboard.png" alt="Tableau de bord">
+      </div>
+    </div>
+  </section>
+
+  <!-- S2 Mon école -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🏫 Mon école</h3>
+        <h2 class="anim">L'identité de l'établissement</h2>
+        <ul class="anim">
+          <li>Logo, nom &amp; ville bilingues 🇫🇷 / 🇦🇪</li>
+          <li>Coordonnées, site web, année de création</li>
+          <li>Personnalisable par chaque école</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/ecole</span></div>
+        <img src="./captures/mon-ecole.png" alt="Informations de l'école">
+      </div>
+    </div>
+  </section>
+
+  <!-- S3 Élèves -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">👥 Élèves</h3>
+        <h2 class="anim">Des dossiers complets</h2>
+        <ul class="anim">
+          <li>Matricule, classe, niveau, statut</li>
+          <li>Contact parent + WhatsApp en un clic</li>
+          <li>Import / Export &amp; recherche avancée</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/eleves</span></div>
+        <img src="./captures/eleves.png" alt="Gestion des élèves">
+      </div>
+    </div>
+  </section>
+
+  <!-- S4 Inscriptions -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📝 Inscriptions</h3>
+        <h2 class="anim">Inscriptions en ligne</h2>
+        <ul class="anim">
+          <li>Demandes : soumises, acceptées, en attente</li>
+          <li>Lien public à partager aux familles</li>
+          <li>Taux de conversion suivi automatiquement</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/inscriptions</span></div>
+        <img src="./captures/inscriptions.png" alt="Inscriptions en ligne">
+      </div>
+    </div>
+  </section>
+
+  <!-- S5 Gestion des absences (appel) -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🗓️ Gestion des absences</h3>
+        <h2 class="anim">L'appel en 20 secondes</h2>
+        <ul class="anim">
+          <li>Par niveau, classe, date &amp; séance</li>
+          <li>Présent / Absent / Retard en un tap</li>
+          <li>Compteurs en direct &amp; « Tous présents »</li>
+          <li>Parents notifiés automatiquement</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/absences/appel</span></div>
+        <img src="./captures/appel.png" alt="Gestion des absences — Faire l'appel">
+      </div>
+    </div>
+  </section>
+
+  <!-- S7 Discipline -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">⚠️ Discipline &amp; sanctions</h3>
+        <h2 class="anim">Vie scolaire maîtrisée</h2>
+        <ul class="anim">
+          <li>Incidents : total, cas graves, sanctions actives</li>
+          <li>Signalement d'incident &amp; gestion des sanctions</li>
+          <li>Filtres par type &amp; gravité</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/discipline</span></div>
+        <img src="./captures/discipline.png" alt="Discipline et sanctions">
+      </div>
+    </div>
+  </section>
+
+  <!-- S8 Calendrier -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📅 Calendrier scolaire</h3>
+        <h2 class="anim">Toute l'année en un écran</h2>
+        <ul class="anim">
+          <li>Vacances, jours fériés, examens, événements</li>
+          <li>Vue mensuelle &amp; agenda latéral</li>
+          <li>Création d'événements en un clic</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/calendrier</span></div>
+        <img src="./captures/calendrier.png" alt="Calendrier scolaire">
+      </div>
+    </div>
+  </section>
+
+  <!-- S9 Niveaux & classes -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🎓 Niveaux &amp; classes</h3>
+        <h2 class="anim">Structure de l'école</h2>
+        <ul class="anim">
+          <li>Niveaux &amp; sections (A, B, C…)</li>
+          <li>Effectifs par classe en direct</li>
+          <li>Ajout / suppression en glisser-déposer</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/config/niveaux</span></div>
+        <img src="./captures/niveaux.png" alt="Niveaux et classes">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION ENSEIGNANTS & RH ============ -->
+
+  <!-- Divider -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Visite guidée · Module 2</div>
+    <h1 class="anim">Enseignants <span class="grad">&amp; RH</span></h1>
+    <p class="baseline anim">Gérez vos équipes de A à Z.</p>
+    <div class="pills anim">
+      <span class="pill">👩‍🏫 Enseignants</span>
+      <span class="pill">👥 Personnel</span>
+      <span class="pill">🔗 Affectations</span>
+      <span class="pill">📄 Contrats &amp; congés</span>
+      <span class="pill">💵 Paie</span>
+      <span class="pill">🎓 Formations</span>
+      <span class="pill">⭐ Évaluations</span>
+    </div>
+  </section>
+
+  <!-- RH1 Enseignants -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">👩‍🏫 Enseignants</h3>
+        <h2 class="anim">Le corps enseignant</h2>
+        <ul class="anim">
+          <li>Effectifs, répartition H/F, statut</li>
+          <li>Spécialité &amp; coordonnées de chacun</li>
+          <li>Import / Export &amp; fiche détaillée</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/enseignants</span></div>
+        <img src="./captures/enseignants.png" alt="Gestion des enseignants">
+      </div>
+    </div>
+  </section>
+
+  <!-- RH2 Personnel -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">👥 Personnel</h3>
+        <h2 class="anim">Tout le personnel non-enseignant</h2>
+        <ul class="anim">
+          <li>Administratifs, surveillants, agents…</li>
+          <li>Fonctions, contacts &amp; statut</li>
+          <li>Ajout &amp; suivi centralisés</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/personnel</span></div>
+        <img src="./captures/personnel.png" alt="Gestion du personnel">
+      </div>
+    </div>
+  </section>
+
+  <!-- RH3 Affectations -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🔗 Affectations</h3>
+        <h2 class="anim">Qui enseigne quoi, où ?</h2>
+        <ul class="anim">
+          <li>Enseignant ↔ matière ↔ classe</li>
+          <li>Affectation groupée &amp; rapide</li>
+          <li>Vue claire de la charge d'enseignement</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/affectations</span></div>
+        <img src="./captures/affectations.png" alt="Affectations">
+      </div>
+    </div>
+  </section>
+
+  <!-- RH4 Contrats & congés -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📄 Contrats &amp; congés</h3>
+        <h2 class="anim">Le suivi administratif</h2>
+        <ul class="anim">
+          <li>Contrats : type, durée, statut</li>
+          <li>Demandes &amp; suivi des congés</li>
+          <li>Tout le dossier RH au même endroit</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/contrats</span></div>
+        <img src="./captures/contrats.png" alt="Contrats et congés">
+      </div>
+    </div>
+  </section>
+
+  <!-- RH5 Paie -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">💵 Paie</h3>
+        <h2 class="anim">La paie simplifiée</h2>
+        <ul class="anim">
+          <li>Salaires &amp; bulletins de paie</li>
+          <li>Suivi des versements</li>
+          <li>Récapitulatifs par période</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/rh/paie</span></div>
+        <img src="./captures/paie.png" alt="Paie">
+      </div>
+    </div>
+  </section>
+
+  <!-- RH6 Formations -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🎓 Formations</h3>
+        <h2 class="anim">Le développement des équipes</h2>
+        <ul class="anim">
+          <li>Catalogue &amp; sessions de formation</li>
+          <li>Participants &amp; suivi</li>
+          <li>Montée en compétences valorisée</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/rh/formations</span></div>
+        <img src="./captures/formations.png" alt="Formations">
+      </div>
+    </div>
+  </section>
+
+  <!-- RH7 Évaluations -->
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">⭐ Évaluations</h3>
+        <h2 class="anim">La performance du personnel</h2>
+        <ul class="anim">
+          <li>Évaluations périodiques du personnel</li>
+          <li>Critères &amp; notations</li>
+          <li>Historique &amp; suivi dans le temps</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/evaluations</span></div>
+        <img src="./captures/evaluations.png" alt="Évaluations">
+      </div>
+    </div>
+  </section>
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- AUTO-MODULES-START -->
+  <!-- ============ SECTION PÉDAGOGIE ============ -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Visite guidée</div>
+    <h1 class="anim">📚 <span class="grad">Pédagogie</span></h1>
+    <p class="baseline anim">Le suivi de l'apprentissage, de la note au bulletin.</p>
+    <div class="pills anim">
+      <span class="pill">📝 Devoirs</span>
+      <span class="pill">📚 Domaines</span>
+      <span class="pill">📐 Matières</span>
+      <span class="pill">🧪 Examens</span>
+      <span class="pill">✍️ Saisie</span>
+      <span class="pill">📊 Moyennes</span>
+      <span class="pill">💬 Appréciations</span>
+      <span class="pill">🧾 Bulletins</span>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📝 Devoirs</h3>
+        <h2 class="anim">Devoirs & ressources</h2>
+        <ul class="anim">
+          <li>Devoirs, soumissions & ressources pédagogiques</li>
+          <li>Suivi par niveau et par classe</li>
+          <li>Publication et dépôt de fichiers</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/devoirs</span></div>
+        <img src="./captures/devoirs.png" alt="Devoirs & ressources">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📚 Carnet · Domaines</h3>
+        <h2 class="anim">Structure pédagogique bilingue</h2>
+        <ul class="anim">
+          <li>Domaines en arabe & français</li>
+          <li>Coefficients & sous-domaines</li>
+          <li>Organisation par niveau</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/carnets</span></div>
+        <img src="./captures/carnet-domaines.png" alt="Structure pédagogique bilingue">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📐 Carnet · Matières</h3>
+        <h2 class="anim">Les matières & modules</h2>
+        <ul class="anim">
+          <li>11 modules par niveau</li>
+          <li>Coefficients École / Privé</li>
+          <li>Versions & ordre d'affichage</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/carnets</span></div>
+        <img src="./captures/carnet-matieres.png" alt="Les matières & modules">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🧪 Carnet · Examens</h3>
+        <h2 class="anim">Les évaluations</h2>
+        <ul class="anim">
+          <li>Examens par classe & trimestre</li>
+          <li>Suivi des saisies (0/20…)</li>
+          <li>Coefficients & enseignant</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/carnets</span></div>
+        <img src="./captures/carnet-examens.png" alt="Les évaluations">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">👁️ Carnet · Aperçu</h3>
+        <h2 class="anim">Progression de la saisie</h2>
+        <ul class="anim">
+          <li>Statut par matière & trimestre</li>
+          <li>Barres de progression 100%</li>
+          <li>Vue claire pour la direction</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/carnets</span></div>
+        <img src="./captures/carnet-apercu.png" alt="Progression de la saisie">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">✍️ Carnet · Saisie des notes</h3>
+        <h2 class="anim">Saisir vite et bien</h2>
+        <ul class="anim">
+          <li>Note /20 + observation par élève</li>
+          <li>Observations bilingues</li>
+          <li>Mise à jour groupée</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/carnets</span></div>
+        <img src="./captures/carnet-saisie.png" alt="Saisir vite et bien">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📊 Carnet · Moyennes</h3>
+        <h2 class="anim">Moyennes & classement</h2>
+        <ul class="anim">
+          <li>Moyenne par domaine & rang</li>
+          <li>Détail note par note</li>
+          <li>Min / Max / Moyenne classe</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/carnets</span></div>
+        <img src="./captures/carnet-moyennes.png" alt="Moyennes & classement">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📈 Carnet · Statistiques</h3>
+        <h2 class="anim">Analyse par domaine</h2>
+        <ul class="anim">
+          <li>Distribution des notes & réussite/échec</li>
+          <li>Quartiles, médiane, écart-type</li>
+          <li>Top 5 & élèves à surveiller</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/carnets</span></div>
+        <img src="./captures/carnet-stats-domaine.png" alt="Analyse par domaine">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🔬 Carnet · Stats par matière</h3>
+        <h2 class="anim">Le détail matière par matière</h2>
+        <ul class="anim">
+          <li>% réussite, mention, échec</li>
+          <li>Répartition par mention</li>
+          <li>Indicateurs précis</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/carnets</span></div>
+        <img src="./captures/carnet-stats-matiere.png" alt="Le détail matière par matière">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">💬 Carnet · Appréciations</h3>
+        <h2 class="anim">Appréciations automatiques</h2>
+        <ul class="anim">
+          <li>Recommandations par domaine</li>
+          <li>« Auto selon moyenne » en un clic</li>
+          <li>Texte bilingue personnalisable</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/carnets</span></div>
+        <img src="./captures/carnet-appreciations.png" alt="Appréciations automatiques">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📚 Carnet · Carnets de classe</h3>
+        <h2 class="anim">Vue d'ensemble de la classe</h2>
+        <ul class="anim">
+          <li>Stats globales & certificats</li>
+          <li>Répartition par mention</li>
+          <li>Téléchargement ZIP des carnets</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/carnets</span></div>
+        <img src="./captures/carnet-carnets.png" alt="Vue d'ensemble de la classe">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🏆 Carnet · Classement</h3>
+        <h2 class="anim">Top élèves & élèves à soutenir</h2>
+        <ul class="anim">
+          <li>Classement des 10 meilleurs</li>
+          <li>Liste des élèves à surveiller</li>
+          <li>Moyennes, rang & certificats</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/carnets</span></div>
+        <img src="./captures/carnet-classement.png" alt="Top élèves & élèves à soutenir">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🧾 Carnet · Bulletin officiel</h3>
+        <h2 class="anim">Le bulletin prêt à imprimer</h2>
+        <ul class="anim">
+          <li>Format officiel conforme</li>
+          <li>Bilingue arabe / français</li>
+          <li>Aperçu & impression en un clic</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/carnets</span></div>
+        <img src="./captures/carnet-bulletin.png" alt="Le bulletin prêt à imprimer">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION BULLETINS ============ -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Visite guidée</div>
+    <h1 class="anim">🖨️ <span class="grad">Bulletins</span></h1>
+    <p class="baseline anim">De la note imprimée à l'analyse de réussite.</p>
+    <div class="pills anim">
+      <span class="pill">🖨️ Impression en masse</span>
+      <span class="pill">📊 Stats réussite</span>
+      <span class="pill">⚖️ Comparatif</span>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🖨️ Impression en masse</h3>
+        <h2 class="anim">Toute la classe, classée</h2>
+        <ul class="anim">
+          <li>Classement par rang & moyenne</li>
+          <li>Certificat attribué à chaque élève</li>
+          <li>Aperçu & impression en un clic</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/bulletins-masse</span></div>
+        <img src="./captures/bulletin-masse-liste.png" alt="Toute la classe, classée">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🖨️ Impression · Statistiques</h3>
+        <h2 class="anim">La classe en chiffres</h2>
+        <ul class="anim">
+          <li>Moyenne, médiane, min/max, écart-type</li>
+          <li>Distribution, réussite/échec, mentions</li>
+          <li>Répartition par certificat</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/bulletins-masse</span></div>
+        <img src="./captures/bulletin-masse-stats.png" alt="La classe en chiffres">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📊 Stats de réussite</h3>
+        <h2 class="anim">Performance par classe & module</h2>
+        <ul class="anim">
+          <li>Taux de réussite & réussis / échecs</li>
+          <li>Évolution trimestrielle</li>
+          <li>Moyenne par module</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/stats-reussite</span></div>
+        <img src="./captures/bulletin-stats1.png" alt="Performance par classe & module">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📊 Stats · Détail</h3>
+        <h2 class="anim">Mentions & certificats</h2>
+        <ul class="anim">
+          <li>Répartition par mention</li>
+          <li>Moyennes de la classe (min/moy/max)</li>
+          <li>Top élèves & élèves à surveiller</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/stats-reussite</span></div>
+        <img src="./captures/bulletin-stats2.png" alt="Mentions & certificats">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">⚖️ Comparatif</h3>
+        <h2 class="anim">Classes en compétition</h2>
+        <ul class="anim">
+          <li>Podium des classes</li>
+          <li>Performance & taux par classe</li>
+          <li>Évolution trimestrielle</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/comparatif</span></div>
+        <img src="./captures/bulletin-comparatif.png" alt="Classes en compétition">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION EMPLOI DU TEMPS ============ -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Visite guidée</div>
+    <h1 class="anim">📅 <span class="grad">Emploi du temps</span></h1>
+    <p class="baseline anim">Toute l'organisation, sans conflit.</p>
+    <div class="pills anim">
+      <span class="pill">🗓️ Emploi du temps</span>
+      <span class="pill">🚪 Salles</span>
+      <span class="pill">⏱️ Volume horaire</span>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🗓️ Emploi du temps</h3>
+        <h2 class="anim">La grille de chaque classe</h2>
+        <ul class="anim">
+          <li>Séances par classe et par jour</li>
+          <li>Enseignants & matières assignés</li>
+          <li>Modification visuelle simple</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/emploi-du-temps</span></div>
+        <img src="./captures/emploi-du-temps.png" alt="La grille de chaque classe">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🚪 Occupation des salles</h3>
+        <h2 class="anim">Plus de conflits de salle</h2>
+        <ul class="anim">
+          <li>Planning d'occupation des salles</li>
+          <li>Détection des chevauchements</li>
+          <li>Optimisation des locaux</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/emploi-salles</span></div>
+        <img src="./captures/emploi-salles.png" alt="Plus de conflits de salle">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">⏱️ Volume horaire</h3>
+        <h2 class="anim">Le suivi des heures</h2>
+        <ul class="anim">
+          <li>Heures par matière & par enseignant</li>
+          <li>Respect des maquettes horaires</li>
+          <li>Récapitulatifs automatiques</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/volume-horaire</span></div>
+        <img src="./captures/volume-horaire.png" alt="Le suivi des heures">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION QUIZ & EXAMENS EN LIGNE ============ -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Visite guidée</div>
+    <h1 class="anim">❓ <span class="grad">Quiz & examens en ligne</span></h1>
+    <p class="baseline anim">L'évaluation numérique, simplifiée.</p>
+    <div class="pills anim">
+      <span class="pill">✏️ Création</span>
+      <span class="pill">🖥️ Passation</span>
+      <span class="pill">✅ Correction auto</span>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">❓ Quiz</h3>
+        <h2 class="anim">Évaluations en ligne</h2>
+        <ul class="anim">
+          <li>Création de quiz & examens</li>
+          <li>Passation par les élèves</li>
+          <li>Correction automatique & résultats</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/quiz</span></div>
+        <img src="./captures/quiz.png" alt="Évaluations en ligne">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION ANNÉE SCOLAIRE ============ -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Visite guidée</div>
+    <h1 class="anim">🗓️ <span class="grad">Année scolaire</span></h1>
+    <p class="baseline anim">Du jour 1 à la clôture.</p>
+    <div class="pills anim">
+      <span class="pill">📆 Années & périodes</span>
+      <span class="pill">🔁 Réinscriptions</span>
+      <span class="pill">🔒 Clôture</span>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📆 Année scolaire</h3>
+        <h2 class="anim">Le cadre de l'année</h2>
+        <ul class="anim">
+          <li>Gestion des années & trimestres</li>
+          <li>Périodes et dates clés</li>
+          <li>Paramétrage central</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/annee-scolaire</span></div>
+        <img src="./captures/annee-scolaire.png" alt="Le cadre de l'année">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🔁 Réinscriptions</h3>
+        <h2 class="anim">Campagne en masse</h2>
+        <ul class="anim">
+          <li>Réinscription groupée des élèves</li>
+          <li>Suivi des dossiers</li>
+          <li>Gain de temps en début d'année</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/reinscriptions</span></div>
+        <img src="./captures/reinscriptions.png" alt="Campagne en masse">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🔒 Clôture d'année</h3>
+        <h2 class="anim">Passage & archivage</h2>
+        <ul class="anim">
+          <li>Passage de classe automatisé</li>
+          <li>Archivage de l'année écoulée</li>
+          <li>Transition propre vers la suivante</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/cloture</span></div>
+        <img src="./captures/cloture.png" alt="Passage & archivage">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION VIE SCOLAIRE ============ -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Visite guidée</div>
+    <h1 class="anim">🎒 <span class="grad">Vie scolaire</span></h1>
+    <p class="baseline anim">Au-delà de la salle de classe.</p>
+    <div class="pills anim">
+      <span class="pill">📖 Bibliothèque</span>
+      <span class="pill">🍽️ Cantine</span>
+      <span class="pill">🚌 Transport</span>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📖 Bibliothèque</h3>
+        <h2 class="anim">Le centre de ressources</h2>
+        <ul class="anim">
+          <li>Catalogue des ouvrages</li>
+          <li>Emprunts & retours</li>
+          <li>Suivi des disponibilités</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/bibliotheque</span></div>
+        <img src="./captures/bibliotheque.png" alt="Le centre de ressources">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🍽️ Cantine</h3>
+        <h2 class="anim">La restauration scolaire</h2>
+        <ul class="anim">
+          <li>Inscriptions à la cantine</li>
+          <li>Suivi des repas</li>
+          <li>Facturation intégrée</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/cantine</span></div>
+        <img src="./captures/cantine.png" alt="La restauration scolaire">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🚌 Transport</h3>
+        <h2 class="anim">Le ramassage scolaire</h2>
+        <ul class="anim">
+          <li>Circuits & véhicules</li>
+          <li>Élèves transportés</li>
+          <li>Organisation des trajets</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/transport</span></div>
+        <img src="./captures/transport.png" alt="Le ramassage scolaire">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION FINANCE ============ -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Visite guidée</div>
+    <h1 class="anim">💰 <span class="grad">Finance</span></h1>
+    <p class="baseline anim">La santé financière, sous contrôle.</p>
+    <div class="pills anim">
+      <span class="pill">📊 Tableau de bord</span>
+      <span class="pill">💵 Paiements</span>
+      <span class="pill">📉 Dépenses</span>
+      <span class="pill">🏦 Trésorerie</span>
+      <span class="pill">🧾 Factures</span>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📊 Tableau de bord financier</h3>
+        <h2 class="anim">Vue globale</h2>
+        <ul class="anim">
+          <li>Recettes & dépenses en un écran</li>
+          <li>Indicateurs clés en direct</li>
+          <li>Pilotage budgétaire</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/finance</span></div>
+        <img src="./captures/finance.png" alt="Vue globale">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">💵 Paiements</h3>
+        <h2 class="anim">Encaissements & reçus</h2>
+        <ul class="anim">
+          <li>Paiement + reçu instantané</li>
+          <li>Suivi par élève & tranche</li>
+          <li>Historique complet</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/finance/paiement</span></div>
+        <img src="./captures/paiement.png" alt="Encaissements & reçus">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📉 Dépenses</h3>
+        <h2 class="anim">Maîtrise des coûts</h2>
+        <ul class="anim">
+          <li>Dépenses par catégorie</li>
+          <li>Justificatifs attachés</li>
+          <li>Suivi du budget</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/finance/depenses</span></div>
+        <img src="./captures/depenses.png" alt="Maîtrise des coûts">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🏦 Trésorerie</h3>
+        <h2 class="anim">Caisse & soldes</h2>
+        <ul class="anim">
+          <li>Mouvements de caisse</li>
+          <li>Soldes en temps réel</li>
+          <li>Rapprochements simples</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/finance/tresorerie</span></div>
+        <img src="./captures/tresorerie.png" alt="Caisse & soldes">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🧾 Factures</h3>
+        <h2 class="anim">Facturation claire</h2>
+        <ul class="anim">
+          <li>Génération des factures</li>
+          <li>Statut payé / impayé</li>
+          <li>Envoi aux familles</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/factures</span></div>
+        <img src="./captures/factures.png" alt="Facturation claire">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📑 Rapports financiers</h3>
+        <h2 class="anim">Prêts en fin de mois</h2>
+        <ul class="anim">
+          <li>Bilans recettes / dépenses</li>
+          <li>Exports comptables</li>
+          <li>Analyses par période</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/finance/rapports</span></div>
+        <img src="./captures/fin-rapports.png" alt="Prêts en fin de mois">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION COMMUNICATION ============ -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Visite guidée</div>
+    <h1 class="anim">📣 <span class="grad">Communication</span></h1>
+    <p class="baseline anim">Toute l'école connectée.</p>
+    <div class="pills anim">
+      <span class="pill">📢 Annonces</span>
+      <span class="pill">📜 Circulaires</span>
+      <span class="pill">🤝 Réunions</span>
+      <span class="pill">🔔 Notifications</span>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📢 Annonces</h3>
+        <h2 class="anim">Diffusion ciblée</h2>
+        <ul class="anim">
+          <li>Annonces aux parents & enseignants</li>
+          <li>Par classe, niveau ou école</li>
+          <li>Visibles dans le portail</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/annonces</span></div>
+        <img src="./captures/annonces.png" alt="Diffusion ciblée">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📜 Circulaires</h3>
+        <h2 class="anim">Documents officiels</h2>
+        <ul class="anim">
+          <li>Circulaires diffusées en ligne</li>
+          <li>Accusés & suivi de lecture</li>
+          <li>Archivage centralisé</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/circulaires</span></div>
+        <img src="./captures/circulaires.png" alt="Documents officiels">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🤝 Réunions</h3>
+        <h2 class="anim">Parents-profs organisés</h2>
+        <ul class="anim">
+          <li>Planification des réunions</li>
+          <li>Convocations automatiques</li>
+          <li>Suivi des présences</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/reunions</span></div>
+        <img src="./captures/reunions.png" alt="Parents-profs organisés">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🔔 Notifications</h3>
+        <h2 class="anim">Le centre de messages</h2>
+        <ul class="anim">
+          <li>Notifications in-app</li>
+          <li>Envoi par SMS</li>
+          <li>Historique des envois</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/notifications</span></div>
+        <img src="./captures/notifications.png" alt="Le centre de messages">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION ANALYTICS ============ -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Visite guidée</div>
+    <h1 class="anim">📈 <span class="grad">Analytics</span></h1>
+    <p class="baseline anim">Les chiffres qui font décider.</p>
+    <div class="pills anim">
+      <span class="pill">📊 Analytics</span>
+      <span class="pill">⚖️ Comparatif</span>
+      <span class="pill">🏆 Réussite</span>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📊 Analytics</h3>
+        <h2 class="anim">Tableaux de bord avancés</h2>
+        <ul class="anim">
+          <li>KPIs détaillés & graphiques</li>
+          <li>Tendances et évolutions</li>
+          <li>Vue 360° de l'établissement</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/analytics</span></div>
+        <img src="./captures/analytics.png" alt="Tableaux de bord avancés">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">⚖️ Comparatif performances</h3>
+        <h2 class="anim">Qui progresse, où ?</h2>
+        <ul class="anim">
+          <li>Comparaison par classe & niveau</li>
+          <li>Performance des enseignants</li>
+          <li>Identification des écarts</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/comparatif</span></div>
+        <img src="./captures/comparatif.png" alt="Qui progresse, où ?">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🏆 Statistiques de réussite</h3>
+        <h2 class="anim">Le pilotage pédagogique</h2>
+        <ul class="anim">
+          <li>Taux de réussite par classe</li>
+          <li>Évolution dans le temps</li>
+          <li>Aide à la décision</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/stats-reussite</span></div>
+        <img src="./captures/stats-reussite.png" alt="Le pilotage pédagogique">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION DOCUMENTS ============ -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Visite guidée</div>
+    <h1 class="anim">📁 <span class="grad">Documents</span></h1>
+    <p class="baseline anim">Tous vos documents, générés en un clic.</p>
+    <div class="pills anim">
+      <span class="pill">📄 Attestations</span>
+      <span class="pill">🎓 Certificats</span>
+      <span class="pill">🖨️ Génération</span>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📁 Documents</h3>
+        <h2 class="anim">La génération automatique</h2>
+        <ul class="anim">
+          <li>Attestations & certificats de scolarité</li>
+          <li>Modèles prêts à l'emploi</li>
+          <li>Export PDF immédiat</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/documents</span></div>
+        <img src="./captures/documents.png" alt="La génération automatique">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION ADMINISTRATION ============ -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Visite guidée</div>
+    <h1 class="anim">⚙️ <span class="grad">Administration</span></h1>
+    <p class="baseline anim">Le contrôle total de la plateforme.</p>
+    <div class="pills anim">
+      <span class="pill">👤 Utilisateurs</span>
+      <span class="pill">⚙️ Configuration</span>
+      <span class="pill">🔌 Intégrations</span>
+      <span class="pill">📜 Traçabilité</span>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">👤 Utilisateurs & rôles</h3>
+        <h2 class="anim">Accès maîtrisés</h2>
+        <ul class="anim">
+          <li>Comptes par rôle</li>
+          <li>Permissions fines</li>
+          <li>Activation / désactivation</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/utilisateurs</span></div>
+        <img src="./captures/utilisateurs.png" alt="Accès maîtrisés">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">⚙️ Configuration</h3>
+        <h2 class="anim">L'école à votre image</h2>
+        <ul class="anim">
+          <li>Paramètres généraux</li>
+          <li>Personnalisation</li>
+          <li>Préférences de l'établissement</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/configuration</span></div>
+        <img src="./captures/configuration.png" alt="L'école à votre image">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">🔌 Intégrations</h3>
+        <h2 class="anim">Connecté à vos outils</h2>
+        <ul class="anim">
+          <li>SMS, WhatsApp, paiement en ligne</li>
+          <li>Activation simple</li>
+          <li>Écosystème ouvert</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/integrations</span></div>
+        <img src="./captures/integrations.png" alt="Connecté à vos outils">
+      </div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two">
+      <div>
+        <h3 class="anim">📜 Traçabilité</h3>
+        <h2 class="anim">Chaque action tracée</h2>
+        <ul class="anim">
+          <li>Journal d'audit complet</li>
+          <li>Qui a fait quoi, quand</li>
+          <li>Sécurité & conformité</li>
+        </ul>
+      </div>
+      <div class="browser anim">
+        <div class="bar"><i></i><i></i><i></i><span class="url">localhost:5000/dashboard/tracabilite</span></div>
+        <img src="./captures/tracabilite.png" alt="Chaque action tracée">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION APPLICATION MOBILE ============ -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Visite guidée</div>
+    <h1 class="anim">📱 <span class="grad">Application mobile</span></h1>
+    <p class="baseline anim">Schooly dans la poche de toute l'école.</p>
+    <div class="pills anim">
+      <span class="pill">👨‍👩‍👧 Parents</span>
+      <span class="pill">👩‍🏫 Enseignants</span>
+      <span class="pill">🎓 Direction</span>
+      <span class="pill">⚙️ Admin</span>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two two-phone">
+      <div>
+        <h3 class="anim">📱 Une app, tous les profils</h3>
+        <h2 class="anim">Chacun son espace</h2>
+        <ul class="anim">
+          <li>👨‍👩‍👧 <b>Parents</b> : notes, absences, paiements</li>
+          <li>👩‍🏫 <b>Enseignants</b> : appel, saisie des notes</li>
+          <li>🎓 <b>Direction</b> : pilotage & alertes</li>
+          <li>⚙️ <b>Admin</b> : gestion complète</li>
+          <li>Connexion sécurisée par école</li>
+        </ul>
+      </div>
+      <div class="phone anim"><img src="./captures/mobile-login.png" alt="Chacun son espace"></div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two two-phone">
+      <div>
+        <h3 class="anim">🏠 Tableau de bord</h3>
+        <h2 class="anim">L'école dans la main</h2>
+        <ul class="anim">
+          <li>Effectifs, enseignants, classes</li>
+          <li>Alertes opérationnelles</li>
+          <li>Indicateurs finances & réussite</li>
+        </ul>
+      </div>
+      <div class="phone anim"><img src="./captures/mobile-dashboard.png" alt="L'école dans la main"></div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two two-phone">
+      <div>
+        <h3 class="anim">📊 Statistiques mobiles</h3>
+        <h2 class="anim">Les chiffres, en direct</h2>
+        <ul class="anim">
+          <li>Revenu mensuel</li>
+          <li>Élèves par niveau</li>
+          <li>Présence de la semaine</li>
+        </ul>
+      </div>
+      <div class="phone anim"><img src="./captures/mobile-stats-home.png" alt="Les chiffres, en direct"></div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two two-phone">
+      <div>
+        <h3 class="anim">👥 Élèves</h3>
+        <h2 class="anim">Tous les élèves à portée</h2>
+        <ul class="anim">
+          <li>Recherche nom / matricule</li>
+          <li>Filtres par classe & statut</li>
+          <li>Fiche élève en un tap</li>
+        </ul>
+      </div>
+      <div class="phone anim"><img src="./captures/mobile-eleves.png" alt="Tous les élèves à portée"></div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two two-phone">
+      <div>
+        <h3 class="anim">👩‍🏫 Enseignants</h3>
+        <h2 class="anim">L'équipe pédagogique</h2>
+        <ul class="anim">
+          <li>Liste & spécialités</li>
+          <li>Statut actif / inactif</li>
+          <li>Recherche instantanée</li>
+        </ul>
+      </div>
+      <div class="phone anim"><img src="./captures/mobile-enseignants.png" alt="L'équipe pédagogique"></div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two two-phone">
+      <div>
+        <h3 class="anim">💰 Finance</h3>
+        <h2 class="anim">Les finances en mobilité</h2>
+        <ul class="anim">
+          <li>Revenu, dépenses, solde, impayés</li>
+          <li>Derniers paiements & dépenses</li>
+          <li>Suivi par année scolaire</li>
+        </ul>
+      </div>
+      <div class="phone anim"><img src="./captures/mobile-finance.png" alt="Les finances en mobilité"></div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two two-phone">
+      <div>
+        <h3 class="anim">📈 Stats école</h3>
+        <h2 class="anim">Réussite & présence</h2>
+        <ul class="anim">
+          <li>Moyenne école & taux de réussite</li>
+          <li>Meilleures classes</li>
+          <li>Taux de présence par classe</li>
+        </ul>
+      </div>
+      <div class="phone anim"><img src="./captures/mobile-stats-ecole.png" alt="Réussite & présence"></div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two two-phone">
+      <div>
+        <h3 class="anim">⭐ Performance enseignants</h3>
+        <h2 class="anim">Le suivi des saisies</h2>
+        <ul class="anim">
+          <li>Par trimestre (T1/T2/T3)</li>
+          <li>Devoirs publiés & saisies</li>
+          <li>Moyenne des notes</li>
+        </ul>
+      </div>
+      <div class="phone anim"><img src="./captures/mobile-perf-enseignants.png" alt="Le suivi des saisies"></div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two two-phone">
+      <div>
+        <h3 class="anim">👤 Profil & sécurité</h3>
+        <h2 class="anim">Compte protégé</h2>
+        <ul class="anim">
+          <li>Profil & école</li>
+          <li>Sécurité & 2FA</li>
+          <li>Sessions actives & notifications</li>
+        </ul>
+      </div>
+      <div class="phone anim"><img src="./captures/mobile-profil.png" alt="Compte protégé"></div>
+    </div>
+  </section>
+  <section class="slide">
+    <div class="two two-phone">
+      <div>
+        <h3 class="anim">🌙 Mode sombre</h3>
+        <h2 class="anim">Clair ou sombre, au choix</h2>
+        <ul class="anim">
+          <li>Thème sombre élégant</li>
+          <li>Finances & recouvrement</li>
+          <li>Élèves par niveau en un coup d'œil</li>
+        </ul>
+      </div>
+      <div class="phone anim"><img src="./captures/mobile-dark.png" alt="Clair ou sombre, au choix"></div>
+    </div>
+  </section>
+  <!-- AUTO-MODULES-END -->
+
+  <!-- ============ SECTION RÔLES ============ -->
+  <section class="slide center">
+    <div class="tag anim"><span class="dot"></span> Synthèse</div>
+    <h1 class="anim">Une vue <span class="grad">par métier</span></h1>
+    <p class="baseline anim">Chaque utilisateur voit exactement ce dont il a besoin.</p>
+  </section>
+
+</div>
+
+<div class="foot"><span>Schooly</span><span id="counter"></span></div>
+<div class="nav"><button onclick="go(-1)">‹</button><button onclick="go(1)">›</button></div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  let i=0;
+  function render(){
+    slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+    document.getElementById('bar').style.width=((i+1)/slides.length*100)+'%';
+    document.getElementById('counter').textContent=(i+1)+' / '+slides.length;
+  }
+  const deck=document.getElementById('deck');
+  function go(d){const n=Math.min(slides.length-1,Math.max(0,i+d));if(n!==i){deck.classList.toggle('back',d<0);i=n;render();}}
+  document.addEventListener('keydown',e=>{
+    if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){go(1);e.preventDefault();}
+    if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){go(-1);e.preventDefault();}
+    if(e.key==='Home'){i=0;render();}
+    if(e.key==='End'){i=slides.length-1;render();}
+    if(e.key.toLowerCase()==='f'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.();}
+  });
+  document.addEventListener('click',e=>{if(!e.target.closest('.nav')&&!e.target.closest('a'))go(1);});
+  render();
+</script>
+</body>
+</html>

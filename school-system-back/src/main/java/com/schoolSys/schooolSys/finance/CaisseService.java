@@ -2,6 +2,7 @@ package com.schoolSys.schooolSys.finance;
 
 import java.util.UUID;
 
+import com.schoolSys.schooolSys.common.annee.AnneeScolaireProvider;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.finance.dto.*;
 import lombok.RequiredArgsConstructor;
@@ -17,14 +18,13 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class CaisseService {
 
-    private static final String DEFAULT_ANNEE = "2025-2026";
-
+    private final AnneeScolaireProvider anneeScolaireProvider;
     private final CaisseRepository caisseRepository;
     private final MouvementCaisseRepository mouvementCaisseRepository;
     private final CaisseMapper caisseMapper;
 
     public List<CaisseResponseDTO> findAll(String anneeScolaire) {
-        String annee = anneeScolaire != null ? anneeScolaire : DEFAULT_ANNEE;
+        String annee = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
         return caisseMapper.toResponseDTOList(
                 caisseRepository.findByAnneeScolaireOrderByCreatedAtDesc(annee));
     }
@@ -36,7 +36,7 @@ public class CaisseService {
     }
 
     public CaisseResponseDTO findOuverte(String anneeScolaire) {
-        String annee = anneeScolaire != null ? anneeScolaire : DEFAULT_ANNEE;
+        String annee = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
         Caisse c = caisseRepository.findByStatutAndAnneeScolaire(Caisse.StatutCaisse.OUVERTE, annee)
                 .orElse(null);
         return c != null ? caisseMapper.toResponseDTO(c) : null;
@@ -44,7 +44,7 @@ public class CaisseService {
 
     @Transactional
     public CaisseResponseDTO ouvrir(CaisseRequestDTO dto) {
-        String annee = dto.getAnneeScolaire() != null ? dto.getAnneeScolaire() : DEFAULT_ANNEE;
+        String annee = anneeScolaireProvider.resolveAnneeScolaire(dto.getAnneeScolaire());
 
         if (caisseRepository.existsByStatutAndAnneeScolaire(Caisse.StatutCaisse.OUVERTE, annee)) {
             throw new IllegalArgumentException("Une caisse est deja ouverte pour cette annee scolaire");

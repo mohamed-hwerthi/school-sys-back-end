@@ -43,4 +43,6 @@ public class CreateDevoirRequest {
 
     @Builder.Default
     private String statut = "PUBLIE";
+
+    private String anneeScolaire;
 }

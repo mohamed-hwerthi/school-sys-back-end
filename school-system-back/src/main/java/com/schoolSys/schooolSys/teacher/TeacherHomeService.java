@@ -138,7 +138,7 @@ public class TeacherHomeService {
         LocalDate today = LocalDate.now();
 
         // Examens dont la date limite de saisie est passée et qui n'ont aucune note
-        List<TeacherHomeDTO.PendingTask> items = examenRepository.findFiltered(null, null, null).stream()
+        List<TeacherHomeDTO.PendingTask> items = examenRepository.findFiltered(null, null, null, null).stream()
                 .filter(e -> Boolean.FALSE.equals(e.getDeleted()))
                 .filter(e -> e.getTeacher() != null && teacherId.equals(e.getTeacher().getId()))
                 .filter(e -> e.getDateLimiteSaisie() != null && e.getDateLimiteSaisie().isBefore(today))

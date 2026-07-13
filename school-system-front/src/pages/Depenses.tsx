@@ -62,12 +62,12 @@ import {
   useDeleteDepense,
 } from "@/hooks/useDepenses";
 import type { DepenseDTO, DepenseRequest } from "@/api/depenses.api";
+import { getSelectedAnneeScolaire } from "@/lib/utils";
 import { validate, type FormErrors } from "@/lib/validate";
 import { depenseSchema } from "@/lib/finance-schemas";
 import { CURRENCY } from "@/config/currency";
 
 const ITEMS_PER_PAGE = 10;
-const ANNEE = "2025-2026";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -99,12 +99,13 @@ export default function Depenses() {
   const [currentPage, setCurrentPage] = useState(0);
 
   const { data: categories = [] } = useCategoriesDepense();
-  const { data: statsData } = useDepenseStats(ANNEE);
+  const currentAnnee = getSelectedAnneeScolaire();
+  const { data: statsData } = useDepenseStats(currentAnnee);
   const { data: pagedData, isLoading } = useDepensesPaged({
     page: currentPage,
     size: ITEMS_PER_PAGE,
     search: search || undefined,
-    anneeScolaire: ANNEE,
+    anneeScolaire: currentAnnee,
     categorieId: filterCategorie !== "all" ? filterCategorie : undefined,
     sortBy: "dateDepense",
     sortDir: "desc",
@@ -135,7 +136,7 @@ export default function Depenses() {
     reference: "",
     recurrente: false,
     notes: "",
-    anneeScolaire: ANNEE,
+    anneeScolaire: getSelectedAnneeScolaire(),
   };
   const [form, setForm] = useState<DepenseRequest>(emptyForm);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
@@ -312,7 +313,7 @@ export default function Depenses() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Depenses</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Gestion des sorties financieres — {ANNEE}
+            Gestion des sorties financieres — {currentAnnee}
           </p>
         </div>
         <Button className="bg-gradient-primary shadow-btn gap-2" onClick={openAdd}>

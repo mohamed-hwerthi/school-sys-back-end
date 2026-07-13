@@ -63,6 +63,9 @@ public class Devoir {
     @Builder.Default
     private String statut = "PUBLIE";
 
+    @Column(name = "annee_scolaire", nullable = false)
+    private String anneeScolaire;
+
     @Column(name = "created_at", updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

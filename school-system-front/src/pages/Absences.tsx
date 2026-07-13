@@ -72,9 +72,9 @@ export default function AbsencesPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const today = new Date().toISOString().split("T")[0];
-  const initialClasseId = Number(searchParams.get("classeId")) || -1;
+  const initialClasseId = searchParams.get("classeId") || "";
   const initialDate = searchParams.get("date") || today;
-  const [selectedClasseId, setSelectedClasseId] = useState<number>(initialClasseId);
+  const [selectedClasseId, setSelectedClasseId] = useState<string>(initialClasseId);
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -87,8 +87,9 @@ export default function AbsencesPage() {
 
   const { data: classes = [] } = useClasses();
   const { data: allStudents = [] } = useAllStudents();
+  const absencesClasseId = selectedClasseId === "all" ? "" : selectedClasseId;
   const { data: absencesRaw = [], isLoading, isFetching } = useAbsencesByClasseDate(
-    selectedClasseId,
+    absencesClasseId,
     selectedDate
   );
   const absences = useMemo(() => {
@@ -103,7 +104,7 @@ export default function AbsencesPage() {
     });
   }, [absencesRaw, allStudents]);
   const { data: stats } = useAbsenceStats(
-    selectedClasseId > 0 ? selectedClasseId : undefined,
+    absencesClasseId || undefined,
     undefined,
     undefined
   );
@@ -224,7 +225,7 @@ export default function AbsencesPage() {
             label="Exporter"
             filters={{ from: selectedDate, to: selectedDate }}
           />
-          {selectedClasseId > 0 && (
+          {selectedClasseId && selectedClasseId !== "all" && (
             <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate(`/dashboard/absences/feuille?classeId=${selectedClasseId}&date=${selectedDate}`)}>
               <FileCheck className="h-4 w-4" />
               Feuille complète
@@ -275,9 +276,9 @@ export default function AbsencesPage() {
           <div className="flex items-center gap-3 flex-1">
             <div className="flex-1">
               <Select
-                value={selectedClasseId === -1 ? "all" : String(selectedClasseId)}
+                value={selectedClasseId || "all"}
                 onValueChange={(v) => {
-                  setSelectedClasseId(v === "all" ? -1 : Number(v));
+                  setSelectedClasseId(v);
                   setCurrentPage(0);
                 }}
               >

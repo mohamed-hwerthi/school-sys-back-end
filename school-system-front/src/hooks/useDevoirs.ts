@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { devoirsApi } from "@/api/devoirs.api";
+import { useAnneeContext } from "./useAnneeContext";
 import type {
   Devoir,
   CreateDevoirRequest,
@@ -16,12 +17,19 @@ const SOUMISSIONS_KEY = "soumissions";
 const RESSOURCES_KEY = "ressources";
 const DEVOIR_STATS_KEY = "devoir-stats";
 
+function useYear() {
+  const { selectedAnnee } = useAnneeContext();
+  return selectedAnnee?.label ?? "";
+}
+
 // ── Devoirs ──
 
 export function useDevoirs(classeId?: string, moduleId?: string) {
+  const year = useYear();
   return useQuery<Devoir[]>({
-    queryKey: [DEVOIRS_KEY, classeId, moduleId],
-    queryFn: () => devoirsApi.getAll(classeId, moduleId),
+    queryKey: [DEVOIRS_KEY, classeId, moduleId, year],
+    queryFn: () => devoirsApi.getAll(classeId, moduleId, year),
+    enabled: !!year,
   });
 }
 
@@ -118,9 +126,11 @@ export function useDevoirStats(devoirId?: string) {
 // ── Ressources ──
 
 export function useRessources(moduleId?: string) {
+  const year = useYear();
   return useQuery<RessourcePedagogique[]>({
-    queryKey: [RESSOURCES_KEY, moduleId],
-    queryFn: () => devoirsApi.getRessources(moduleId),
+    queryKey: [RESSOURCES_KEY, moduleId, year],
+    queryFn: () => devoirsApi.getRessources(moduleId, year),
+    enabled: !!year,
   });
 }
 

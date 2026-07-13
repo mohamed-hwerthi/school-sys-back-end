@@ -27,5 +27,6 @@ public class SoumissionDTO {
     private String commentaireCorrection;
     private Boolean corrige;
     private Boolean enRetard;
+    private String anneeScolaire;
     private LocalDateTime createdAt;
 }

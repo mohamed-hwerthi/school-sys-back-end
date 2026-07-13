@@ -53,7 +53,7 @@ const step2Schema = z.object({
 });
 
 const step3Schema = z.object({
-  niveauId: z.number({ invalid_type_error: "Veuillez selectionner un niveau" }).positive("Veuillez selectionner un niveau"),
+  niveauId: z.string({ invalid_type_error: "Veuillez selectionner un niveau" }).min(1, "Veuillez selectionner un niveau"),
   anneeScolaire: z.string().min(1, "L'annee scolaire est requise"),
 });
 
@@ -131,7 +131,7 @@ export default function InscriptionPubliquePage() {
   const step3Form = useForm<Step3Data>({
     resolver: zodResolver(step3Schema),
     defaultValues: {
-      niveauId: formData.niveauId ?? (undefined as unknown as number),
+      niveauId: formData.niveauId ?? "",
       anneeScolaire: formData.anneeScolaire ?? getDefaultAnneeScolaire(),
     },
   });

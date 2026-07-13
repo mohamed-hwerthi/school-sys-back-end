@@ -31,4 +31,6 @@ public class CreateRessourceRequest {
     private UUID enseignantId;
 
     private Long tailleFichier;
+
+    private String anneeScolaire;
 }

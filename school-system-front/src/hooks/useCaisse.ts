@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { caisseApi, CaisseRequest, MouvementRequest } from "@/api/caisse.api";
+import { useAnneeContext } from "./useAnneeContext";
 import { notify } from "@/lib/toast";
 
 const KEYS = {
@@ -8,17 +9,23 @@ const KEYS = {
   mouvements: (id: string) => ["caisse", "mouvements", id] as const,
 };
 
-export function useCaisses(anneeScolaire = "2025-2026") {
+export function useCaisses(anneeScolaire?: string) {
+  const { selectedAnnee } = useAnneeContext();
+  const year = anneeScolaire ?? selectedAnnee?.label ?? "";
   return useQuery({
-    queryKey: KEYS.all(anneeScolaire),
-    queryFn: () => caisseApi.getAll(anneeScolaire),
+    queryKey: KEYS.all(year),
+    queryFn: () => caisseApi.getAll(year),
+    enabled: !!year,
   });
 }
 
-export function useCaisseOuverte(anneeScolaire = "2025-2026") {
+export function useCaisseOuverte(anneeScolaire?: string) {
+  const { selectedAnnee } = useAnneeContext();
+  const year = anneeScolaire ?? selectedAnnee?.label ?? "";
   return useQuery({
-    queryKey: KEYS.ouverte(anneeScolaire),
-    queryFn: () => caisseApi.getOuverte(anneeScolaire),
+    queryKey: KEYS.ouverte(year),
+    queryFn: () => caisseApi.getOuverte(year),
+    enabled: !!year,
   });
 }
 

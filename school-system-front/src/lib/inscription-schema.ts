@@ -24,7 +24,7 @@ export const createInscriptionSchema = z.object({
     .refine((v) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), {
       message: "Email invalide",
     }),
-  niveauId: z.number().int().positive().optional(),
+  niveauId: z.string().min(1, "Le niveau est requis"),
   anneeScolaire: z
     .string()
     .trim()

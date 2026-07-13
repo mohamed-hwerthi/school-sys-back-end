@@ -31,6 +31,7 @@ import { useSchool } from "@/hooks/useSchool";
 import { useLanguage } from "@/hooks/useLanguage";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { buildVitrineUrl } from "@/lib/vitrine-routing";
+import { YearSelector } from "./YearSelector";
 
 const ROUTE_I18N_KEYS: Record<string, string> = {
   dashboard: "nav.dashboard",
@@ -178,7 +179,12 @@ export function Navbar() {
         </div>
       </div>
 
-      <div className="ms-auto flex items-center gap-1.5">
+      {/* School Year Selector */}
+      <div className="ms-auto flex items-center">
+        <YearSelector />
+      </div>
+
+      <div className="flex items-center gap-1.5">
         {/* Language Toggle */}
         <LanguageSwitcher />
 

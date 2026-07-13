@@ -15,6 +15,7 @@ export interface Devoir {
   pointsMax: number;
   fichierUrl: string | null;
   statut: StatutDevoir;
+  anneeScolaire: string;
   totalSoumissions: number;
   createdAt: string;
   updatedAt: string;
@@ -32,6 +33,7 @@ export interface CreateDevoirRequest {
   pointsMax?: number;
   fichierUrl?: string;
   statut?: StatutDevoir;
+  anneeScolaire?: string;
 }
 
 export interface Soumission {
@@ -46,6 +48,7 @@ export interface Soumission {
   commentaireCorrection: string | null;
   corrige: boolean;
   enRetard: boolean;
+  anneeScolaire: string;
   createdAt: string;
 }
 
@@ -71,6 +74,7 @@ export interface RessourcePedagogique {
   lienExterne: string | null;
   enseignantId: string | null;
   tailleFichier: number | null;
+  anneeScolaire: string;
   createdAt: string;
 }
 
@@ -83,6 +87,7 @@ export interface CreateRessourceRequest {
   lienExterne?: string;
   enseignantId?: string;
   tailleFichier?: number;
+  anneeScolaire?: string;
 }
 
 export interface DevoirStats {

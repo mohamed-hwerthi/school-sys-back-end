@@ -1,5 +1,6 @@
 package com.schoolSys.schooolSys.reporting;
 
+import com.schoolSys.schooolSys.common.annee.AnneeScolaireProvider;
 import com.schoolSys.schooolSys.common.dto.ApiResponse;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.reporting.dto.ClassDrillDownDTO;
@@ -22,12 +23,14 @@ public class ReportingController {
 
     private final ReportingService reportingService;
     private final CurrentUserContext currentUser;
+    private final AnneeScolaireProvider anneeScolaireProvider;
 
     @GetMapping("/dashboard")
     @PreAuthorize("hasAuthority('VIEW_REPORTS')")
     public ResponseEntity<ApiResponse<DashboardStatsDTO>> getDashboard(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
-        return ResponseEntity.ok(ApiResponse.ok(reportingService.getDashboardStats(anneeScolaire)));
+            @RequestParam(required = false) String anneeScolaire) {
+        String resolved = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
+        return ResponseEntity.ok(ApiResponse.ok(reportingService.getDashboardStats(resolved)));
     }
 
     @GetMapping("/admin/class-stats")
@@ -56,8 +59,9 @@ public class ReportingController {
     @GetMapping("/trends")
     @PreAuthorize("hasAuthority('VIEW_REPORTS')")
     public ResponseEntity<ApiResponse<List<MonthlyTrendDTO>>> getTrends(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
-        return ResponseEntity.ok(ApiResponse.ok(reportingService.getMonthlyTrends(anneeScolaire)));
+            @RequestParam(required = false) String anneeScolaire) {
+        String resolved = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
+        return ResponseEntity.ok(ApiResponse.ok(reportingService.getMonthlyTrends(resolved)));
     }
 
     /** MOB-FUNC-016 — distribution des notes d'une classe par tranche. */

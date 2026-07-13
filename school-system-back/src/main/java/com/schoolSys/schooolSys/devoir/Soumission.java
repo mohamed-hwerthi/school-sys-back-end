@@ -59,6 +59,9 @@ public class Soumission {
     @Builder.Default
     private Boolean enRetard = false;
 
+    @Column(name = "annee_scolaire", nullable = false)
+    private String anneeScolaire;
+
     @Column(name = "created_at", updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

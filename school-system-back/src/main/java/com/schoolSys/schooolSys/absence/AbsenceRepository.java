@@ -26,6 +26,21 @@ public interface AbsenceRepository extends JpaRepository<Absence, UUID> {
                                                   @Param("mois") int mois,
                                                   @Param("annee") int annee);
 
+    /** School-year-aware absence queries. */
+    List<Absence> findByEleveIdAndAnneeScolaire(UUID eleveId, String anneeScolaire);
+
+    List<Absence> findByEleveIdInAndAnneeScolaire(List<UUID> eleveIds, String anneeScolaire);
+
+    List<Absence> findByDateAndEleveIdInAndAnneeScolaire(LocalDate date, List<UUID> eleveIds, String anneeScolaire);
+
+    List<Absence> findByDateAndEleveIdInAndTypeAndAnneeScolaire(LocalDate date, List<UUID> eleveIds, String type, String anneeScolaire);
+
+    @Query("SELECT a FROM Absence a WHERE a.eleveId IN :eleveIds AND MONTH(a.date) = :mois AND YEAR(a.date) = :annee AND a.anneeScolaire = :anneeScolaire")
+    List<Absence> findByEleveIdInAndMonthAndYearAndAnneeScolaire(@Param("eleveIds") List<UUID> eleveIds,
+                                                                  @Param("mois") int mois,
+                                                                  @Param("annee") int annee,
+                                                                  @Param("anneeScolaire") String anneeScolaire);
+
     List<Absence> findByEleveIdOrderByDateDesc(UUID eleveId);
 
     @Query("SELECT COUNT(a) FROM Absence a WHERE a.eleveId = :eleveId AND a.type = 'ABSENCE'")

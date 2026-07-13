@@ -23,15 +23,19 @@ public class NoteController {
     @GetMapping
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<NoteResponseDTO>>> getByExamen(
-            @RequestParam UUID examenId, @RequestParam Integer trimestre) {
-        return ResponseEntity.ok(ApiResponse.ok(noteService.findByExamen(examenId, trimestre)));
+            @RequestParam UUID examenId,
+            @RequestParam Integer trimestre,
+            @RequestParam(required = false) String anneeScolaire) {
+        return ResponseEntity.ok(ApiResponse.ok(noteService.findByExamen(examenId, trimestre, anneeScolaire)));
     }
 
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<NoteResponseDTO>>> getByStudent(
-            @PathVariable UUID studentId, @RequestParam Integer trimestre) {
-        return ResponseEntity.ok(ApiResponse.ok(noteService.findByStudent(studentId, trimestre)));
+            @PathVariable UUID studentId,
+            @RequestParam Integer trimestre,
+            @RequestParam(required = false) String anneeScolaire) {
+        return ResponseEntity.ok(ApiResponse.ok(noteService.findByStudent(studentId, trimestre, anneeScolaire)));
     }
 
     @PostMapping("/bulk")
@@ -43,8 +47,10 @@ public class NoteController {
     @GetMapping("/moyennes")
     @PreAuthorize("hasAuthority('READ_NOTES')")
     public ResponseEntity<ApiResponse<List<MoyenneDTO>>> getMoyennes(
-            @RequestParam UUID classeId, @RequestParam Integer trimestre) {
-        return ResponseEntity.ok(ApiResponse.ok(noteService.getMoyennes(classeId, trimestre)));
+            @RequestParam UUID classeId,
+            @RequestParam Integer trimestre,
+            @RequestParam(required = false) String anneeScolaire) {
+        return ResponseEntity.ok(ApiResponse.ok(noteService.getMoyennes(classeId, trimestre, anneeScolaire)));
     }
 
     @DeleteMapping("/{id}")

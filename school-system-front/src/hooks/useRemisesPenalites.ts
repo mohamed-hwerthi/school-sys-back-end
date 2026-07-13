@@ -7,25 +7,33 @@ import {
   type RemiseRequest,
   type PenaliteRequest,
 } from "@/api/remises-penalites.api";
+import { useAnneeContext } from "./useAnneeContext";
 
 const REMISES_KEY = "remises";
 const PENALITES_KEY = "penalites";
-const DEFAULT_ANNEE = "2025-2026";
+
+function useYear(provided?: string) {
+  const { selectedAnnee } = useAnneeContext();
+  return provided ?? selectedAnnee?.label ?? "";
+}
 
 // ─── Remises ──────────────────────────────────────────
 
-export function useRemises(anneeScolaire = DEFAULT_ANNEE) {
+export function useRemises(anneeScolaire?: string) {
+  const year = useYear(anneeScolaire);
   return useQuery<RemiseDTO[]>({
-    queryKey: [REMISES_KEY, anneeScolaire],
-    queryFn: () => remisesApi.getAll(anneeScolaire),
+    queryKey: [REMISES_KEY, year],
+    queryFn: () => remisesApi.getAll(year),
+    enabled: !!year,
   });
 }
 
-export function useRemisesByStudent(studentId: string, anneeScolaire = DEFAULT_ANNEE) {
+export function useRemisesByStudent(studentId: string, anneeScolaire?: string) {
+  const year = useYear(anneeScolaire);
   return useQuery<RemiseDTO[]>({
-    queryKey: [REMISES_KEY, "student", studentId, anneeScolaire],
-    queryFn: () => remisesApi.getByStudent(studentId, anneeScolaire),
-    enabled: !!studentId,
+    queryKey: [REMISES_KEY, "student", studentId, year],
+    queryFn: () => remisesApi.getByStudent(studentId, year),
+    enabled: !!studentId && !!year,
   });
 }
 
@@ -62,18 +70,21 @@ export function useDeleteRemise() {
 
 // ─── Pénalités ────────────────────────────────────────
 
-export function usePenalites(anneeScolaire = DEFAULT_ANNEE) {
+export function usePenalites(anneeScolaire?: string) {
+  const year = useYear(anneeScolaire);
   return useQuery<PenaliteDTO[]>({
-    queryKey: [PENALITES_KEY, anneeScolaire],
-    queryFn: () => penalitesApi.getAll(anneeScolaire),
+    queryKey: [PENALITES_KEY, year],
+    queryFn: () => penalitesApi.getAll(year),
+    enabled: !!year,
   });
 }
 
-export function usePenalitesByStudent(studentId: string, anneeScolaire = DEFAULT_ANNEE) {
+export function usePenalitesByStudent(studentId: string, anneeScolaire?: string) {
+  const year = useYear(anneeScolaire);
   return useQuery<PenaliteDTO[]>({
-    queryKey: [PENALITES_KEY, "student", studentId, anneeScolaire],
-    queryFn: () => penalitesApi.getByStudent(studentId, anneeScolaire),
-    enabled: !!studentId,
+    queryKey: [PENALITES_KEY, "student", studentId, year],
+    queryFn: () => penalitesApi.getByStudent(studentId, year),
+    enabled: !!studentId && !!year,
   });
 }
 

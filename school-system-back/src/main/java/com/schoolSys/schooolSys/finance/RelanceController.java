@@ -24,7 +24,7 @@ public class RelanceController {
     @GetMapping
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<RelanceResponseDTO>>> getAll(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
+            @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(relanceService.findByAnneeScolaire(anneeScolaire)));
     }
 
@@ -32,21 +32,21 @@ public class RelanceController {
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<RelanceResponseDTO>>> getByStudent(
             @PathVariable UUID studentId,
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
+            @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(relanceService.findByStudent(studentId, anneeScolaire)));
     }
 
     @GetMapping("/en-attente")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<List<RelanceResponseDTO>>> getPending(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
+            @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(relanceService.findPending(anneeScolaire)));
     }
 
     @GetMapping("/stats")
     @PreAuthorize("hasAuthority('READ_FINANCE')")
     public ResponseEntity<ApiResponse<RelanceService.RelanceStatsDTO>> getStats(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire) {
+            @RequestParam(required = false) String anneeScolaire) {
         return ResponseEntity.ok(ApiResponse.ok(relanceService.getStats(anneeScolaire)));
     }
 
@@ -67,7 +67,7 @@ public class RelanceController {
     @PostMapping("/generer")
     @PreAuthorize("hasAuthority('WRITE_FINANCE')")
     public ResponseEntity<ApiResponse<List<RelanceResponseDTO>>> generate(
-            @RequestParam(defaultValue = "2025-2026") String anneeScolaire,
+            @RequestParam(required = false) String anneeScolaire,
             @RequestParam(defaultValue = "EMAIL") Relance.TypeRelance type) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(relanceService.generateRelances(anneeScolaire, type)));

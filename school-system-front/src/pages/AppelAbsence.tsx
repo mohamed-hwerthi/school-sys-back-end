@@ -35,12 +35,12 @@ export default function AppelAbsencePage() {
   const today = new Date().toISOString().split("T")[0];
 
   const [niveau, setNiveau] = useState<string>("");
-  const [classeId, setClasseId] = useState<number>(0);
+  const [classeId, setClasseId] = useState<string>("");
   const [date, setDate] = useState(today);
   const [seance, setSeance] = useState<string>(SEANCES[0]);
 
-  const [statuts, setStatuts] = useState<Record<number, Statut>>({});
-  const [heuresArrivee, setHeuresArrivee] = useState<Record<number, string>>({});
+  const [statuts, setStatuts] = useState<Record<string, Statut>>({});
+  const [heuresArrivee, setHeuresArrivee] = useState<Record<string, string>>({});
 
   const { data: classes = [] } = useClasses();
   const { data: allStudents = [] } = useAllStudents();
@@ -75,7 +75,7 @@ export default function AppelAbsencePage() {
   };
 
   const markAllPresent = () => {
-    const next: Record<number, Statut> = {};
+    const next: Record<string, Statut> = {};
     students.forEach((s) => (next[s.id] = "PRESENT"));
     setStatuts(next);
     setHeuresArrivee({});
@@ -161,7 +161,7 @@ export default function AppelAbsencePage() {
         <div className="space-y-1.5">
           <Label>Classe *</Label>
           <Select
-            value={classeId ? String(classeId) : undefined}
+            value={classeId || undefined}
             onValueChange={(v) => {
               setClasseId(v);
               setStatuts({});

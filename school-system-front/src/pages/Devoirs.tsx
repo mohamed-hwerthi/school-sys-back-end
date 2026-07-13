@@ -179,8 +179,8 @@ export default function DevoirsPage() {
   const { data: soumissions = [], isLoading: soumissionsLoading } = useSoumissionsByDevoir(selectedDevoirId);
   const { data: ressources = [], isLoading: ressourcesLoading } = useRessources();
   const { niveaux } = useNiveaux();
-  const [devoirNiveauId, setDevoirNiveauId] = useState<number | undefined>();
-  const [ressourceNiveauId, setRessourceNiveauId] = useState<number | undefined>();
+  const [devoirNiveauId, setDevoirNiveauId] = useState<string | undefined>();
+  const [ressourceNiveauId, setRessourceNiveauId] = useState<string | undefined>();
   const { data: allClasses = [] } = useClasses();
   const { data: allModules = [] } = useModules();
   const devoirClasses = useMemo(
@@ -220,7 +220,7 @@ export default function DevoirsPage() {
 
   // Build a quick lookup classeId -> fullName for the table column
   const classeNameById = useMemo(() => {
-    const map = new Map<number, string>();
+    const map = new Map<string, string>();
     allClasses.forEach((c) => map.set(c.id, c.fullName));
     return map;
   }, [allClasses]);
@@ -831,7 +831,7 @@ export default function DevoirsPage() {
               <Select
                 value={devoirNiveauId ? String(devoirNiveauId) : "none"}
                 onValueChange={(v) => {
-                  const nid = v === "none" ? undefined : Number(v);
+                  const nid = v === "none" ? undefined : v;
                   setDevoirNiveauId(nid);
                   setDevoirForm({ ...devoirForm, classeId: undefined, moduleId: undefined });
                 }}
@@ -850,7 +850,7 @@ export default function DevoirsPage() {
                 <Label htmlFor="classeId">Classe</Label>
                 <Select
                   value={devoirForm.classeId ? String(devoirForm.classeId) : "none"}
-                  onValueChange={(v) => setDevoirForm({ ...devoirForm, classeId: v === "none" ? undefined : Number(v) })}
+                  onValueChange={(v) => setDevoirForm({ ...devoirForm, classeId: v === "none" ? undefined : v })}
                   disabled={!devoirNiveauId}
                 >
                   <SelectTrigger id="classeId"><SelectValue placeholder={devoirNiveauId ? "Selectionner une classe" : "Choisissez un niveau"} /></SelectTrigger>
@@ -866,7 +866,7 @@ export default function DevoirsPage() {
                 <Label htmlFor="moduleId">Matière</Label>
                 <Select
                   value={devoirForm.moduleId ? String(devoirForm.moduleId) : "none"}
-                  onValueChange={(v) => setDevoirForm({ ...devoirForm, moduleId: v === "none" ? undefined : Number(v) })}
+                  onValueChange={(v) => setDevoirForm({ ...devoirForm, moduleId: v === "none" ? undefined : v })}
                   disabled={!devoirNiveauId}
                 >
                   <SelectTrigger id="moduleId"><SelectValue placeholder={devoirNiveauId ? "Selectionner un module" : "Choisissez un niveau"} /></SelectTrigger>
@@ -1017,7 +1017,7 @@ export default function DevoirsPage() {
               <Select
                 value={ressourceNiveauId ? String(ressourceNiveauId) : "none"}
                 onValueChange={(v) => {
-                  const nid = v === "none" ? undefined : Number(v);
+                  const nid = v === "none" ? undefined : v;
                   setRessourceNiveauId(nid);
                   setRessourceForm({ ...ressourceForm, moduleId: undefined });
                 }}
@@ -1035,7 +1035,7 @@ export default function DevoirsPage() {
               <Label htmlFor="resModuleId">Matière</Label>
               <Select
                 value={ressourceForm.moduleId ? String(ressourceForm.moduleId) : "none"}
-                onValueChange={(v) => setRessourceForm({ ...ressourceForm, moduleId: v === "none" ? undefined : Number(v) })}
+                onValueChange={(v) => setRessourceForm({ ...ressourceForm, moduleId: v === "none" ? undefined : v })}
                 disabled={!ressourceNiveauId}
               >
                 <SelectTrigger id="resModuleId"><SelectValue placeholder={ressourceNiveauId ? "Selectionner un module" : "Choisissez un niveau"} /></SelectTrigger>

@@ -3,6 +3,7 @@ package com.schoolSys.schooolSys.devoir;
 import java.util.UUID;
 
 import com.schoolSys.schooolSys.auth.UserRole;
+import com.schoolSys.schooolSys.common.annee.AnneeScolaireProvider;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.security.CurrentUserContext;
 import com.schoolSys.schooolSys.devoir.dto.CreateDevoirRequest;
@@ -24,19 +25,20 @@ public class DevoirService {
     private final DevoirRepository devoirRepository;
     private final SoumissionRepository soumissionRepository;
     private final CurrentUserContext currentUser;
+    private final AnneeScolaireProvider anneeScolaireProvider;
 
-    public List<DevoirDTO> findAll(UUID classeId, UUID moduleId) {
+    public List<DevoirDTO> findAll(UUID classeId, UUID moduleId, String anneeScolaire) {
+        String year = anneeScolaireProvider.resolveAnneeScolaire(anneeScolaire);
         List<Devoir> devoirs;
         if (classeId != null && moduleId != null) {
-            devoirs = devoirRepository.findByClasseIdAndModuleIdOrderByDateLimiteDesc(classeId, moduleId);
+            devoirs = devoirRepository.findByClasseIdAndModuleIdAndAnneeScolaireOrderByDateLimiteDesc(classeId, moduleId, year);
         } else if (classeId != null) {
-            devoirs = devoirRepository.findByClasseIdOrderByDateLimiteDesc(classeId);
+            devoirs = devoirRepository.findByClasseIdAndAnneeScolaireOrderByDateLimiteDesc(classeId, year);
         } else if (moduleId != null) {
-            devoirs = devoirRepository.findByModuleIdOrderByDateLimiteDesc(moduleId);
+            devoirs = devoirRepository.findByModuleIdAndAnneeScolaireOrderByDateLimiteDesc(moduleId, year);
         } else {
-            devoirs = devoirRepository.findAllByOrderByDateLimiteDesc();
+            devoirs = devoirRepository.findByAnneeScolaireOrderByDateLimiteDesc(year);
         }
-        // Row-level scoping: a teacher only sees devoirs in his classes.
         if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
             var scoped = currentUser.getScopedClasseIdsForTeacher();
             devoirs = devoirs.stream()
@@ -68,7 +70,6 @@ public class DevoirService {
 
     public List<DevoirDTO> findByModule(UUID moduleId) {
         List<Devoir> devoirs = devoirRepository.findByModuleIdOrderByDateLimiteDesc(moduleId);
-        // A teacher only sees devoirs of this module that belong to his classes.
         if (currentUser.hasRole(UserRole.ENSEIGNANT)) {
             var scoped = currentUser.getScopedClasseIdsForTeacher();
             devoirs = devoirs.stream()
@@ -80,7 +81,6 @@ public class DevoirService {
 
     @Transactional
     public DevoirDTO create(CreateDevoirRequest request) {
-        // Block creating a devoir for a class the teacher doesn't teach.
         if (currentUser.hasRole(UserRole.ENSEIGNANT)
                 && request.getClasseId() != null
                 && !currentUser.teacherTeachesClasse(request.getClasseId())) {
@@ -98,6 +98,7 @@ public class DevoirService {
                 .pointsMax(request.getPointsMax())
                 .fichierUrl(request.getFichierUrl())
                 .statut(request.getStatut())
+                .anneeScolaire(anneeScolaireProvider.resolveAnneeScolaire(request.getAnneeScolaire()))
                 .build();
         return toDTO(devoirRepository.save(devoir));
     }
@@ -120,6 +121,9 @@ public class DevoirService {
         devoir.setPointsMax(request.getPointsMax());
         devoir.setFichierUrl(request.getFichierUrl());
         devoir.setStatut(request.getStatut());
+        if (request.getAnneeScolaire() != null) {
+            devoir.setAnneeScolaire(request.getAnneeScolaire());
+        }
         devoir.setUpdatedAt(LocalDateTime.now());
 
         return toDTO(devoirRepository.save(devoir));
@@ -157,6 +161,7 @@ public class DevoirService {
                 .pointsMax(devoir.getPointsMax())
                 .fichierUrl(devoir.getFichierUrl())
                 .statut(devoir.getStatut())
+                .anneeScolaire(devoir.getAnneeScolaire())
                 .totalSoumissions(totalSoumissions)
                 .createdAt(devoir.getCreatedAt())
                 .updatedAt(devoir.getUpdatedAt())
